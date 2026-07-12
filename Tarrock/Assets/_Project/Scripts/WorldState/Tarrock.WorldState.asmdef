@@ -1,0 +1,16 @@
+{
+    "name": "Tarrock.WorldState",
+    "rootNamespace": "Tarrock.WorldState",
+    "references": [
+        "Tarrock.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -279,6 +279,10 @@ wired up during the docs phase.
 ## Coding conventions
 
 - **File-scoped namespaces** (`namespace Tarrock.Combat;`), not block-scoped.
+  Unity 6000.5 defaults its compiler to C# 9, which rejects these; the project
+  therefore carries `Tarrock/Assets/csc.rsp` containing `-langversion:10.0`
+  (verified compiling on 6000.5.3f1). That file is load-bearing — deleting it
+  breaks the whole codebase's compile.
 - **One public type per file**, file named for the type.
 - **Naming:** `PascalCase` for public members; `_camelCase` for private fields.
 - **`[SerializeField] private`** over public fields — Unity Inspector exposure without

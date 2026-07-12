@@ -1,0 +1,20 @@
+{
+    "name": "Tarrock.Editor",
+    "rootNamespace": "Tarrock.Editor",
+    "references": [
+        "Tarrock.Core",
+        "Tarrock.WorldState",
+        "Tarrock.Regions"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
