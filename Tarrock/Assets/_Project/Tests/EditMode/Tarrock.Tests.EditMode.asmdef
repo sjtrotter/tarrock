@@ -4,6 +4,7 @@
     "references": [
         "Tarrock.Core",
         "Tarrock.WorldState",
+        "Tarrock.Player",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

@@ -1,17 +1,12 @@
 {
-    "name": "Tarrock.Editor",
-    "rootNamespace": "Tarrock.Editor",
+    "name": "Tarrock.Player",
+    "rootNamespace": "Tarrock.Player",
     "references": [
         "Tarrock.Core",
-        "Tarrock.WorldState",
-        "Tarrock.Regions",
-        "Tarrock.Player",
         "Unity.InputSystem",
         "Unity.Cinemachine"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
