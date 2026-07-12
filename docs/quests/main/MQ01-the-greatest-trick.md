@@ -299,8 +299,9 @@ GAMEPLAY: Three spotlights snap on around the ring, each catching an identical B
 real; the tell, per the House of Mirrors' lesson, is small and physical, not magical —
 the real Bataleur's buttonhole rose wilts a fraction more with every exchange, the
 counterfeits' staying waxwork-perfect. Landing hits on the correct double staggers the
-real Bataleur; landing them on a decoy dissolves it into confetti and a stagehand-card
-that rejoins the fight as a lesser Blank.
+real Bataleur; landing them on a decoy bursts it into confetti — from which a
+stagehand Blank straightens up, brushing itself off, and rejoins the fight as a lesser
+enemy.
 
 **THE BATALEUR** *(mid-fight patter, over the illusions)*
 > Which one, which one! A showman never tells his own secrets — good policy, that,
@@ -309,7 +310,7 @@ that rejoins the fight as a lesser Blank.
 At half health the ring itself flips — the whole stage rotating to dump Fool and
 Bataleur alike into the under-stage: ropes, counterweights, trapdoor mechanisms, every
 piece of the illusion exposed in unglamorous timber and rust. The duplicates fight on
-here as stagehand-cards, cruder now, their strings visible.
+here as stagehand Blanks, cruder now, their strings visible.
 
 **THE BATALEUR**
 > As above, so below! Every good trick's got machinery holding it up — mine's just

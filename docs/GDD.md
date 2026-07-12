@@ -161,7 +161,8 @@ Summaries only — each links to its SSOT.
 
 1. **Combat** — staff-based third-person action: light/heavy/charged strings, dodge,
    block-step, Fool's Chance perfect-dodge, Pip commands, Fortune-fueled Trump powers.
-   Enemy backbone is the Blanks (faceless card-soldiers in four suits and four ranks),
+   Enemy backbone is the Blanks (blank-faced humanoid soldiers bearing the cards of
+   four suits and four ranks),
    letting one rig family carry the whole world. → [`design/combat.md`](design/combat.md)
 2. **The Pocket Spread** — Past/Present/Future slots × upright/reversed orientation.
    Swappable outside combat; respec freely at Waystations. Reversed variants are stronger

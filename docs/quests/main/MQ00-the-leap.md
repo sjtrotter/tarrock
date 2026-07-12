@@ -158,9 +158,9 @@ built by hand — a modest wayside shrine sits half-swallowed in ivy: the Cliff'
 Waystation.
 
 Before the Fool can reach it, three figures rise from the long grass on either side of
-the path: faceless card-soldiers, blank ovals where faces should sit, each stamped with
-a printed **2** and a suit mark — one Cups, one Swords, one Wands. They advance without
-a word, because they have no mouths to say one with.
+the path: soldiers, human-shaped, blank ovals where faces should sit, each bearing a
+faded tabard printed with a **2** and a suit mark — one Cups, one Swords, one Wands.
+They advance without a word, because they have no mouths to say one with.
 
 **[Tutorial prompt: light string — three quick strikes of the Bindle.]**
 
@@ -174,10 +174,10 @@ a free opening.]**
 > quite some time yet.
 
 The three Blanks fall in turn — not dramatically, just definitively, staff-strikes
-landing clean. Each one, on defeat, does not simply drop: it comes apart into a
-handful of drifting playing cards, tumbling upward on a wind that isn't there, and the
-cards knit themselves back together somewhere past the ridge line, already walking
-off in a new direction entirely.
+landing clean. Each one, on defeat, slumps like a puppet set down kindly — and the
+card on its tabard peels free, tumbling upward on a wind that isn't there. Past the
+ridge line, each drifting card settles onto a new blank-faced figure rising from the
+grass, already walking off in a new direction entirely.
 
 **[Tutorial prompt: none — this reassembly plays automatically, no player input.]**
 

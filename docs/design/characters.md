@@ -234,7 +234,7 @@ the table above is the cultural baseline every suit NPC, in any region, is writt
 
 The Minor nobility — Pages, Knights, Queens, and Kings — are social ranks within each
 suit-culture, and, separately, the elite tier of the standard enemy roster (the
-**Blanks**, faceless card-soldiers sorted by suit and rank; full stats and behavior owned
+**Blanks**, blank-faced humanoid soldiers bearing cards of suit and rank; full stats and behavior owned
 by `combat.md`).
 
 | Rank | Social role | Typical age/temperament |
@@ -247,7 +247,8 @@ by `combat.md`).
 Every named Court NPC should read as a person first and a rank second — a Page of Wands
 is a specific overexcited teenager before they are "a Page." The enemy Blanks that share
 these rank names are explicitly *not* these people — they are what a suit's faceless
-soldiery looks like when the Stall has worn even the Minors' order down to card-stock;
+soldiery looks like when the Stall has worn away everything but the office — a blank
+face and a borne card where a person used to be;
 see `combat.md` for how the two never overlap on screen.
 
 ## Recurring named NPCs

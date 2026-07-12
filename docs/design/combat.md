@@ -100,8 +100,11 @@ Spread feels irrelevant in combat.
 
 ## Enemies: the Blanks
 
-The standard enemy is the **Blank** — a faceless card-soldier, one of the casualties of
-the Stall. One base rig family carries every suit and rank, keeping the whole game's
+The standard enemy is the **Blank** — a humanoid soldier-figure with a blank oval face,
+one of the casualties of the Stall. Blanks are not literal walking cards: each *bears*
+a card whose face went blank — worn as a tabard or heraldic plate carrying its suit and
+rank — and the card, not the body, is what the Stall keeps re-arming. The body is a
+vessel the card raises; the metaphor stays a metaphor. One base rig family carries every suit and rank, keeping the whole game's
 enemy roster simple and legible by design, not by budget necessity (see
 [`GDD.md`](../GDD.md) §Iteration clause).
 
@@ -128,12 +131,14 @@ Regional skins dress Blanks to match the region they're found in (Bastion Blanks
 guardsmen, Wheelhouse Blanks read as croupiers, and so on) — cosmetic only; suit and rank
 still govern behavior. See [`world.md`](world.md) §Regions for region flavor.
 
-**Defeated Blanks scatter into drifting playing cards and reassemble elsewhere later** —
+**A defeated Blank slumps and fades while the card it bore flutters free — drifting off
+to raise a new bearer elsewhere later** —
 consistent with the rule that nothing truly ends before `WS_DEATH_UNBOUND`. This is
-presented as a visible, storybook-cute effect (the cards flutter off, not a death
-animation), not hidden. After `WS_DEATH_UNBOUND` fires, Death's Trump grants the means to
-end a Blank permanently; the mechanical detail of that Trump is owned by
-[`arcana.md`](arcana.md).
+presented as a visible, storybook-melancholy effect (a body relieved of duty and a card
+still on the clock — never gore, never a "death" animation), not hidden. After
+`WS_DEATH_UNBOUND` fires, Death's Trump grants the means to end the *card itself*, which
+is what ending a Blank permanently means; the mechanical detail of that Trump is owned
+by [`arcana.md`](arcana.md).
 
 ## Other enemy families
 

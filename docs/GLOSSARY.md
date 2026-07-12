@@ -25,7 +25,7 @@ code identifiers use these exact spellings. Add new terms here **before** using 
 | **Pip** | The Fool's white dog. Named for the pip cards. Appears in every Fool's journey, somehow. |
 | **The Minors** | The common folk of the Spread, organized in four suit-cultures: **Cups** (coasts — feeling, hospitality), **Swords** (peaks — intellect, soldiery), **Wands** (woods — craft, passion), **Coins** (plains — trade, earth). |
 | **Courts** | The Minor nobility: **Pages** (messengers, children), **Knights** (wanderers, fighters), **Queens** and **Kings** (local rulers). Also the elite enemy tier. |
-| **Blanks** | The standard enemies: cards that lost their faces in the Stall. Faceless card-soldiers, sorted by suit and rank. |
+| **Blanks** | The standard enemies: **humanoid** soldier-figures with blank oval faces, each *bearing* a card that lost its face in the Stall (worn as tabard/heraldry showing suit and rank). The card is the being's anchor — fell the body and its card flutters off to raise a new bearer elsewhere. They represent cards; they are never literal walking cards. |
 
 ## Player systems
 

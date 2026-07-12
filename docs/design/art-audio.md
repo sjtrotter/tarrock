@@ -164,9 +164,11 @@ production speed): **TBD**, a production decision rather than a design one.
 
 ## SFX
 
-- **Blanks sound like paper and card** — shuffles, flicks, and tears stand in for
-  footsteps, hits, and deaths across the entire enemy roster, reinforcing that they are
-  card-soldiers rather than flesh.
+- **Blanks carry a card accent, not a paper body** — they are humanoid card-*bearers*
+  (combat.md), so their foley is physical (cloth, armor weight, footfalls) with a
+  signature card layer on top: a riffle-flick on attacks, and the defeat moment is one
+  clean card-turn as the borne card flutters free. The card is heard exactly where the
+  metaphor lives.
 - **Fool's Chance** (the perfect-dodge, per `combat.md`) is a held-breath riffle-shuffle
   sound, timed to the slow-motion window it opens.
 - **The unbinding stinger** is the game's single largest sound event per boss: one
