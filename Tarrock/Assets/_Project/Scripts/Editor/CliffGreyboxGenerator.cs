@@ -141,16 +141,18 @@ public static class CliffGreyboxGenerator
         public readonly Material Wood;
         public readonly Material DeadTree;
         public readonly Material Marker;
+        public readonly Material VoidGround;
         public readonly Material TriggerVolume;
 
         public GreyboxMaterials(Material grass, Material stone, Material wood, Material deadTree,
-            Material marker, Material triggerVolume)
+            Material marker, Material voidGround, Material triggerVolume)
         {
             Grass = grass;
             Stone = stone;
             Wood = wood;
             DeadTree = deadTree;
             Marker = marker;
+            VoidGround = voidGround;
             TriggerVolume = triggerVolume;
         }
     }
@@ -164,29 +166,39 @@ public static class CliffGreyboxGenerator
         // with no renderer — per the brief, an opaque-red material stands in for a
         // translucent one, and trigger volumes simply go without a mesh renderer instead
         // of fighting URP transparency from code.
+        //
+        // Grass/Stone/Marker/VoidGround carry Kenney prototype grid textures so motion reads
+        // (director feedback). The grid recipe is owned by StandInArtInstaller.GridConfigs
+        // (SSOT); the base colours passed here are the plain fallback used only when the
+        // vendored textures are absent (fresh checkout without Assets/ThirdParty).
         return new GreyboxMaterials(
             grass: GetOrCreateMaterial("Grass", new Color(0.33f, 0.45f, 0.24f)),
             stone: GetOrCreateMaterial("Stone", new Color(0.52f, 0.52f, 0.5f)),
             wood: GetOrCreateMaterial("Wood", new Color(0.4f, 0.26f, 0.13f)),
             deadTree: GetOrCreateMaterial("DeadTree", new Color(0.07f, 0.07f, 0.07f)),
             marker: GetOrCreateMaterial("Marker", new Color(1f, 0.85f, 0f)),
+            voidGround: GetOrCreateMaterial("VoidGround", new Color(0.52f, 0.52f, 0.5f)),
             triggerVolume: GetOrCreateMaterial("TriggerVolume", new Color(0.8f, 0.1f, 0.1f)));
     }
 
     private static Material GetOrCreateMaterial(string name, Color baseColor)
     {
         string path = $"{ArtDirectory}/{name}.mat";
-        var existing = AssetDatabase.LoadAssetAtPath<Material>(path);
-        if (existing != null)
+        var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (material == null)
         {
-            return existing;
+            Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+            material = new Material(shader) { name = name };
+            material.SetColor("_BaseColor", baseColor);
+            AssetDatabase.CreateAsset(material, path);
         }
 
-        Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-        var material = new Material(shader) { name = name };
-        material.SetColor("_BaseColor", baseColor);
+        // Apply the shared grid recipe (SSOT): textures Grass/Stone/Marker/VoidGround and
+        // leaves the plain fallback colour on everything else (Wood, DeadTree, TriggerVolume)
+        // or when the vendored texture is missing. Idempotent — safe on both fresh and
+        // existing materials, so a from-scratch regenerate matches the installed assets.
+        StandInArtInstaller.TryApplyGridTexture(material, name);
 
-        AssetDatabase.CreateAsset(material, path);
         return material;
     }
 
@@ -205,12 +217,12 @@ public static class CliffGreyboxGenerator
     private static void CreateVoidCatch(Transform parent, GreyboxMaterials mats)
     {
         // Sells the drop without a wall: nothing exists between the west rim and this
-        // slab, far below and well beyond it. Given a Stone renderer (per the brief) so a
-        // fall reads clearly instead of vanishing into nothing.
+        // slab, far below and well beyond it. Given a light grid renderer (VoidGround) so a
+        // fall reads clearly as motion instead of vanishing into nothing.
         CreatePrimitive(PrimitiveType.Cube, "Void_Catch", parent,
             new Vector3(0f, VoidCatchY, 0f),
             new Vector3(PlateauHalfSize * 6f, GroundHeight, PlateauHalfSize * 6f),
-            mats.Stone);
+            mats.VoidGround);
     }
 
     private static void CreateCliffEdgeMarker(Transform parent)

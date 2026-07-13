@@ -25,6 +25,10 @@ public static class PlayerRigInstaller
     private const string ArtDirectory = "Assets/_Project/Art/Greybox";
     private const string PlayerMaterialPath = ArtDirectory + "/Player.mat";
 
+    // Vendored KayKit stand-in (StandInArtInstaller prepares these); absence falls back to the capsule.
+    private const string CharacterModelPath = StandInArtInstaller.CharacterModelPath;
+    private const string CharacterControllerPath = StandInArtInstaller.CharacterControllerPath;
+
     private const string PlayerRootName = "PlayerRig";
     private const string CameraRootName = "CameraRig";
     private const string MainCameraName = "Main Camera";
@@ -210,7 +214,7 @@ public static class PlayerRigInstaller
         controller.center = new Vector3(0f, ControllerHeight * 0.5f, 0f);
         controller.stepOffset = 0.3f;
 
-        BuildCapsuleVisual(playerRig.transform);
+        Animator characterAnimator = BuildCharacterVisual(playerRig.transform);
 
         var inputReader = playerRig.AddComponent<PlayerInputReader>();
         PlayerDodge dodge = playerRig.AddComponent<PlayerDodge>();
@@ -221,7 +225,93 @@ public static class PlayerRigInstaller
         SetObjectReference(motor, "_input", inputReader);
         SetObjectReference(motor, "_dodge", dodge);
 
+        // Animation driver only when a real character (Animator) is present — the capsule
+        // fallback has none, so we simply skip it and the rig stays valid.
+        if (characterAnimator != null)
+        {
+            var animationDriver = playerRig.AddComponent<PlayerAnimationDriver>();
+            SetObjectReference(animationDriver, "_animator", characterAnimator);
+            SetObjectReference(animationDriver, "_motor", motor);
+            SetObjectReference(animationDriver, "_dodge", dodge);
+        }
+
         return playerRig;
+    }
+
+    /// <summary>
+    /// Builds the "Visual" child. Prefers the vendored KayKit RogueHooded model (returning its
+    /// <see cref="Animator"/> for the animation driver to consume); falls back to the primitive
+    /// capsule (returning null) whenever Assets/ThirdParty is absent, so the installer never
+    /// breaks on a checkout without the art.
+    /// </summary>
+    private static Animator BuildCharacterVisual(Transform parent)
+    {
+        var model = AssetDatabase.LoadAssetAtPath<GameObject>(CharacterModelPath);
+        if (model == null)
+        {
+            Debug.LogWarning(
+                $"[Tarrock] Vendored character model absent at {CharacterModelPath}; " +
+                "using the capsule stand-in. Run \"Tarrock/Setup/Install Stand-In Art\" first.");
+            BuildCapsuleVisual(parent);
+            return null;
+        }
+
+        var visual = (GameObject)PrefabUtility.InstantiatePrefab(model);
+        visual.name = "Visual";
+        visual.transform.SetParent(parent, false);
+        visual.transform.localPosition = Vector3.zero; // model origin at feet → controller bottom
+        visual.transform.localRotation = Quaternion.identity; // faces +Z
+
+        ScaleVisualToHeight(visual, ControllerHeight);
+
+        Animator animator = visual.GetComponent<Animator>();
+        if (animator == null)
+        {
+            animator = visual.AddComponent<Animator>();
+        }
+
+        var controller = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(CharacterControllerPath);
+        if (controller != null)
+        {
+            animator.runtimeAnimatorController = controller;
+        }
+        else
+        {
+            Debug.LogWarning(
+                $"[Tarrock] Character AnimatorController absent at {CharacterControllerPath}; " +
+                "the character will render but not animate. Run \"Install Stand-In Art\".");
+        }
+
+        return animator;
+    }
+
+    // Normalise the model to the controller's height (KayKit rigs are ~1.8 units already, so
+    // this is usually a no-op) using its combined renderer bounds, keeping feet at the origin.
+    private static void ScaleVisualToHeight(GameObject visual, float targetHeight)
+    {
+        Renderer[] renderers = visual.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0)
+        {
+            return;
+        }
+
+        Bounds bounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+        {
+            bounds.Encapsulate(renderers[i].bounds);
+        }
+
+        float height = bounds.size.y;
+        if (height <= 0.001f)
+        {
+            return;
+        }
+
+        float scale = targetHeight / height;
+        if (Mathf.Abs(scale - 1f) > 0.05f)
+        {
+            visual.transform.localScale *= scale;
+        }
     }
 
     private static void BuildCapsuleVisual(Transform parent)

@@ -39,6 +39,14 @@ public sealed class PlayerMotor : MonoBehaviour
     private CharacterController _controller;
     private float _verticalVelocity;
     private float _turnVelocity;
+    private float _currentPlanarSpeed;
+
+    /// <summary>
+    /// The Fool's current planar (XZ) speed in metres/second — the actual movement applied
+    /// this frame, whether from locomotion or a roll. Read by <see cref="PlayerAnimationDriver"/>
+    /// to drive the locomotion blend; zero while standing still.
+    /// </summary>
+    public float CurrentPlanarSpeed => _currentPlanarSpeed;
 
     private void Awake()
     {
@@ -65,6 +73,8 @@ public sealed class PlayerMotor : MonoBehaviour
         Vector3 horizontal = (_dodge != null && _dodge.IsDodging)
             ? _dodge.CurrentVelocity
             : ComputeLocomotion();
+
+        _currentPlanarSpeed = new Vector2(horizontal.x, horizontal.z).magnitude;
 
         ApplyGravity();
 
