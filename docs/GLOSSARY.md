@@ -40,6 +40,8 @@ code identifiers use these exact spellings. Add new terms here **before** using 
 | **Renown** | Per-suit reputation with the Minors. Governs prices, greetings, and some quest branches. |
 | **The Almanack** | The Fool's journal: quest log, Bestiary, collected Trumps, and found lore, styled as a hand-annotated manuscript. See `design/art-audio.md`. |
 | **The Fool's Reading** | The recorded order in which the player unbinds the 21 Arcana — the tarot spread the player deals across the whole playthrough. The world comments on it, and it styles the True Shuffle ending. See `design/narrative.md` §The Fool's Reading. |
+| **Callings** | The repeatable, mundane roles the world offers the Fool (librarian, farmhand, ferryman's mate…) — the temptation to stay, made playable. One per region. See `design/callings.md`. |
+| **The Scattered Deck** | The 56 Minor Arcana cards scattered across the Spread in the Stall — the game's hidden-collectible hunt (Korok-scale). Found cards return to the Cartomancer. See `quests/side/`. |
 
 ## The world (see `design/world.md` for detail)
 

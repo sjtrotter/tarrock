@@ -11,8 +11,11 @@ original `Tarrock.docx` source). Canon rules for what quests may and may not inv
 |---|---|---|
 | `MQ<nn>` | Main quest. The number **is the card number**: MQ00 = the prologue (the Fool, card 0), MQ01–MQ21 = unbinding that Arcana. There are exactly 22 main quests, forever. | `MQ13` = Death's quest |
 | `SQ-<REGION>-<nn>` | Side quest, homed to a region (uppercase, no "the"). | `SQ-PRESTIGE-01` |
+| `SQ-SPREAD-<nn>` | World-spanning side quest — touches all or most regions rather than one home region (collection hunts, trading chains, and similar Spread-wide content). | `SQ-SPREAD-01` = The Scattered Deck |
+| `SQ-<SUIT>-<nn>` | Suit-culture side quest — defines a Minor suit-culture's values, homed to a region that culture is present in but not necessarily that region's own Arcana. `SUIT` ∈ `CUPS` / `SWORDS` / `WANDS` / `COINS`. | `SQ-CUPS-01` = The Guest-Right |
 
-Files: `main/MQ<nn>-<kebab-title>.md`, `side/SQ-<REGION>-<nn>-<kebab-title>.md`.
+Files: `main/MQ<nn>-<kebab-title>.md`, `side/SQ-<REGION>-<nn>-<kebab-title>.md`,
+`side/SQ-SPREAD-<nn>-<kebab-title>.md`, `side/SQ-<SUIT>-<nn>-<kebab-title>.md`.
 
 ## Frontmatter schema
 

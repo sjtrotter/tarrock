@@ -44,6 +44,19 @@ south-east: dawn-side, as it should be.
 - **The Undervault** is underground, entered from the western regions; the only region
   with no sky.
 
+## Hydrology rule (waterways must be physically possible)
+
+Every waterway in the Spread obeys real gravity-fed logic, because players who look
+closely deserve a world that survives the looking: rivers **begin** at credible sources
+(the Maw's and Dim's high ground, the Spire's storm-fed heights), **flow downhill** along
+the whole visible course, and **end** somewhere real (the southern sea via the
+Confluence delta; lakes like the Mere with an inlet and either an outlet or a basin that
+plausibly holds). No river may run level around a ring, fork uphill, or appear from
+nowhere behind a hill. The Stall may *pause* water (the Confluence's eternal pour, the
+Mere's held-breath stillness) — stasis is fiction — but the frozen shape must still be a
+shape water could have had. Greybox passes check this rule the way they check
+walkability; MQ14's delta drain must read as *correct plumbing finally finishing*.
+
 ## Intended difficulty bands (soft, never enforced)
 
 - **Band 1 (entry):** Prestige, Bower, Divide, Chantry, Maw

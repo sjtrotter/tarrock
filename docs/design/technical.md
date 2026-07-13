@@ -250,6 +250,15 @@ graph but are not part of the frontmatter mapping above — the frontmatter is m
 for cross-referencing and validation (e.g., a tool that checks every `requires` ID
 exists as a `WorldStateDefinition` asset), not the full state machine.
 
+## Headless validation workflow
+
+All agent/CI validation uses **one Unity launch, not three**:
+`Unity -batchmode -nographics -projectPath Tarrock -executeMethod Tarrock.Editor.Ci.FullValidate -logFile <log>`
+(no `-quit` — the session exits itself: 0 = setup + all EditMode tests green, 1 = test
+failures, 2 = setup threw). `Ci.TestsOnly` skips the setup chain. Editor performance
+settings (parallel out-of-process import, async shader compilation) are applied by
+`Tarrock/Setup/Apply Editor Performance Settings` and live in ProjectSettings.
+
 ## Localization
 
 Unity Localization package, string tables, from day one. **No player-facing string
