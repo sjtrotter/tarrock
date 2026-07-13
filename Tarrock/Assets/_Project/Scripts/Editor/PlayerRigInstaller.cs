@@ -73,6 +73,13 @@ public static class PlayerRigInstaller
         GameObject playerRig = BuildPlayerRig(position, rotation, inputAsset);
         GameObject mainCamera = BuildCameraRig(playerRig.transform, lookReference);
 
+        // Match the live camera to the vcam's start pose so play mode opens composed.
+        Transform vcamTransform = mainCamera.transform.parent.Find(FollowCameraName);
+        if (vcamTransform != null)
+        {
+            mainCamera.transform.SetPositionAndRotation(vcamTransform.position, vcamTransform.rotation);
+        }
+
         WireCameraTransform(playerRig, mainCamera.transform);
 
         EditorSceneManager.MarkSceneDirty(scene);
@@ -285,6 +292,19 @@ public static class PlayerRigInstaller
         var orbital = vcamGo.AddComponent<CinemachineOrbitalFollow>();
         orbital.TargetOffset = new Vector3(0f, 1.4f, 0f); // shoulder height on the greybox capsule
         orbital.Radius = 6f;
+
+        // Position control alone never turns the camera toward the target (a CM3 camera
+        // with no rotation-control behaviour keeps whatever rotation it starts with — the
+        // player walks straight out of a frozen frame). The RotationComposer is what makes
+        // this an actual third-person camera.
+        vcamGo.AddComponent<CinemachineRotationComposer>();
+
+        // Start both the vcam and the live camera at a sensible pose behind the player so
+        // the first frame is already composed (no snap/glide-in from the rig's origin).
+        Vector3 lookPoint = followTarget.position + new Vector3(0f, 1.4f, 0f);
+        Vector3 startPos = lookPoint - (followTarget.forward * 6f) + (Vector3.up * 1.1f);
+        Quaternion startRot = Quaternion.LookRotation(lookPoint - startPos, Vector3.up);
+        vcamGo.transform.SetPositionAndRotation(startPos, startRot);
 
         var axisController = vcamGo.AddComponent<CinemachineInputAxisController>();
         axisController.ScanRecursively = true;
