@@ -1,0 +1,149 @@
+namespace Tarrock.Player
+{
+
+    using UnityEngine;
+
+    /// <summary>
+    /// Drives the Fool's dodge roll (combat.md §Defense) on top of the pure
+    /// <see cref="DodgeState"/> timing machine. On a Dodge input it captures a burst direction —
+    /// camera-relative when the player is steering, or straight backward from the character's
+    /// facing on neutral stick — and produces a horizontal velocity for the roll's duration.
+    ///
+    /// This component owns the dodge <em>decision</em> and <em>motion vector</em>; the single
+    /// <see cref="CharacterController"/> mover lives in <see cref="PlayerMotor"/>, which reads
+    /// <see cref="IsDodging"/> and <see cref="CurrentVelocity"/> so the roll and normal
+    /// locomotion never fight over the controller. <see cref="IsInvulnerable"/> is exposed for
+    /// the future combat layer (Fool's Chance, damage) — combat.md's i-frame window, surfaced
+    /// but not yet consumed this phase.
+    /// </summary>
+    public sealed class PlayerDodge : MonoBehaviour
+    {
+        private const float NeutralInputThresholdSqr = 0.04f; // ~0.2 magnitude deadzone
+
+        [SerializeField] private PlayerInputReader _input;
+        [SerializeField] private Transform _cameraTransform;
+
+        [Header("Roll shape")]
+        [SerializeField] private float _dodgeSpeed = 9f;
+        [SerializeField] private float _dodgeDuration = 0.45f;
+        [SerializeField] private float _cooldownDuration = 0.35f;
+
+        [Header("Invincibility window (seconds into the roll)")]
+        [SerializeField] private float _invulnerableStartOffset = 0.05f;
+        [SerializeField] private float _invulnerableDuration = 0.3f;
+
+        private DodgeState _state;
+        private Vector3 _dodgeDirection = Vector3.forward;
+        private bool _dodgeQueued;
+
+        /// <summary>True while a roll is active and driving movement.</summary>
+        public bool IsDodging => _state != null && _state.IsDodging;
+
+        /// <summary>
+        /// True while the i-frame window is open. Read by the combat layer once it exists;
+        /// harmless to poll before then.
+        /// </summary>
+        public bool IsInvulnerable => _state != null && _state.IsInvulnerable;
+
+        /// <summary>
+        /// Horizontal world-space velocity the roll wants applied this frame, or zero when not
+        /// dodging. Consumed by <see cref="PlayerMotor"/>.
+        /// </summary>
+        public Vector3 CurrentVelocity => IsDodging ? _dodgeDirection * _dodgeSpeed : Vector3.zero;
+
+        private void Awake()
+        {
+            _state = new DodgeState(_dodgeDuration, _cooldownDuration, _invulnerableStartOffset, _invulnerableDuration);
+
+            if (_input == null)
+            {
+                _input = GetComponent<PlayerInputReader>();
+            }
+
+            if (_cameraTransform == null && Camera.main != null)
+            {
+                _cameraTransform = Camera.main.transform;
+            }
+        }
+
+        private void OnEnable()
+        {
+            if (_input != null)
+            {
+                _input.DodgePressed += OnDodgePressed;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (_input != null)
+            {
+                _input.DodgePressed -= OnDodgePressed;
+            }
+        }
+
+        private void Update()
+        {
+            if (_dodgeQueued)
+            {
+                _dodgeQueued = false;
+                BeginDodgeIfReady();
+            }
+
+            _state.Tick(Time.deltaTime);
+        }
+
+        private void OnDodgePressed()
+        {
+            _dodgeQueued = true;
+        }
+
+        private void BeginDodgeIfReady()
+        {
+            if (!_state.CanDodge)
+            {
+                return;
+            }
+
+            Vector3 direction = ResolveDodgeDirection();
+            if (_state.TryStartDodge())
+            {
+                _dodgeDirection = direction;
+            }
+        }
+
+        private Vector3 ResolveDodgeDirection()
+        {
+            Vector2 move = _input != null ? _input.MoveInput : Vector2.zero;
+
+            if (move.sqrMagnitude > NeutralInputThresholdSqr)
+            {
+                Vector3 steered = CameraRelative(move);
+                if (steered.sqrMagnitude > 0.0001f)
+                {
+                    return steered.normalized;
+                }
+            }
+
+            // Neutral stick: a backstep away from where the Fool faces.
+            return -transform.forward;
+        }
+
+        private Vector3 CameraRelative(Vector2 move)
+        {
+            if (_cameraTransform == null)
+            {
+                return new Vector3(move.x, 0f, move.y);
+            }
+
+            Vector3 forward = _cameraTransform.forward;
+            Vector3 right = _cameraTransform.right;
+            forward.y = 0f;
+            right.y = 0f;
+            forward.Normalize();
+            right.Normalize();
+
+            return (forward * move.y) + (right * move.x);
+        }
+    }
+}

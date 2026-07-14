@@ -1,33 +1,33 @@
 # --- Unity generated (machine-local; Unity rebuilds these from Assets/Packages) ---
-Tarrock/[Ll]ibrary/
-Tarrock/[Tt]emp/
-Tarrock/[Oo]bj/
-Tarrock/[Bb]uild/
-Tarrock/[Bb]uilds/
-Tarrock/[Ll]ogs/
-Tarrock/[Uu]serSettings/
-Tarrock/[Mm]emoryCaptures/
-Tarrock/[Rr]ecordings/
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]serSettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
 
 # IDE solution/project files (generated per-machine)
-Tarrock/*.csproj
-Tarrock/*.sln
-Tarrock/*.slnx
-Tarrock/*.suo
-Tarrock/*.user
-Tarrock/*.userprefs
-Tarrock/.vs/
-Tarrock/.idea/
-Tarrock/.vscode/
+*.csproj
+*.sln
+*.slnx
+*.suo
+*.user
+*.userprefs
+.vs/
+.idea/
+.vscode/
 
 # Unity crash/report artifacts
-Tarrock/*.pidb.meta
-Tarrock/sysinfo.txt
-Tarrock/crashlytics-build.properties
+*.pidb.meta
+sysinfo.txt
+crashlytics-build.properties
 
 # Addressables/build caches inside Assets that should not be versioned
-Tarrock/Assets/AddressableAssetsData/*/link.xml
-Tarrock/Assets/StreamingAssets/aa/
+Assets/AddressableAssetsData/*/link.xml
+Assets/StreamingAssets/aa/
 
 # OS noise
 .DS_Store

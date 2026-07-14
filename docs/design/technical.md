@@ -86,9 +86,9 @@ asmdef (EditMode tests referencing only the runtime asmdef, not `.Editor`).
 
 ### Assets/ folder tree
 
-The Unity project root is the repository's `Tarrock/` subfolder (already created: Unity
-6, URP template with PC + Mobile renderer assets, Input System package installed). The
-tree below applies under `Tarrock/Assets/`.
+The Unity project root is the **repository root** (Unity 6, URP template with PC +
+Mobile renderer assets, Input System package installed) — open the repo folder itself
+in Unity Hub. The tree below applies under `Assets/`.
 
 ```
 Assets/
@@ -253,7 +253,7 @@ exists as a `WorldStateDefinition` asset), not the full state machine.
 ## Headless validation workflow
 
 All agent/CI validation uses **one Unity launch, not three**:
-`Unity -batchmode -nographics -projectPath Tarrock -executeMethod Tarrock.Editor.Ci.FullValidate -logFile <log>`
+`Unity -batchmode -nographics -projectPath <repo root> -executeMethod Tarrock.Editor.Ci.FullValidate -logFile <log>`
 (no `-quit` — the session exits itself: 0 = setup + all EditMode tests green, 1 = test
 failures, 2 = setup threw). `Ci.TestsOnly` skips the setup chain. Editor performance
 settings (parallel out-of-process import, async shader compilation) are applied by
@@ -287,11 +287,15 @@ wired up during the docs phase.
 
 ## Coding conventions
 
-- **File-scoped namespaces** (`namespace Tarrock.Combat;`), not block-scoped.
-  Unity 6000.5 defaults its compiler to C# 9, which rejects these; the project
-  therefore carries `Tarrock/Assets/csc.rsp` containing `-langversion:10.0`
-  (verified compiling on 6000.5.3f1). That file is load-bearing — deleting it
-  breaks the whole codebase's compile.
+- **Block-scoped namespaces** (`namespace Tarrock.Combat { … }`), **never file-scoped**.
+  Hard-learned rule: Unity 6000.5 can be forced to *compile* C# 10 file-scoped
+  namespaces via a `csc.rsp` langversion override, but the editor's **script-class
+  binder cannot parse them** — MonoBehaviours compile and even `AddComponent` in
+  memory, then get **silently dropped from scenes at save** ("referenced script
+  (Unknown) is missing"), and the Add Component menu reports "script class cannot
+  be found." The project stays on Unity's stock C# 9, no `csc.rsp`. A guard test
+  (`SceneScriptReferenceTests`) pins required components' presence in the Cliff
+  scene so a regression of this class fails CI.
 - **One public type per file**, file named for the type.
 - **Naming:** `PascalCase` for public members; `_camelCase` for private fields.
 - **`[SerializeField] private`** over public fields — Unity Inspector exposure without

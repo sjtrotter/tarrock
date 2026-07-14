@@ -9,14 +9,14 @@ no attribution; we track and credit it anyway.
 
 | What | Source | License | Location |
 |---|---|---|---|
-| Unity 6000.5.3f1 + official packages (URP, Input System, Cinemachine, Localization, Test Framework, etc.) | Unity Technologies | [Unity Terms of Service / package licenses](https://unity.com/legal) | `Tarrock/Packages/manifest.json`, `Tarrock/PackageTarballs/` |
+| Unity 6000.5.3f1 + official packages (URP, Input System, Cinemachine, Localization, Test Framework, etc.) | Unity Technologies | [Unity Terms of Service / package licenses](https://unity.com/legal) | `Packages/manifest.json`, `PackageTarballs/` |
 
 ## Art & audio (stand-ins and finals)
 
 | What | Source | License | Location | Notes |
 |---|---|---|---|---|
-| KayKit Adventurers 1.0 (RogueHooded character + 75 embedded animations, atlas texture) | Kay Lousberg — [kaylousberg.com](https://www.kaylousberg.com) / [itch.io](https://kaylousberg.itch.io/kaykit-adventurers) | CC0 1.0 | `Tarrock/Assets/ThirdParty/KayKit/` | Stand-in for the Fool. CC0 requires no attribution; credited anyway. |
-| Kenney Prototype Textures 1.0 (green/stone/orange/light grid textures) | Kenney — [kenney.nl](https://www.kenney.nl) (obtained via OpenGameArt mirror) | CC0 1.0 | `Tarrock/Assets/ThirdParty/Kenney/` | Greybox grid ground/props so motion reads. CC0 requires no attribution; credited anyway. |
+| KayKit Adventurers 1.0 (RogueHooded character + 75 embedded animations, atlas texture) | Kay Lousberg — [kaylousberg.com](https://www.kaylousberg.com) / [itch.io](https://kaylousberg.itch.io/kaykit-adventurers) | CC0 1.0 | `Assets/ThirdParty/KayKit/` | Stand-in for the Fool. CC0 requires no attribution; credited anyway. |
+| Kenney Prototype Textures 1.0 (green/stone/orange/light grid textures) | Kenney — [kenney.nl](https://www.kenney.nl) (obtained via OpenGameArt mirror) | CC0 1.0 | `Assets/ThirdParty/Kenney/` | Greybox grid ground/props so motion reads. CC0 requires no attribution; credited anyway. |
 
 ## Documents
 

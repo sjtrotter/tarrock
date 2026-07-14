@@ -10,9 +10,9 @@ Tone: Fable/MediEvil storybook — warm, dry, gently mournful.
 only where the design supports it. Start every task by reading
 [`docs/README.md`](docs/README.md) (the doc map and SSOT rules), then the specific
 docs your task touches. [`docs/GLOSSARY.md`](docs/GLOSSARY.md) owns every canonical
-term and spelling. The Unity project lives at `Tarrock/` (URP, Input System; PC and
-Mobile renderer assets) — `Tarrock/Assets/` is where `docs/design/technical.md`'s
-folder layout applies.
+term and spelling. The Unity project lives at the **repository root** (URP, Input
+System; PC and Mobile renderer assets) — `Assets/` is where `docs/design/technical.md`'s
+folder layout applies. Open the repo root in Unity Hub.
 
 ## Staffing model (how work gets done here)
 
@@ -93,8 +93,10 @@ memory. Summary of the hard rules:
   flag can never be un-fired.
 - No player-facing string literals in code (Unity Localization tables from day one).
 - No magic strings; IDs come from definitions. `[SerializeField] private` over public
-  fields; file-scoped namespaces; one public type per file; PascalCase public /
-  `_camelCase` private; asmdef per feature.
+  fields; **block-scoped namespaces only** (file-scoped namespaces break Unity's
+  script-class binder — components silently vanish from scenes; see technical.md);
+  one public type per file; PascalCase public / `_camelCase` private; asmdef per
+  feature.
 - Mandatory EditMode test surfaces: world-state transitions, quest state machines,
   save migrations. A PR touching any of these without tests is incomplete.
 - A change that makes a doc and the code disagree must fix one of them in the same PR
