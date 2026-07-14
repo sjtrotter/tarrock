@@ -26,7 +26,10 @@ namespace Tarrock.Player
         [Header("Roll shape")]
         [SerializeField] private float _dodgeSpeed = 9f;
         [SerializeField] private float _dodgeDuration = 0.45f;
-        [SerializeField] private float _cooldownDuration = 0.35f;
+        [SerializeField] private float _cooldownDuration = 0.15f;
+
+        [Tooltip("How long a dodge press stays buffered waiting for the dodge to come off cooldown.")]
+        [SerializeField] private float _inputBufferSeconds = 0.25f;
 
         [Header("Invincibility window (seconds into the roll)")]
         [SerializeField] private float _invulnerableStartOffset = 0.05f;
@@ -34,7 +37,7 @@ namespace Tarrock.Player
 
         private DodgeState _state;
         private Vector3 _dodgeDirection = Vector3.forward;
-        private bool _dodgeQueued;
+        private float _dodgeBufferedUntil = float.NegativeInfinity;
 
         /// <summary>True while a roll is active and driving movement.</summary>
         public bool IsDodging => _state != null && _state.IsDodging;
@@ -84,9 +87,13 @@ namespace Tarrock.Player
 
         private void Update()
         {
-            if (_dodgeQueued)
+            // Input buffering: a press stays valid for a short window instead of being
+            // consumed (and lost) the frame it arrives — pressing during a dodge or its
+            // cooldown fires the moment the dodge is ready again. Without this, rhythmic
+            // presses land in the lockout and feel like dead input.
+            if (Time.time <= _dodgeBufferedUntil && _state.CanDodge)
             {
-                _dodgeQueued = false;
+                _dodgeBufferedUntil = float.NegativeInfinity;
                 BeginDodgeIfReady();
             }
 
@@ -95,7 +102,7 @@ namespace Tarrock.Player
 
         private void OnDodgePressed()
         {
-            _dodgeQueued = true;
+            _dodgeBufferedUntil = Time.time + _inputBufferSeconds;
         }
 
         private void BeginDodgeIfReady()

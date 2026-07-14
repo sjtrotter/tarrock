@@ -37,3 +37,6 @@ Thumbs.db
 # Local scratch
 *.tmp
 *.zip
+
+# Screenshot tool output (test artifacts)
+Assets/Screenshots/

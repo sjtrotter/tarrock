@@ -56,6 +56,12 @@ namespace Tarrock.Editor
         private const float WalkThreshold = 4.5f;
         private const float RunThreshold = 7f;
 
+        // Clip playback multipliers: KayKit locomotion cycles are authored for a leisurely
+        // gait, so at the motor's speeds the feet lag the ground ("feels slow").
+        // TODO(tuning): dial in live against foot-slide once combat pacing lands.
+        private const float WalkClipTimeScale = 1.2f;
+        private const float RunClipTimeScale = 1.15f;
+
         // URP/Lit shader property ids.
         private static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
         private static readonly int MainTexId = Shader.PropertyToID("_MainTex");
@@ -242,7 +248,9 @@ namespace Tarrock.Editor
             }
 
             AnimationClip idle = FindClip(clips, "Idle");
-            AnimationClip walk = FindClip(clips, "Walking_A") ?? FindClip(clips, "Walking_B") ?? FindClip(clips, "Walk");
+            // Walking_B over Walking_A: A reads as a stiff march at gameplay speeds
+            // (director feedback); B is the looser, natural stride of the pack's three.
+            AnimationClip walk = FindClip(clips, "Walking_C") ?? FindClip(clips, "Walking_B") ?? FindClip(clips, "Walking_A");
             AnimationClip run = FindClip(clips, "Running_A") ?? FindClip(clips, "Running_B") ?? FindClip(clips, "Run");
             AnimationClip roll = FindClip(clips, "Dodge_Forward") ?? FindClip(clips, "Roll") ?? FindClip(clips, "Dodge");
 
@@ -283,6 +291,8 @@ namespace Tarrock.Editor
                 tree.AddChild(run, RunThreshold);
             }
 
+            ApplyClipTimeScales(tree, walk, run);
+
             rootStateMachine.defaultState = locomotion;
 
             if (roll != null)
@@ -300,6 +310,25 @@ namespace Tarrock.Editor
             return true;
         }
 
+        // AddChild has no timeScale parameter; child motions must be rewritten after the fact.
+        private static void ApplyClipTimeScales(BlendTree tree, AnimationClip walk, AnimationClip run)
+        {
+            ChildMotion[] children = tree.children;
+            for (int i = 0; i < children.Length; i++)
+            {
+                if (walk != null && children[i].motion == walk)
+                {
+                    children[i].timeScale = WalkClipTimeScale;
+                }
+                else if (run != null && children[i].motion == run)
+                {
+                    children[i].timeScale = RunClipTimeScale;
+                }
+            }
+
+            tree.children = children;
+        }
+
         private static void WireRollState(AnimatorStateMachine sm, AnimatorState locomotion, AnimationClip roll)
         {
             AnimatorState rollState = sm.AddState("Roll");
@@ -311,7 +340,9 @@ namespace Tarrock.Editor
             const float dodgeMovementSeconds = 0.45f;
             if (roll.length > 0.01f)
             {
-                rollState.speed = roll.length / dodgeMovementSeconds;
+                // Never slow the clip below authored speed: an under-cranked hop reads as
+                // a floaty jump (director feedback). Snappier is always the safer error.
+                rollState.speed = Mathf.Max(1.05f, roll.length / dodgeMovementSeconds);
             }
 
             AnimatorStateTransition toRoll = locomotion.AddTransition(rollState);

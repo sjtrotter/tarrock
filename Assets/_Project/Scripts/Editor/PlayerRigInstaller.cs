@@ -264,6 +264,7 @@ namespace Tarrock.Editor
             visual.transform.localRotation = Quaternion.identity; // faces +Z
 
             ScaleVisualToHeight(visual, ControllerHeight);
+            DisableAttachmentProps(visual);
 
             Animator animator = visual.GetComponent<Animator>();
             if (animator == null)
@@ -284,6 +285,39 @@ namespace Tarrock.Editor
             }
 
             return animator;
+        }
+
+        /// <summary>
+        /// KayKit character FBXs ship weapon/prop meshes parented to the rig's attachment
+        /// slots (handslot.l/handslot.r: crossbows, knives, throwables) — all visible by
+        /// default. The Fool carries the Bindle, not an armory: disable every renderer-bearing
+        /// child under an attachment slot. They stay in the hierarchy for future use (the
+        /// Bindle itself will live in a hand slot eventually).
+        /// </summary>
+        private static void DisableAttachmentProps(GameObject visual)
+        {
+            int disabled = 0;
+            foreach (Transform t in visual.GetComponentsInChildren<Transform>(true))
+            {
+                if (!t.name.StartsWith("handslot", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                foreach (Transform prop in t)
+                {
+                    if (prop.gameObject.activeSelf && prop.GetComponent<Renderer>() != null)
+                    {
+                        prop.gameObject.SetActive(false);
+                        disabled++;
+                    }
+                }
+            }
+
+            if (disabled > 0)
+            {
+                Debug.Log($"[Tarrock] Disabled {disabled} attachment prop(s) on the character visual.");
+            }
         }
 
         // Normalise the model to the controller's height (KayKit rigs are ~1.8 units already, so
@@ -381,8 +415,11 @@ namespace Tarrock.Editor
             vcam.LookAt = followTarget;
 
             var orbital = vcamGo.AddComponent<CinemachineOrbitalFollow>();
-            orbital.TargetOffset = new Vector3(0f, 1.4f, 0f); // shoulder height on the greybox capsule
-            orbital.Radius = 6f;
+            orbital.TargetOffset = new Vector3(0f, 1.7f, 0f); // eye-ish height (director feedback: higher)
+            orbital.Radius = 8f; // (director feedback: more zoomed out)
+            // Continuous orbit: without wrap the pan axis hits ±180° and the camera
+            // "gets stuck" when the player keeps dragging one direction.
+            orbital.HorizontalAxis.Wrap = true;
 
             // Position control alone never turns the camera toward the target (a CM3 camera
             // with no rotation-control behaviour keeps whatever rotation it starts with — the
