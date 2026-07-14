@@ -3,7 +3,52 @@ guid: ea0bb96f6a0ced19c8c142f0f3ee111a
 ModelImporter:
   serializedVersion: 24501
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BirchTree_Bark
+    second: {fileID: 2100000, guid: 6725b741148ee43cb939b096730d76c6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BirchTree_Leaves
+    second: {fileID: 2100000, guid: b73eee4322572aebd94d34edc475df66, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Bush_Leaves
+    second: {fileID: 2100000, guid: a95cf75310c90d4f9ba9416ac23ce18a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Flowers
+    second: {fileID: 2100000, guid: f0bccd901d96480c7bde5ca9a3c77ce5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Grass
+    second: {fileID: 2100000, guid: 8fdf4e635e844b1d08e6da8b2f775b8e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lit
+    second: {fileID: 2100000, guid: 8fdf4e635e844b1d08e6da8b2f775b8e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: NormalTree_Bark
+    second: {fileID: 2100000, guid: e10350908ce4dffb4af05dc875490121, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: NormalTree_Leaves
+    second: {fileID: 2100000, guid: 5bdf783d1ce72e3adbc3d4ca5edf43a6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Rock
+    second: {fileID: 2100000, guid: efb40f63b612ba6c496ac785f89ada73, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
