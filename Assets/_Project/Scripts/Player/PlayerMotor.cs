@@ -25,7 +25,7 @@ namespace Tarrock.Player
         [SerializeField] private Transform _cameraTransform;
 
         [Header("Speeds (m/s)")]
-        [SerializeField] private float _walkSpeed = 4.5f;
+        [SerializeField] private float _walkSpeed = 2.8f; // was 4.5 — outran the walk cycle ("gliding", playtest)
         [SerializeField] private float _sprintSpeed = 7f;
 
         [Header("Turning")]

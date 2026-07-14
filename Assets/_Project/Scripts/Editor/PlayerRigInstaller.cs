@@ -225,6 +225,7 @@ namespace Tarrock.Editor
             var inputReader = playerRig.AddComponent<PlayerInputReader>();
             PlayerDodge dodge = playerRig.AddComponent<PlayerDodge>();
             PlayerMotor motor = playerRig.AddComponent<PlayerMotor>();
+            playerRig.AddComponent<CursorLock>(); // mouse-look needs a locked cursor (screen-edge "wall" fix)
 
             SetObjectReference(inputReader, "_actions", inputAsset);
             SetObjectReference(dodge, "_input", inputReader);
@@ -269,7 +270,13 @@ namespace Tarrock.Editor
             visual.name = "Visual";
             visual.transform.SetParent(parent, false);
             visual.transform.localPosition = Vector3.zero; // model origin at feet → controller bottom
-            visual.transform.localRotation = Quaternion.identity; // faces +Z
+
+            // Each vendored model has its own authored facing; the Quaternius body is
+            // authored facing −Z and needs the 180° yaw fix (playtest: identity here made
+            // the character walk with its back to the direction of travel).
+            visual.transform.localRotation = modelPath == QuaterniusModelPath
+                ? Quaternion.Euler(0f, QuaterniusCharacterInstaller.ModelForwardYawFix, 0f)
+                : Quaternion.identity; // KayKit faces +Z
 
             ScaleVisualToHeight(visual, ControllerHeight);
             DisableAttachmentProps(visual);
@@ -445,13 +452,19 @@ namespace Tarrock.Editor
             var vcam = vcamGo.AddComponent<CinemachineCamera>();
             vcam.Follow = followTarget;
             vcam.LookAt = followTarget;
+            vcam.Lens.FieldOfView = 55f; // default 40 was claustrophobic (playtest)
 
             var orbital = vcamGo.AddComponent<CinemachineOrbitalFollow>();
-            orbital.TargetOffset = new Vector3(0f, 1.7f, 0f); // eye-ish height (director feedback: higher)
-            orbital.Radius = 8f; // (director feedback: more zoomed out)
+            orbital.TargetOffset = new Vector3(0f, 1.4f, 0f); // chest height (playtest: 1.7 read too high)
+            orbital.Radius = 5f; // playtest round 3: closer still
             // Continuous orbit: without wrap the pan axis hits ±180° and the camera
             // "gets stuck" when the player keeps dragging one direction.
             orbital.HorizontalAxis.Wrap = true;
+            // Gentler tilt: default rest angle 17.5° looked down too steeply (playtest);
+            // cap the max look-down angle as well.
+            orbital.VerticalAxis.Value = 10f;
+            orbital.VerticalAxis.Center = 10f;
+            orbital.VerticalAxis.Range = new Vector2(-5f, 35f);
 
             // Position control alone never turns the camera toward the target (a CM3 camera
             // with no rotation-control behaviour keeps whatever rotation it starts with — the

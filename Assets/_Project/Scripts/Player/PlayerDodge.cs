@@ -25,7 +25,7 @@ namespace Tarrock.Player
 
         [Header("Roll shape")]
         [SerializeField] private float _dodgeSpeed = 9f;
-        [SerializeField] private float _dodgeDuration = 0.45f;
+        [SerializeField] private float _dodgeDuration = 0.6f; // was 0.45 — UAL roll clip needs the room (playtest: "way too fast")
         [SerializeField] private float _cooldownDuration = 0.15f;
 
         [Tooltip("How long a dodge press stays buffered waiting for the dodge to come off cooldown.")]

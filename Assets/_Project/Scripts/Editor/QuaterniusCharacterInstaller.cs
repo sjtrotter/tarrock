@@ -54,10 +54,11 @@ namespace Tarrock.Editor
         private const string VisualName = "Visual";
         private const float TargetHeight = 1.8f;
 
-        // The Quaternius base mesh is authored facing world +X; the rig (PlayerMotor) drives forward
-        // as +Z, so the Visual is yawed −90° about Y to align the model's face with +Z. Without this
-        // the character strafes sideways when running. (Verified from surround screenshots.)
-        private const float ModelForwardYawFix = -90f;
+        // The Quaternius base mesh is authored facing −Z (not +X as first guessed — that yaw made
+        // the character face 90° right of travel, playtest-confirmed); the rig (PlayerMotor) drives
+        // forward as +Z, so the Visual is yawed 180° about Y. Verified by front-view screenshot:
+        // face/chest toward the rig's forward axis.
+        internal const float ModelForwardYawFix = 180f;
 
         // Throwaway comparison props to purge from the Cliff scene.
         private static readonly string[] LineupObjectNames = { "Lineup_KayKitRogue", "Lineup_AdultMannequin" };
@@ -67,11 +68,11 @@ namespace Tarrock.Editor
         private const string DodgeParameter = "Dodge";
 
         // Blend thresholds map to PlayerMotor's walk (4.5) / sprint (7) speeds.
-        private const float WalkThreshold = 4.5f;
+        private const float WalkThreshold = 2.8f; // must track PlayerMotor._walkSpeed
         private const float RunThreshold = 7f;
 
         // PlayerDodge's movement window; the roll clip is time-scaled to fit it.
-        private const float DodgeMovementSeconds = 0.45f;
+        private const float DodgeMovementSeconds = 0.6f; // must track PlayerDodge._dodgeDuration
 
         // Locomotion clip families that must loop; roll/dodge stay one-shot.
         private static readonly string[] LoopingFamilies = { "idle", "walk", "run", "jog", "strafe" };
@@ -374,7 +375,8 @@ namespace Tarrock.Editor
             // below authored speed (an under-cranked roll reads as a floaty hop).
             if (roll.length > 0.01f)
             {
-                rollState.speed = Mathf.Max(1f, roll.length / DodgeMovementSeconds);
+                // Play near authored speed: 2x+ sped-up rolls read as a glitch (playtest).
+                rollState.speed = Mathf.Clamp(roll.length / DodgeMovementSeconds, 0.9f, 1.4f);
             }
 
             AnimatorStateTransition toRoll = locomotion.AddTransition(rollState);
