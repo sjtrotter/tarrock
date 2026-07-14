@@ -30,6 +30,11 @@ namespace Tarrock.Editor
         private const string CharacterModelPath = StandInArtInstaller.CharacterModelPath;
         private const string CharacterControllerPath = StandInArtInstaller.CharacterControllerPath;
 
+        // Quaternius adult body + its FoolV2 controller (QuaterniusCharacterInstaller prepares these);
+        // preferred over the KayKit chibi whenever both exist (director's current stand-in choice).
+        private const string QuaterniusModelPath = QuaterniusCharacterInstaller.BodyModelPath;
+        private const string QuaterniusControllerPath = QuaterniusCharacterInstaller.ControllerPath;
+
         private const string PlayerRootName = "PlayerRig";
         private const string CameraRootName = "CameraRig";
         private const string MainCameraName = "Main Camera";
@@ -240,19 +245,22 @@ namespace Tarrock.Editor
         }
 
         /// <summary>
-        /// Builds the "Visual" child. Prefers the vendored KayKit RogueHooded model (returning its
-        /// <see cref="Animator"/> for the animation driver to consume); falls back to the primitive
-        /// capsule (returning null) whenever Assets/ThirdParty is absent, so the installer never
-        /// breaks on a checkout without the art.
+        /// Builds the "Visual" child. Prefers the Quaternius adult body + FoolV2 controller (the
+        /// director's current stand-in) when both exist; else the vendored KayKit RogueHooded model;
+        /// else the primitive capsule (returning null) whenever the art is absent, so the installer
+        /// never breaks on a checkout without it. Returns the character's <see cref="Animator"/> for
+        /// the animation driver to consume (null for the capsule).
         /// </summary>
         private static Animator BuildCharacterVisual(Transform parent)
         {
-            var model = AssetDatabase.LoadAssetAtPath<GameObject>(CharacterModelPath);
+            (string modelPath, string controllerPath) = ResolveCharacterAssets();
+
+            var model = modelPath != null ? AssetDatabase.LoadAssetAtPath<GameObject>(modelPath) : null;
             if (model == null)
             {
                 Debug.LogWarning(
-                    $"[Tarrock] Vendored character model absent at {CharacterModelPath}; " +
-                    "using the capsule stand-in. Run \"Tarrock/Setup/Install Stand-In Art\" first.");
+                    "[Tarrock] No vendored character model available; using the capsule stand-in. " +
+                    "Run \"Tarrock/Setup/Install Quaternius Fool\" (or \"Install Stand-In Art\") first.");
                 BuildCapsuleVisual(parent);
                 return null;
             }
@@ -272,7 +280,9 @@ namespace Tarrock.Editor
                 animator = visual.AddComponent<Animator>();
             }
 
-            var controller = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(CharacterControllerPath);
+            var controller = controllerPath != null
+                ? AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(controllerPath)
+                : null;
             if (controller != null)
             {
                 animator.runtimeAnimatorController = controller;
@@ -280,11 +290,33 @@ namespace Tarrock.Editor
             else
             {
                 Debug.LogWarning(
-                    $"[Tarrock] Character AnimatorController absent at {CharacterControllerPath}; " +
-                    "the character will render but not animate. Run \"Install Stand-In Art\".");
+                    $"[Tarrock] Character AnimatorController absent at {controllerPath}; " +
+                    "the character will render but not animate. Run the matching installer.");
             }
 
             return animator;
+        }
+
+        /// <summary>
+        /// Resolves which vendored character to use: the Quaternius adult body + FoolV2 controller
+        /// when both are present (the director's current stand-in), else the KayKit RogueHooded
+        /// model + controller, else (null, null) so the caller falls back to the capsule.
+        /// </summary>
+        private static (string modelPath, string controllerPath) ResolveCharacterAssets()
+        {
+            bool quaternius = AssetDatabase.LoadAssetAtPath<GameObject>(QuaterniusModelPath) != null
+                && AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(QuaterniusControllerPath) != null;
+            if (quaternius)
+            {
+                return (QuaterniusModelPath, QuaterniusControllerPath);
+            }
+
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(CharacterModelPath) != null)
+            {
+                return (CharacterModelPath, CharacterControllerPath);
+            }
+
+            return (null, null);
         }
 
         /// <summary>
