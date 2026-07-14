@@ -147,7 +147,7 @@ namespace Tarrock.Editor
 
             // Defensive: strip any stray camera left in the greybox scene so the new rig's
             // camera is unambiguous (brief: "Remove/disable any pre-existing camera").
-            foreach (Camera cam in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
+            foreach (Camera cam in Object.FindObjectsByType<Camera>())
             {
                 if (cam != null)
                 {
@@ -160,7 +160,7 @@ namespace Tarrock.Editor
 
         private static (Vector3, Quaternion) ResolveSpawn(UnityEngine.SceneManagement.Scene scene)
         {
-            PlayerSpawnPoint[] spawns = Object.FindObjectsByType<PlayerSpawnPoint>(FindObjectsSortMode.None);
+            PlayerSpawnPoint[] spawns = Object.FindObjectsByType<PlayerSpawnPoint>();
             Transform t = spawns.Length > 0 ? spawns[0].transform : FindSpawnByName(scene);
 
             if (t == null)
@@ -434,12 +434,12 @@ namespace Tarrock.Editor
                 if (controller.Name.Contains("Orbit X"))
                 {
                     controller.Input.InputAction = lookReference;
-                    controller.Input.Gain = 1f;
+                    controller.Input.Gain = 4f; // deg per pixel of mouse delta; 1 was glacial
                 }
                 else if (controller.Name.Contains("Orbit Y"))
                 {
                     controller.Input.InputAction = lookReference;
-                    controller.Input.Gain = -1f; // invert tilt so pushing up looks up
+                    controller.Input.Gain = -2.5f; // invert tilt so pushing up looks up
                 }
             }
         }

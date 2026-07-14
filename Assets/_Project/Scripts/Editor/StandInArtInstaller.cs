@@ -122,6 +122,7 @@ namespace Tarrock.Editor
             importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
             importer.importAnimation = true;
             importer.materialImportMode = ModelImporterMaterialImportMode.ImportStandard;
+            ConfigureClipLooping(importer);
             importer.SaveAndReimport();
 
             Material characterMaterial = CreateCharacterMaterial();
@@ -129,6 +130,34 @@ namespace Tarrock.Editor
 
             LogEmbeddedClips();
             return true;
+        }
+
+        /// <summary>
+        /// FBX clips import with looping OFF by default, which makes locomotion cycles play
+        /// once and freeze (the "gliding" bug). Loop every cyclic clip (idle/walk/run/strafe
+        /// families); leave one-shots (dodges, hits, attacks, jumps) as imported.
+        /// </summary>
+        private static void ConfigureClipLooping(ModelImporter importer)
+        {
+            ModelImporterClipAnimation[] clips = importer.clipAnimations is { Length: > 0 }
+                ? importer.clipAnimations
+                : importer.defaultClipAnimations;
+
+            string[] loopingFamilies = { "idle", "walk", "run", "strafe", "blocking", "aiming" };
+            foreach (ModelImporterClipAnimation clip in clips)
+            {
+                string name = clip.name.ToLowerInvariant();
+                foreach (string family in loopingFamilies)
+                {
+                    if (name.Contains(family))
+                    {
+                        clip.loopTime = true;
+                        break;
+                    }
+                }
+            }
+
+            importer.clipAnimations = clips;
         }
 
         private static Material CreateCharacterMaterial()
@@ -275,6 +304,15 @@ namespace Tarrock.Editor
         {
             AnimatorState rollState = sm.AddState("Roll");
             rollState.motion = roll;
+
+            // Fit the whole roll into the dodge's movement window (PlayerDodge dodge
+            // duration, 0.45s) — at speed 1 the clip gets cut off mid-tuck and reads as a
+            // dash. TODO(tuning): read the duration from a shared constant once combat lands.
+            const float dodgeMovementSeconds = 0.45f;
+            if (roll.length > 0.01f)
+            {
+                rollState.speed = roll.length / dodgeMovementSeconds;
+            }
 
             AnimatorStateTransition toRoll = locomotion.AddTransition(rollState);
             toRoll.hasExitTime = false;
