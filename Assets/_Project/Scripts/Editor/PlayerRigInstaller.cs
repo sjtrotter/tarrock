@@ -281,6 +281,13 @@ namespace Tarrock.Editor
             ScaleVisualToHeight(visual, ControllerHeight);
             DisableAttachmentProps(visual);
 
+            // Keep the Fool dressed across a rig reinstall: re-attach the Peasant + Ranger-hood
+            // outfit onto the freshly built Quaternius Visual (idempotent; see the outfit installer).
+            if (modelPath == QuaterniusModelPath)
+            {
+                QuaterniusCharacterInstaller.AttachOutfitPieces(visual);
+            }
+
             Animator animator = visual.GetComponent<Animator>();
             if (animator == null)
             {

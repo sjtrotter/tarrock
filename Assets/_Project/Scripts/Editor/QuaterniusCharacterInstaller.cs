@@ -49,6 +49,35 @@ namespace Tarrock.Editor
         public const string BodyMaterialPath = CharacterArtDir + "/QuaterniusFool.mat";
         public const string ControllerPath = CharacterArtDir + "/FoolV2.controller";
 
+        // -- Modular outfit (Male Peasant body + Ranger hood) ----------------------------------
+        // The Fool is a humble storybook wanderer — a traveler, not a warrior — so the outfit is
+        // peasant body/arms/legs/feet plus the ranger HOOD, and no pauldrons
+        // (docs/design/characters.md §The Fool). These FBXs are skinned to the SAME universal rig
+        // as the body, so each piece rides the body's skeleton by name-matched bone rebinding.
+        private const string OutfitDir = QuaterniusDir + "/ModularOutfitsFantasy";
+        private static readonly string[] OutfitPieces =
+        {
+            OutfitDir + "/Male_Peasant_Body.fbx",
+            OutfitDir + "/Male_Peasant_Legs.fbx",
+            OutfitDir + "/Male_Peasant_Feet.fbx",
+            OutfitDir + "/Male_Peasant_Arms.fbx",
+            OutfitDir + "/Male_Ranger_Head_Hood.fbx",
+        };
+
+        // Attached piece objects are named "Outfit_<fbx>" under the Visual, so undressing is
+        // "delete every Visual child whose name starts with this prefix" (also the idempotency key).
+        internal const string OutfitObjectPrefix = "Outfit_";
+        private const string ArmatureName = "Armature";
+
+        private const string PeasantTexDir = OutfitDir + "/Textures/Peasant";
+        private const string RangerTexDir = OutfitDir + "/Textures/Ranger";
+        private const string PeasantBaseMapPath = PeasantTexDir + "/T_Peasant_BaseColor.png";
+        private const string PeasantNormalMapPath = PeasantTexDir + "/T_Peasant_Normal.png";
+        private const string RangerBaseMapPath = RangerTexDir + "/T_Ranger_BaseColor.png";
+        private const string RangerNormalMapPath = RangerTexDir + "/T_Ranger_Normal.png";
+        public const string PeasantMaterialPath = CharacterArtDir + "/QuaterniusPeasant.mat";
+        public const string HoodMaterialPath = CharacterArtDir + "/QuaterniusRangerHood.mat";
+
         private const string ScenePath = "Assets/_Project/Scenes/Regions/Cliff.unity";
         private const string PlayerRootName = "PlayerRig";
         private const string VisualName = "Visual";
@@ -77,6 +106,13 @@ namespace Tarrock.Editor
         // Locomotion clip families that must loop; roll/dodge stay one-shot.
         private static readonly string[] LoopingFamilies = { "idle", "walk", "run", "jog", "strafe" };
 
+        // DIRECTOR-TUNABLE WALK CLIP — one-line swap point for the locomotion walk cycle.
+        // Value is the clip's short name (the segment after the last '|'). Default is the natural
+        // UAL1 "Walk_Loop"; the director rejected the stiff "Walk_Formal_Loop" march. UAL2 adds no
+        // plain walk (only "Walk_Carry_Loop" and "Zombie_Walk_Fwd_Loop"). Change ONLY with director
+        // signoff — PickWalk falls back to fuzzy matching if this exact clip is absent.
+        internal const string WalkClipShortName = "Walk_Loop";
+
         private static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
         private static readonly int MainTexId = Shader.PropertyToID("_MainTex");
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
@@ -95,6 +131,7 @@ namespace Tarrock.Editor
             Avatar bodyAvatar = ConfigureBodyModel();
             ConfigureAnimationLibrary(Ual1Path, bodyAvatar);
             ConfigureAnimationLibrary(Ual2Path, bodyAvatar);
+            ConfigureOutfitModels();
 
             List<AnimationClip> clips = LoadLibraryClips();
             LogClips("UAL1_Standard", Ual1Path);
@@ -407,7 +444,7 @@ namespace Tarrock.Editor
 
         private static AnimationClip PickWalk(IEnumerable<AnimationClip> clips)
         {
-            return ByPriority(clips, "Walk_Loop", "Walk")
+            return ByPriority(clips, WalkClipShortName, "Walk")
                 ?? FirstContaining(clips, "walk", exclude: new[]
                 {
                     "formal", "carry", "back", "left", "right", "strafe", "turn", "zombie",
@@ -473,6 +510,229 @@ namespace Tarrock.Editor
         }
 
         // ---------------------------------------------------------------------------------
+        // 2b. Modular outfit (skinned attachment onto the shared universal rig)
+        // ---------------------------------------------------------------------------------
+
+        /// <summary>
+        /// Configures each outfit FBX as a Generic, animation-free model. The pieces are skinned to
+        /// the same universal rig as the body; they need no avatar of their own because
+        /// <see cref="AttachOutfitPieces"/> rebinds every bone onto the body's skeleton by name.
+        /// Embedded materials import normally (their names — MI_Peasant / MI_Regular_Male / MI_Ranger
+        /// — drive per-slot material assignment at attach time).
+        /// </summary>
+        private static void ConfigureOutfitModels()
+        {
+            foreach (string path in OutfitPieces)
+            {
+                if (AssetImporter.GetAtPath(path) is not ModelImporter importer)
+                {
+                    Debug.LogWarning($"[Tarrock] Outfit FBX not found at {path}; skipping import config.");
+                    continue;
+                }
+
+                importer.animationType = ModelImporterAnimationType.Generic;
+                importer.importAnimation = false;
+                importer.avatarSetup = ModelImporterAvatarSetup.NoAvatar;
+                importer.SaveAndReimport();
+            }
+        }
+
+        /// <summary>
+        /// Attaches the Peasant body + Ranger hood to the given Visual so the clothing animates with
+        /// the body. For each piece: instantiate and unpack it under the Visual, rebind every
+        /// <see cref="SkinnedMeshRenderer"/>'s <c>bones</c>/<c>rootBone</c> onto the body's skeleton
+        /// by name-matching, remap material slots by family (Peasant cloth / Ranger hood / bare skin),
+        /// then delete the piece's own duplicate armature so only the renderers ride the shared rig.
+        /// Idempotent: removes any previously attached "Outfit_*" children first, so re-running the
+        /// installer re-dresses cleanly. Also invoked by <c>PlayerRigInstaller</c> so a rig reinstall
+        /// keeps the clothes.
+        /// </summary>
+        internal static void AttachOutfitPieces(GameObject visual)
+        {
+            if (visual == null)
+            {
+                return;
+            }
+
+            Transform armature = visual.transform.Find(ArmatureName);
+            if (armature == null)
+            {
+                Debug.LogWarning(
+                    $"[Tarrock] Visual '{visual.name}' has no '{ArmatureName}' skeleton; cannot attach the outfit.");
+                return;
+            }
+
+            // Name → Transform over the body's skeleton (bone names are unique on this rig).
+            var boneMap = new Dictionary<string, Transform>();
+            foreach (Transform t in armature.GetComponentsInChildren<Transform>(true))
+            {
+                boneMap[t.name] = t;
+            }
+
+            Material peasant = CreateOutfitMaterial(
+                PeasantMaterialPath, "QuaterniusPeasant", PeasantBaseMapPath, PeasantNormalMapPath);
+            Material hood = CreateOutfitMaterial(
+                HoodMaterialPath, "QuaterniusRangerHood", RangerBaseMapPath, RangerNormalMapPath);
+            Material skin = AssetDatabase.LoadAssetAtPath<Material>(BodyMaterialPath);
+
+            RemoveAttachedOutfit(visual);
+
+            int attached = 0;
+            int totalMatched = 0;
+            int totalMissed = 0;
+            foreach (string path in OutfitPieces)
+            {
+                var model = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (model == null)
+                {
+                    Debug.LogWarning($"[Tarrock] Outfit piece missing at {path}; skipping.");
+                    continue;
+                }
+
+                var piece = (GameObject)PrefabUtility.InstantiatePrefab(model);
+                // Unpack so the piece's own armature child can be deleted (prefab-owned children
+                // cannot be removed from a connected instance).
+                PrefabUtility.UnpackPrefabInstance(
+                    piece, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+
+                piece.name = OutfitObjectPrefix + Path.GetFileNameWithoutExtension(path);
+                piece.transform.SetParent(visual.transform, false);
+                piece.transform.localPosition = Vector3.zero;
+                piece.transform.localRotation = Quaternion.identity;
+                piece.transform.localScale = Vector3.one;
+
+                foreach (SkinnedMeshRenderer smr in piece.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                {
+                    RebindToBody(smr, boneMap, ref totalMatched, ref totalMissed);
+                    AssignOutfitMaterials(smr, peasant, hood, skin);
+                    // Bounds are authored against the piece's own armature; skip culling so a
+                    // re-parented, re-bound piece never blinks out at oblique camera angles.
+                    smr.updateWhenOffscreen = true;
+                }
+
+                Transform ownArmature = piece.transform.Find(ArmatureName);
+                if (ownArmature != null)
+                {
+                    Object.DestroyImmediate(ownArmature.gameObject);
+                }
+
+                attached++;
+            }
+
+            Debug.Log(
+                $"[Tarrock] Attached {attached} outfit piece(s) to '{visual.name}' " +
+                $"(bones matched {totalMatched}, unmatched {totalMissed}).");
+        }
+
+        private static void RemoveAttachedOutfit(GameObject visual)
+        {
+            var stale = new List<GameObject>();
+            foreach (Transform child in visual.transform)
+            {
+                if (child.name.StartsWith(OutfitObjectPrefix, System.StringComparison.Ordinal))
+                {
+                    stale.Add(child.gameObject);
+                }
+            }
+
+            foreach (GameObject go in stale)
+            {
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        // Rebuild the renderer's bone array (and rootBone) so it points at the body's skeleton
+        // transforms of the same names — the standard modular-character bind.
+        private static void RebindToBody(
+            SkinnedMeshRenderer smr, Dictionary<string, Transform> boneMap, ref int matched, ref int missed)
+        {
+            Transform[] source = smr.bones;
+            var rebound = new Transform[source.Length];
+            for (int i = 0; i < source.Length; i++)
+            {
+                if (source[i] != null && boneMap.TryGetValue(source[i].name, out Transform mapped))
+                {
+                    rebound[i] = mapped;
+                    matched++;
+                }
+                else
+                {
+                    missed++;
+                }
+            }
+
+            smr.bones = rebound;
+
+            if (smr.rootBone != null && boneMap.TryGetValue(smr.rootBone.name, out Transform root))
+            {
+                smr.rootBone = root;
+            }
+        }
+
+        // Assign per slot by the embedded material's family: Ranger → hood, Regular → bare skin
+        // (the Arms piece's hands), everything else (MI_Peasant) → the peasant cloth material.
+        private static void AssignOutfitMaterials(
+            SkinnedMeshRenderer smr, Material peasant, Material hood, Material skin)
+        {
+            Material[] source = smr.sharedMaterials;
+            var mapped = new Material[source.Length];
+            for (int i = 0; i < source.Length; i++)
+            {
+                string name = source[i] != null ? source[i].name : string.Empty;
+                if (name.IndexOf("Ranger", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    mapped[i] = hood;
+                }
+                else if (name.IndexOf("Regular", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    mapped[i] = skin != null ? skin : peasant;
+                }
+                else
+                {
+                    mapped[i] = peasant;
+                }
+            }
+
+            smr.sharedMaterials = mapped;
+        }
+
+        private static Material CreateOutfitMaterial(
+            string materialPath, string materialName, string baseMapPath, string normalMapPath)
+        {
+            Directory.CreateDirectory(CharacterArtDir);
+
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+            if (material == null)
+            {
+                material = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = materialName };
+                AssetDatabase.CreateAsset(material, materialPath);
+            }
+
+            material.SetColor(BaseColorId, Color.white);
+
+            var baseMap = AssetDatabase.LoadAssetAtPath<Texture2D>(baseMapPath);
+            if (baseMap != null)
+            {
+                material.SetTexture(BaseMapId, baseMap);
+                material.SetTexture(MainTexId, baseMap);
+            }
+            else
+            {
+                Debug.LogWarning($"[Tarrock] Outfit base map missing at {baseMapPath}; {materialName} left untextured.");
+            }
+
+            if (EnsureNormalMap(normalMapPath) is { } normal)
+            {
+                material.SetTexture(BumpMapId, normal);
+                material.EnableKeyword("_NORMALMAP");
+            }
+
+            EditorUtility.SetDirty(material);
+            AssetDatabase.SaveAssets();
+            return material;
+        }
+
+        // ---------------------------------------------------------------------------------
         // 3. Player visual swap (Cliff scene)
         // ---------------------------------------------------------------------------------
 
@@ -516,6 +776,7 @@ namespace Tarrock.Editor
             visual.transform.localPosition = Vector3.zero; // feet at controller bottom
             visual.transform.localRotation = Quaternion.Euler(0f, ModelForwardYawFix, 0f); // model +X → rig +Z
             ScaleVisualToHeight(visual, TargetHeight);
+            AttachOutfitPieces(visual);
 
             Animator animator = visual.GetComponent<Animator>();
             if (animator == null)
