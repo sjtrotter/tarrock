@@ -38,6 +38,38 @@ time for what matters; they are not a poverty plan):
   is multiple beings (the Lovers). The 21 Arcana are the game's art budget's first
   priority, and each is iterated until it could carry a poster.
 
+## Current build: stand-in art (playtest phase)
+
+**Status (blessed 2026-07-15): all 3D art in playable builds is CC0 stand-in art**,
+adopted deliberately so playtesting can start now. It is not the final direction — the
+Visual pillars above remain the target — and every system is built assuming this art
+gets swapped.
+
+The stand-in family is the **KayKit hex-diorama set** (single author, so it reads as one
+style): Medieval Hexagon terrain, Adventurers 2.0 baked-outfit characters, Character
+Animations 1.1 (161 clips on the shared Rig_Medium), Forest Nature dressing — plus
+legacy Quaternius/Kenney pieces where already vendored. Licenses in
+`THIRD-PARTY-NOTICES.md`. Chosen because: baked outfits eliminate the clothing-clipping
+class of problems; hex-tile terrain makes every region read as a **diorama on a table**,
+which rehearses the map-as-cards conceit for free; and the whole family is CC0.
+
+**Swap discipline — the rules that make the art replaceable:**
+
+1. **No content may depend on stand-in geometry.** Layout, gating, and mood facts live
+   in `world.md`; quests and code reference marker IDs and definitions, never a
+   particular mesh or its dimensions.
+2. **Asset references live only in definitions/installers** (per `technical.md`'s
+   data-driven rule). Gameplay code never names an art asset inline.
+3. **Scale contract** (survives any swap): one hex ≈ 4 m flat-to-flat; player height
+   ≈ 43% of hex width; human-usable props are tagged `PropHumanScale` and sized
+   relative to the player, terrain furniture is sized to the diorama.
+4. **Animation contract**: gameplay addresses animations by logical state (Idle, Walk,
+   Run, Dodge, Dig, Sit…) through the Animator; which clip asset fills a state is an
+   installer concern, swappable per rig.
+5. **Terrain grammar is direction, not art**: elevation signposts the path — cliffs
+   refuse, slopes permit, landmarks pull the eye. This survives any art swap and should
+   be treated as canon direction for region building.
+
 ## The world-state is the art direction
 
 This is the project's central scope strategy: **an unbinding is an art/audio state swap
