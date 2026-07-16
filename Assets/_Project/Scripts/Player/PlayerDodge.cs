@@ -24,7 +24,9 @@ namespace Tarrock.Player
         [SerializeField] private Transform _cameraTransform;
 
         [Header("Roll shape")]
-        [SerializeField] private float _dodgeSpeed = 9f;
+        // was 9 — the miniature covered ~5.4m per roll ("way too far", director playtest);
+        // half the ground over the same window keeps Fool's Chance timing feel unchanged.
+        [SerializeField] private float _dodgeSpeed = 4.5f;
         [SerializeField] private float _dodgeDuration = 0.6f; // was 0.45 — UAL roll clip needs the room (playtest: "way too fast")
         [SerializeField] private float _cooldownDuration = 0.15f;
 
@@ -53,6 +55,19 @@ namespace Tarrock.Player
         /// dodging. Consumed by <see cref="PlayerMotor"/>.
         /// </summary>
         public Vector3 CurrentVelocity => IsDodging ? _dodgeDirection * _dodgeSpeed : Vector3.zero;
+
+        /// <summary>
+        /// World-space direction of the current (or most recent) roll. Read by
+        /// <see cref="PlayerAnimationDriver"/> to pick the directional dodge clip and to orient
+        /// the procedural tumble; stable for the whole roll (captured once at dodge start).
+        /// </summary>
+        public Vector3 CurrentDirection => _dodgeDirection;
+
+        /// <summary>
+        /// Normalised progress through the active roll, 0 at start, 1 at end (and 1 while not
+        /// rolling). Drives the procedural tumble in <see cref="PlayerAnimationDriver"/>.
+        /// </summary>
+        public float Progress => _state != null ? _state.DodgeProgress : 1f;
 
         private void Awake()
         {

@@ -25,8 +25,17 @@ namespace Tarrock.Player
         [SerializeField] private Transform _cameraTransform;
 
         [Header("Speeds (m/s)")]
-        [SerializeField] private float _walkSpeed = 2.8f; // was 4.5 — outran the walk cycle ("gliding", playtest)
-        [SerializeField] private float _sprintSpeed = 7f;
+        // Director retune for the 0.7m miniature (sandbox playtest): the default gait is a travel
+        // JOG (Running_A in the animator), not a walk; Shift held = sprint. The serialized field
+        // name stays "_walkSpeed" so older scenes keep their own tuned values.
+        [SerializeField] private float _walkSpeed = 3.0f; // default gait: travel jog
+        [SerializeField] private float _sprintSpeed = 4.8f;
+
+        [Header("Crouch")]
+        [Tooltip("Planar speed while crouched (sneak tier).")]
+        [SerializeField] private float _crouchSpeed = 0.8f; // was 1.2 — "still too fast" (director playtest)
+        [Tooltip("CharacterController height multiplier while crouched (~40% reduction).")]
+        [SerializeField] private float _crouchHeightScale = 0.6f;
 
         [Header("Turning")]
         [Tooltip("Approximate time, in seconds, to settle a turn toward the move direction.")]
@@ -41,6 +50,9 @@ namespace Tarrock.Player
         private float _verticalVelocity;
         private float _turnVelocity;
         private float _currentPlanarSpeed;
+        private bool _crouched;
+        private float _standingHeight;
+        private Vector3 _standingCenter;
 
         /// <summary>
         /// The Fool's current planar (XZ) speed in metres/second — the actual movement applied
@@ -49,9 +61,17 @@ namespace Tarrock.Player
         /// </summary>
         public float CurrentPlanarSpeed => _currentPlanarSpeed;
 
+        /// <summary>
+        /// True while the Fool is crouched (Crouch input toggles; a dodge or sprint input stands
+        /// the Fool back up). Read by <see cref="PlayerAnimationDriver"/> for the sneak states.
+        /// </summary>
+        public bool IsCrouched => _crouched;
+
         private void Awake()
         {
             _controller = GetComponent<CharacterController>();
+            _standingHeight = _controller.height;
+            _standingCenter = _controller.center;
 
             if (_input == null)
             {
@@ -69,8 +89,30 @@ namespace Tarrock.Player
             }
         }
 
+        private void OnEnable()
+        {
+            if (_input != null)
+            {
+                _input.CrouchPressed += OnCrouchPressed;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (_input != null)
+            {
+                _input.CrouchPressed -= OnCrouchPressed;
+            }
+        }
+
         private void Update()
         {
+            // A dodge always stands the Fool up (dodging out of a sneak reads as a commit).
+            if (_crouched && _dodge != null && _dodge.IsDodging)
+            {
+                SetCrouched(false);
+            }
+
             Vector3 horizontal = (_dodge != null && _dodge.IsDodging)
                 ? _dodge.CurrentVelocity
                 : ComputeLocomotion();
@@ -86,6 +128,12 @@ namespace Tarrock.Player
 
         private Vector3 ComputeLocomotion()
         {
+            bool sprinting = _input != null && _input.SprintHeld;
+            if (sprinting && _crouched)
+            {
+                SetCrouched(false); // sprint input always stands the Fool up
+            }
+
             Vector2 move = _input != null ? _input.MoveInput : Vector2.zero;
             Vector3 worldDir = CameraRelative(move);
 
@@ -97,9 +145,30 @@ namespace Tarrock.Player
             worldDir.Normalize();
             RotateToward(worldDir);
 
-            bool sprinting = _input != null && _input.SprintHeld;
-            float speed = sprinting ? _sprintSpeed : _walkSpeed;
+            float speed = _crouched ? _crouchSpeed : (sprinting ? _sprintSpeed : _walkSpeed);
             return worldDir * speed;
+        }
+
+        private void OnCrouchPressed()
+        {
+            SetCrouched(!_crouched);
+        }
+
+        // Resize the CharacterController in place, keeping its bottom where it was so a crouch
+        // never pushes the capsule into (or out of) the ground.
+        private void SetCrouched(bool value)
+        {
+            if (_crouched == value)
+            {
+                return;
+            }
+
+            _crouched = value;
+
+            float bottom = _standingCenter.y - (_standingHeight * 0.5f);
+            float height = value ? _standingHeight * _crouchHeightScale : _standingHeight;
+            _controller.height = height;
+            _controller.center = new Vector3(_standingCenter.x, bottom + (height * 0.5f), _standingCenter.z);
         }
 
         private void RotateToward(Vector3 worldDir)

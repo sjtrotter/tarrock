@@ -24,6 +24,7 @@ namespace Tarrock.Player
         private const string LookActionPath = "Player/Look";
         private const string SprintActionPath = "Player/Sprint";
         private const string DodgeActionPath = "Player/Dodge";
+        private const string CrouchActionPath = "Player/Crouch";
 
         [SerializeField] private InputActionAsset _actions;
 
@@ -31,10 +32,14 @@ namespace Tarrock.Player
         private InputAction _lookAction;
         private InputAction _sprintAction;
         private InputAction _dodgeAction;
+        private InputAction _crouchAction;
         private bool _resolved;
 
         /// <summary>Raised once each time the Dodge action is performed (a discrete press).</summary>
         public event Action DodgePressed;
+
+        /// <summary>Raised once each time the Crouch action is performed (a discrete press; the crouch itself toggles).</summary>
+        public event Action CrouchPressed;
 
         /// <summary>Current movement stick / WASD vector, range roughly [-1, 1] per axis.</summary>
         public Vector2 MoveInput => _moveAction != null ? _moveAction.ReadValue<Vector2>() : Vector2.zero;
@@ -59,6 +64,11 @@ namespace Tarrock.Player
                 _dodgeAction.performed += OnDodgePerformed;
             }
 
+            if (_crouchAction != null)
+            {
+                _crouchAction.performed += OnCrouchPerformed;
+            }
+
             _actions?.FindActionMap(PlayerMap, throwIfNotFound: false)?.Enable();
         }
 
@@ -67,6 +77,11 @@ namespace Tarrock.Player
             if (_dodgeAction != null)
             {
                 _dodgeAction.performed -= OnDodgePerformed;
+            }
+
+            if (_crouchAction != null)
+            {
+                _crouchAction.performed -= OnCrouchPerformed;
             }
 
             _actions?.FindActionMap(PlayerMap, throwIfNotFound: false)?.Disable();
@@ -92,12 +107,18 @@ namespace Tarrock.Player
             _lookAction = _actions.FindAction(LookActionPath, throwIfNotFound: false);
             _sprintAction = _actions.FindAction(SprintActionPath, throwIfNotFound: false);
             _dodgeAction = _actions.FindAction(DodgeActionPath, throwIfNotFound: false);
+            _crouchAction = _actions.FindAction(CrouchActionPath, throwIfNotFound: false);
             _resolved = true;
         }
 
         private void OnDodgePerformed(InputAction.CallbackContext context)
         {
             DodgePressed?.Invoke();
+        }
+
+        private void OnCrouchPerformed(InputAction.CallbackContext context)
+        {
+            CrouchPressed?.Invoke();
         }
     }
 }
