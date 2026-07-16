@@ -60,9 +60,11 @@ which rehearses the map-as-cards conceit for free; and the whole family is CC0.
    particular mesh or its dimensions.
 2. **Asset references live only in definitions/installers** (per `technical.md`'s
    data-driven rule). Gameplay code never names an art asset inline.
-3. **Scale contract** (survives any swap): one hex ≈ 4 m flat-to-flat; player height
-   ≈ 43% of hex width; human-usable props are tagged `PropHumanScale` and sized
-   relative to the player, terrain furniture is sized to the diorama.
+3. **Scale contract** (survives any swap): one hex ≈ 4 m flat-to-flat; the player is a
+   **game-piece miniature** at ≈ 18% of hex width (~0.7 m against a 4 m hex — the
+   director-calibrated figurine read, sized to walk under the wayside-stall canopy);
+   human-usable props are tagged `PropHumanScale` and sized relative to the player,
+   terrain furniture is sized to the diorama.
 4. **Animation contract**: gameplay addresses animations by logical state (Idle, Walk,
    Run, Dodge, Dig, Sit…) through the Animator; which clip asset fills a state is an
    installer concern, swappable per rig.
