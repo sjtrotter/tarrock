@@ -128,6 +128,18 @@ namespace Tarrock.Editor
         private static readonly Vector3 SpawnPosition = new Vector3(10f, 0f, -9f);
         private static readonly Vector3 SpawnFacing = Vector3.back;
 
+        // -- Camera feel (director round 3, item 4) — kept in lockstep with CliffHexGenerator so both
+        // the sandbox and CliffHex share the same orbit rig: pivot at head (not chest), pulled back,
+        // and a far wider vertical tilt so the Fool can look up into open sky / down onto himself.
+        private const float CamPivotFactor = 0.92f;   // was 0.78 (chest) → ~head height
+        private const float CamRadiusFactor = 3.3f;   // was 2.8 → ~18% further back
+        // Full look-up: −12° grazes the camera just above the ground looking up past the Fool's head
+        // (mostly sky). Lower puts the orbit under the floor; the deoccluder pull-in then fills the
+        // frame with the Fool's back (play-tested in CliffHex at −26/−34).
+        private const float CamVerticalMin = -12f;
+        private const float CamVerticalMax = 70f;     // full look-down: the Fool seen from above
+        private const float CamVerticalDefault = 16f; // resting tilt, a touch higher than the old 10
+
         // Set-dressing subtrees left walk-through for the playtest (containment is what matters; the
         // terrain + rampart carry it). Colliders are still cheap to add here later if the director asks.
         private static readonly string[] SkipColliderRoots = { "Deco", "Secret_Placeholder" };
@@ -826,8 +838,8 @@ namespace Tarrock.Editor
             AddUrpCameraData(mainCameraGo);
             camera.nearClipPlane = 0.05f; // small player → let the camera get close
 
-            float chestHeight = playerHeight * 0.78f;
-            float orbitRadius = playerHeight * 2.8f;
+            float pivotHeight = playerHeight * CamPivotFactor;
+            float orbitRadius = playerHeight * CamRadiusFactor;
 
             var vcamGo = new GameObject(FollowCameraName);
             vcamGo.transform.SetParent(cameraRig.transform, false);
@@ -837,7 +849,7 @@ namespace Tarrock.Editor
             vcam.Lens.FieldOfView = 55f;
 
             var orbital = vcamGo.AddComponent<CinemachineOrbitalFollow>();
-            orbital.TargetOffset = new Vector3(0f, chestHeight, 0f);
+            orbital.TargetOffset = new Vector3(0f, pivotHeight, 0f);
             orbital.Radius = orbitRadius;
             orbital.HorizontalAxis.Wrap = true;
             // OrbitalFollow's horizontal axis is world-locked: value 0 seats the camera on the world
@@ -845,14 +857,26 @@ namespace Tarrock.Editor
             // side — behind the player, looking down the corridor (W then drives forward, not backward).
             orbital.HorizontalAxis.Value = 180f;
             orbital.HorizontalAxis.Center = 180f;
-            orbital.VerticalAxis.Value = 10f;
-            orbital.VerticalAxis.Center = 10f;
-            orbital.VerticalAxis.Range = new Vector2(-5f, 35f);
+            orbital.VerticalAxis.Value = CamVerticalDefault;
+            orbital.VerticalAxis.Center = CamVerticalDefault;
+            orbital.VerticalAxis.Range = new Vector2(CamVerticalMin, CamVerticalMax);
 
             vcamGo.AddComponent<CinemachineRotationComposer>();
 
+            // The wide tilt range (CamVerticalMin) can sweep the camera toward the ground; the
+            // deoccluder nudges it out of geometry instead of letting it clip under the terrain.
+            var deoccluder = vcamGo.AddComponent<CinemachineDeoccluder>();
+            deoccluder.CollideAgainst = 1; // Default layer: terrain + rampart colliders
+            deoccluder.IgnoreTag = PlayerTag;
+            deoccluder.AvoidObstacles.Enabled = true;
+            deoccluder.AvoidObstacles.CameraRadius = 0.1f;
+            deoccluder.AvoidObstacles.DistanceLimit = orbitRadius;
+            // Slide around obstacles at range rather than zooming into the Fool's back.
+            deoccluder.AvoidObstacles.Strategy =
+                CinemachineDeoccluder.ObstacleAvoidance.ResolutionStrategy.PreserveCameraDistance;
+
             // Start behind the player so the first frame is composed (no glide-in).
-            Vector3 lookPoint = followTarget.position + new Vector3(0f, chestHeight, 0f);
+            Vector3 lookPoint = followTarget.position + new Vector3(0f, pivotHeight, 0f);
             Vector3 startPos = lookPoint - (followTarget.forward * orbitRadius) + (Vector3.up * playerHeight * 0.6f);
             Quaternion startRot = Quaternion.LookRotation(lookPoint - startPos, Vector3.up);
             vcamGo.transform.SetPositionAndRotation(startPos, startRot);

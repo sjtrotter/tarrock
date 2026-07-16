@@ -71,6 +71,12 @@ which rehearses the map-as-cards conceit for free; and the whole family is CC0.
 5. **Terrain grammar is direction, not art**: elevation signposts the path — cliffs
    refuse, slopes permit, landmarks pull the eye. This survives any art swap and should
    be treated as canon direction for region building.
+6. **No uniform corridors.** A guided path must still breathe: vary its width (pinch
+   points and open bulges), its floor (terraces and dips reached by ramps, not one flat
+   ribbon), and its walls (ridge heights that rise and fall, occasional breaches that
+   show sky). Reward stepping off the path with small pockets — a hollow, a stone
+   circle, an overlook. Regions should also be sized to their content: traversal time
+   between beats, not raw footprint, is the design variable.
 
 ## The world-state is the art direction
 
@@ -81,7 +87,11 @@ from day one, keyed off its Arcanum's world-state flag (`world.md`'s world-state
 - **Bound regions hold their breath.** Cloth and banners are posed mid-flutter, not
   animated. No wind, no ambient weather particles. Water is glassy, not lapping. Audio
   ambience is a short loop played without crossfade variation, so a careful ear can
-  *hear* that it loops — the stasis is audible, not just visible.
+  *hear* that it loops — the stasis is audible, not just visible. The one particulate
+  allowed while bound: **suspended motes** (dust/pollen hanging nearly motionless in
+  light) — stasis made visible, not weather. Living drift — fireflies, blown pollen,
+  falling leaves — is reserved for the unbound state, where it reads as motion
+  returning.
 - **Unbound regions gain motion.** Wind returns to cloth and foliage, weather rotation
   activates, water animates properly, ambience beds gain layered one-shots (birds,
   distant voices, weather) so the loop point disappears. NPC posing loosens from
