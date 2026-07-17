@@ -80,6 +80,22 @@ namespace Tarrock.Editor
         private const string DodgeXParameter = "DodgeX";
         private const string DodgeYParameter = "DodgeY";
         private const string AirborneParameter = "Airborne"; // out-of-Focus jump (combat.md §Focus)
+        private const string GrandBackflipParameter = "GrandBackflip"; // crouched jump (combat.md §Focus)
+
+        // Grand backflip (crouched jump — combat.md §Focus). The procedural spin in PlayerAnimationDriver
+        // owns the rotation; the animator just holds a readable airborne silhouette, then plays the
+        // superhero landing. Base pose: Jump_Full_Short's launch-extension frame reads more majestic
+        // (extended) under a slow full turn than the tight Dodge_Backward tuck (both clips are in-place —
+        // root motion baked — so the pose, not the clip's own travel, is all that matters here). The
+        // landing is Spawn_Ground/Spawn_Air: Spawn_Air is a genuine drop → deep-crouch impact (nt≈0.6,
+        // hips at the floor) → rise-to-stand, so it is entered at its impact frame and played through.
+        private const string GrandBackflipClipName = "Jump_Full_Short";
+        private const float GrandBackflipClipSpeed = 0.5f;   // a slow hang under the procedural spin
+        private const float GrandBackflipClipOffset = 0.35f; // launch-extension pose
+        private const string GrandLandingClipName = "Spawn_Air"; // the superhero land-and-rise
+        private const float GrandLandingClipSpeed = 1.35f;   // emphatic, but the rise does not dawdle
+        private const float GrandLandingClipOffset = 0.45f;  // enter just before the deep-crouch impact
+        private const float GrandLandingExitTime = 0.9f;     // play the crouch→rise, then rejoin locomotion
 
         // Jump clip names (Rig_Medium_MovementBasic). Jump_Full_Short is a complete authored hop
         // arc (anticipation → launch → airborne → land, ~1.2s); the normal ground hop plays it
@@ -136,11 +152,12 @@ namespace Tarrock.Editor
         // PlayerDodge's movement window; the dodge clips are time-scaled to fit it.
         private const float DodgeMovementSeconds = 0.6f; // must track PlayerDodge._dodgeDuration
 
-        // The Focus strafe-hops (Dodge_Left/Right) cover only ~0.45x of the roll's ground over the
-        // same window (PlayerDodge._hopDistanceScale), so their clips are slowed to match — feet plant
-        // instead of sliding. Applied as a per-child timeScale on the L/R legs of the dodge blend so
-        // the forward/back roll clips keep full cadence. Must track PlayerDodge._hopDistanceScale.
-        private const float HopClipTimeScale = 0.45f;
+        // The Focus strafe-hops (Dodge_Left/Right) play near full cadence so the SHORTER, front-loaded
+        // burst reads snappy (director round 3: "jarring beats smooth"). Was 0.45 (matched the old slow
+        // 0.45x glide); now the hop distance is 0.38x but front-loaded into the first ~40% of the
+        // window (PlayerDodge._hopSpeedCurve), and the 0.40s clip finishes and holds before the window
+        // closes, so cranking the cadence up stops the foot-slide instead of causing it.
+        private const float HopClipTimeScale = 0.9f;
 
         // Locomotion clip families that must loop; dodges and one-shots stay as imported.
         private static readonly string[] LoopingFamilies = { "idle", "walk", "run", "strafe", "sneak", "crouch" };
@@ -366,6 +383,7 @@ namespace Tarrock.Editor
             controller.AddParameter(DodgeXParameter, AnimatorControllerParameterType.Float);
             controller.AddParameter(DodgeYParameter, AnimatorControllerParameterType.Float);
             controller.AddParameter(AirborneParameter, AnimatorControllerParameterType.Bool);
+            controller.AddParameter(GrandBackflipParameter, AnimatorControllerParameterType.Bool);
 
             AnimatorStateMachine sm = controller.layers[0].stateMachine;
 
@@ -398,6 +416,12 @@ namespace Tarrock.Editor
             // -- Dodge: 4-way directional blend on DodgeX/DodgeY, gated by the Dodge bool -------
             AnimatorState dodge = BuildDodgeState(sm, locomotion, crouchStates, dodgeF, dodgeB, dodgeL, dodgeR);
 
+            // -- Grand backflip (crouched jump): built BEFORE the jump so its locomotion transition is
+            //    earlier in the list and wins when both GrandBackflip and Airborne are true ---------
+            AnimatorState grandBackflip = BuildGrandBackflipStates(
+                sm, locomotion, crouchStates,
+                FindClip(clips, GrandBackflipClipName), FindClip(clips, GrandLandingClipName));
+
             // -- Jump (out-of-Focus dodge input): a compressed Jump_Full_Short hop, with a long-fall
             //    tail (airborne hold → Land) for drops past the hop window ---------------------------
             AnimatorState jump = BuildJumpStates(
@@ -417,8 +441,86 @@ namespace Tarrock.Editor
                 $"{(crouchStates.Length > 0 ? string.Empty : " (SKIPPED)")}, dodge 4-way " +
                 $"[F={Name(dodgeF)}, B={Name(dodgeB)}, L={Name(dodgeL)}, R={Name(dodgeR)}]" +
                 $"{(dodge != null ? string.Empty : " (SKIPPED)")}, jump [Full_Short hop@{HopAirborneSeconds}s + fall tail Idle→Land]" +
-                $"{(jump != null ? string.Empty : " (SKIPPED)")}.");
+                $"{(jump != null ? string.Empty : " (SKIPPED)")}, grand-backflip [{GrandBackflipClipName} hang → {GrandLandingClipName} land]" +
+                $"{(grandBackflip != null ? string.Empty : " (SKIPPED)")}.");
             return true;
+        }
+
+        /// <summary>
+        /// Adds the grand backflip graph (combat.md §Focus: crouched jump = the grand backflip). Two
+        /// states, both under the procedural spin driven by <c>PlayerAnimationDriver</c>:
+        ///
+        /// - <b>GrandBackflip</b> — the airborne hang: a slow, offset <see cref="GrandBackflipClipName"/>
+        ///   pose held while the procedural 360° plays out. Entered from standing OR crouched locomotion
+        ///   the instant the <c>GrandBackflip</c> bool goes true (the motor exits crouch the same frame).
+        /// - <b>GrandLanding</b> — the emphatic finish: <see cref="GrandLandingClipName"/> entered at its
+        ///   deep-crouch impact frame (<see cref="GrandLandingClipOffset"/>) and played through the
+        ///   rise-to-stand, then handed back to locomotion on exit time.
+        ///
+        /// Returns null (grand backflip skipped) if either clip is missing.
+        /// </summary>
+        private static AnimatorState BuildGrandBackflipStates(
+            AnimatorStateMachine sm, AnimatorState locomotion, AnimatorState[] crouchStates,
+            AnimationClip flipClip, AnimationClip landClip)
+        {
+            if (flipClip == null || landClip == null)
+            {
+                Debug.LogWarning(
+                    $"[Tarrock] Grand backflip clips missing (flip={Name(flipClip)}, land={Name(landClip)}); " +
+                    "grand backflip states skipped.");
+                return null;
+            }
+
+            AnimatorState flip = sm.AddState("GrandBackflip");
+            flip.motion = flipClip;
+            flip.speed = GrandBackflipClipSpeed;
+
+            AnimatorState land = sm.AddState("GrandLanding");
+            land.motion = landClip;
+            land.speed = GrandLandingClipSpeed;
+
+            // Enter the airborne hang from standing and from either crouch state, on the GrandBackflip
+            // bool. Offset into the launch-extension pose so the held silhouette reads as a leap.
+            AnimatorStateTransition toFlip = locomotion.AddTransition(flip);
+            toFlip.hasExitTime = false;
+            toFlip.duration = 0.05f;
+            toFlip.offset = GrandBackflipClipOffset;
+            toFlip.AddCondition(AnimatorConditionMode.If, 0f, GrandBackflipParameter);
+
+            foreach (AnimatorState crouchState in crouchStates)
+            {
+                AnimatorStateTransition crouchToFlip = crouchState.AddTransition(flip);
+                crouchToFlip.hasExitTime = false;
+                crouchToFlip.duration = 0.05f;
+                crouchToFlip.offset = GrandBackflipClipOffset;
+                crouchToFlip.AddCondition(AnimatorConditionMode.If, 0f, GrandBackflipParameter);
+
+                // The crouched jump fires from a crouch state and exits crouch the SAME frame, so the
+                // crouch→stand transition (added earlier, IfNot Crouched) would otherwise win and route
+                // the flip through Locomotion — delaying the GrandBackflip base pose past the first
+                // ~40% of the spin. Promote this transition to the front so the flip is entered
+                // directly and the majestic hang pose reads for the whole flight.
+                var ordered = new List<AnimatorStateTransition>(crouchState.transitions);
+                ordered.Remove(crouchToFlip);
+                ordered.Insert(0, crouchToFlip);
+                crouchState.transitions = ordered.ToArray();
+            }
+
+            // Landing: the motor clears GrandBackflip the instant the Fool touches down — cut into the
+            // Spawn_Air impact frame and play the crouch→rise.
+            AnimatorStateTransition flipToLand = flip.AddTransition(land);
+            flipToLand.hasExitTime = false;
+            flipToLand.duration = 0.06f;
+            flipToLand.offset = GrandLandingClipOffset;
+            flipToLand.AddCondition(AnimatorConditionMode.IfNot, 0f, GrandBackflipParameter);
+
+            // The rise plays through, then rejoins travel locomotion.
+            AnimatorStateTransition landToLoco = land.AddTransition(locomotion);
+            landToLoco.hasExitTime = true;
+            landToLoco.exitTime = GrandLandingExitTime;
+            landToLoco.duration = 0.12f;
+
+            return flip;
         }
 
         // AddChild has no timeScale parameter; child motions must be rewritten after the fact. The

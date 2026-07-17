@@ -54,6 +54,11 @@ becomes camera-relative strafing. Focus is what separates *traveling* from *figh
   dodges share the roll's i-frame rules and can trigger Fool's Chance.
 - **Out of Focus, the same input is a jump** — plain traversal (and the entry point for
   aerial attacks per the Bindle moveset table).
+- **Crouched jump = the grand backflip**: jumping from the crouch performs a high,
+  deliberately *majestic* backflip — taller than a normal jump, carrying the Fool
+  roughly 1.5 body-widths backward, finished with an emphatic landing. Distinct from
+  the focus back-dodge (which is a quick evasive flip); this one is theater, and a
+  natural candidate for the learned-skill pool above.
 - Advanced maneuvers beyond the base roll (the backflip and later additions) may ship
   as **learned skills** rather than defaults — taught in the world (a move teacher or
   similar), not necessarily Trump-granted. Acquisition model: **TBD**, to be settled in

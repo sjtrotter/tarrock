@@ -36,6 +36,7 @@ namespace Tarrock.Player
         private const string DodgeXParameter = "DodgeX";
         private const string DodgeYParameter = "DodgeY";
         private const string AirborneParameter = "Airborne";
+        private const string GrandBackflipParameter = "GrandBackflip";
 
         private static readonly int SpeedHash = Animator.StringToHash(SpeedParameter);
         private static readonly int DodgeHash = Animator.StringToHash(DodgeParameter);
@@ -43,6 +44,7 @@ namespace Tarrock.Player
         private static readonly int DodgeXHash = Animator.StringToHash(DodgeXParameter);
         private static readonly int DodgeYHash = Animator.StringToHash(DodgeYParameter);
         private static readonly int AirborneHash = Animator.StringToHash(AirborneParameter);
+        private static readonly int GrandBackflipHash = Animator.StringToHash(GrandBackflipParameter);
 
         [SerializeField] private Animator _animator;
         [SerializeField] private PlayerMotor _motor;
@@ -96,6 +98,7 @@ namespace Tarrock.Player
             // into the animator's Crouched gate alongside the Ctrl-toggled stealth crouch.
             _animator.SetBool(CrouchedHash, _motor != null && (_motor.IsCrouched || _motor.IsFocused));
             _animator.SetBool(AirborneHash, _motor != null && _motor.IsAirborne);
+            _animator.SetBool(GrandBackflipHash, _motor != null && _motor.IsGrandBackflip);
 
             bool dodging = _dodge != null && _dodge.IsDodging;
             _animator.SetBool(DodgeHash, dodging);
@@ -138,35 +141,55 @@ namespace Tarrock.Player
             _visual.localPosition = _visualBasePosition;
             _visual.localRotation = _visualBaseRotation;
 
-            if (!_proceduralTumble || _dodge == null || !_dodge.IsDodging)
+            if (!_proceduralTumble)
+            {
+                return;
+            }
+
+            // The GRAND BACKFLIP (crouched jump — combat.md §Focus) takes precedence: it is airborne
+            // and motor-driven, not a dodge. It travels straight backward, so spinning "head-over-heels
+            // into the travel direction" about −forward gives the true backflip silhouette (head tips
+            // back, feet go up-and-over), spread majestically across the whole airtime.
+            if (_motor != null && _motor.IsGrandBackflip)
+            {
+                ApplyTumble(-transform.forward, _motor.GrandBackflipProgress);
+                return;
+            }
+
+            if (_dodge == null || !_dodge.IsDodging)
             {
                 return;
             }
 
             // Only the roll and the backflip tumble; the strafe-hops (left/right) stay upright
-            // (combat.md §Focus). The backflip is the same spin reversed — pitch −360 about the
-            // travel axis rather than +360.
+            // (combat.md §Focus).
             DodgeVariant variant = _dodge.CurrentVariant;
             if (variant == DodgeVariant.HopLeft || variant == DodgeVariant.HopRight)
             {
                 return;
             }
 
-            float direction = variant == DodgeVariant.Backflip ? -1f : 1f;
+            // Head-over-heels IN THE DIRECTION OF TRAVEL — the axis is derived from the travel vector,
+            // so this one formula gives a forward roll when travelling forward and a true BACKflip when
+            // travelling backward (the back-dodge). The previous code additionally negated the angle for
+            // the backflip, which cancelled the axis flip and made the backflip read as a forward roll
+            // that happened to slide backward — the bug the director caught. One sign, no negation.
+            ApplyTumble(_dodge.CurrentDirection, _dodge.Progress);
+        }
 
-            Vector3 travel = _dodge.CurrentDirection;
+        // Pitches the visual root a full eased 0→360° about the horizontal axis perpendicular to
+        // <paramref name="travel"/>, pivoting near the rig's midpoint. At progress 1 the turn is a full
+        // rotation (identity), so there is never a snap back to upright.
+        private void ApplyTumble(Vector3 travel, float progress)
+        {
             travel.y = 0f;
             if (travel.sqrMagnitude < 0.0001f)
             {
                 return;
             }
 
-            // Eased 0→360° pitch about the horizontal axis perpendicular to travel, so the
-            // character tumbles head-over-heels in the direction of the roll. At progress 1 the
-            // spin is a full turn — identity — so there is never a snap back to upright.
-            float progress = _dodge.Progress;
             float eased = progress * progress * (3f - (2f * progress)); // smoothstep
-            float angle = direction * 360f * eased;
+            float angle = 360f * eased;
 
             Vector3 axis = Vector3.Cross(Vector3.up, travel.normalized);
             Vector3 pivot = transform.position + (Vector3.up * _tumblePivotHeight);

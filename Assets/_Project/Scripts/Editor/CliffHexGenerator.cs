@@ -1866,6 +1866,51 @@ namespace Tarrock.Editor
         }
 
         // ------------------------------------------------------------------------------------
+        // Player footfall dust (first VFX pass) — a persisted soft-dot texture + alpha-blended
+        // material for PlayerDustPuffs. Reuses the MoteDot radial-alpha approach, but alpha-blended
+        // (dust settles, it does not glow) and tinted warm to sit in the pale-gold palette.
+        // ------------------------------------------------------------------------------------
+        private static Material BuildDustAssets()
+        {
+            Directory.CreateDirectory(AtmoDir);
+
+            const int res = 48;
+            var dot = new Texture2D(res, res, TextureFormat.RGBA32, false) { name = "DustPuff" };
+            var half = new Vector2((res - 1) * 0.5f, (res - 1) * 0.5f);
+            for (int y = 0; y < res; y++)
+            {
+                for (int x = 0; x < res; x++)
+                {
+                    float d = Vector2.Distance(new Vector2(x, y), half) / (res * 0.5f);
+                    // Fuller than the MoteDot (which squares the falloff to a tiny bright core): a broad
+                    // opaque body with a soft edge, so a dust puff reads as a cloud, not a pinpoint.
+                    float a = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((1f - d) * 1.8f));
+                    dot.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+                }
+            }
+
+            dot.Apply();
+            string dotPath = AtmoDir + "/DustPuff.asset";
+            AssetDatabase.DeleteAsset(dotPath);
+            AssetDatabase.CreateAsset(dot, dotPath);
+
+            // Custom Tarrock/DustParticle shader (URP renders the legacy/programmatic particle materials
+            // unreliably): rgb from the particle colour, alpha = particle alpha × sprite alpha.
+            Shader particle = Shader.Find("Tarrock/DustParticle");
+            var mat = new Material(particle != null ? particle : Shader.Find("Sprites/Default")) { name = "DustMaterial" };
+            mat.mainTexture = dot;
+            if (mat.HasProperty("_MainTex"))
+            {
+                mat.SetTexture("_MainTex", dot);
+            }
+
+            string matPath = AtmoDir + "/DustMaterial.mat";
+            AssetDatabase.DeleteAsset(matPath);
+            AssetDatabase.CreateAsset(mat, matPath);
+            return mat;
+        }
+
+        // ------------------------------------------------------------------------------------
         // Menu entry: install the playable KayKit rig + orbit camera
         // ------------------------------------------------------------------------------------
 
@@ -2043,6 +2088,13 @@ namespace Tarrock.Editor
             SetObjectReference(driver, "_animator", animator);
             SetObjectReference(driver, "_motor", motor);
             SetObjectReference(driver, "_dodge", dodge);
+
+            // Footfall dust (first VFX pass): the puff/ring systems build themselves at runtime; wire
+            // the persisted DustMaterial so the pooled particles share one alpha-blended dust sprite.
+            var dust = playerRig.AddComponent<PlayerDustPuffs>();
+            SetObjectReference(dust, "_dustMaterial", BuildDustAssets());
+            SetObjectReference(dodge, "_dust", dust);
+            SetObjectReference(motor, "_dust", dust);
 
             // Focus stance camera (combat.md §Focus): holds behind + FOV tighten. The vcam refs are
             // wired in InstallPlayer once the camera rig exists.

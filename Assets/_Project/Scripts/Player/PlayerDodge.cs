@@ -23,6 +23,7 @@ namespace Tarrock.Player
         [SerializeField] private PlayerInputReader _input;
         [SerializeField] private PlayerMotor _motor;
         [SerializeField] private Transform _cameraTransform;
+        [SerializeField] private PlayerDustPuffs _dust;
 
         [Header("Roll shape")]
         // was 9 — the miniature covered ~5.4m per roll ("way too far", director playtest);
@@ -34,8 +35,12 @@ namespace Tarrock.Player
         [Tooltip("How long a dodge press stays buffered waiting for the dodge to come off cooldown.")]
         [SerializeField] private float _inputBufferSeconds = 0.25f;
 
-        [Tooltip("Distance multiplier for the Focus strafe-hops (left/right) vs. a full roll — a crisp sidestep, not a leap. Director round: 0.45x of the roll (was 0.7x, 'too much').")]
-        [SerializeField] private float _hopDistanceScale = 0.45f;
+        [Tooltip("Distance multiplier for the Focus strafe-hops (left/right) vs. a full roll — a crisp sidestep, not a leap. Director round 3: 0.38x (was 0.45x, 'soft/slow'; the hop wants JARRING and shorter).")]
+        [SerializeField] private float _hopDistanceScale = 0.38f;
+
+        [Tooltip("Front-loads the strafe-hop's displacement so it reads as a sharp burst, not a soft glide: this velocity-scale curve is sampled over the hop's normalised progress (0→1) and normalised to unit area, so the total hop distance stays _hopDistanceScale but most of it lands in the first ~40% of the window. Only the side-hops use it; rolls/backflips keep constant speed.")]
+        [SerializeField] private AnimationCurve _hopSpeedCurve = new AnimationCurve(
+            new Keyframe(0f, 2.4f), new Keyframe(0.4f, 0.35f), new Keyframe(1f, 0f));
 
         [Header("Invincibility window (seconds into the roll)")]
         [SerializeField] private float _invulnerableStartOffset = 0.05f;
@@ -46,6 +51,8 @@ namespace Tarrock.Player
         private DodgeVariant _variant = DodgeVariant.Roll;
         private float _currentSpeedScale = 1f;
         private float _dodgeBufferedUntil = float.NegativeInfinity;
+        private float _hopCurveMean = 1f;
+        private bool _wasDodgingForDust;
 
         /// <summary>True while a roll is active and driving movement.</summary>
         public bool IsDodging => _state != null && _state.IsDodging;
@@ -61,7 +68,36 @@ namespace Tarrock.Player
         /// dodging. Consumed by <see cref="PlayerMotor"/>. Scaled by the per-dodge distance factor
         /// so a Focus strafe-hop covers less ground than a full roll.
         /// </summary>
-        public Vector3 CurrentVelocity => IsDodging ? _dodgeDirection * (_dodgeSpeed * _currentSpeedScale) : Vector3.zero;
+        public Vector3 CurrentVelocity
+        {
+            get
+            {
+                if (!IsDodging)
+                {
+                    return Vector3.zero;
+                }
+
+                float scale = _dodgeSpeed * _currentSpeedScale;
+
+                // Side-hops burst front-loaded (director round 3: "sharp burst, not a soft glide");
+                // the unit-area curve redistributes the SAME total distance toward the first ~40%.
+                if (_variant == DodgeVariant.HopLeft || _variant == DodgeVariant.HopRight)
+                {
+                    scale *= HopSpeedFactor(Progress);
+                }
+
+                return _dodgeDirection * scale;
+            }
+        }
+
+        // The hop's velocity-scale at a given progress, normalised so the curve's mean is 1 — the
+        // shape front-loads the burst while the mean keeps total distance = _dodgeSpeed·scale·duration.
+        // Clamped non-negative so a smooth-tangent overshoot can never briefly reverse the hop.
+        private float HopSpeedFactor(float progress)
+        {
+            float raw = Mathf.Max(0f, _hopSpeedCurve.Evaluate(progress));
+            return _hopCurveMean > 0.0001f ? raw / _hopCurveMean : 1f;
+        }
 
         /// <summary>
         /// World-space direction of the current (or most recent) roll. Read by
@@ -86,6 +122,7 @@ namespace Tarrock.Player
         private void Awake()
         {
             _state = new DodgeState(_dodgeDuration, _cooldownDuration, _invulnerableStartOffset, _invulnerableDuration);
+            _hopCurveMean = ComputeCurveMean(_hopSpeedCurve);
 
             if (_input == null)
             {
@@ -97,10 +134,34 @@ namespace Tarrock.Player
                 _motor = GetComponent<PlayerMotor>();
             }
 
+            if (_dust == null)
+            {
+                _dust = GetComponent<PlayerDustPuffs>();
+            }
+
             if (_cameraTransform == null && Camera.main != null)
             {
                 _cameraTransform = Camera.main.transform;
             }
+        }
+
+        // Numerically integrates the (clamped) hop curve over [0,1] so HopSpeedFactor can divide by
+        // it and preserve total hop distance regardless of the authored curve's shape.
+        private static float ComputeCurveMean(AnimationCurve curve)
+        {
+            if (curve == null || curve.length == 0)
+            {
+                return 1f;
+            }
+
+            const int samples = 48;
+            float sum = 0f;
+            for (int i = 0; i < samples; i++)
+            {
+                sum += Mathf.Max(0f, curve.Evaluate((i + 0.5f) / samples));
+            }
+
+            return sum / samples;
         }
 
         private void OnEnable()
@@ -132,6 +193,16 @@ namespace Tarrock.Player
             }
 
             _state.Tick(Time.deltaTime);
+
+            // Dust at the feet when a dodge ENDS (the start puff fires in BeginDodgeIfReady). A roll,
+            // hop or backflip all kick up a small puff as they plant.
+            bool dodging = IsDodging;
+            if (!dodging && _wasDodgingForDust && _dust != null)
+            {
+                _dust.EmitFootPuff(0.8f);
+            }
+
+            _wasDodgingForDust = dodging;
         }
 
         private void OnDodgePressed()
@@ -167,6 +238,11 @@ namespace Tarrock.Player
                 _dodgeDirection = direction;
                 _variant = variant;
                 _currentSpeedScale = speedScale;
+
+                if (_dust != null)
+                {
+                    _dust.EmitFootPuff(1f); // a small puff at the feet on the dodge commit
+                }
             }
         }
 
