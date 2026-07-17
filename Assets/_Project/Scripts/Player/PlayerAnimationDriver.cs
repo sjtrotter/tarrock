@@ -35,12 +35,14 @@ namespace Tarrock.Player
         private const string CrouchedParameter = "Crouched";
         private const string DodgeXParameter = "DodgeX";
         private const string DodgeYParameter = "DodgeY";
+        private const string AirborneParameter = "Airborne";
 
         private static readonly int SpeedHash = Animator.StringToHash(SpeedParameter);
         private static readonly int DodgeHash = Animator.StringToHash(DodgeParameter);
         private static readonly int CrouchedHash = Animator.StringToHash(CrouchedParameter);
         private static readonly int DodgeXHash = Animator.StringToHash(DodgeXParameter);
         private static readonly int DodgeYHash = Animator.StringToHash(DodgeYParameter);
+        private static readonly int AirborneHash = Animator.StringToHash(AirborneParameter);
 
         [SerializeField] private Animator _animator;
         [SerializeField] private PlayerMotor _motor;
@@ -89,7 +91,11 @@ namespace Tarrock.Player
 
             float speed = _motor != null ? _motor.CurrentPlanarSpeed : 0f;
             _animator.SetFloat(SpeedHash, speed, _speedDampTime, Time.deltaTime);
-            _animator.SetBool(CrouchedHash, _motor != null && _motor.IsCrouched);
+
+            // The Focus stance reuses the crouch pose (combat.md §Focus), so the Focus input folds
+            // into the animator's Crouched gate alongside the Ctrl-toggled stealth crouch.
+            _animator.SetBool(CrouchedHash, _motor != null && (_motor.IsCrouched || _motor.IsFocused));
+            _animator.SetBool(AirborneHash, _motor != null && _motor.IsAirborne);
 
             bool dodging = _dodge != null && _dodge.IsDodging;
             _animator.SetBool(DodgeHash, dodging);
@@ -137,6 +143,17 @@ namespace Tarrock.Player
                 return;
             }
 
+            // Only the roll and the backflip tumble; the strafe-hops (left/right) stay upright
+            // (combat.md §Focus). The backflip is the same spin reversed — pitch −360 about the
+            // travel axis rather than +360.
+            DodgeVariant variant = _dodge.CurrentVariant;
+            if (variant == DodgeVariant.HopLeft || variant == DodgeVariant.HopRight)
+            {
+                return;
+            }
+
+            float direction = variant == DodgeVariant.Backflip ? -1f : 1f;
+
             Vector3 travel = _dodge.CurrentDirection;
             travel.y = 0f;
             if (travel.sqrMagnitude < 0.0001f)
@@ -149,7 +166,7 @@ namespace Tarrock.Player
             // spin is a full turn — identity — so there is never a snap back to upright.
             float progress = _dodge.Progress;
             float eased = progress * progress * (3f - (2f * progress)); // smoothstep
-            float angle = 360f * eased;
+            float angle = direction * 360f * eased;
 
             Vector3 axis = Vector3.Cross(Vector3.up, travel.normalized);
             Vector3 pivot = transform.position + (Vector3.up * _tumblePivotHeight);

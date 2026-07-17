@@ -42,6 +42,23 @@ retune this moveset (reach, a different heavy shape, an elemental tag) rather th
 replacing it — full detail, list, and acquisition is owned by
 [`progression.md`](progression.md).
 
+## Focus (stance and targeting)
+
+Combat maneuvering lives inside a held **Focus** stance (hold the focus input —
+OoT-style Z-targeting grammar): the Fool drops into a readable ready-crouch, the camera
+squares up behind (and, when enemies are present, locks to a target), and movement
+becomes camera-relative strafing. Focus is what separates *traveling* from *fighting*:
+
+- **In Focus, the dodge input is directional:** forward or neutral = the dodge roll
+  (below); left/right = a strafing side-hop; backward = a backflip. All directional
+  dodges share the roll's i-frame rules and can trigger Fool's Chance.
+- **Out of Focus, the same input is a jump** — plain traversal (and the entry point for
+  aerial attacks per the Bindle moveset table).
+- Advanced maneuvers beyond the base roll (the backflip and later additions) may ship
+  as **learned skills** rather than defaults — taught in the world (a move teacher or
+  similar), not necessarily Trump-granted. Acquisition model: **TBD**, to be settled in
+  [`progression.md`](progression.md) before any skill is gated.
+
 ## Defense
 
 - **Dodge roll** — short-range roll with invincibility frames (i-frames) covering the

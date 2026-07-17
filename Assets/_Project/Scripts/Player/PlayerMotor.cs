@@ -8,12 +8,19 @@ namespace Tarrock.Player
     /// movement). Camera-relative walk/sprint on a <see cref="CharacterController"/>, with smooth
     /// rotation toward the move direction and simple gravity + grounded handling so the Cliff's
     /// real west edge (CliffGreyboxGenerator: "the ground simply stops — no wall") can actually
-    /// be walked off. There is no jump this phase — combat.md's kit has none, and the block-step
-    /// hop arrives with the combat milestone.
+    /// be walked off.
     ///
     /// This is the single owner of <see cref="CharacterController.Move"/>. During a roll it hands
     /// horizontal control to <see cref="PlayerDodge"/> (reading its velocity) while still applying
     /// gravity, so the two never issue competing moves.
+    ///
+    /// <b>Focus stance</b> (combat.md §Focus): while the Focus input is held the Fool strafes
+    /// camera-relative without rotating to the move direction — the character keeps the facing it
+    /// held at focus-entry (the OoT Z-target lock; the CAMERA swings behind, driven by
+    /// <see cref="FocusStance"/>, not the character) — at <see cref="_focusSpeed"/>. <b>Jump:</b> out of Focus the
+    /// dodge input is a vertical impulse (<see cref="_jumpSpeed"/>) instead of a roll, and the roll
+    /// is unavailable while airborne. <b>Foliage drag:</b> while the capsule overlaps a short-bush
+    /// trigger (<see cref="FoliageDrag"/>) the planar speed is clamped to <see cref="_foliageSpeed"/>.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public sealed class PlayerMotor : MonoBehaviour
@@ -30,6 +37,21 @@ namespace Tarrock.Player
         // name stays "_walkSpeed" so older scenes keep their own tuned values.
         [SerializeField] private float _walkSpeed = 3.0f; // default gait: travel jog
         [SerializeField] private float _sprintSpeed = 4.8f;
+
+        [Header("Focus stance (combat.md §Focus)")]
+        [Tooltip("Planar strafe speed while the Focus input is held (camera-relative, no turn-to-move).")]
+        [SerializeField] private float _focusSpeed = 2.0f;
+
+        [Header("Foliage")]
+        [Tooltip("Planar speed cap while the capsule overlaps a short-bush FoliageDrag trigger (walk tier).")]
+        [SerializeField] private float _foliageSpeed = 1.5f;
+
+        [Header("Jump (out-of-Focus dodge input)")]
+        // apex = _jumpSpeed² / (2·|_gravity|); with _gravity −25 this gives ~0.54 m for the 0.7 m
+        // miniature — the "reads right at jog speed" arc the director asked for (0.5-0.7 m). The 3.2
+        // first guess only cleared ~0.2 m under this gravity, so it was tuned up.
+        [Tooltip("Upward launch speed (m/s) of the jump — tuned for a ~0.5-0.7 m apex on the 0.7 m miniature.")]
+        [SerializeField] private float _jumpSpeed = 5.2f;
 
         [Header("Crouch")]
         [Tooltip("Planar speed while crouched (sneak tier).")]
@@ -51,6 +73,10 @@ namespace Tarrock.Player
         private float _turnVelocity;
         private float _currentPlanarSpeed;
         private bool _crouched;
+        private bool _airborne;
+        private bool _wasFocused;
+        private float _focusEntryYaw;
+        private int _foliageOverlaps;
         private float _standingHeight;
         private Vector3 _standingCenter;
 
@@ -66,6 +92,35 @@ namespace Tarrock.Player
         /// the Fool back up). Read by <see cref="PlayerAnimationDriver"/> for the sneak states.
         /// </summary>
         public bool IsCrouched => _crouched;
+
+        /// <summary>
+        /// True while the Focus input is held — the combat stance (combat.md §Focus). Read by
+        /// <see cref="PlayerAnimationDriver"/> (it folds into the crouch pose) and by the camera
+        /// stance. Note this is the input state, distinct from the Ctrl-toggled stealth
+        /// <see cref="IsCrouched"/>.
+        /// </summary>
+        public bool IsFocused => _input != null && _input.FocusHeld;
+
+        /// <summary>
+        /// True while the Fool is off the ground from a jump. Read by <see cref="PlayerDodge"/> to
+        /// forbid a roll mid-air and by <see cref="PlayerAnimationDriver"/> for the jump states.
+        /// </summary>
+        public bool IsAirborne => _airborne;
+
+        /// <summary>Called by a <see cref="FoliageDrag"/> trigger when the capsule enters a short bush.</summary>
+        public void EnterFoliage()
+        {
+            _foliageOverlaps++;
+        }
+
+        /// <summary>Called by a <see cref="FoliageDrag"/> trigger when the capsule leaves a short bush.</summary>
+        public void ExitFoliage()
+        {
+            if (_foliageOverlaps > 0)
+            {
+                _foliageOverlaps--;
+            }
+        }
 
         private void Awake()
         {
@@ -94,6 +149,7 @@ namespace Tarrock.Player
             if (_input != null)
             {
                 _input.CrouchPressed += OnCrouchPressed;
+                _input.DodgePressed += OnDodgePressed;
             }
         }
 
@@ -102,6 +158,25 @@ namespace Tarrock.Player
             if (_input != null)
             {
                 _input.CrouchPressed -= OnCrouchPressed;
+                _input.DodgePressed -= OnDodgePressed;
+            }
+        }
+
+        // Out of Focus, the dodge input is a jump (combat.md §Focus). In Focus, PlayerDodge owns the
+        // press (roll/hop/backflip) and the motor ignores it. No double-jump: grounded and not
+        // already airborne, and never during a roll.
+        private void OnDodgePressed()
+        {
+            if (_input != null && _input.FocusHeld)
+            {
+                return;
+            }
+
+            bool rolling = _dodge != null && _dodge.IsDodging;
+            if (!_airborne && !rolling && _controller.isGrounded)
+            {
+                _verticalVelocity = _jumpSpeed;
+                _airborne = true;
             }
         }
 
@@ -128,7 +203,8 @@ namespace Tarrock.Player
 
         private Vector3 ComputeLocomotion()
         {
-            bool sprinting = _input != null && _input.SprintHeld;
+            bool focus = _input != null && _input.FocusHeld;
+            bool sprinting = !focus && _input != null && _input.SprintHeld;
             if (sprinting && _crouched)
             {
                 SetCrouched(false); // sprint input always stands the Fool up
@@ -136,6 +212,32 @@ namespace Tarrock.Player
 
             Vector2 move = _input != null ? _input.MoveInput : Vector2.zero;
             Vector3 worldDir = CameraRelative(move);
+
+            // Focus stance (combat.md §Focus, OoT Z-target grammar): the character LOCKS the facing
+            // it held the instant Focus was entered and strafes camera-relative around it — no turn
+            // toward the move direction, no snap to the camera. The CAMERA is what swings behind the
+            // Fool (FocusStance drives the orbital axis toward this same yaw); the character never
+            // chases the camera. Facing is held rigidly for the whole hold.
+            if (focus)
+            {
+                if (!_wasFocused)
+                {
+                    _focusEntryYaw = transform.eulerAngles.y;
+                    _turnVelocity = 0f;
+                }
+
+                transform.rotation = Quaternion.Euler(0f, _focusEntryYaw, 0f);
+                _wasFocused = true;
+
+                if (worldDir.sqrMagnitude <= MoveInputThresholdSqr)
+                {
+                    return Vector3.zero;
+                }
+
+                return worldDir.normalized * ClampToFoliage(_focusSpeed);
+            }
+
+            _wasFocused = false;
 
             if (worldDir.sqrMagnitude <= MoveInputThresholdSqr)
             {
@@ -146,7 +248,15 @@ namespace Tarrock.Player
             RotateToward(worldDir);
 
             float speed = _crouched ? _crouchSpeed : (sprinting ? _sprintSpeed : _walkSpeed);
-            return worldDir * speed;
+            return worldDir * ClampToFoliage(speed);
+        }
+
+        // While standing in a short bush the walk speed is clamped to the walk tier (combat.md
+        // §Focus foliage note); the roll/jump keep their own momentum, so this only touches
+        // locomotion.
+        private float ClampToFoliage(float speed)
+        {
+            return _foliageOverlaps > 0 ? Mathf.Min(speed, _foliageSpeed) : speed;
         }
 
         private void OnCrouchPressed()
@@ -184,6 +294,7 @@ namespace Tarrock.Player
             if (_controller.isGrounded && _verticalVelocity < 0f)
             {
                 _verticalVelocity = _groundedStickForce;
+                _airborne = false; // a jump that has fallen back to the ground has landed
             }
             else
             {

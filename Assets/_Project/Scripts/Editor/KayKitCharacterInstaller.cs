@@ -79,6 +79,25 @@ namespace Tarrock.Editor
         private const string CrouchedParameter = "Crouched";
         private const string DodgeXParameter = "DodgeX";
         private const string DodgeYParameter = "DodgeY";
+        private const string AirborneParameter = "Airborne"; // out-of-Focus jump (combat.md §Focus)
+
+        // Jump clip names (Rig_Medium_MovementBasic). Jump_Full_Short is a complete authored hop
+        // arc (anticipation → launch → airborne → land, ~1.2s); the normal ground hop plays it
+        // time-compressed to the airborne window so the whole arc reads (director round: the
+        // Start→Idle→Land chain barely showed on a short hop). Start/Idle/Land are kept only for the
+        // long-fall tail (airborne past the hop window).
+        private const string JumpFullShortClipName = "Jump_Full_Short";
+        private const string JumpStartClipName = "Jump_Start";
+        private const string JumpIdleClipName = "Jump_Idle";
+        private const string JumpLandClipName = "Jump_Land";
+
+        // Airborne window a flat ground hop's Jump_Full_Short is compressed into. The nominal airborne
+        // time is 2·_jumpSpeed / |_gravity| = 2·5.2 / 25 ≈ 0.42s (must track PlayerMotor._jumpSpeed /
+        // _gravity); a small +0.03s margin means the compressed arc finishes a hair AFTER touchdown,
+        // so the landing (Airborne-false) transition always wins the race and a flat hop never dips
+        // into the long-fall tail. A real drop stays airborne well past this and branches to the
+        // airborne-hold (Jump_Idle) → Land tail once the clip plays out.
+        private const float HopAirborneSeconds = 0.45f;
 
         // Blend thresholds map to PlayerMotor's jog (3.0) / sprint (4.8) / crouch (1.2) speeds so the
         // blend tracks the actual planar speed the driver feeds in (avoids the "gliding" mismatch).
@@ -116,6 +135,12 @@ namespace Tarrock.Editor
 
         // PlayerDodge's movement window; the dodge clips are time-scaled to fit it.
         private const float DodgeMovementSeconds = 0.6f; // must track PlayerDodge._dodgeDuration
+
+        // The Focus strafe-hops (Dodge_Left/Right) cover only ~0.45x of the roll's ground over the
+        // same window (PlayerDodge._hopDistanceScale), so their clips are slowed to match — feet plant
+        // instead of sliding. Applied as a per-child timeScale on the L/R legs of the dodge blend so
+        // the forward/back roll clips keep full cadence. Must track PlayerDodge._hopDistanceScale.
+        private const float HopClipTimeScale = 0.45f;
 
         // Locomotion clip families that must loop; dodges and one-shots stay as imported.
         private static readonly string[] LoopingFamilies = { "idle", "walk", "run", "strafe", "sneak", "crouch" };
@@ -169,6 +194,33 @@ namespace Tarrock.Editor
             }
 
             InstallIntoScene();
+        }
+
+        /// <summary>
+        /// Rebuilds only the shared <c>RogueKayKit.controller</c> (import config + animator) without
+        /// touching any scene — used after an animator-contract change (e.g. the Focus jump states)
+        /// so the CliffHex rig, which references the same controller asset, picks it up on the next
+        /// generate/install. Headless-runnable via <c>-executeMethod</c>.
+        /// </summary>
+        [MenuItem("Tarrock/Setup/Rebuild Rogue Animator")]
+        public static void RebuildAnimator()
+        {
+            if (AssetImporter.GetAtPath(CharacterModelPath) is not ModelImporter)
+            {
+                Debug.LogError($"[Tarrock] KayKit Rogue_Hooded FBX not found at {CharacterModelPath}; aborting animator rebuild.");
+                return;
+            }
+
+            Avatar avatar = ConfigureCharacterModel();
+            foreach (string path in AnimationLibraryPaths)
+            {
+                ConfigureAnimationLibrary(path, avatar);
+            }
+
+            if (BuildAnimatorController())
+            {
+                Debug.Log("[Tarrock] RogueKayKit.controller rebuilt (no scene touched).");
+            }
         }
 
         // ---------------------------------------------------------------------------------
@@ -247,6 +299,15 @@ namespace Tarrock.Editor
             foreach (ModelImporterClipAnimation clip in clips)
             {
                 string name = clip.name.ToLowerInvariant();
+
+                // Jump_Idle is the airborne HOLD (combat.md §Focus jump) and must loop; the other
+                // Jump_* clips (Start/Land/Full) are one-shots, as are the dodges.
+                if (name == "jump_idle")
+                {
+                    clip.loopTime = true;
+                    continue;
+                }
+
                 if (name.Contains("dodge") || name.Contains("jump"))
                 {
                     continue;
@@ -304,6 +365,7 @@ namespace Tarrock.Editor
             controller.AddParameter(CrouchedParameter, AnimatorControllerParameterType.Bool);
             controller.AddParameter(DodgeXParameter, AnimatorControllerParameterType.Float);
             controller.AddParameter(DodgeYParameter, AnimatorControllerParameterType.Float);
+            controller.AddParameter(AirborneParameter, AnimatorControllerParameterType.Bool);
 
             AnimatorStateMachine sm = controller.layers[0].stateMachine;
 
@@ -336,6 +398,15 @@ namespace Tarrock.Editor
             // -- Dodge: 4-way directional blend on DodgeX/DodgeY, gated by the Dodge bool -------
             AnimatorState dodge = BuildDodgeState(sm, locomotion, crouchStates, dodgeF, dodgeB, dodgeL, dodgeR);
 
+            // -- Jump (out-of-Focus dodge input): a compressed Jump_Full_Short hop, with a long-fall
+            //    tail (airborne hold → Land) for drops past the hop window ---------------------------
+            AnimatorState jump = BuildJumpStates(
+                sm, locomotion,
+                FindClip(clips, JumpFullShortClipName),
+                FindClip(clips, JumpIdleClipName),
+                FindClip(clips, JumpLandClipName),
+                FindClip(clips, JumpStartClipName));
+
             EditorUtility.SetDirty(controller);
             AssetDatabase.SaveAssets();
 
@@ -345,7 +416,8 @@ namespace Tarrock.Editor
                 $"idle={(CrouchIdleFrozenWalk ? $"frozen@{CrouchIdleFrozenNormalizedTime}" : "cycle (old A/B)")}]" +
                 $"{(crouchStates.Length > 0 ? string.Empty : " (SKIPPED)")}, dodge 4-way " +
                 $"[F={Name(dodgeF)}, B={Name(dodgeB)}, L={Name(dodgeL)}, R={Name(dodgeR)}]" +
-                $"{(dodge != null ? string.Empty : " (SKIPPED)")}.");
+                $"{(dodge != null ? string.Empty : " (SKIPPED)")}, jump [Full_Short hop@{HopAirborneSeconds}s + fall tail Idle→Land]" +
+                $"{(jump != null ? string.Empty : " (SKIPPED)")}.");
             return true;
         }
 
@@ -364,6 +436,23 @@ namespace Tarrock.Editor
                 else if (Mathf.Approximately(children[i].threshold, SprintThreshold))
                 {
                     children[i].timeScale = SprintClipTimeScale;
+                }
+            }
+
+            tree.children = children;
+        }
+
+        // Slows the Left/Right (X = ±1) legs of the dodge blend to HopClipTimeScale so the shorter
+        // strafe-hop's feet do not slide; the roll legs (X ≈ 0) are left at full speed. Matched by X
+        // sign, not clip identity, because the directional blend is authored by position.
+        private static void ApplyHopClipTimeScales(BlendTree tree)
+        {
+            ChildMotion[] children = tree.children;
+            for (int i = 0; i < children.Length; i++)
+            {
+                if (Mathf.Abs(children[i].position.x) > 0.5f)
+                {
+                    children[i].timeScale = HopClipTimeScale;
                 }
             }
 
@@ -492,6 +581,11 @@ namespace Tarrock.Editor
                 tree.AddChild(dodgeR, new Vector2(1f, 0f));
             }
 
+            // Slow the strafe-hop legs (X = ±1, the Left/Right clips) so the shorter hop's feet stay
+            // planted; the forward/back roll legs (X = 0) keep full cadence. AddChild has no timeScale
+            // arg, so the children are rewritten after the fact (matched by X sign, not clip identity).
+            ApplyHopClipTimeScales(tree);
+
             dodge.motion = tree;
 
             // Fit the dodge into the movement window; never slow below authored speed (an
@@ -521,6 +615,125 @@ namespace Tarrock.Editor
             fromDodge.AddCondition(AnimatorConditionMode.IfNot, 0f, DodgeParameter);
 
             return dodge;
+        }
+
+        /// <summary>
+        /// Adds the jump graph (combat.md §Focus: out of Focus the dodge input is a jump). Director
+        /// round — a short ground hop barely showed the old Start→Idle→Land chain (the crossfades ate
+        /// the ~0.42s window), so the normal hop now plays ONE complete authored arc:
+        ///
+        /// - <b>Jump_Hop</b> — <c>Jump_Full_Short</c> time-compressed (state speed = clip length /
+        ///   <see cref="HopAirborneSeconds"/>) so the full anticipation→launch→airborne→land arc
+        ///   lands exactly when the Fool lands. Entered from locomotion the instant <c>Airborne</c>
+        ///   goes true, with NO exit time and a ≤0.05 crossfade so the anticipation frame reads.
+        /// - <b>Jump_Idle → Jump_Land</b> — the long-fall tail: if the compressed hop clip plays all
+        ///   the way out while still airborne (a drop off a ledge, past the hop window) the graph
+        ///   holds the looping airborne pose, then lands. A normal hop lands first (the
+        ///   Airborne-false transition, ordered before the fall branch) and never reaches the tail.
+        ///
+        /// Falls back to the old Start→Idle→Land chain if <c>Jump_Full_Short</c> is missing. Returns
+        /// null (jump skipped) only if the tail clips are missing too.
+        /// </summary>
+        private static AnimatorState BuildJumpStates(
+            AnimatorStateMachine sm, AnimatorState locomotion,
+            AnimationClip fullShortClip, AnimationClip idleClip, AnimationClip landClip,
+            AnimationClip startClip)
+        {
+            if (idleClip == null || landClip == null)
+            {
+                Debug.LogWarning(
+                    $"[Tarrock] Jump tail clips missing (idle={Name(idleClip)}, land={Name(landClip)}); " +
+                    "jump states skipped.");
+                return null;
+            }
+
+            AnimatorState idle = sm.AddState("Jump_Idle");
+            idle.motion = idleClip;
+            AnimatorState land = sm.AddState("Jump_Land");
+            land.motion = landClip;
+
+            // The long-fall tail: airborne-hold → Land the instant the motor reports grounded, then
+            // back to travel locomotion once the land settle has played.
+            AnimatorStateTransition idleToLand = idle.AddTransition(land);
+            idleToLand.hasExitTime = false;
+            idleToLand.duration = 0.08f;
+            idleToLand.AddCondition(AnimatorConditionMode.IfNot, 0f, AirborneParameter);
+
+            AnimatorStateTransition landToLoco = land.AddTransition(locomotion);
+            landToLoco.hasExitTime = true;
+            landToLoco.exitTime = 0.7f;
+            landToLoco.duration = 0.1f;
+
+            if (fullShortClip == null)
+            {
+                // Fallback: no Jump_Full_Short — rebuild the old Start→Idle→Land chain so the jump
+                // still animates (just without the compressed-hop feel).
+                return BuildLegacyJumpChain(sm, locomotion, startClip, idle, land);
+            }
+
+            AnimatorState hop = sm.AddState("Jump_Hop");
+            hop.motion = fullShortClip;
+            if (fullShortClip.length > 0.01f)
+            {
+                // Compress the whole arc into the hop's airborne window so it lands with the Fool.
+                hop.speed = fullShortClip.length / HopAirborneSeconds;
+            }
+
+            // Enter the hop the frame the motor leaves the ground — instant, so the anticipation reads.
+            AnimatorStateTransition toHop = locomotion.AddTransition(hop);
+            toHop.hasExitTime = false;
+            toHop.duration = 0.05f;
+            toHop.AddCondition(AnimatorConditionMode.If, 0f, AirborneParameter);
+
+            // ORDER MATTERS: landing wins over the fall branch. A normal hop lands (Airborne false)
+            // before the compressed clip fully plays out, so this fires first and skips the tail.
+            AnimatorStateTransition hopToLoco = hop.AddTransition(locomotion);
+            hopToLoco.hasExitTime = false;
+            hopToLoco.duration = 0.05f;
+            hopToLoco.AddCondition(AnimatorConditionMode.IfNot, 0f, AirborneParameter);
+
+            // Long fall: the compressed hop clip played all the way out and we are STILL airborne —
+            // hand off to the airborne-hold loop (which then lands via the tail above).
+            AnimatorStateTransition hopToIdle = hop.AddTransition(idle);
+            hopToIdle.hasExitTime = true;
+            hopToIdle.exitTime = 1f;
+            hopToIdle.duration = 0.05f;
+            hopToIdle.AddCondition(AnimatorConditionMode.If, 0f, AirborneParameter);
+
+            return hop;
+        }
+
+        // The pre-Jump_Full_Short jump: Locomotion → Start → Idle (on exit time) → Land (on grounded)
+        // → Locomotion. Kept only as a fallback for when the Jump_Full_Short clip is absent.
+        private static AnimatorState BuildLegacyJumpChain(
+            AnimatorStateMachine sm, AnimatorState locomotion,
+            AnimationClip startClip, AnimatorState idle, AnimatorState land)
+        {
+            if (startClip == null)
+            {
+                Debug.LogWarning("[Tarrock] Jump_Full_Short and Jump_Start both missing; jump states skipped.");
+                return null;
+            }
+
+            AnimatorState start = sm.AddState("Jump_Start");
+            start.motion = startClip;
+
+            AnimatorStateTransition toJump = locomotion.AddTransition(start);
+            toJump.hasExitTime = false;
+            toJump.duration = 0.05f;
+            toJump.AddCondition(AnimatorConditionMode.If, 0f, AirborneParameter);
+
+            AnimatorStateTransition startToIdle = start.AddTransition(idle);
+            startToIdle.hasExitTime = true;
+            startToIdle.exitTime = 0.9f;
+            startToIdle.duration = 0.1f;
+
+            AnimatorStateTransition startToLand = start.AddTransition(land);
+            startToLand.hasExitTime = false;
+            startToLand.duration = 0.05f;
+            startToLand.AddCondition(AnimatorConditionMode.IfNot, 0f, AirborneParameter);
+
+            return start;
         }
 
         private static List<AnimationClip> LoadLibraryClips()
@@ -594,6 +807,13 @@ namespace Tarrock.Editor
             }
 
             WireCameraTransform(playerRig, mainCamera.transform);
+
+            FocusStance focusStance = playerRig.GetComponent<FocusStance>();
+            if (focusStance != null && vcamTransform != null)
+            {
+                SetObjectReference(focusStance, "_vcam", vcamTransform.GetComponent<CinemachineCamera>());
+                SetObjectReference(focusStance, "_orbital", vcamTransform.GetComponent<CinemachineOrbitalFollow>());
+            }
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -712,6 +932,7 @@ namespace Tarrock.Editor
 
             SetObjectReference(inputReader, "_actions", inputAsset);
             SetObjectReference(dodge, "_input", inputReader);
+            SetObjectReference(dodge, "_motor", motor);
             SetObjectReference(motor, "_input", inputReader);
             SetObjectReference(motor, "_dodge", dodge);
 
@@ -719,6 +940,11 @@ namespace Tarrock.Editor
             SetObjectReference(animationDriver, "_animator", animator);
             SetObjectReference(animationDriver, "_motor", motor);
             SetObjectReference(animationDriver, "_dodge", dodge);
+
+            // Focus stance camera (combat.md §Focus); vcam refs wired after the camera rig is built.
+            FocusStance focusStance = playerRig.AddComponent<FocusStance>();
+            SetObjectReference(focusStance, "_input", inputReader);
+            SetObjectReference(focusStance, "_player", playerRig.transform);
 
             return playerRig;
         }

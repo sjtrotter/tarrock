@@ -100,20 +100,76 @@ namespace Tarrock.Editor
         private const float CamVerticalMin = -12f;
         private const float CamVerticalMax = 70f;      // full look-down: the Fool seen from above
         private const float CamVerticalDefault = 16f;  // resting tilt, a touch higher than the old 10
+        // Third-person field of view (director round 4, item 5). Raised from the Cinemachine default
+        // 55 to open up the cramped diorama read. Named so the director can also tune the
+        // CinemachineCamera lens live in the inspector. Tried 62–65; 64 reads open without fisheye.
+        private const float CamFieldOfView = 64f;
 
         // -- Atmosphere assets (mood pass, docs/design/art-audio.md) --------------------------
         private const string AtmoDir = "Assets/_Project/Art/Atmosphere";
         private const string GradientSkyShader = "Tarrock/GradientSky";
 
-        // -- Prop-collider staging (item 3) ---------------------------------------------------
-        // Dressing props are walk-through by default; the director wants solid props. Each Place()
-        // that warrants collision registers a job here (kind: 1 box, 2 trunk/post capsule, 3 well box);
-        // BuildPropColliders resolves them AFTER all dressing (so post-Place rescales are final) into
-        // one PropColliders root at world scale 1 (bounds map straight through). Grass tufts, tiny
-        // flowers and clouds never register — walking through those is correct.
+        // -- Prop-collider policy (director round 4) ------------------------------------------
+        // ONE central rule, applied uniformly so every object feels the same (the director's single
+        // source of truth: the hitbox matches the geometry). Categories are few and absolute:
+        //   1 SOLID  — the visible convex mesh IS the hitbox (rocks, stones, menhirs, boulders,
+        //              barrels, crates, buckets, sacks, lumber, resource stone, well, tent, flag,
+        //              firestones, cairns). A convex MeshCollider off the object's OWN render mesh;
+        //              no fitted boxes with corners poking past round rock.
+        //   2 TREE   — trunk-only capsule (living + dead). Radius is MEASURED from the actual trunk
+        //              (horizontal ray-rings cast into the low trunk band), not inferred, so a thin
+        //              sapling gets a thin hitbox and a fat trunk a fat one, and the canopy/leaves
+        //              NEVER collide. Each capsule is then VERIFIED against the visual trunk.
+        //   3 BUSH   — resolved by MEASURED world height into two tiers (director round 5): a TALL
+        //              bush (> 60% of player height) becomes SOLID (its own convex mesh, like a rock);
+        //              a SHORT bush gets no blocker but a foliage-drag TRIGGER that slows the walk.
+        //   0 NONE   — grass, flowers, tufts and clouds: walk straight through.
+        // Each Place() records its instance + category; BuildPropColliders resolves them AFTER all
+        // dressing (so post-Place rescales are final). SOLID colliders live on the prop's own mesh
+        // child (exact geometry under any rotation/non-uniform scale); TREE capsules and SHORT-bush
+        // foliage triggers live upright in world-scale-1 roots. Then WalkabilitySweep nudges any
+        // BLOCKING collider (not the soft foliage triggers) out of a walkable lane. Convex limit is
+        // 255 tris — meshes over that get a hull-simplified fallback (reported).
         private static Transform s_propColliders;
-        private static readonly List<(GameObject go, int kind)> s_colliderJobs =
-            new List<(GameObject, int)>();
+        private static Transform s_foliageTriggers; // world scale 1: soft SHORT-bush drag volumes
+
+        private sealed class PropRec
+        {
+            public GameObject Root;
+            public int Category;                                  // 1 solid, 2 tree, 3 bush
+            public readonly List<GameObject> ColliderObjs = new List<GameObject>(); // external (tree/bush)
+        }
+
+        private static readonly List<PropRec> s_props = new List<PropRec>();
+        private static readonly Dictionary<Collider, PropRec> s_colliderToRec =
+            new Dictionary<Collider, PropRec>();
+        private static readonly List<string> s_colliderNotes = new List<string>();
+        private static readonly List<string> s_treeMeasureLog = new List<string>();
+        private static readonly List<Vector3> s_rampCenters = new List<Vector3>();
+        private static int s_sweepBefore, s_sweepAfter, s_sweepNudged;
+        private static int s_bushShort, s_bushTall, s_treePass, s_treeFail;
+
+        // Player capsule dimensions for the walkability sweep (must match the CharacterController in
+        // BuildPlayerRig: height 0.71 m, radius 0.16 m).
+        private const float PlayerHeight = 0.71f;
+        private const float PlayerRadius = 0.16f;
+
+        // Bush tiers (director round 5): a bush taller than 60% of the player is a SOLID obstacle;
+        // shorter bushes are soft (walk-through with a drag).
+        private const float TallBushHeight = 0.60f * PlayerHeight; // 0.426 m
+
+        // Trunk measurement (director round 5): sample the trunk cross-section at these fractions of
+        // the player's height above the tree's base (≈0.11 / 0.25 / 0.39 m), inside the trunk zone
+        // and below any canopy, casting 16 inward rays per height. Radius = max hit + this skin.
+        private static readonly float[] TrunkSampleFractions = { 0.15f, 0.35f, 0.55f };
+        private const int TrunkRayCount = 16;
+        private const float TrunkSkin = 0.02f;
+
+        // The Waystation is a landmark the player arrives AT (a shrine on a rise), not a lane to keep
+        // clear — its solid well/flags are protected from the sweep within this radius so the shrine is
+        // never evicted off its mark. (WaystationXZ is referenced live in the sweep, not here, because
+        // static field initializers run top-to-bottom and WaystationXZ is declared further down.)
+        private const float WaystationKeepout = 4.5f;
 
         // -- Region roots ---------------------------------------------------------------------
         private const string TerrainRootName = "CliffTerrain";
@@ -298,6 +354,7 @@ namespace Tarrock.Editor
             }
 
             int tileCount = 0, wallCount = 0, rampCount = 0, slabCount = 0;
+            s_rampCenters.Clear();
             foreach (KeyValuePair<(int, int), Vector2> kv in present)
             {
                 (int r, int c) = kv.Key;
@@ -324,6 +381,7 @@ namespace Tarrock.Editor
                     // (slopes permit; cliffs — the walls above — refuse).
                     MakeTile(slopeMesh, slopeMats, new Vector3(xz.x, topY, xz.y), rampYaw, tiles.transform,
                         $"ramp_{r}_{c}");
+                    s_rampCenters.Add(new Vector3(xz.x, topY, xz.y));
                     rampCount++;
                 }
                 else
@@ -368,8 +426,13 @@ namespace Tarrock.Editor
                     $"skirt_{r}_{c}");
             }
 
-            s_colliderJobs.Clear();
+            s_props.Clear();
+            s_colliderToRec.Clear();
+            s_colliderNotes.Clear();
+            s_treeMeasureLog.Clear();
+            s_bushShort = s_bushTall = s_treePass = s_treeFail = 0;
             s_propColliders = new GameObject("PropColliders").transform; // world scale 1, unrotated
+            s_foliageTriggers = new GameObject("FoliageTriggers").transform; // world scale 1, soft drag volumes
 
             DressCampsites(deco.transform);
             DressStandingStones(deco.transform);
@@ -379,7 +442,8 @@ namespace Tarrock.Editor
             DressPockets(deco.transform);
             DressClouds(deco.transform);
 
-            int propColliders = BuildPropColliders();
+            int propColliders = BuildPropColliders(out int solidCols, out int treeCols);
+            WalkabilitySweep(deco.transform);
 
             BuildMarkers();
             BuildLighting();
@@ -390,9 +454,18 @@ namespace Tarrock.Editor
             EditorSceneManager.SaveScene(scene, CliffHexScenePath);
             AssetDatabase.SaveAssets();
 
+            string notes = s_colliderNotes.Count == 0 ? "none" : string.Join("; ", s_colliderNotes);
             Debug.Log($"[Tarrock] Cliff hex terrain built into {CliffHexScenePath}: {tileCount} tiles " +
-                $"({wallCount} sealed as walls, {rampCount} ramps), {slabCount} underside/skirt slabs, " +
-                $"{propColliders} prop colliders. Run 'Install Player In Cliff Hex' next.");
+                $"({wallCount} sealed as walls, {rampCount} ramps), {slabCount} underside/skirt slabs. " +
+                $"Prop colliders: {solidCols} SOLID convex-mesh, {treeCols} TREE trunk-capsules " +
+                $"({propColliders} total). Bush tiers: {s_bushShort} SHORT (foliage-drag triggers), " +
+                $"{s_bushTall} TALL (solid). Tree verify: {s_treePass} pass, {s_treeFail} fail. " +
+                $"Convex-limit fallbacks: {notes}. " +
+                $"Walkability sweep: {s_sweepBefore} violations before, {s_sweepAfter} after " +
+                $"({s_sweepNudged} props nudged). Run 'Install Player In Cliff Hex' next.");
+
+            Debug.Log("[Tarrock] Tree trunk measurement table (radius m, verify): " +
+                (s_treeMeasureLog.Count == 0 ? "no trees" : "\n  " + string.Join("\n  ", s_treeMeasureLog)));
         }
 
         // Stacks bottom-mesh slabs downward from <paramref name="topY"/> to at least
@@ -771,6 +844,23 @@ namespace Tarrock.Editor
             }
         }
 
+        // Bush tier model pools (director round 5): visually distinct SHORT vs TALL so the measured
+        // tier matches what the eye reads. SHORT = the pack's small dome bushes; TALL = the big round
+        // ones. Each is placed at a target WORLD height (via PlaceBush) that lands cleanly on its side
+        // of TallBushHeight, so the height classifier in BuildPropColliders is never a coin-flip.
+        private static readonly string[] ShortBushes =
+        {
+            ForestDir + "/Bush_1_A_Color1.fbx", ForestDir + "/Bush_4_A_Color1.fbx",
+        };
+
+        private static readonly string[] TallBushes =
+        {
+            ForestDir + "/Bush_2_B_Color1.fbx", ForestDir + "/Bush_2_C_Color1.fbx",
+        };
+
+        private const float ShortBushWorldHeight = 0.34f; // clearly under TallBushHeight (~0.43 m)
+        private const float TallBushWorldHeight = 1.05f;   // clearly over — a solid round bush
+
         // Living-tree clusters (KayKit ForestNature). Wind-scoured meadow → clustered and sparse,
         // never on the dead-tree knoll (which stays bare) or the rim.
         private static readonly Vector2[] GroveXZ =
@@ -784,14 +874,13 @@ namespace Tarrock.Editor
         {
             var group = new GameObject("Groves");
             group.transform.SetParent(parent, false);
+            // Single-trunk models only: a grove is a jittered clump of individual trees, each of which
+            // gets its own MEASURED trunk capsule (director round 5). The baked multi-trunk clump
+            // models are excluded — one capsule cannot honestly fit a clump (it would be a 2 m solid
+            // wall that fails trunk verification), and a clump of singles reads the same or better.
             string[] trees =
             {
                 DecoDir + "/nature/tree_single_A.fbx", DecoDir + "/nature/tree_single_B.fbx",
-                DecoDir + "/nature/trees_A_medium.fbx", DecoDir + "/nature/trees_B_small.fbx",
-            };
-            string[] bushes =
-            {
-                ForestDir + "/Bush_2_A_Color1.fbx", ForestDir + "/Bush_1_C_Color1.fbx",
             };
             var rnd = new System.Random(90210);
             int idx = 0;
@@ -815,15 +904,19 @@ namespace Tarrock.Editor
                         1.0f + ((float)rnd.NextDouble() * 0.5f), $"tree_{idx++}", false);
                 }
 
-                for (int i = 0; i < 2; i++)
-                {
-                    float jx = ((float)rnd.NextDouble() * 2f - 1f) * 3.5f;
-                    float jz = ((float)rnd.NextDouble() * 2f - 1f) * 3.5f;
-                    Place(group.transform, bushes[rnd.Next(bushes.Length)],
-                        new Vector3(g.x + jx, gy, g.y + jz) / ParentScale,
-                        new Vector3(0f, rnd.Next(0, 360), 0f),
-                        1.1f + ((float)rnd.NextDouble() * 0.5f), $"bush_{idx++}", false);
-                }
+                // One TALL (solid) and one SHORT (foliage-drag) bush per grove, so both tiers read
+                // side by side across the meadow (director round 5).
+                float tjx = ((float)rnd.NextDouble() * 2f - 1f) * 3.5f;
+                float tjz = ((float)rnd.NextDouble() * 2f - 1f) * 3.5f;
+                PlaceBush(group.transform, TallBushes[rnd.Next(TallBushes.Length)],
+                    new Vector3(g.x + tjx, gy, g.y + tjz) / ParentScale, rnd.Next(0, 360),
+                    TallBushWorldHeight, $"bush_tall_{idx++}");
+
+                float sjx = ((float)rnd.NextDouble() * 2f - 1f) * 3.5f;
+                float sjz = ((float)rnd.NextDouble() * 2f - 1f) * 3.5f;
+                PlaceBush(group.transform, ShortBushes[rnd.Next(ShortBushes.Length)],
+                    new Vector3(g.x + sjx, gy, g.y + sjz) / ParentScale, rnd.Next(0, 360),
+                    ShortBushWorldHeight, $"bush_short_{idx++}");
             }
 
             // A thin scatter of grass tufts across the walkable valley (wind-scoured, so sparse).
@@ -864,7 +957,6 @@ namespace Tarrock.Editor
                 string[] trees =
                 {
                     DecoDir + "/nature/tree_single_A.fbx", DecoDir + "/nature/tree_single_B.fbx",
-                    DecoDir + "/nature/trees_A_medium.fbx",
                 };
                 for (int i = 0; i < 7; i++)
                 {
@@ -876,12 +968,16 @@ namespace Tarrock.Editor
                         $"tree_{i}", false);
                 }
 
+                // A denser hollow: two short foliage bushes and one tall solid one (director round 5).
                 for (int i = 0; i < 3; i++)
                 {
                     float a = (float)rnd.NextDouble() * Mathf.PI * 2f;
                     var lp = new Vector3(Mathf.Cos(a) * 2.6f, 0f, Mathf.Sin(a) * 2.6f);
-                    Place(pk.transform, ForestDir + "/Bush_2_A_Color1.fbx", lp,
-                        new Vector3(0f, rnd.Next(0, 360), 0f), 1.2f, $"bush_{i}", false);
+                    bool tall = i == 0;
+                    PlaceBush(pk.transform,
+                        (tall ? TallBushes : ShortBushes)[rnd.Next(tall ? TallBushes.Length : ShortBushes.Length)],
+                        lp, rnd.Next(0, 360), tall ? TallBushWorldHeight : ShortBushWorldHeight,
+                        tall ? $"bush_tall_{i}" : $"bush_short_{i}");
                 }
             }
 
@@ -981,94 +1077,584 @@ namespace Tarrock.Editor
             g.transform.localScale = Vector3.one * scale;
             g.name = name;
 
-            int kind = ColliderKind(assetPath);
-            if (kind != 0 && s_colliderJobs != null)
+            int category = ColliderCategory(assetPath);
+            if (category != 0)
             {
-                s_colliderJobs.Add((g, kind));
+                s_props.Add(new PropRec { Root = g, Category = category });
             }
 
             return g;
         }
 
-        // Which collider a dressing asset gets (0 = none/walk-through). The director walked through
-        // everything; trees/posts collide on the trunk only, the well/tents get boxes, everything
-        // solid gets a shrunk box, and ground scatter (grass, flowers, drifting cloud) stays passable.
-        private static int ColliderKind(string path)
+        // Places a bush and rescales it to a TARGET WORLD HEIGHT, so its measured tier (SHORT/TALL,
+        // resolved in BuildPropColliders) is deterministic regardless of the model's native size.
+        private static GameObject PlaceBush(
+            Transform parent, string assetPath, Vector3 localPos, float yaw, float targetWorldHeight, string name)
         {
+            GameObject g = Place(parent, assetPath, localPos, new Vector3(0f, yaw, 0f), 1f, name, false);
+            if (g == null)
+            {
+                return null;
+            }
+
+            float h = MeasuredWorldHeight(g);
+            if (h > 0.0001f)
+            {
+                g.transform.localScale = Vector3.one * (targetWorldHeight / h);
+            }
+
+            return g;
+        }
+
+        // The single source of truth for what a dressing asset collides as (0 none / 1 solid / 2 tree).
+        // Absolute categories, decided by asset kind — not by a per-prop fitted guess. Foliage and sky
+        // never collide; anything with a trunk collides on the trunk only; everything else physical is
+        // its own convex mesh.
+        private static int ColliderCategory(string path)
+        {
+            // BUSHES: resolved by measured height into TALL (solid) / SHORT (foliage-drag trigger).
+            if (path.Contains("Bush"))
+            {
+                return 3;
+            }
+
+            // SOFT foliage + sky: grass, flowers, tufts, clouds — walk straight through.
             if (path.Contains("Grass") || path.Contains("Flower") || path.Contains("cloud"))
             {
                 return 0;
             }
 
-            if (path.Contains("tree") || path.Contains("Tree") || path.Contains("flag"))
+            // TREES (living KayKit + dead Quaternius): trunk capsule only; canopy/leaves pass.
+            if (path.Contains("tree") || path.Contains("Tree"))
             {
-                return 2; // trunk / flagpole capsule — collide the trunk, walk under the canopy
+                return 2;
             }
 
-            if (path.Contains("building_well"))
-            {
-                return 3; // the well: box, minimal shrink
-            }
-
-            return 1; // bushes, rocks, stones, tents, barrels, crates, sacks, buckets, lumber, cairns
+            // SOLID: rocks, stones, menhirs, boulders, barrels, crates, sacks, buckets, lumber,
+            // resource stone, the well, tents, flags, firestones, cairns — the visible mesh is the box.
+            return 1;
         }
 
-        // Resolves every staged collider job into the PropColliders root. Runs after all dressing so
-        // props that the caller rescales post-Place (menhirs, boulders, seats) have final bounds.
-        private static int BuildPropColliders()
+        // Resolves every recorded prop into its category collider. Runs after all dressing so props the
+        // caller rescales post-Place (menhirs, boulders, seats) have final transforms. SOLID props get a
+        // convex MeshCollider on their OWN mesh child (exact geometry under any rotation / non-uniform
+        // scale); TREE props get an upright trunk capsule in the world-scale-1 PropColliders root.
+        // Returns the total collider count and reports per-category counts + convex-limit fallbacks.
+        private static int BuildPropColliders(out int solidCount, out int treeCount)
         {
-            int made = 0;
-            foreach ((GameObject go, int kind) in s_colliderJobs)
+            solidCount = 0;
+            treeCount = 0;
+            foreach (PropRec rec in s_props)
             {
-                if (go == null)
+                if (rec.Root == null)
                 {
                     continue;
                 }
 
-                Renderer[] rs = go.GetComponentsInChildren<Renderer>();
-                if (rs.Length == 0)
+                if (rec.Category == 1)
                 {
-                    continue;
+                    solidCount += BuildSolidMeshColliders(rec);
                 }
-
-                Bounds b = rs[0].bounds;
-                for (int i = 1; i < rs.Length; i++)
+                else if (rec.Category == 2)
                 {
-                    b.Encapsulate(rs[i].bounds);
-                }
+                    GameObject cap = BuildTrunkCapsule(rec.Root);
+                    if (cap != null)
+                    {
+                        cap.transform.SetParent(s_propColliders, false);
+                        rec.ColliderObjs.Add(cap);
+                        foreach (Collider c in cap.GetComponents<Collider>())
+                        {
+                            s_colliderToRec[c] = rec;
+                        }
 
-                if (b.size.x <= 0.001f && b.size.y <= 0.001f && b.size.z <= 0.001f)
+                        treeCount++;
+                    }
+                }
+                else if (rec.Category == 3)
                 {
-                    continue;
+                    // Bush tier by MEASURED world height (director round 5).
+                    float height = MeasuredWorldHeight(rec.Root);
+                    if (height > TallBushHeight)
+                    {
+                        // TALL bush → SOLID, same policy as a rock; swept out of lanes.
+                        solidCount += BuildSolidMeshColliders(rec);
+                        s_bushTall++;
+                    }
+                    else
+                    {
+                        // SHORT bush → soft foliage-drag trigger; NOT swept (walking through it is the point).
+                        BuildFoliageTrigger(rec.Root);
+                        s_bushShort++;
+                    }
                 }
-
-                var col = new GameObject($"col_{go.name}");
-                col.transform.SetParent(s_propColliders, false);
-                col.transform.position = b.center;
-                col.transform.rotation = Quaternion.identity;
-                col.transform.localScale = Vector3.one;
-                col.isStatic = true;
-
-                if (kind == 2)
-                {
-                    // Trunk / post capsule: radius a fraction of the footprint (trunk, not canopy).
-                    var cap = col.AddComponent<CapsuleCollider>();
-                    cap.direction = 1; // world +Y (col is unrotated)
-                    cap.radius = Mathf.Max(0.05f, Mathf.Min(b.size.x, b.size.z) * 0.16f);
-                    cap.height = b.size.y;
-                    cap.center = Vector3.zero;
-                }
-                else
-                {
-                    var box = col.AddComponent<BoxCollider>();
-                    box.size = b.size * (kind == 3 ? 0.92f : 0.85f); // ×0.85 → forgiving to brush past
-                    box.center = Vector3.zero;
-                }
-
-                made++;
             }
 
-            return made;
+            // solidCount already includes every TALL-bush solid; the total is blocking colliders only.
+            return solidCount + treeCount;
+        }
+
+        // A convex MeshCollider on each mesh child (the visible mesh IS the hitbox). Shared by SOLID
+        // props (rocks, stones…) and the TALL bush tier. Returns the collider count and registers each
+        // in the sweep map. Meshes over the 255-tri convex cook limit get a reported hull fallback.
+        private static int BuildSolidMeshColliders(PropRec rec)
+        {
+            int count = 0;
+            foreach (MeshFilter mf in rec.Root.GetComponentsInChildren<MeshFilter>())
+            {
+                Mesh mesh = mf.sharedMesh;
+                if (mesh == null)
+                {
+                    continue;
+                }
+
+                var mc = mf.gameObject.AddComponent<MeshCollider>();
+                mc.sharedMesh = mesh;
+                mc.convex = true;
+                int tris = mesh.triangles.Length / 3;
+                if (tris > 255)
+                {
+                    s_colliderNotes.Add($"{rec.Root.name} ({mesh.name}, {tris} tris) → convex hull simplified to ≤255 faces");
+                }
+
+                mf.gameObject.isStatic = true;
+                s_colliderToRec[mc] = rec;
+                count++;
+            }
+
+            return count;
+        }
+
+        // World-space rendered height of a prop (max encapsulated renderer bounds).
+        private static float MeasuredWorldHeight(GameObject prop)
+        {
+            Renderer[] renderers = prop.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0)
+            {
+                return 0f;
+            }
+
+            Bounds b = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+            {
+                b.Encapsulate(renderers[i].bounds);
+            }
+
+            return b.size.y;
+        }
+
+        // A SHORT bush's soft drag volume (combat.md §Focus foliage note): a trigger sphere sized to
+        // the bush, carrying FoliageDrag, in the world-scale-1 FoliageTriggers root (so the bush's
+        // non-uniform prop scale never distorts it). Deliberately NOT registered in the sweep map —
+        // a short bush is meant to sit on the path and slow the Fool, not be evicted from it.
+        private static void BuildFoliageTrigger(GameObject bush)
+        {
+            Renderer[] renderers = bush.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0)
+            {
+                return;
+            }
+
+            Bounds b = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+            {
+                b.Encapsulate(renderers[i].bounds);
+            }
+
+            var go = new GameObject($"foliage_{bush.name}");
+            go.transform.SetParent(s_foliageTriggers, false);
+            go.transform.position = b.center;
+            var sphere = go.AddComponent<SphereCollider>();
+            sphere.isTrigger = true;
+            // Cover the bush's footprint; the player's capsule dips in as they walk through.
+            sphere.radius = Mathf.Max(0.15f, 0.5f * Mathf.Max(b.size.x, b.size.z));
+            go.AddComponent<FoliageDrag>();
+        }
+
+        // Fits an upright trunk-only capsule to a tree by PHYSICALLY MEASURING the trunk (director
+        // round 5: "measure, don't infer"). A temporary non-convex MeshCollider is put on the tree's
+        // own mesh; horizontal ray-rings (16 inward rays) are cast at three low heights inside the
+        // trunk zone (below any canopy); the hit points give the trunk's true centroid (some trees
+        // lean, so this is NOT the prefab pivot) and cross-section radius. The capsule is then VERIFIED
+        // with four probe rays against the visual trunk before the temp collider is removed. Works for
+        // both Y-up KayKit trees and the X-rotated Quaternius dead tree because everything is measured
+        // in WORLD space.
+        private static GameObject BuildTrunkCapsule(GameObject prop)
+        {
+            var worldVerts = new List<Vector3>();
+            float minY = float.MaxValue, maxY = float.MinValue;
+            foreach (MeshFilter mf in prop.GetComponentsInChildren<MeshFilter>())
+            {
+                Mesh mesh = mf.sharedMesh;
+                if (mesh == null)
+                {
+                    continue;
+                }
+
+                Matrix4x4 l2w = mf.transform.localToWorldMatrix;
+                foreach (Vector3 v in mesh.vertices)
+                {
+                    Vector3 w = l2w.MultiplyPoint3x4(v);
+                    worldVerts.Add(w);
+                    minY = Mathf.Min(minY, w.y);
+                    maxY = Mathf.Max(maxY, w.y);
+                }
+            }
+
+            if (worldVerts.Count == 0 || maxY <= minY)
+            {
+                return null;
+            }
+
+            // Vertex-based first guess (centroid + extent) of the low trunk band, purely to size and
+            // seat the ray-rings so they start OUTSIDE the trunk and aim at its axis.
+            float bandTop = minY + (TrunkSampleFractions[TrunkSampleFractions.Length - 1] * PlayerHeight) + 0.05f;
+            double gx = 0, gz = 0;
+            int gn = 0;
+            foreach (Vector3 w in worldVerts)
+            {
+                if (w.y <= bandTop)
+                {
+                    gx += w.x;
+                    gz += w.z;
+                    gn++;
+                }
+            }
+
+            var estCentroid = gn > 0 ? new Vector2((float)(gx / gn), (float)(gz / gn))
+                                     : new Vector2(prop.transform.position.x, prop.transform.position.z);
+            float estExtent = 0.05f;
+            foreach (Vector3 w in worldVerts)
+            {
+                if (w.y <= bandTop)
+                {
+                    estExtent = Mathf.Max(estExtent, Vector2.Distance(new Vector2(w.x, w.z), estCentroid));
+                }
+            }
+
+            float ringR = estExtent + 0.3f; // ray origins sit this far out, aimed inward at the axis
+
+            // Temporary non-convex MeshCollider(s) on the tree's own geometry for the measurement +
+            // verification rays; removed before returning so only the fitted capsule remains.
+            var tempColliders = new HashSet<Collider>();
+            foreach (MeshFilter mf in prop.GetComponentsInChildren<MeshFilter>())
+            {
+                if (mf.sharedMesh == null || mf.GetComponent<Collider>() != null)
+                {
+                    continue;
+                }
+
+                var temp = mf.gameObject.AddComponent<MeshCollider>();
+                temp.sharedMesh = mf.sharedMesh; // non-convex
+                tempColliders.Add(temp);
+            }
+
+            Physics.SyncTransforms();
+
+            // Cast the ray-rings and gather trunk-surface hit points.
+            var hitPts = new List<Vector2>();
+            foreach (float frac in TrunkSampleFractions)
+            {
+                float y = minY + (frac * PlayerHeight);
+                for (int k = 0; k < TrunkRayCount; k++)
+                {
+                    float ang = (k / (float)TrunkRayCount) * Mathf.PI * 2f;
+                    var outward = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang));
+                    var origin = new Vector3(estCentroid.x + (outward.x * ringR), y, estCentroid.y + (outward.y * ringR));
+                    var dir = new Vector3(-outward.x, 0f, -outward.y);
+                    if (NearestHitOnSet(origin, dir, ringR * 2f, tempColliders, out RaycastHit hit))
+                    {
+                        hitPts.Add(new Vector2(hit.point.x, hit.point.z));
+                    }
+                }
+            }
+
+            Vector2 centroid;
+            float radius;
+            if (hitPts.Count >= 3)
+            {
+                double cx = 0, cz = 0;
+                foreach (Vector2 h in hitPts)
+                {
+                    cx += h.x;
+                    cz += h.y;
+                }
+
+                centroid = new Vector2((float)(cx / hitPts.Count), (float)(cz / hitPts.Count));
+                float maxR = 0f;
+                foreach (Vector2 h in hitPts)
+                {
+                    maxR = Mathf.Max(maxR, Vector2.Distance(h, centroid));
+                }
+
+                radius = Mathf.Max(0.04f, maxR + TrunkSkin);
+            }
+            else
+            {
+                // Degenerate (rays found nothing): fall back to the vertex-band extent.
+                centroid = estCentroid;
+                radius = Mathf.Max(0.04f, estExtent + TrunkSkin);
+            }
+
+            float height = maxY - minY;
+            var go = new GameObject($"trunk_{prop.name}");
+            go.transform.position = new Vector3(centroid.x, (minY + maxY) * 0.5f, centroid.y);
+            go.transform.rotation = Quaternion.identity;
+            go.isStatic = true;
+            var capsule = go.AddComponent<CapsuleCollider>();
+            capsule.direction = 1; // world +Y (unrotated object)
+            capsule.height = height;
+            capsule.radius = Mathf.Min(radius, height * 0.5f);
+            capsule.center = Vector3.zero;
+
+            Physics.SyncTransforms();
+
+            bool pass = VerifyTrunkCapsule(prop.name, centroid, ringR, minY, tempColliders, capsule, radius);
+            if (pass)
+            {
+                s_treePass++;
+            }
+            else
+            {
+                s_treeFail++;
+            }
+
+            foreach (Collider temp in tempColliders)
+            {
+                if (temp != null)
+                {
+                    Object.DestroyImmediate(temp);
+                }
+            }
+
+            Physics.SyncTransforms();
+            return go;
+        }
+
+        // Verify (director round 5): four horizontal probe rays at trunk height, from outside inward,
+        // must hit the FINAL capsule where they hit the visual trunk. A ray fails if the capsule is not
+        // hit at all (mis-centred capsule) or the capsule surface sits BEHIND the visual trunk surface
+        // (the trunk pokes out of its hitbox — the "walk through it" bug). Logs a table row per tree.
+        private static bool VerifyTrunkCapsule(
+            string name, Vector2 centroid, float ringR, float minY,
+            HashSet<Collider> visualColliders, Collider capsule, float radius)
+        {
+            float y = minY + (0.35f * PlayerHeight);
+            Vector2[] dirs = { Vector2.up, Vector2.down, Vector2.left, Vector2.right };
+            bool pass = true;
+            float worstGap = 0f;
+            var single = new HashSet<Collider> { capsule };
+
+            foreach (Vector2 d in dirs)
+            {
+                var origin = new Vector3(centroid.x + (d.x * ringR), y, centroid.y + (d.y * ringR));
+                var dir = new Vector3(-d.x, 0f, -d.y);
+                bool capHit = NearestHitOnSet(origin, dir, ringR * 2f, single, out RaycastHit capRay);
+                bool visHit = NearestHitOnSet(origin, dir, ringR * 2f, visualColliders, out RaycastHit visRay);
+
+                if (!capHit)
+                {
+                    pass = false; // capsule absent in this direction → off-centre / undersized
+                    continue;
+                }
+
+                if (visHit)
+                {
+                    // Positive gap = capsule surface behind the trunk surface (trunk pokes out): bad.
+                    float gap = capRay.distance - visRay.distance;
+                    worstGap = Mathf.Max(worstGap, gap);
+                    if (gap > 0.03f)
+                    {
+                        pass = false;
+                    }
+                }
+            }
+
+            s_treeMeasureLog.Add($"{name}: r={radius:F3} verify={(pass ? "PASS" : "FAIL")} (worstGap={worstGap:F3}m)");
+            return pass;
+        }
+
+        // Nearest raycast hit whose collider is in the given set (ignores every other collider on the
+        // ray). Used for both the trunk-surface measurement and the capsule verification so neighbouring
+        // props never contaminate a reading.
+        private static bool NearestHitOnSet(
+            Vector3 origin, Vector3 direction, float maxDistance, HashSet<Collider> set, out RaycastHit nearest)
+        {
+            nearest = default;
+            float best = float.MaxValue;
+            bool found = false;
+            foreach (RaycastHit h in Physics.RaycastAll(origin, direction, maxDistance, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (set.Contains(h.collider) && h.distance < best)
+                {
+                    best = h.distance;
+                    nearest = h;
+                    found = true;
+                }
+            }
+
+            return found;
+        }
+
+        // ------------------------------------------------------------------------------------
+        // Walkability sweep — the other half of "feels right". Sweeps a player-sized capsule along
+        // every walk lane (trail corridor, ramps) and nudges any intruding prop collider outward so a
+        // lane the eye reads as open is never choked. Deterministic: fixed sample order, fixed 0.2 m
+        // steps, each prop moved at most once per pass. Landmarks (the Waystation shrine) are exempt.
+        // ------------------------------------------------------------------------------------
+        private static void WalkabilitySweep(Transform deco)
+        {
+            Physics.SyncTransforms();
+            List<Vector3> samples = BuildSweepSamples(out List<Vector3> pushFrom);
+
+            s_sweepBefore = CountViolations(samples);
+
+            var everMoved = new HashSet<PropRec>();
+            const float stepDist = 0.2f;
+            const int maxPasses = 40;
+            for (int pass = 0; pass < maxPasses; pass++)
+            {
+                var movedThisPass = new HashSet<PropRec>();
+                for (int si = 0; si < samples.Count; si++)
+                {
+                    Vector3 s = samples[si];
+                    Vector3 origin = pushFrom[si]; // the lane centre this sample belongs to
+                    Vector3 p0 = s + (Vector3.up * PlayerRadius);
+                    Vector3 p1 = s + (Vector3.up * (PlayerHeight - PlayerRadius));
+                    Collider[] hits = Physics.OverlapCapsule(p0, p1, PlayerRadius);
+                    foreach (Collider h in hits)
+                    {
+                        if (!s_colliderToRec.TryGetValue(h, out PropRec rec) || rec.Root == null
+                            || movedThisPass.Contains(rec))
+                        {
+                            continue;
+                        }
+
+                        // Push away from the LANE CENTRE (not the individual sample) so a prop escapes
+                        // the whole corridor/ramp radially in one consistent direction — no oscillating
+                        // between a ramp's ring of samples.
+                        Vector3 rp = rec.Root.transform.position;
+                        var dir = new Vector2(rp.x - origin.x, rp.z - origin.z);
+                        dir = dir.sqrMagnitude < 1e-4f ? new Vector2(1f, 0f) : dir.normalized;
+                        var delta = new Vector3(dir.x, 0f, dir.y) * stepDist;
+
+                        rec.Root.transform.position += delta;
+                        foreach (GameObject co in rec.ColliderObjs)
+                        {
+                            if (co != null && !co.transform.IsChildOf(rec.Root.transform))
+                            {
+                                co.transform.position += delta;
+                            }
+                        }
+
+                        Physics.SyncTransforms();
+                        movedThisPass.Add(rec);
+                        everMoved.Add(rec);
+                    }
+                }
+
+                if (movedThisPass.Count == 0)
+                {
+                    break;
+                }
+            }
+
+            Physics.SyncTransforms();
+            s_sweepAfter = CountViolations(samples);
+            s_sweepNudged = everMoved.Count;
+        }
+
+        // Player-stance sample points along every protected walk lane. Trail corridor: stepped along
+        // each segment, spread across the readable-open middle (wider through the narrow gorge/pinch,
+        // just the centreline in the open bulges). Ramps: full tile width. Samples inside a landmark
+        // keep-out (the Waystation) are dropped so its shrine is never treated as a choke.
+        private static List<Vector3> BuildSweepSamples(out List<Vector3> pushFrom)
+        {
+            var samples = new List<Vector3>();
+            pushFrom = new List<Vector3>();
+
+            for (int seg = 0; seg < TrailXZ.Length - 1; seg++)
+            {
+                Vector2 a = TrailXZ[seg];
+                Vector2 b = TrailXZ[seg + 1];
+                Vector2 ab = b - a;
+                float len = ab.magnitude;
+                if (len < 1e-4f)
+                {
+                    continue;
+                }
+
+                var perp = new Vector2(-ab.y, ab.x).normalized;
+                int steps = Mathf.Max(1, Mathf.CeilToInt(len / 0.75f));
+                for (int i = 0; i <= steps; i++)
+                {
+                    float t = i / (float)steps;
+                    Vector2 c = Vector2.Lerp(a, b, t);
+                    float halfW = Mathf.Lerp(TrailHalfW[seg], TrailHalfW[seg + 1], t);
+                    // Narrow gorge/pinch: keep the whole slim lane open. Open bulge: only clear the
+                    // centre path (props are free to decorate the edges).
+                    float protect = halfW <= 5f ? Mathf.Min(halfW - 0.4f, 2.2f) : 0.5f;
+                    float cy = FloorLevelAt(c.x, c.y) * StepWorld;
+                    var centre = new Vector3(c.x, cy, c.y);
+                    for (float off = -protect; off <= protect + 1e-3f; off += 0.4f)
+                    {
+                        Vector2 xz = c + (perp * off);
+                        if (InLandmarkKeepout(xz))
+                        {
+                            continue;
+                        }
+
+                        samples.Add(new Vector3(xz.x, FloorLevelAt(xz.x, xz.y) * StepWorld, xz.y));
+                        pushFrom.Add(centre); // push perpendicular off the trail centreline
+                    }
+                }
+            }
+
+            foreach (Vector3 rc in s_rampCenters)
+            {
+                var cxz = new Vector2(rc.x, rc.z);
+                if (!InLandmarkKeepout(cxz))
+                {
+                    samples.Add(rc);
+                    pushFrom.Add(rc);
+                }
+
+                for (int k = 0; k < 6; k++)
+                {
+                    float ang = k * (Mathf.PI / 3f);
+                    var o = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * 1.6f;
+                    if (!InLandmarkKeepout(cxz + o))
+                    {
+                        samples.Add(new Vector3(rc.x + o.x, rc.y, rc.z + o.y));
+                        pushFrom.Add(rc); // push radially out of the ramp disc
+                    }
+                }
+            }
+
+            return samples;
+        }
+
+        private static bool InLandmarkKeepout(Vector2 xz)
+        {
+            return Vector2.Distance(xz, WaystationXZ) <= WaystationKeepout;
+        }
+
+        private static int CountViolations(List<Vector3> samples)
+        {
+            var bad = new HashSet<PropRec>();
+            foreach (Vector3 s in samples)
+            {
+                Vector3 p0 = s + (Vector3.up * PlayerRadius);
+                Vector3 p1 = s + (Vector3.up * (PlayerHeight - PlayerRadius));
+                foreach (Collider h in Physics.OverlapCapsule(p0, p1, PlayerRadius))
+                {
+                    if (s_colliderToRec.TryGetValue(h, out PropRec rec) && rec.Root != null)
+                    {
+                        bad.Add(rec);
+                    }
+                }
+            }
+
+            return bad.Count;
         }
 
         // ------------------------------------------------------------------------------------
@@ -1339,6 +1925,14 @@ namespace Tarrock.Editor
             SetObjectReference(playerRig.GetComponent<PlayerMotor>(), "_cameraTransform", mainCamera.transform);
             SetObjectReference(playerRig.GetComponent<PlayerDodge>(), "_cameraTransform", mainCamera.transform);
 
+            // Wire the Focus stance to the vcam it steers (holds the orbit behind + tightens FOV).
+            FocusStance focusStance = playerRig.GetComponent<FocusStance>();
+            if (focusStance != null && vcam != null)
+            {
+                SetObjectReference(focusStance, "_vcam", vcam.GetComponent<CinemachineCamera>());
+                SetObjectReference(focusStance, "_orbital", vcam.GetComponent<CinemachineOrbitalFollow>());
+            }
+
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, CliffHexScenePath);
             AssetDatabase.SaveAssets();
@@ -1441,6 +2035,7 @@ namespace Tarrock.Editor
 
             SetObjectReference(inputReader, "_actions", inputAsset);
             SetObjectReference(dodge, "_input", inputReader);
+            SetObjectReference(dodge, "_motor", motor);
             SetObjectReference(motor, "_input", inputReader);
             SetObjectReference(motor, "_dodge", dodge);
 
@@ -1448,6 +2043,12 @@ namespace Tarrock.Editor
             SetObjectReference(driver, "_animator", animator);
             SetObjectReference(driver, "_motor", motor);
             SetObjectReference(driver, "_dodge", dodge);
+
+            // Focus stance camera (combat.md §Focus): holds behind + FOV tighten. The vcam refs are
+            // wired in InstallPlayer once the camera rig exists.
+            FocusStance focusStance = playerRig.AddComponent<FocusStance>();
+            SetObjectReference(focusStance, "_input", inputReader);
+            SetObjectReference(focusStance, "_player", playerRig.transform);
             return playerRig;
         }
 
@@ -1531,7 +2132,7 @@ namespace Tarrock.Editor
             var vcam = vcamGo.AddComponent<CinemachineCamera>();
             vcam.Follow = followTarget;
             vcam.LookAt = followTarget;
-            vcam.Lens.FieldOfView = 55f;
+            vcam.Lens.FieldOfView = CamFieldOfView;
 
             var orbital = vcamGo.AddComponent<CinemachineOrbitalFollow>();
             orbital.TargetOffset = new Vector3(0f, pivotHeight, 0f);

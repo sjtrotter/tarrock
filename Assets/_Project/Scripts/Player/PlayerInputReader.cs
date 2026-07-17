@@ -25,6 +25,7 @@ namespace Tarrock.Player
         private const string SprintActionPath = "Player/Sprint";
         private const string DodgeActionPath = "Player/Dodge";
         private const string CrouchActionPath = "Player/Crouch";
+        private const string FocusActionPath = "Player/Focus";
 
         [SerializeField] private InputActionAsset _actions;
 
@@ -33,6 +34,7 @@ namespace Tarrock.Player
         private InputAction _sprintAction;
         private InputAction _dodgeAction;
         private InputAction _crouchAction;
+        private InputAction _focusAction;
         private bool _resolved;
 
         /// <summary>Raised once each time the Dodge action is performed (a discrete press).</summary>
@@ -49,6 +51,14 @@ namespace Tarrock.Player
 
         /// <summary>True while the Sprint action is held.</summary>
         public bool SprintHeld => _sprintAction != null && _sprintAction.IsPressed();
+
+        /// <summary>
+        /// True while the Focus action is held (RMB / left trigger). Focus is the combat stance
+        /// (combat.md §Focus): the Fool drops to a ready-crouch, movement becomes camera-relative
+        /// strafing, and the dodge input becomes directional. Out of Focus the same dodge input is a
+        /// jump. Read by the motor, dodge and camera stance.
+        /// </summary>
+        public bool FocusHeld => _focusAction != null && _focusAction.IsPressed();
 
         private void Awake()
         {
@@ -108,6 +118,7 @@ namespace Tarrock.Player
             _sprintAction = _actions.FindAction(SprintActionPath, throwIfNotFound: false);
             _dodgeAction = _actions.FindAction(DodgeActionPath, throwIfNotFound: false);
             _crouchAction = _actions.FindAction(CrouchActionPath, throwIfNotFound: false);
+            _focusAction = _actions.FindAction(FocusActionPath, throwIfNotFound: false);
             _resolved = true;
         }
 
