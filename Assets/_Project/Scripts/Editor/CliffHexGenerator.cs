@@ -109,6 +109,23 @@ namespace Tarrock.Editor
         private const string AtmoDir = "Assets/_Project/Art/Atmosphere";
         private const string GradientSkyShader = "Tarrock/GradientSky";
 
+        // -- Dressing materials (final dressing pass) -----------------------------------------
+        // Persisted colour materials the dressing pass tints props with (created once per run,
+        // like the sky/mote materials, so the scene's renderer references survive a rebuild).
+        //   WhiteRose — the White Rose stand-in reads WHITE/cream, not the flower atlas's blue
+        //               (GLOSSARY §The White Rose / world.md §The Cliff: the Rose regrows here).
+        //   DisturbedEarth — flat earthy brown for the keepsake dig mound and the bare ground in
+        //               the dead tree's shade (MQ00: "nothing grows in its shade").
+        private const string MatDir = "Assets/_Project/Art/Materials";
+        private static Material s_dirtMat; // cached: one asset, referenced by several decals
+
+        // -- Bound-state ambience (art-audio.md §world-state rules) ----------------------------
+        // The bound world holds its breath: a short, near-static air bed whose loop is *allowed*
+        // to be audible (NOT wind gusts). 2D, gentle, always on.
+        private const string AudioDir = "Assets/_Project/Audio/Ambience";
+        private const string CliffAmbienceClipPath = AudioDir + "/CliffBoundAmbience.wav";
+        private const float AmbienceVolume = 0.35f;
+
         // -- Prop-collider policy (director round 4) ------------------------------------------
         // ONE central rule, applied uniformly so every object feels the same (the director's single
         // source of truth: the hitbox matches the geometry). Categories are few and absolute:
@@ -431,6 +448,7 @@ namespace Tarrock.Editor
             s_colliderNotes.Clear();
             s_treeMeasureLog.Clear();
             s_bushShort = s_bushTall = s_treePass = s_treeFail = 0;
+            s_dirtMat = null; // rebuilt on first dressing use this run
             s_propColliders = new GameObject("PropColliders").transform; // world scale 1, unrotated
             s_foliageTriggers = new GameObject("FoliageTriggers").transform; // world scale 1, soft drag volumes
 
@@ -440,6 +458,7 @@ namespace Tarrock.Editor
             DressDeadTree(deco.transform);
             DressGroves(deco.transform);
             DressPockets(deco.transform);
+            DressLeapEdge(deco.transform);
             DressClouds(deco.transform);
 
             int propColliders = BuildPropColliders(out int solidCols, out int treeCols);
@@ -448,6 +467,7 @@ namespace Tarrock.Editor
             BuildMarkers();
             BuildLighting();
             BuildAtmosphere();
+            BuildAmbience();
 
             Directory.CreateDirectory(SceneDir);
             EditorSceneManager.MarkSceneDirty(scene);
@@ -697,16 +717,22 @@ namespace Tarrock.Editor
         // Dressing
         // ------------------------------------------------------------------------------------
 
+        // Human-scale extras register for the camps (MQ00: "a bootless boot, a bent tin cup, a
+        // walking-stick standing upright" — the pack's nearest reads).
+        private static readonly string[] CampExtras =
+        {
+            "props/barrel.fbx", "props/crate_A_small.fbx", "props/sack.fbx",
+            "props/bucket_empty.fbx", "props/resource_lumber.fbx",
+        };
+
+        // The six old campsites, each a distinct micro-story of a Fool long gone (all cold, all
+        // abandoned — no living fire, nothing in use). MQ00 §The Old Campsites: "None of the
+        // campsites are the same age… one, tucked under an overhang, looks recent." Arrangement is
+        // ours; the register (cold, weathered, wordless) is canon.
         private static void DressCampsites(Transform parent)
         {
             var camps = new GameObject("Campsites");
             camps.transform.SetParent(parent, false);
-            string[] tents = { "props/tent.fbx" };
-            string[] extras =
-            {
-                "props/barrel.fbx", "props/crate_A_small.fbx", "props/sack.fbx",
-                "props/bucket_empty.fbx", "props/resource_lumber.fbx",
-            };
 
             for (int i = 0; i < CampXZ.Length; i++)
             {
@@ -717,45 +743,145 @@ namespace Tarrock.Editor
                 camp.transform.SetParent(camps.transform, false);
                 camp.transform.localPosition = new Vector3(xz.x, gy, xz.y) / ParentScale;
 
-                // Cold fire-ring: small stones, no flame (long abandoned).
-                int stones = 6;
-                for (int s = 0; s < stones; s++)
+                switch (i)
                 {
-                    float ang = (s / (float)stones) * Mathf.PI * 2f;
-                    var lp = new Vector3(Mathf.Cos(ang) * 0.45f, 0f, Mathf.Sin(ang) * 0.45f);
-                    Place(camp.transform, DecoDir + "/nature/rock_single_A.fbx", lp,
-                        new Vector3(0f, rnd.Next(0, 360), 0f), 0.65f, $"firestone_{s}", true);
-                }
-
-                // A tent, canted and weathered. Camp 1 holds the player spawn ~0.4 hex west of the
-                // fire — its tent sits a step further out so the spawn never lands inside the tent's
-                // (now solid) collider.
-                Vector3 tentPos = i == 0 ? new Vector3(1.5f, 0f, 0.9f) : new Vector3(0.9f, 0f, 0.4f);
-                Place(camp.transform, DecoDir + "/" + tents[0], tentPos,
-                    new Vector3(0f, rnd.Next(0, 360), i % 2 == 0 ? 3f : -4f), 1.6f, "tent", true);
-
-                // One-to-three human-scale props, some tipped over.
-                int n = 1 + rnd.Next(0, 3);
-                for (int p = 0; p < n; p++)
-                {
-                    string prop = extras[rnd.Next(extras.Length)];
-                    float ang = rnd.Next(0, 360);
-                    float rad = 0.7f + ((float)rnd.NextDouble() * 0.6f);
-                    var lp = new Vector3(Mathf.Cos(ang * Mathf.Deg2Rad) * rad, 0f,
-                        Mathf.Sin(ang * Mathf.Deg2Rad) * rad);
-                    float tip = rnd.NextDouble() > 0.5 ? 90f : 0f; // some knocked over
-                    Place(camp.transform, DecoDir + "/" + prop, lp,
-                        new Vector3(tip, rnd.Next(0, 360), 0f), 1.5f, $"prop_{p}", true);
+                    case 0: DressCampSpawn(camp.transform, rnd); break;      // wake camp — stays as-is
+                    case 1: DressCampOrderly(camp.transform, rnd); break;    // someone tidy
+                    case 2: DressCampCollapsed(camp.transform, rnd); break;  // tent collapsed, half-buried
+                    case 3: DressCampScattered(camp.transform, rnd); break;  // left in a hurry
+                    case 4: DressCampReclaimed(camp.transform, rnd); break;  // largest, grass-reclaimed
+                    case 5: DressCampOutcrop(camp.transform, rnd); break;    // recent, sheltered, a cairn
                 }
             }
 
-            // Camp 6's micro-setting: a rock outcrop it is tucked against (north flank), so the last
-            // camp reads as sheltered rather than sitting in the open.
-            Vector2 c6 = CampXZ[5];
-            float oy = FloorLevelAt(c6.x, c6.y) * StepWorld;
-            var outcrop = new GameObject("Camp6_Outcrop");
-            outcrop.transform.SetParent(camps.transform, false);
-            outcrop.transform.localPosition = new Vector3(c6.x - 1.5f, oy, c6.y + 3.2f) / ParentScale;
+            // The keepsake dig spot at MQ00_KEEPSAKE_DIGSPOT: a subtle DISTURBED-EARTH read so a
+            // player who reaches it sees something diggable (MQ00: "a patch of disturbed earth near
+            // the largest campsite" where Pip digs up the whittled dog). Non-colliding earth (it sits
+            // on the trail centreline — the dig interaction, and the sweep, must not fight it).
+            var dig = new GameObject("KeepsakeDigMound");
+            dig.transform.SetParent(camps.transform, false);
+            float digY = FloorLevelAt(KeepsakeXZ.x, KeepsakeXZ.y) * StepWorld;
+            dig.transform.localPosition = new Vector3(KeepsakeXZ.x, digY, KeepsakeXZ.y) / ParentScale;
+            Material dirt = DirtMaterial();
+            // A rounded brown mound of freshly-turned earth (rock_single_B scaled to a ~0.8 m lump)
+            // ringed by a few loose clods — reads as diggable without shouting.
+            PlaceDecal(dig.transform, DecoDir + "/nature/rock_single_B.fbx", new Vector3(0f, 0f, 0f),
+                new Vector3(0f, 20f, 0f), new Vector3(1.4f, 1.2f, 1.5f), dirt, "dirt_mound");
+            var dr = new System.Random(4290);
+            for (int k = 0; k < 4; k++)
+            {
+                float a = dr.Next(0, 360) * Mathf.Deg2Rad;
+                float rad = 0.5f + (float)dr.NextDouble() * 0.4f;
+                PlaceDecal(dig.transform, DecoDir + "/nature/rock_single_B.fbx",
+                    new Vector3(Mathf.Cos(a) * rad, 0.0f, Mathf.Sin(a) * rad),
+                    new Vector3(0f, dr.Next(0, 360), 0f), new Vector3(0.55f, 0.5f, 0.55f), dirt, $"clod_{k}");
+            }
+        }
+
+        // Cold fire-ring: small stones, no flame (long abandoned).
+        private static void ColdFireRing(Transform camp, System.Random rnd, int stones, float radius, float scale)
+        {
+            for (int s = 0; s < stones; s++)
+            {
+                float ang = (s / (float)stones) * Mathf.PI * 2f;
+                var lp = new Vector3(Mathf.Cos(ang) * radius, 0f, Mathf.Sin(ang) * radius);
+                Place(camp, DecoDir + "/nature/rock_single_A.fbx", lp,
+                    new Vector3(0f, rnd.Next(0, 360), 0f), scale, $"firestone_{s}", true);
+            }
+        }
+
+        private static void ScatterExtras(Transform camp, System.Random rnd, int n, float minR, float maxR, bool tipAll)
+        {
+            for (int p = 0; p < n; p++)
+            {
+                string prop = CampExtras[rnd.Next(CampExtras.Length)];
+                float ang = rnd.Next(0, 360);
+                float rad = minR + ((float)rnd.NextDouble() * (maxR - minR));
+                var lp = new Vector3(Mathf.Cos(ang * Mathf.Deg2Rad) * rad, 0f,
+                    Mathf.Sin(ang * Mathf.Deg2Rad) * rad);
+                float tip = tipAll || rnd.NextDouble() > 0.5 ? 90f : 0f;
+                Place(camp, DecoDir + "/" + prop, lp,
+                    new Vector3(tip, rnd.Next(0, 360), 0f), 1.5f, $"prop_{p}", true);
+            }
+        }
+
+        // Camp 1 — the wake campfire holding the player spawn (kept as-is: cold ring + weathered tent
+        // + a couple of props). The tent sits well clear of the spawn so the Fool never wakes inside
+        // its (solid) collider.
+        private static void DressCampSpawn(Transform camp, System.Random rnd)
+        {
+            ColdFireRing(camp, rnd, 6, 0.45f, 0.65f);
+            Place(camp, DecoDir + "/props/tent.fbx", new Vector3(1.5f, 0f, 0.9f),
+                new Vector3(0f, rnd.Next(0, 360), 3f), 1.6f, "tent", true);
+            ScatterExtras(camp, rnd, 1 + rnd.Next(0, 3), 0.7f, 1.3f, false);
+        }
+
+        // Camp 2 — someone orderly: a neat, even fire-ring and a tidy row of bedroll-like sacks, one
+        // crate squared up beside them. Nothing tipped.
+        private static void DressCampOrderly(Transform camp, System.Random rnd)
+        {
+            ColdFireRing(camp, rnd, 8, 0.5f, 0.6f);
+            for (int j = 0; j < 3; j++)
+            {
+                Place(camp, DecoDir + "/props/sack.fbx", new Vector3(0.95f, 0f, -0.6f + j * 0.6f),
+                    new Vector3(0f, 90f, 0f), 1.4f, $"bedroll_{j}", true);
+            }
+
+            Place(camp, DecoDir + "/props/crate_A_small.fbx", new Vector3(1.6f, 0f, 0f),
+                new Vector3(0f, 0f, 0f), 1.4f, "crate_squared", true);
+            Place(camp, DecoDir + "/props/bucket_empty.fbx", new Vector3(-0.85f, 0f, 0.8f),
+                new Vector3(0f, rnd.Next(0, 360), 0f), 1.4f, "bucket", true);
+        }
+
+        // Camp 3 — the tent has collapsed and is half-buried, the camp mostly given back to the turf.
+        private static void DressCampCollapsed(Transform camp, System.Random rnd)
+        {
+            ColdFireRing(camp, rnd, 6, 0.45f, 0.6f);
+            Place(camp, DecoDir + "/props/tent.fbx", new Vector3(0.6f, -0.35f, 0.5f),
+                new Vector3(82f, 40f, 6f), 1.6f, "tent_collapsed", true);
+            Place(camp, DecoDir + "/props/crate_A_small.fbx", new Vector3(-0.7f, -0.12f, -0.5f),
+                new Vector3(18f, 30f, 14f), 1.4f, "crate_halfburied", true);
+            Place(camp, DecoDir + "/props/resource_lumber.fbx", new Vector3(1.0f, 0f, -0.8f),
+                new Vector3(0f, 70f, 90f), 1.4f, "pole_fallen", true);
+        }
+
+        // Camp 4 — left in a hurry: gear flung wide, everything knocked over, the tent toppled.
+        private static void DressCampScattered(Transform camp, System.Random rnd)
+        {
+            ColdFireRing(camp, rnd, 6, 0.5f, 0.6f);
+            Place(camp, DecoDir + "/props/tent.fbx", new Vector3(1.2f, 0f, -0.9f),
+                new Vector3(88f, rnd.Next(0, 360), 0f), 1.6f, "tent_toppled", true);
+            ScatterExtras(camp, rnd, 4, 1.0f, 2.2f, true);
+        }
+
+        // Camp 5 — the largest and oldest, sunk in the hollow and nearly reclaimed by grass and bush:
+        // a faint ring, a rotted bedroll, foliage creeping over it. (The keepsake dig mound sits at
+        // its edge, built separately at the marker.)
+        private static void DressCampReclaimed(Transform camp, System.Random rnd)
+        {
+            ColdFireRing(camp, rnd, 5, 0.5f, 0.55f);
+            Place(camp, DecoDir + "/props/sack.fbx", new Vector3(0.8f, -0.08f, 0.4f),
+                new Vector3(10f, rnd.Next(0, 360), 0f), 1.4f, "bedroll_rotted", true);
+            // Foliage taking the camp back: two short (walk-through) bushes and one tall solid one.
+            PlaceBush(camp, ShortBushes[rnd.Next(ShortBushes.Length)], new Vector3(-0.9f, 0f, 0.9f),
+                rnd.Next(0, 360), ShortBushWorldHeight, "bush_short_0");
+            PlaceBush(camp, ShortBushes[rnd.Next(ShortBushes.Length)], new Vector3(1.1f, 0f, -0.7f),
+                rnd.Next(0, 360), ShortBushWorldHeight, "bush_short_1");
+            PlaceBush(camp, TallBushes[rnd.Next(TallBushes.Length)], new Vector3(-1.3f, 0f, -0.9f),
+                rnd.Next(0, 360), TallBushWorldHeight, "bush_tall_0");
+        }
+
+        // Camp 6 — the most recent (MQ00: "tucked under an overhang, looks recent"): sheltered against
+        // a rock outcrop, tent still standing, and a small cairn a Fool started but never finished.
+        private static void DressCampOutcrop(Transform camp, System.Random rnd)
+        {
+            ColdFireRing(camp, rnd, 6, 0.45f, 0.62f);
+            Place(camp, DecoDir + "/props/tent.fbx", new Vector3(0.9f, 0f, 0.4f),
+                new Vector3(0f, rnd.Next(0, 360), -4f), 1.6f, "tent", true);
+            ScatterExtras(camp, rnd, 1 + rnd.Next(0, 2), 0.8f, 1.3f, false);
+            BuildCairn(camp, new Vector3(1.1f, 0f, -0.7f), 4265, 3, 0.8f, "cairn");
+
+            // The rock outcrop it shelters against (north flank), so the last camp reads sheltered.
             var orn = new System.Random(4211);
             string[] boulders =
             {
@@ -765,8 +891,8 @@ namespace Tarrock.Editor
             for (int b = 0; b < 4; b++)
             {
                 float a = b * 1.4f;
-                var lp = new Vector3(Mathf.Cos(a) * (0.9f + b * 0.35f), 0f, Mathf.Sin(a) * 0.7f);
-                GameObject g = Place(outcrop.transform, boulders[orn.Next(boulders.Length)], lp,
+                var lp = new Vector3(-1.5f + Mathf.Cos(a) * (0.9f + b * 0.35f), 0f, 3.2f + Mathf.Sin(a) * 0.7f);
+                GameObject g = Place(camp, boulders[orn.Next(boulders.Length)], lp,
                     new Vector3(0f, orn.Next(0, 360), 0f), 1f, $"boulder_{b}", false);
                 if (g != null)
                 {
@@ -818,11 +944,27 @@ namespace Tarrock.Editor
             // One further humble offering — a small stacked cairn a pilgrim left at the basin foot.
             Place(group.transform, DecoDir + "/props/resource_stone.fbx", new Vector3(0.1f, 0f, -1.25f),
                 new Vector3(0f, 25f, 0f), 0.8f, "offering_cairn", false);
-            // The White Rose stand-in regrows at the basin (progression.md §The White Rose).
+            // The White Rose stand-in regrows at the basin (GLOSSARY §The White Rose; world.md §The
+            // Cliff). It must read WHITE, not the flower atlas's blue — so it is tinted with a flat
+            // cream material. Sits just in front of the well basin: small, but noticeable.
             // Quaternius prefabs bake a 100× root scale, so these need large absolute scales
             // (unlike the natural-scale-1 KayKit props).
-            Place(group.transform, QuatDir + "/Flower_1_Clump.fbx", new Vector3(0.2f, 0f, 1.1f),
-                new Vector3(270f, 0f, 0f), 32f, "WhiteRose_StandIn", false);
+            GameObject rose = Place(group.transform, QuatDir + "/Flower_1_Clump.fbx",
+                new Vector3(0.12f, 0f, 0.85f), new Vector3(270f, 0f, 0f), 50f, "WhiteRose_StandIn", false);
+            if (rose != null)
+            {
+                Material white = BuildWhiteRoseMaterial();
+                foreach (MeshRenderer mr in rose.GetComponentsInChildren<MeshRenderer>())
+                {
+                    Material[] arr = mr.sharedMaterials;
+                    for (int i = 0; i < arr.Length; i++)
+                    {
+                        arr[i] = white;
+                    }
+
+                    mr.sharedMaterials = arr;
+                }
+            }
         }
 
         private static void DressDeadTree(Transform parent)
@@ -841,6 +983,35 @@ namespace Tarrock.Editor
             if (t == null)
             {
                 Debug.LogWarning("[Tarrock] Dead-tree asset missing; the Cliff's signature visual is absent.");
+            }
+
+            // "Nothing grows in its shade" (MQ00 §The Dead Tree): the knoll top around the tree reads
+            // sparser and browner than the green meadow — a few flat bare-earth patches and one or two
+            // fallen dead branches. This is the ONLY dead ground on the plateau (the region's thesis;
+            // the meadow everywhere else stays aggressively alive). Green tufts/groves are already
+            // excluded from the knoll in DressGroves.
+            var baseGrp = new GameObject("DeadTree_Base");
+            baseGrp.transform.SetParent(parent, false);
+            baseGrp.transform.localPosition = new Vector3(DeadTreeXZ.x, gy, DeadTreeXZ.y) / ParentScale;
+            Material dirt = DirtMaterial();
+            var drnd = new System.Random(6100);
+            for (int i = 0; i < 7; i++)
+            {
+                float a = drnd.Next(0, 360) * Mathf.Deg2Rad;
+                float rad = 0.3f + ((float)drnd.NextDouble() * 1.5f);
+                PlaceDecal(baseGrp.transform, DecoDir + "/nature/rock_single_A.fbx",
+                    new Vector3(Mathf.Cos(a) * rad, -0.02f, Mathf.Sin(a) * rad),
+                    new Vector3(0f, drnd.Next(0, 360), 0f), new Vector3(1.8f, 0.5f, 1.8f), dirt,
+                    $"bare_earth_{i}");
+            }
+
+            for (int i = 0; i < 2; i++)
+            {
+                float a = drnd.Next(0, 360) * Mathf.Deg2Rad;
+                float rad = 1.0f + ((float)drnd.NextDouble() * 0.8f);
+                Place(baseGrp.transform, DecoDir + "/props/resource_lumber.fbx",
+                    new Vector3(Mathf.Cos(a) * rad, 0f, Mathf.Sin(a) * rad),
+                    new Vector3(0f, drnd.Next(0, 360), 92f), 1.0f, $"fallen_branch_{i}", true);
             }
         }
 
@@ -931,6 +1102,13 @@ namespace Tarrock.Editor
                     continue;
                 }
 
+                // Leave the last stretch to the leap edge bare — a worn approach where the grass
+                // thins out toward the step-off (leap-edge framing; the void does the talking).
+                if (x < -52f)
+                {
+                    continue;
+                }
+
                 float gy = FloorLevelAt(x, z) * StepWorld;
                 // Quaternius (100× baked root scale) → large absolute scale for a knee-high tuft.
                 Place(group.transform, QuatDir + "/Grass_Small.fbx",
@@ -979,6 +1157,22 @@ namespace Tarrock.Editor
                         lp, rnd.Next(0, 360), tall ? TallBushWorldHeight : ShortBushWorldHeight,
                         tall ? $"bush_tall_{i}" : $"bush_short_{i}");
                 }
+
+                // A lone cold campsite remnant tucked in the hollow — a faint fire-ring and a rotted
+                // sack, one more Fool long gone (the region's theme; invents no lore). A small reward
+                // for the player who steps off the trail into the grove.
+                var remnant = new Vector3(2.3f, 0f, -1.6f);
+                var rr = new System.Random(7050);
+                for (int s = 0; s < 5; s++)
+                {
+                    float a = (s / 5f) * Mathf.PI * 2f;
+                    Place(pk.transform, DecoDir + "/nature/rock_single_A.fbx",
+                        remnant + new Vector3(Mathf.Cos(a) * 0.5f, 0f, Mathf.Sin(a) * 0.5f),
+                        new Vector3(0f, rr.Next(0, 360), 0f), 0.55f, $"remnant_stone_{s}", true);
+                }
+
+                Place(pk.transform, DecoDir + "/props/sack.fbx", remnant + new Vector3(0.6f, -0.05f, 0.4f),
+                    new Vector3(18f, 45f, 0f), 1.3f, "remnant_sack", true);
             }
 
             // B — stone circle: a ring of small menhirs, a quiet ruin off the mid trail.
@@ -1000,6 +1194,10 @@ namespace Tarrock.Editor
                         g.transform.localScale = new Vector3(1.1f, 3.6f + (s % 3), 1.1f);
                     }
                 }
+
+                // A small offering cairn at the centre of the circle — the deliberate touch that reads
+                // the ring as tended, not just fallen stones.
+                BuildCairn(pk.transform, Vector3.zero, 7120, 4, 1.0f, "offering_cairn");
             }
 
             // C — rim overlook: a couple of flat seats and a marker stone on the broken edge, looking
@@ -1026,6 +1224,10 @@ namespace Tarrock.Editor
 
                 Place(pk.transform, DecoDir + "/nature/rock_single_A.fbx", new Vector3(1.6f, 0f, -1f),
                     new Vector3(0f, 80f, 0f), 1.1f, "seat_b", false);
+
+                // A tiny cairn by the seats — a small marker someone left at the overlook, giving the
+                // pocket a reason-to-linger read without inventing any lore.
+                BuildCairn(pk.transform, new Vector3(-0.3f, 0f, 1.3f), 7230, 3, 0.65f, "tiny_cairn");
             }
         }
 
@@ -1057,6 +1259,161 @@ namespace Tarrock.Editor
             }
         }
 
+        // Leap-edge framing (west rim at MQ00_CLIFF_EDGE): the step-off must read INTENTIONAL — a worn
+        // approach. Two modest cairns flank the last few metres before the grass ends, framing the
+        // step-off point; the bare last stretch (grass thinned in DressGroves) and the void + clouds
+        // beyond do the rest. NO signage/text (canon: nothing built, nothing labelled — MQ00 §The
+        // Cliff's Edge).
+        private static void DressLeapEdge(Transform parent)
+        {
+            var group = new GameObject("LeapEdge");
+            group.transform.SetParent(parent, false);
+            const float x = -64.5f; // right at the grass edge (~x -66) — the last thing before the drop
+            for (int i = 0; i < 2; i++)
+            {
+                float z = i == 0 ? 1.8f : -1.8f; // a narrow ~3.6 m gate the worn approach steps through
+                float gy = FloorLevelAt(x, z) * StepWorld;
+                BuildCairn(group.transform, new Vector3(x, gy, z) / ParentScale, 8300 + i, 4, 1.1f,
+                    $"leap_cairn_{i}");
+            }
+        }
+
+        // A small deliberate cairn: a short stack of decreasing stones. SOLID (per the collider policy)
+        // — each stone gets its own convex mesh collider. Kept clear of protected walk lanes by its
+        // callers, so the walkability sweep never topples it.
+        private static void BuildCairn(Transform parent, Vector3 localPos, int seed, int stones,
+            float baseScale, string name)
+        {
+            var g = new GameObject(name);
+            g.transform.SetParent(parent, false);
+            g.transform.localPosition = localPos;
+            var rnd = new System.Random(seed);
+            // resource_stone is a chunky stone pile (native ~0.28 m tall) — stacking a few, each a
+            // little smaller and nested down into the one below, reads as a deliberate cairn. (Work in
+            // LOCAL units: the ×2 parent scale doubles everything into world.)
+            const float stoneNativeH = 0.28f;
+            float y = 0f;
+            for (int i = 0; i < stones; i++)
+            {
+                float s = baseScale * (1f - (i * 0.16f));
+                float localH = stoneNativeH * s;
+                var jitter = new Vector3(((float)rnd.NextDouble() - 0.5f) * 0.09f, y + (localH * 0.5f),
+                    ((float)rnd.NextDouble() - 0.5f) * 0.09f);
+                Place(g.transform, DecoDir + "/props/resource_stone.fbx", jitter,
+                    new Vector3(0f, rnd.Next(0, 360), 0f), s, $"stone_{i}", false);
+                y += localH * 0.62f; // nest each stone down into the last
+            }
+        }
+
+        // Places a flat, walk-through decal-like prop (a dirt mound / clod / bare-earth patch), tinted
+        // with a colour material and NON-colliding (removed from the sweep's prop set) — so it can sit
+        // on a marker or the trail centreline without blocking the player or fighting the sweep.
+        private static GameObject PlaceDecal(Transform parent, string assetPath, Vector3 localPos,
+            Vector3 euler, Vector3 localScale, Material mat, string name)
+        {
+            GameObject g = Place(parent, assetPath, localPos, euler, 1f, name, false);
+            if (g == null)
+            {
+                return null;
+            }
+
+            g.transform.localScale = localScale;
+            s_props.RemoveAll(p => p.Root == g); // walk-through: no collider, never swept
+            if (mat != null)
+            {
+                foreach (MeshRenderer mr in g.GetComponentsInChildren<MeshRenderer>())
+                {
+                    Material[] arr = mr.sharedMaterials;
+                    for (int i = 0; i < arr.Length; i++)
+                    {
+                        arr[i] = mat;
+                    }
+
+                    mr.sharedMaterials = arr;
+                }
+            }
+
+            return g;
+        }
+
+        // Cached earthy-brown material for disturbed earth / bare ground (built once per run so the
+        // several decals that share it keep a live reference through the scene save).
+        private static Material DirtMaterial()
+        {
+            if (s_dirtMat == null)
+            {
+                s_dirtMat = BuildLitColorMaterial("DisturbedEarth", new Color(0.34f, 0.25f, 0.17f), 0.05f);
+            }
+
+            return s_dirtMat;
+        }
+
+        private static Material BuildWhiteRoseMaterial()
+        {
+            // Warm cream white — reads as a white rose in the dawn-gold light, never the atlas's blue.
+            return BuildLitColorMaterial("WhiteRoseStandIn", new Color(0.97f, 0.95f, 0.90f), 0.22f);
+        }
+
+        // A persisted flat-colour URP Lit material (no albedo map — so a textured prop's baked colour
+        // is fully overridden). Delete-then-create so a rebuild refreshes it deterministically.
+        private static Material BuildLitColorMaterial(string assetName, Color color, float smoothness)
+        {
+            Directory.CreateDirectory(MatDir);
+            Shader lit = Shader.Find("Universal Render Pipeline/Lit");
+            var m = new Material(lit != null ? lit : Shader.Find("Standard")) { name = assetName };
+            if (m.HasProperty("_BaseColor"))
+            {
+                m.SetColor("_BaseColor", color);
+            }
+
+            if (m.HasProperty("_Color"))
+            {
+                m.SetColor("_Color", color);
+            }
+
+            if (m.HasProperty("_BaseMap"))
+            {
+                m.SetTexture("_BaseMap", null);
+            }
+
+            if (m.HasProperty("_Smoothness"))
+            {
+                m.SetFloat("_Smoothness", smoothness);
+            }
+
+            if (m.HasProperty("_Glossiness"))
+            {
+                m.SetFloat("_Glossiness", smoothness);
+            }
+
+            string path = MatDir + "/" + assetName + ".mat";
+            AssetDatabase.DeleteAsset(path);
+            AssetDatabase.CreateAsset(m, path);
+            return m;
+        }
+
+        // Bound-state ambience (art-audio.md §world-state rules): a 2D air bed, always on, gently
+        // looping. The clip is a short seamless loop whose repetition is *allowed* to be audible — the
+        // bound world's audible stasis, not wind. Unbinding a region would swap this for a layered bed.
+        private static void BuildAmbience()
+        {
+            var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(CliffAmbienceClipPath);
+            if (clip == null)
+            {
+                Debug.LogWarning($"[Tarrock] Cliff bound-ambience clip missing: {CliffAmbienceClipPath}");
+                return;
+            }
+
+            var go = new GameObject("CliffAmbience");
+            var src = go.AddComponent<AudioSource>();
+            src.clip = clip;
+            src.loop = true;
+            src.playOnAwake = true;
+            src.spatialBlend = 0f; // 2D bed
+            src.volume = AmbienceVolume;
+            src.priority = 128;
+        }
+
         // Instantiate a vendored prefab under a (×2-scaled) parent at a local transform. Returns the
         // instance (null if the asset is missing). Optionally strips colliders — dressing is
         // walk-through; containment is the terrain's job.
@@ -1076,6 +1433,10 @@ namespace Tarrock.Editor
             g.transform.localRotation = Quaternion.Euler(euler);
             g.transform.localScale = Vector3.one * scale;
             g.name = name;
+            // Dressing props never move at runtime (the bound world holds its breath) — static-flag
+            // them for batching. The editor-time walkability sweep may still nudge a few; that is a
+            // pre-save edit, not runtime motion, so the static flag stays valid.
+            g.isStatic = true;
 
             int category = ColliderCategory(assetPath);
             if (category != 0)
