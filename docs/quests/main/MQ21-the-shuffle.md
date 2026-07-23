@@ -725,13 +725,12 @@ a dog who has been awake for some time and is not in any hurry about it, is Pip.
 The same Pip. Not a grey hair on him. He does not bark. He does not fuss. He waits, tail
 giving one polite thump against the grass, for the new Fool's eyes to open.
 
-**[The persisting detail: one small thing from the player's own journey carries into the
-new deal, so the loop reads as *closed* and *ours*. The strongest candidate is the whittled
-wooden keepsake Pip digs up at the very start of MQ00 — the same small carved thing, tucked
-into the new Fool's bindle or resting by the new campfire, the keepsake that was ours now
-waiting for the next one. This is deliberately left as MQ00's open question: the persisting
-detail resolves once MQ00's keepsake is locked, and this scene is staged to hold whatever
-that keepsake turns out to be. See Open questions.]**
+**[The persisting detail — LOCKED (director, 2026-07-23): the whittled wooden dog from
+MQ00 — crude, palm-sized, one ear worn to a stub — rests beside the new campfire, within
+reach of the sleeping hand. The carving of a dog waits with the actual dog: the same two
+companions every Fool has ever woken to, one of them made of wood because somebody, some
+journey ago, wanted a second copy to keep. The keepsake that was ours, now waiting for
+the next one. The loop closes here.]**
 
 The new Fool stirs. Their eyes begin to open. Pip's tail thumps once more, patient as
 stone.
@@ -966,11 +965,9 @@ staged.
 
 ## Open questions
 
-- **The persisting detail in 10a** (what carries from the player's journey to the new
-  Fool's cliff): still open, and staged here to hold whatever it turns out to be. The
-  strongest candidate remains MQ00's whittled wooden keepsake dug up by Pip — decide once
-  MQ00's keepsake is locked, and keep the loop closed (the keepsake was *ours*). Not
-  drafted as a fixed object here, per that dependency.
+- **[Resolved — director, 2026-07-23]** The persisting detail in 10a is the whittled
+  wooden dog from MQ00 (crude, palm-sized, one ear worn to a stub), staged beside the new
+  campfire. MQ00 owns the object's description; this scene now stages it as fixed.
 - **The Querent's final line** (the pre-choice reserved wink, True Shuffle path only):
   remains a marked placeholder for a director's-own-pass, per the mandate. Flag for
   sign-off: it plays **only** on the True Shuffle path (this script gives the Early Shuffle

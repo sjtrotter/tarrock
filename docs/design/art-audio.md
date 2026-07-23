@@ -158,6 +158,13 @@ database screen.
   a setting, not a default.
 - **HUD restraint:** health (White Rose petals) and Fortune are always visible; everything
   else (minimap, prompts) fades to unobtrusive when not in use.
+- **Conversational framing (draft direction, 2026-07-23 — validate in the MQ00 build):**
+  interactions and dialogue are framed in-world by a slight camera adjustment — an easing
+  zoom into the shared space between the participants (the Fool and Pip especially; the
+  Fool and an NPC generally) — rather than a cut to a separate dialogue screen. Text (and
+  Querent VO) plays over that adjusted frame. No hard lock: the player keeps control and
+  the frame releases as they move off. Tentative by intent; the MQ00 interaction layer is
+  the proving ground.
 
 **Accessibility notes:**
 
