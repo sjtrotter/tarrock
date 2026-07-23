@@ -501,6 +501,10 @@ single region, are gathered in the final subsection.
   since the night before the Stall; he knows exactly what it means and tends it anyway,
   with a dry running joke about the tallow merchant's lost business.
   (SLATE — The Candle That Won't Gutter)
+- **Gammer Thist and Old Barrow** — two of the vigil-house's waiting "dying," carrying a
+  three-century wager over which of them goes first, laid the night before the Stall for
+  a loaf of bread neither baker is alive to bake. The vigil-house's honest laugh and its
+  honest weight; the wager settles, gently, on the first day mortality returns. (MQ13)
 
 ### The Confluence
 
