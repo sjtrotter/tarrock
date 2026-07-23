@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a3fa699dc7b65fb4a87935319ad8ed8, type: 3}
+  m_Name: MQ00
+  m_EditorClassIdentifier: Tarrock.Quests::Tarrock.Quests.QuestDefinition
+  _id: MQ00
+  _titleKey: MQ00.TITLE
+  _type: 0
+  _arcana: 
+  _region: The Cliff
+  _requiredStates: []
+  _firedStates: []
+  _steps:
+  - _stepId: MQ00_STEP_WAKE
+    _markerId: 
+    _kind: 4
+    _dialogueKey: MQ00.QUERENT.WAKE
+    _optional: 0
+  - _stepId: MQ00_STEP_CAMPSITE_INSPECT
+    _markerId: 
+    _kind: 0
+    _dialogueKey: 
+    _optional: 1
+  - _stepId: MQ00_STEP_KEEPSAKE
+    _markerId: MQ00_KEEPSAKE_DIGSPOT
+    _kind: 2
+    _dialogueKey: MQ00.QUERENT.KEEPSAKE
+    _optional: 0
+  - _stepId: MQ00_STEP_DEADTREE
+    _markerId: MQ00_DEADTREE
+    _kind: 3
+    _dialogueKey: MQ00.QUERENT.DEADTREE
+    _optional: 0
+  - _stepId: MQ00_STEP_BLANK_AMBUSH
+    _markerId: MQ00_BLANK_AMBUSH
+    _kind: 1
+    _dialogueKey: MQ00.QUERENT.BLANKS
+    _optional: 0
+  - _stepId: MQ00_STEP_WAYSTATION
+    _markerId: MQ00_WAYSTATION
+    _kind: 0
+    _dialogueKey: MQ00.QUERENT.WAYSTATION
+    _optional: 0
+  - _stepId: MQ00_STEP_WAYSTATION_REST_AGAIN
+    _markerId: MQ00_WAYSTATION
+    _kind: 0
+    _dialogueKey: MQ00.QUERENT.WAYSTATION_RANDOM
+    _optional: 1
+  - _stepId: MQ00_STEP_EDGE
+    _markerId: MQ00_CLIFF_EDGE
+    _kind: 3
+    _dialogueKey: MQ00.QUERENT.EDGE
+    _optional: 0
+  - _stepId: MQ00_STEP_LEAP
+    _markerId: MQ00_CLIFF_EDGE
+    _kind: 1
+    _dialogueKey: MQ00.QUERENT.LEAP
+    _optional: 0
