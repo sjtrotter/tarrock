@@ -5,6 +5,9 @@ Region facts (layout, gating, mood) are owned by [`world.md`](world.md) and only
 translated to palette here; character personality is owned by
 [`characters.md`](characters.md); world-state facts are owned by `world.md`'s
 world-state matrix — this document only owns how each state *looks and sounds*.
+Production-facing art standards — shape language, material/costume rules, silhouette
+benchmarks, animation-as-character principles — are owned by
+[`art-bible.md`](art-bible.md).
 
 ## Visual pillars
 
