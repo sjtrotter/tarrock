@@ -204,6 +204,7 @@ else may mutate them. (Technical representation: see
 | `ACT_III` | 15–21 unbound | "Last days" content: festivals, farewells, troupe's final show |
 | `CONFESSED` | MQ13 complete | Post-confession dialogue variants everywhere (independent of act) |
 | `READING_ORDER` | Always tracked | The ordered sequence of unbindings — **the Fool's Reading** (an ordered list in the save, not a flag). Displayed in the Almanack; read aloud in MQ21's True Shuffle; queryable by barks and quest variants. |
+| `HERMIT_ANSWER` | Set once, at MQ09's tea question | The Fool's recorded answer to the Hermit's one question (one of four fixed lines; MQ09 owns the wording). A save value on the `READING_ORDER` model, not a flag: gates nothing, mutates nothing. Exists solely to be barked back by later NPCs — callback sites must be licensed through narrative review, not scattered ad hoc. |
 
 ## The Fool's Reading (sequence reactivity)
 
