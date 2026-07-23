@@ -31,11 +31,11 @@ Material:
     m_Floats:
     - _AlphaClip: 0
     - _Cutoff: 0.45
-    - _FlutterAmplitude: 0.015
+    - _FlutterAmplitude: 0.035
     - _FlutterFrequency: 5.5
     - _HeightMaskExponent: 1.5
     - _HeightMaskStart: 0.05
-    - _SwayAmplitude: 0.06
+    - _SwayAmplitude: 0.14
     - _SwayFrequency: 1.1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}

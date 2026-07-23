@@ -3,7 +3,9 @@
     "rootNamespace": "Tarrock.Regions",
     "references": [
         "Tarrock.Core",
-        "Tarrock.WorldState"
+        "Tarrock.WorldState",
+        "Tarrock.Companion",
+        "Tarrock.Quests"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

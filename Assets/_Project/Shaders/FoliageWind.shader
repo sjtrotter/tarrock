@@ -88,9 +88,12 @@ Shader "Tarrock/FoliageWind"
                 return positionWS;
             }
 
-            // Object-space height mask: rigid at the base, ramping toward the crown. KayKit foliage
-            // pivots sit at the base, so positionOS.y is height-above-base.
-            float heightAboveBase = max(positionOS.y - _HeightMaskStart, 0.0);
+            // WORLD-space height mask: rigid at the base, ramping toward the crown. Measured as
+            // world height above the object's pivot (KayKit/Quaternius foliage pivots sit at the
+            // base), so the mask is scale-independent — a grass tuft scaled x125 and a tree scaled
+            // x2 both mask by their real metres of height, not their native mesh units.
+            float pivotWorldY = unity_ObjectToWorld._m13;
+            float heightAboveBase = max((positionWS.y - pivotWorldY) - _HeightMaskStart, 0.0);
             float mask = pow(heightAboveBase, _HeightMaskExponent) * vertexMask;
 
             // Per-instance phase from the object's world origin (translation column of the M matrix).
