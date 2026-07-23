@@ -52,7 +52,7 @@ here plays in the post-confession world as a baseline, not a variant.
    the deliberate cross-Trump synergy in `arcana.md`.
 9. **The falter.** The Herald's own trumpet finally sounds a note that doesn't raise
    anything — the first silence in the fight, and the tell that the office is cracking.
-10. **Unbinding.** The office cracks. The Herald's freed name *(TBD — characters.md)*
+10. **Unbinding.** The office cracks. The Herald's freed name — **Clemency** —
     returns, and Trump XX — Reveille — is handed over, the trumpet lowered for the
     first time in three centuries.
 11. **Aftermath — every waiting ghost.** Ghost NPCs across the whole Spread say their
@@ -105,7 +105,7 @@ here plays in the post-confession world as a baseline, not a variant.
 - `world.md` §The Hollows, §Hard and soft gates (Death→Judgement, the one other hard
   story gate besides the Mirrormarsh), §World-state matrix.
 - `characters.md` §XX — personality (solemn, patient, grief of almost-done duty);
-  freed name TBD.
+  freed name Clemency.
 - `narrative.md` §Global states (`CONFESSED` fires at MQ13, guaranteeing this quest's
   always-confessed state), §Theme 3 (Fennimore's reluctance).
 - MQ13 (`main/MQ13-an-ending.md`, if present) — the confession this quest's baseline
@@ -113,7 +113,6 @@ here plays in the post-confession world as a baseline, not a variant.
 
 ## Open questions
 
-- Judgement's freed name is TBD in `characters.md`; needed before beat 10 scripting.
 - Since `CONFESSED` cannot meaningfully vary here, should the "both variants" rule in
   `quests/README.md` be formally amended to exempt gate-locked-post-MQ13 quests (this
   one, and any future one gated the same way), or is the explicit "no variant to

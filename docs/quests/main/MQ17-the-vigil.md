@@ -56,7 +56,7 @@ exhaling on purpose.
 9. **The gift.** The Warden gives Trump XVII — Wish — freely, unprompted by combat of
    any kind. Per `arcana.md` §XVII: the only Arcanum unbound by kindness alone.
 10. **Unbinding.** The office cracks gently, more a settling than a break. Her freed
-    name *(TBD — characters.md)* returns, spoken shyly, as if she isn't sure she's
+    name — **Esther** — returns, spoken shyly, as if she isn't sure she's
     earned it back yet.
 11. **Aftermath — if vigil kept.** Wish-wells wake across the Spread; the night sky
     fills with stars everywhere night exists. `[If WS_SUN_UNBOUND]`: since night
@@ -107,14 +107,13 @@ exhaling on purpose.
 - `arcana.md` §XVII — vigil structure, both paths, Trump XVII, unbinding.
 - `world.md` §The Mere, §World-state matrix, §Interaction rules (night/Sun
   order-independence).
-- `characters.md` §XVII — personality (soft-spoken, hope held still); freed name TBD;
-  §Pip (calm, unbothered — no fear beat here, that is MQ18's alone).
+- `characters.md` §XVII — personality (soft-spoken, hope held still); freed name
+  Esther; §Pip (calm, unbothered — no fear beat here, that is MQ18's alone).
 - `narrative.md` §Theme 3 — the old soldier's grief for paused hope as "freedom isn't
   wanted by everyone."
 
 ## Open questions
 
-- The Star's freed name is TBD in `characters.md`; needed before beat 10 scripting.
 - Should the attack-anyway path (beat 12) have any *optional* late-game callback (an
   NPC mentioning the dimmer Mere), or does silence serve the "the game just remembers"
   intent better? Outline assumes silence.

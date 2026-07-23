@@ -53,10 +53,10 @@ demands it as the only way to win.
    mixtures. The fight rewards conducting, not scrambling.
 9. **The falter.** Pressed enough times, her pour finally misses a beat — the first
    uneven moment in three hundred years of perfect measure.
-10. **Unbinding.** The office cracks around her like a dropped cup. The name that
-    returns to her *(freed name TBD — see characters.md and Open questions)* is spoken
-    once, quietly, and she hands the Fool Trump XIV — Blend — herself, still holding
-    the two jugs, empty for the first time she can remember.
+10. **Unbinding.** The office cracks around her like a dropped cup. Her freed name —
+    **Averil** — returns, spoken once, quietly, and she hands the Fool Trump XIV —
+    Blend — herself, still holding the two jugs, empty for the first time she can
+    remember.
 11. **Aftermath — the pour completes.** The two rivers finally reach the sea. Over the
     following in-game hours the delta visibly drains: mudflats firm into grassland,
     sunken relics of the pre-Stall city surface, and the long-submerged Confluence
@@ -99,14 +99,12 @@ demands it as the only way to win.
 - `arcana.md` §XIV — encounter, Trump, reversed burden, unbinding line.
 - `world.md` §The Confluence, §Hard and soft gates (delta caves), §World-state matrix.
 - `characters.md` §XIV — personality (serene surface, frantic underneath); freed name
-  TBD.
+  Averil.
 - `narrative.md` §Themes 1, 3 — endings as mercy; Elgin's grief as the "not everyone
   wants this" beat.
 
 ## Open questions
 
-- Temperance's freed name is TBD in `characters.md`; this quest's naming beat (10)
-  needs it assigned before promotion to `script` status.
 - Is the tempering tutorial (beat 3) mandatory or skippable? Outline assumes skippable
   with a difficulty cost; confirm against scope/accessibility goals.
 - Should Elgin's finished bridge open a new fast-route across the delta, or remain

@@ -42,7 +42,7 @@ ring-arena that starts spinning the instant the fight begins.
    weather, surf the luck, and the Wheel starts to feel like a dance partner.
 9. Final brake-shoe destroyed: the great ring groans into true motion for the first time
    since the Stall.
-10. Unbinding: the office cracks; their name returns; they hand the Fool Trump X
+10. Unbinding: the office cracks; her name returns; she hands the Fool Trump X
     personally, delighted, calling the Fool "the first unpredictable variable in three
     hundred years."
 11. Aftermath: the Wheel turns; the Wheelhouse's luck districts begin cycling on a
@@ -55,9 +55,9 @@ ring-arena that starts spinning the instant the fight begins.
 
 ## Key NPCs
 
-- **Wheel of Fortune** (freed name TBD, `characters.md` §X; referred to here as
-  "they/them" pending a canon pronoun decision) — genial, theatrical, delights in the
-  Fool as the first unpredictable variable in three centuries.
+- **Wheel of Fortune** (freed name Penny Farthing, `characters.md` §X; she/her) —
+  genial, theatrical, delights in the Fool as the first unpredictable variable in three
+  centuries.
 - **Deuce Halloway** (proposed — promote to `characters.md` before script status) — a
   weary croupier who walks both districts daily.
 - **Baroness Fettle** (proposed — promote to `characters.md` before script status) —
@@ -73,8 +73,8 @@ wheel, and a fair one terrifies her far more than a cursed one ever did.
 - Baroness Fettle's warning (beat 5) sharpens — she's heard exactly what "fairness"
   ends up costing, and is no longer just protecting money, she's protecting whatever's
   left of forever.
-- The Wheel's delight in beat 10 gains an edge: they know the Fool is spinning toward
-  the game's last card too, and say so, lightly, between two truths.
+- The Wheel's delight in beat 10 gains an edge: she knows the Fool is spinning toward
+  the game's last card too, and says so, lightly, between two truths.
 - The cursed-district cheer (closing beat) gains a rueful note — someone in the crowd
   asks, only half joking, "how many turns have we got left, then?"
 
@@ -94,8 +94,6 @@ wheel, and a fair one terrifies her far more than a cursed one ever did.
 
 ## Open questions
 
-- Wheel of Fortune's freed name and pronoun are TBD in `characters.md`; this outline
-  defaults to "they/them" pending a canon decision.
 - The Spin table's 8 entries are marked TBD at combat tuning in `arcana.md` — doesn't
   block this outline, but flag for the fight's final beat-by-beat pass.
 - Should Baroness Fettle recur as a side-quest antagonist protecting her fading

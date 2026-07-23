@@ -57,7 +57,7 @@ hands and take the reins.
 
 ## Key NPCs
 
-- **The Chariot** (freed name TBD, `characters.md` §VII) — once the Longroad's
+- **The Chariot** (freed name Cassian, `characters.md` §VII) — once the Longroad's
   conquering hero, quietly horrified at how long "just a little further" has lasted.
 - **Corporal Fitch** (proposed — promote to characters.md before script status) — a
   weary marching soldier who has served the endless procession so long he no longer
@@ -104,8 +104,6 @@ evening, the same weary faces at her door — is gone the moment the procession 
 
 ## Open questions
 
-- The Chariot's freed name (`characters.md` marks it TBD) needs to be set before script
-  status — it returns to him with the train still in motion.
 - Encounter tier is L (setpiece) per `arcana.md` — does the "take the reins" tug-of-war need
   its own bespoke input rig, or can it reuse an existing QTE/grapple system from another
   Trump (e.g. Bargain's chain-tether) for scope?

@@ -54,7 +54,7 @@ a turn. The fight that follows is won by calm, not damage.
 
 ## Key NPCs
 
-- **Strength** (freed name TBD, `characters.md` §VIII) — has held the lion through
+- **Strength** (freed name Maud, `characters.md` §VIII) — has held the lion through
   patience alone for 300 years; regards the Fool as someone who doesn't yet understand
   that mercy can be exhausting.
 - **The Lion of the Maw** (canon, `characters.md`) — a beast, not a talker; becomes a
@@ -92,8 +92,6 @@ beasts are neutral until provoked leaves him with a spear and no reason to carry
 
 ## Open questions
 
-- Strength's freed name (`characters.md` marks it TBD) needs to be set before script
-  status — it returns to her mid-breath at the unbinding.
 - Should Coz Yarrow recur as a Maw side-quest NPC learning the rescue trade, or is his
   arc complete at this quest's closing beat?
 - The exact gentleness-prompt input scheme (timing window vs. hold-and-release) needs

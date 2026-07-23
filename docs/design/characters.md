@@ -103,59 +103,60 @@ own bound-state dialogue. Boss fight structure, arenas, and Trumps are owned by
   no longer believes in. He regards the Fool with weary recognition — one performer
   clocking another — and is the first to half-admit, in his reversed corners, that the
   show should have ended long ago.
-- **II. The High Priestess — freed name TBD.** Traditional meaning: intuition, mystery,
+- **II. The High Priestess — Vesper.** Traditional meaning: intuition, mystery,
   guarded knowledge. Keeper of the Veil's cloister-library, she has spent 300 years
   curating secrets rather than sharing them, and the withholding has calcified from
   discretion into hoarding. She reads the Fool immediately and completely — and resents
   how little that tells her about what happens next. Regards the Fool as an anomaly the
   archive has no shelf for.
-- **III. The Empress — freed name TBD.** Traditional meaning: abundance, fertility,
+- **III. The Empress — Damson.** Traditional meaning: abundance, fertility,
   nurturing. She loved the Bower into being and has not been able to stop loving it since
   — an unharvested, overgrown, suffocating love, generous past the point of mercy. She
   sees the Fool as a child to fuss over and feed, and is genuinely wounded that this new
   arrival wants to change anything at all about the garden she built.
-- **IV. The Emperor — freed name TBD.** Traditional meaning: authority, order, structure.
+- **IV. The Emperor — Aldric.** Traditional meaning: authority, order, structure.
   A ruler who built a perfect, unamendable law and has been strangled by his own
   perfection ever since — nothing may be revised, including his own exhaustion. Stiff,
   correct, and lonelier than he'll admit; he regards the Fool as a jurisdictional problem
   first and a person only once forced to.
-- **V. The Hierophant — freed name TBD.** Traditional meaning: tradition, doctrine,
+- **V. The Hierophant — Bede.** Traditional meaning: tradition, doctrine,
   institution. Shepherd of the Chantry's endless single hour, once a genuine comfort to
   his flock, now a man reciting the same sermon so many times it has stopped meaning
   anything, even to him. He regards the Fool with the practiced patience of someone used
   to correcting novices — and a flicker of real fear that this novice might be right.
-- **VI. The Lovers — freed name TBD.** Traditional meaning: union, choice, partnership.
+- **VI. The Lovers — Elsbeth (east bank) and Wystan (west bank).** Traditional meaning:
+  union, choice, partnership.
   Two people — the Betrothed, one from each of the Divide's towns (per `arcana.md`) —
   frozen at the exact moment before a choice neither could make. Three
   centuries of nearly-deciding have turned devotion into a kind of exquisite cowardice.
   They regard the Fool as an unwelcome witness to an argument that was never supposed to
   have onlookers — and, eventually, as the nudge they needed.
-- **VII. The Chariot — freed name TBD.** Traditional meaning: willpower, drive, directed
+- **VII. The Chariot — Cassian.** Traditional meaning: willpower, drive, directed
   victory. Once the Longroad's conquering hero, now an officer marching a triumph that
   has nowhere left to arrive — momentum with the destination surgically removed. Brisk,
   commanding, and quietly horrified at how long "just a little further" has lasted. Sees
   the Fool as a recruit at first, then as the only soldier still capable of stopping.
-- **VIII. Strength — freed name TBD.** Traditional meaning: courage, compassion, inner
+- **VIII. Strength — Maud.** Traditional meaning: courage, compassion, inner
   strength over brute force. The woman of the Maw has held a lion's jaws for 300 years
   through patience and gentleness, not force — and the endless holding has calcified her
   gentleness into a grim, joyless discipline. She regards the Fool as someone who does
   not yet understand that mercy can be exhausting, and respects them for trying anyway.
-- **IX. The Hermit — freed name TBD.** Traditional meaning: introspection, guidance, the
+- **IX. The Hermit — Ellery.** Traditional meaning: introspection, guidance, the
   lantern held out for others. He withdrew to the Dim to think, and three centuries later
   is still thinking, unreachable, his light visible but his person never caught. He does
   not fight the Fool so much as evade them — he must be caught, not beaten (`arcana.md`).
   Regards the Fool as a fellow-seeker he is not yet ready to be found by.
-- **X. Wheel of Fortune — freed name TBD.** Traditional meaning: cycles, fate, change.
+- **X. Wheel of Fortune — Penny Farthing.** Traditional meaning: cycles, fate, change.
   The Wheelhouse's presiding spirit, stopped mid-turn, ruling a city split forever between
   the eternally lucky and the eternally cursed. Genial, theatrical, and quietly aware that
   a wheel that cannot turn is not luck at all, just a verdict. Delights in the Fool as an
   unpredictable variable — the first one in 300 years.
-- **XI. Justice — freed name TBD.** Traditional meaning: fairness, truth, cause and
+- **XI. Justice — Prudence.** Traditional meaning: fairness, truth, cause and
   effect. Presiding officer of the Assize's eternally adjourned courts, scrupulously fair
   and utterly unable to render a verdict — fairness with the actual judging removed. Dry,
   precise, faintly funny in a courtroom-farce way. Regards the Fool as an irregular
   petitioner who, infuriatingly, keeps having a point.
-- **XII. The Hanged Man — freed name TBD.** Traditional meaning: suspension, surrender,
+- **XII. The Hanged Man — Wendel.** Traditional meaning: suspension, surrender,
   new perspective through letting go. Hangs content from the Gallowwood's World-Tree,
   having achieved a serenity so total it has become its own kind of prison — enlightenment
   with no way back down. Gentle, unhurried, genuinely happy, which makes him one of the
@@ -168,7 +169,7 @@ own bound-state dialogue. Boss fight structure, arenas, and Trumps are owned by
   ally-coded from the moment the Fool meets him, not an obstacle to overcome but a friend
   begging to finally be allowed to finish his work. Regards the Fool as the answer to a
   prayer he stopped believing would come.
-- **XIV. Temperance — freed name TBD.** Traditional meaning: balance, moderation, patient
+- **XIV. Temperance — Averil.** Traditional meaning: balance, moderation, patient
   blending. Presides over the Confluence's mixers and unfinished bridges, an alchemist of
   balance who can no longer let anything be finished, only endlessly, perfectly blended.
   Serene on the surface, quietly frantic underneath — poise stretched three centuries too
@@ -180,18 +181,18 @@ own bound-state dialogue. Boss fight structure, arenas, and Trumps are owned by
   of him. He runs the Undervault as a gilded, consensual pit and genuinely cannot
   understand why anyone would want out of a deal they signed. Regards the Fool as a mark
   worth respecting, and offers them a deal anyway.
-- **XVI. The Tower — freed name TBD.** Traditional meaning: sudden upheaval, revelation,
+- **XVI. The Tower — Balen.** Traditional meaning: sudden upheaval, revelation,
   necessary destruction. Frozen mid-collapse for 300 years, which is to say frozen
   mid-truth — the Tower's whole nature is the one moment everything else in the world is
   built to avoid. Volatile, blunt, almost relieved to be fought rather than tiptoed
   around. Regards the Fool as the only visitor who ever came looking for the fall instead
   of fleeing it.
-- **XVII. The Star — freed name TBD.** Traditional meaning: hope, renewal, quiet faith
+- **XVII. The Star — Esther.** Traditional meaning: hope, renewal, quiet faith
   after despair. Keeper of the Mere's paused wishes, luminous and gentle, hope held so
   carefully for so long that it has gone still rather than dim — faith preserved past the
   point of being lived. Soft-spoken, almost shy. Regards the Fool as the wish finally
   being answered, and is a little afraid to believe it.
-- **XVIII. The Moon — freed name TBD.** Traditional meaning: illusion, fear, the
+- **XVIII. The Moon — Luned.** Traditional meaning: illusion, fear, the
   subconscious. Rules the Mirrormarsh's fog, where paths and faces lie — a nature turned,
   after 300 years, from protective secrecy into outright deception, even of itself. Never
   entirely knowable in the fight or the dialogue; deliberately the most unreliable Arcanum
@@ -202,7 +203,7 @@ own bound-state dialogue. Boss fight structure, arenas, and Trumps are owned by
   exhausting in equal measure; three centuries of being everyone's golden favorite has
   left no room to simply be tired. Regards the Fool with a little brother's hero worship,
   and, underneath, envy of anyone who's allowed to age.
-- **XX. Judgement — freed name TBD.** Traditional meaning: reckoning, awakening, a call
+- **XX. Judgement — Clemency.** Traditional meaning: reckoning, awakening, a call
   answered. Presides over the Hollows, waiting three centuries to call souls that have
   nowhere to go, an angel with a trumpet and no one able to rise yet. Solemn, patient,
   carrying the particular grief of a duty perpetually almost-done. Regards the Fool as

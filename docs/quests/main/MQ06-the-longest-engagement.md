@@ -53,7 +53,7 @@ answer is permanent.
 
 ## Key NPCs
 
-- **The Lovers / the Betrothed** (freed names TBD, `characters.md` §VI) — two people
+- **The Lovers / the Betrothed** (freed names Elsbeth and Wystan, `characters.md` §VI) — two people
   frozen before a choice neither could make; three centuries of nearly-deciding turned
   devotion into an exquisite cowardice.
 - **Ferryman Pell** (proposed — promote to characters.md before script status) — the
@@ -106,8 +106,6 @@ life its shape.
 
 ## Open questions
 
-- The Betrothed's freed names (`characters.md` marks them TBD) need to be set before
-  script status — both names return in the same breath at the unbinding.
 - Should the East/West elders (beats 3–4) be new named NPCs of their own, or should
   Ferryman Pell's gossip stand in for their case to keep the NPC budget to one proposal?
   Current draft assumes unnamed elders to stay within the 1–2 new NPC guidance.

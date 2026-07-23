@@ -53,7 +53,7 @@ rise. The player's task is not to kill anything that wants killing — it is to 
 
 ## Key NPCs
 
-- **The Empress** (freed name TBD, `characters.md` §III) — loved the Bower into being
+- **The Empress** (freed name Damson, `characters.md` §III) — loved the Bower into being
   and cannot stop; genuinely wounded that the Fool wants to change anything about it.
 - **Gaffer Nettle** (proposed — promote to characters.md before script status) — an
   elderly orchardman who has hand-pruned the throne's briars for decades out of pure
@@ -100,8 +100,6 @@ left to cut.
 
 ## Open questions
 
-- The Empress's freed name (`characters.md` marks it TBD) needs to be set before script
-  status — she speaks it aloud at the unbinding.
 - Should Gaffer Nettle survive as a recurring Bower NPC after this quest (a candidate for
   a short side quest about learning a new trade), or is his arc complete here?
 - Does the "double food prices halve" world-state need a visible price-tag/vendor UI beat

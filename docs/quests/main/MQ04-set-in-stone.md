@@ -50,7 +50,7 @@ him is bureaucracy before it is combat; climbing him is the fight.
 
 ## Key NPCs
 
-- **The Emperor** (freed name TBD, `characters.md` §IV) — built a perfect,
+- **The Emperor** (freed name Aldric, `characters.md` §IV) — built a perfect,
   unamendable law and has been strangled by his own perfection ever since; regards the
   Fool as a jurisdictional problem first, a person only once forced to.
 - **Clerk Anselm** (proposed — promote to characters.md before script status) — a
@@ -97,8 +97,6 @@ no longer add up the way they used to.
 
 ## Open questions
 
-- The Emperor's freed name (`characters.md` marks it TBD) needs to be set before script
-  status — it is spoken formally at the unbinding.
 - What mechanically is the "amended schedule" attack at one-Edict-remaining — a new
   telegraph pattern, a tempo change, or a genuinely novel move never seen before?
   Encounter tier L already schedules full iteration effort for something bespoke;

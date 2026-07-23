@@ -57,7 +57,7 @@ to the Fool exactly what the Fool has dealt her.
 
 ## Key NPCs
 
-- **Justice** (freed name TBD, `characters.md` §XI) — scrupulously fair, unable to
+- **Justice** (freed name Prudence, `characters.md` §XI) — scrupulously fair, unable to
   render a verdict; the fight audits the player's own tactics.
 - **Clerk Pettibone** (proposed — promote to `characters.md` before script status) —
   the Assize's archivist; this quest's mourning NPC.
@@ -97,8 +97,6 @@ deal less filing.
 
 ## Open questions
 
-- Justice's freed name (`characters.md` marks it TBD) needs to be set before script
-  status — it returns to her at the unbinding.
 - Should any of the three freed prisoners appear on-screen in this quest itself, or
   remain purely referenced in the aftermath beat (recommended, to preserve their side
   quests' reveals)?

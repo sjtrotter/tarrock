@@ -57,7 +57,7 @@ pass — or fail — three tests that are not answered but *done*.
 
 ## Key NPCs
 
-- **The High Priestess** (freed name TBD, `characters.md` §II) — reads the Fool
+- **The High Priestess** (freed name Vesper, `characters.md` §II) — reads the Fool
   completely on sight and resents how little that tells her about what happens next.
 - **Sister Amity** (proposed — promote to characters.md before script status) — a young
   novice archivist, the cloister's one talkative exception; guides the Fool through the
@@ -107,8 +107,6 @@ dreams and gossips is still a cloister she recognizes.
 
 ## Open questions
 
-- The Priestess's freed name (`characters.md` marks it TBD) needs to be set before this
-  quest can move to script status — the unbinding beat depends on it being spoken aloud.
 - Should the "secret" in task three vary in content depending on how much prior gossip
   the player extracted from Sister Amity, or stay fixed for scripting simplicity?
 - Does the shadow-duel (dishonest path) still yield the Trump identically, or should its

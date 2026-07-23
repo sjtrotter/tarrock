@@ -69,8 +69,8 @@ Spread, cast reversed.
 11. **The climax.** At the fight's lowest point, the real Pip's howl — audible from
     outside the fog, somehow, the one sound that reaches this far in — cracks both the
     false-Pip's glamour (if not already resolved) and the black glass itself.
-12. **Unbinding.** The office cracks with the water. The Moon's freed name *(TBD —
-    characters.md)* returns, and the Trump XVIII — Glamour — is handed over, still
+12. **Unbinding.** The office cracks with the water. The Moon's freed name —
+    **Luned** — returns, and the Trump XVIII — Glamour — is handed over, still
     dripping, honestly uncertain whether it was ever fully "one" person to begin with.
 13. **Aftermath — the fog lifts.** Region-wide, the Mirrormarsh's fog clears. The
     "monsters" are revealed as lost people — a town un-curses. Illusion-type enemies
@@ -130,7 +130,6 @@ Spread, cast reversed.
   as region logic rather than in `requires` at all, with `requires: []` here being a
   deliberate acknowledgment that quest-level gating can't express it. Recommend (b)
   for this quest, formalized as (a) if a second any-of gate ever appears.
-- The Moon's freed name is TBD in `characters.md`; needed before beat 12 scripting.
 - Does the false-Pip beat (7) require a distinct visual "tell" beyond behavior (e.g. a
   fog-sheen, wrong eye color) for accessibility, given the beat depends on players
   already knowing Pip's behavioral rules? Needs an `art-audio.md`/accessibility pass.

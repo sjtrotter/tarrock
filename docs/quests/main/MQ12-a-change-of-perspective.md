@@ -50,7 +50,7 @@ was going, ending in a single, gently absurd question.
 
 ## Key NPCs
 
-- **The Hanged Man** (freed name TBD, `characters.md` §XII) — the only Arcanum who is
+- **The Hanged Man** (freed name Wendel, `characters.md` §XII) — the only Arcanum who is
   happy; regards the Fool with real affection and no urgency whatsoever.
 - **Fenwick Loft** (proposed — promote to `characters.md` before script status) — a
   Gallowwood guide whose expertise is the flipped terrain; this quest's mourning NPC.
@@ -87,8 +87,6 @@ longer needs reading, and finds himself expert in something that stopped existin
 
 ## Open questions
 
-- The Hanged Man's freed name (`characters.md` marks it TBD) needs to be set before
-  script status.
 - Should Fenwick Loft recur as a Gallowwood side-quest NPC (the region's new
   "historian"), or does his arc close at this quest's final beat?
 - The exact implementation of "camera honestly inverted in marked spaces" needs

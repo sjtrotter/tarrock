@@ -77,5 +77,11 @@ code identifiers use these exact spellings. Add new terms here **before** using 
 - Quest IDs: `MQ<card number>` for main quests (`MQ00` prologue … `MQ21` finale);
   `SQ-<REGION>-<##>` for side quests. See `quests/README.md`.
 - Arcana are addressed by title ("the Magician"). Personal names exist but are only spoken
-  after unbinding — recovering one's name is what unbinding *means*. Named so far:
-  Wicke (Magician), Mortimer (Death), Aurel (Sun), Old Nick Lowry (Devil).
+  after unbinding — recovering one's name is what unbinding *means*. The freed names
+  (canonical spellings; character entries live in `design/characters.md`):
+  Wicke (I), Vesper (II), Damson (III), Aldric (IV), Bede (V), Elsbeth and Wystan
+  (VI — east and west banks of the Divide), Cassian (VII), Maud (VIII), Ellery (IX),
+  Penny Farthing (X), Prudence (XI), Wendel (XII), Mortimer (XIII), Averil (XIV),
+  Old Nick Lowry (XV), Balen (XVI), Esther (XVII), Luned (XVIII), Aurel (XIX),
+  Clemency (XX). The World's name exists but is never the player's to hear
+  (`design/narrative.md`; MQ21 owns the beat).

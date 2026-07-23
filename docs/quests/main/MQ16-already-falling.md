@@ -47,7 +47,7 @@ finishing it means the whole thing comes down — with the Fool riding it to the
 8. **The summit.** A short, desperate duel with the Warden — a crowned figure fighting
    bare-handed for a ruin, per `arcana.md` §XVI.
 9. **Unbinding.** The office cracks with the same violence the lightning always
-   promised. The Warden's freed name *(TBD — characters.md)* returns, and the Trump
+   promised. The Warden's freed name — **Balen** — returns, and the Trump
    XVI — Ruin — is handed over on the way down, because there is no "after" up here:
    the Tower is already falling.
 10. **The fall (scripted descent).** The Fool rides the Spire's collapse to the ground
@@ -92,14 +92,12 @@ finishing it means the whole thing comes down — with the Fool riding it to the
   scripted descent.
 - `world.md` §The Spire, §World-state matrix, §Layout ("visible from every region").
 - `characters.md` §XVI — personality (volatile, blunt, relieved to be fought); freed
-  name TBD.
+  name Balen.
 - `narrative.md` §Theme 3 — Sorrel's grief for a landmark, not a person, as a variant
   expression of "freedom isn't wanted by everyone."
 
 ## Open questions
 
-- The Warden's freed name is TBD in `characters.md`; needed before beat 9 can be
-  scripted in full.
 - Should the fallen climber (beat 4) be promoted to a named, findable body/grave later
   (a small side-quest hook), or remain an unseen device? Recommend the latter to keep
   scope down, but flagging for side-quest writers.

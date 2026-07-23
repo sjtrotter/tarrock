@@ -51,7 +51,7 @@ center.
 
 ## Key NPCs
 
-- **The Hierophant** (freed name TBD, `characters.md` §V) — once a genuine comfort to
+- **The Hierophant** (freed name Bede, `characters.md` §V) — once a genuine comfort to
   his flock, now reciting a sermon so worn it has stopped meaning anything, even to him.
 - **Chorister Linnet** (proposed — promote to characters.md before script status) — a
   young singer who has never known a hymn besides the one, and quietly hopes for another.
@@ -96,8 +96,6 @@ sure what to pray by instead.
 
 ## Open questions
 
-- The Hierophant's freed name (`characters.md` marks it TBD) needs to be set before
-  script status — it returns to him mid-breath at the unbinding.
 - Should Brother Tolliver be introduced earlier in the approach (as a counterpoint to
   Linnet's hope) rather than appearing only at the mourning beat — affects pacing and
   whether he needs his own approach-step scene.

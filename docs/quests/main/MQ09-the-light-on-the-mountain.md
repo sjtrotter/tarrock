@@ -53,7 +53,7 @@ fought. Catching the light is not the victory. Being caught catching it is.
 
 ## Key NPCs
 
-- **The Hermit** (freed name TBD, `characters.md` §IX) — withdrew to think and never
+- **The Hermit** (freed name Ellery, `characters.md` §IX) — withdrew to think and never
   stopped; must be caught, not beaten.
 - **Widow Fenner** (proposed — promote to `characters.md` before script status) — a
   waypoint-shack keeper for the Dim's lost travelers; this quest's mourning NPC.
@@ -88,8 +88,6 @@ couldn't find their way, and the Dim, found at last, needs a great deal less ten
 
 ## Open questions
 
-- The Hermit's freed name (`characters.md` marks it TBD) needs to be set before script
-  status.
 - The exact wording of "the one question" (beat 10) is proposed here, not canon — needs
   a narrative-team decision, since its answer is barked back by NPCs much later in the
   game and must be phraseable as a short, memorable line.
