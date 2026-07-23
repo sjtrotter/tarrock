@@ -17,6 +17,15 @@ NPC (canon or proposed), and tags — `[pre/post/either unbinding]`, themes touc
 (`narrative.md` §Themes, numbered 1–4), and a Calling hook if the premise touches an
 existing Calling (`design/callings.md`) without duplicating its loop.
 
+> **Status note (2026-07-23):** every premise below has been promoted to its own outline
+> file in this directory (`SQ-<REGION>-<nn>-<kebab-title>.md`, per the titles below), and
+> all proposed NPCs are canon in `characters.md` §Regional named NPCs. Per this file's
+> own rule, the promoted outlines are now the SSOT; this slate remains as the premise
+> record. Four names changed at promotion to clear collisions: MQ07's soldier is
+> **Corporal Pike** (was Fitch), the Spire's bell-watch veteran is **Harrow Brock** (was
+> Vane), the Confluence alchemist is **Comfrey Cross** (was Betony), and the Stillmarsh
+> ferryman's mate is **Tarn Loach** (was Perrin).
+
 **Rules honored throughout:** no premise invents a new `WS_*` flag — world-state hooks
 here only *reference* flags already in `design/world.md` §World-state matrix; new NPCs
 are marked `(proposed — promote to characters.md before script status)`; every premise
@@ -45,8 +54,7 @@ sidelines. It's a small, silly, decades-deep grudge match with real affection un
 it. [If WS_MAGICIAN_UNBOUND: packing up his stall, Voss admits he never once beat Flick
 honestly either — the whole rivalry was theatre too, and the two part as friends.]
 
-*Key NPC:* Old Cutter Voss, rival barker (proposed — promote to characters.md before
-script status); Flick (canon, `characters.md`) as scene partner.
+*Key NPC:* Old Cutter Voss, rival barker (canon, `characters.md` §Regional named NPCs); Flick (canon, `characters.md`) as scene partner.
 
 *Tags:* [either unbinding] · themes: — · Calling hook: Stagehand
 
@@ -60,8 +68,7 @@ around her; something in her chose this seat, and she's afraid to examine why. W
 last one still sitting, blinking at empty benches, with nowhere she's ever chosen to be
 instead. The ache is real; so is the stubborn, funny way she eventually stands up anyway.
 
-*Key NPC:* Mags Dellow, lifelong audience member (proposed — promote to characters.md
-before script status).
+*Key NPC:* Mags Dellow, lifelong audience member (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding, playable pre as setup] · themes: 3 · Calling hook: none
 
@@ -81,8 +88,7 @@ mid-sentence, exactly as everything else in the Veil does. Cray doesn't want thi
 out kindly or cruelly; he wants it left alone. A gentle puzzle about a library that has
 mistaken its own paralysis for prophecy.
 
-*Key NPC:* Brother Fenwick Cray, under-librarian (proposed — promote to characters.md
-before script status).
+*Key NPC:* Brother Fenwick Cray, under-librarian (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: 1 · Calling hook: Under-librarian
 
@@ -94,7 +100,7 @@ forgotten how loud a whisper can be. The warning proves correct — a minor haza
 world-breaking — but she must now sit with having spoken at all, in a cloister that
 worships withholding. A small, dry comedy about the one exception nobody ever tested.
 
-*Key NPC:* Sister Aveline (proposed — promote to characters.md before script status).
+*Key NPC:* Sister Aveline (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: 2 · Calling hook: none
 
@@ -108,8 +114,7 @@ modest — old love letters between two long-dead archivists) is simply there to
 She isn't angry. She's grieving a purpose, and doesn't yet know what a keeper is once
 there's nothing left to keep.
 
-*Key NPC:* Sister Marrow, archivist-nun (proposed — promote to characters.md before
-script status).
+*Key NPC:* Sister Marrow, archivist-nun (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 2, 3 · Calling hook: Under-librarian
 
@@ -129,8 +134,7 @@ he's never once beaten. Helping him try is earnest and useless, which is rather 
 point. [If WS_EMPRESS_UNBOUND: the row he was cutting when the harvests finally complete
 stays half-cut forever, by his own request — a monument, not a failure.]
 
-*Key NPC:* Tibb Wren, farmhand (proposed — promote to characters.md before script
-status).
+*Key NPC:* Tibb Wren, farmhand (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [either unbinding] · themes: 1 · Calling hook: Farmhand
 
@@ -142,8 +146,7 @@ theory of "patient bees" around it rather than admit what she suspects. Waking o
 experimental hive box, post-unbinding, produces the Bower's messiest, happiest scene:
 bees finally going everywhere at once.
 
-*Key NPC:* Coraline Ashe, apiarist (proposed — promote to characters.md before script
-status).
+*Key NPC:* Coraline Ashe, apiarist (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [either unbinding] · themes: 1 · Calling hook: none
 
@@ -156,8 +159,7 @@ kept several households fed who'd otherwise have starved on principle alone, and
 exactly how thin that excuse has worn. When `WS_EMPRESS_UNBOUND` fires and prices halve
 overnight, his entire trade — and half his self-regard — evaporates by morning.
 
-*Key NPC:* Marchpane Boll, grain broker (proposed — promote to characters.md before
-script status).
+*Key NPC:* Marchpane Boll, grain broker (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 2, 3 · Calling hook: none
 
@@ -176,8 +178,7 @@ plaque. The Bastion's legal machine is too perfectly unamendable to fix even a s
 error. Helping her navigate the clerks is a small comic tour of bureaucratic absurdity
 with a genuinely tender want underneath it.
 
-*Key NPC:* Nan Ostler, petitioner (proposed — promote to characters.md before script
-status).
+*Key NPC:* Nan Ostler, petitioner (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: 1 · Calling hook: Junior clerk
 
@@ -190,8 +191,7 @@ time, Pell is handed his first real discretionary case, and it is quietly the mo
 frightening moment of his life. The Fool can talk him through it, or simply stand by
 while he manages alone — either way, a small, unglamorous act of becoming a person.
 
-*Key NPC:* Pell Ashgrove, junior clerk (proposed — promote to characters.md before
-script status).
+*Key NPC:* Pell Ashgrove, junior clerk (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 2, 3 · Calling hook: Junior clerk
 
@@ -202,8 +202,7 @@ its very first thief is spectacularly bad at it, with no living tradition to lea
 Catching him mid-fumble opens a gentle comic choice: report him, scold him, or quietly
 teach him to at least be competent. Freedom, it turns out, needs practice.
 
-*Key NPC:* "Sixpence" Loft, the Bastion's first thief in 300 years (proposed — promote
-to characters.md before script status).
+*Key NPC:* "Sixpence" Loft, the Bastion's first thief in 300 years (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: — · Calling hook: none
 
@@ -222,8 +221,7 @@ tiny imperfection inside supposed perfection. The Fool is the first person she's
 told. It's very funny, and then it isn't, because her flat note is the only proof left
 that time passed at all before the Stall caught her mid-breath.
 
-*Key NPC:* Sister Perpetua Vane, chorister (proposed — promote to characters.md before
-script status).
+*Key NPC:* Sister Perpetua Vane, chorister (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: 1 · Calling hook: none
 
@@ -235,8 +233,7 @@ Chantry rejoices except Rennick, whose hands shake trying to learn a rhythm that
 the one holding his whole life together. Sitting with him through one bad practice is
 most of what actually helps.
 
-*Key NPC:* Rennick Coombe, bell-ringer's mate (proposed — promote to characters.md
-before script status).
+*Key NPC:* Rennick Coombe, bell-ringer's mate (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 2, 3 · Calling hook: Bell-ringer's mate
 
@@ -248,8 +245,7 @@ arrives. They've been "nearly married" for years, banns read and re-read. Findin
 loophole, or simply the kindness, that lets the ceremony happen anyway is a lovely small
 rehearsal for what `WS_HIEROPHANT_UNBOUND` later does for the whole region.
 
-*Key NPC:* Wren and Sorrel Tamsin, the waiting couple (proposed — promote to
-characters.md before script status).
+*Key NPC:* Wren and Sorrel Tamsin, the waiting couple (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: 1 · Calling hook: none
 
@@ -268,8 +264,7 @@ half-nailed. Lending a hand for one more attempt fails exactly the same way it a
 does, on schedule, and Fenn takes it with a shrug that's half despair and half running
 joke by now — a small, funny, aching rehearsal of MQ06's real ending.
 
-*Key NPC:* Cutwright Fenn, amateur bridge-builder (proposed — promote to characters.md
-before script status).
+*Key NPC:* Cutwright Fenn, amateur bridge-builder (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: 1 · Calling hook: none
 
@@ -282,8 +277,7 @@ and the real bridge completes, foot traffic simply walks across, and Sculley's b
 idle. He's proud of the marriage he helped nudge along and quietly bereft of the only
 thing he was ever needed for.
 
-*Key NPC:* Sculley Marsh, ferry hand (proposed — promote to characters.md before script
-status).
+*Key NPC:* Sculley Marsh, ferry hand (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 2, 3 · Calling hook: Ferry hand
 
@@ -295,8 +289,7 @@ younger kin couldn't manage. Delivering one particularly overdue letter by hand 
 the correspondence is the real reason the Divide never came to open war during the Stall.
 Warm, funny, a little embarrassed to be found out.
 
-*Key NPC:* Aunt Perpetua (east bank) and Uncle Osric (west bank) (proposed — promote to
-characters.md before script status).
+*Key NPC:* Aunt Perpetua (east bank) and Uncle Osric (west bank) (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [either unbinding] · themes: 1 · Calling hook: none
 
@@ -327,8 +320,7 @@ excellent maps. When `WS_CHARIOT_UNBOUND` fires and the procession halts, carava
 fast-travelling strangers pass without needing him at all, and Grubb must learn, late in
 a very long life, how to talk to someone who isn't obligated to stop and listen.
 
-*Key NPC:* Grubb Farrow, toll-fort keeper (proposed — promote to characters.md before
-script status).
+*Key NPC:* Grubb Farrow, toll-fort keeper (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 2, 3 · Calling hook: none
 
@@ -340,8 +332,7 @@ procession doesn't allow. Once `WS_CHARIOT_UNBOUND` fires, Fitch is the first to
 something new at a newly-active Waystation — nervous, off-tempo, and utterly triumphant
 regardless.
 
-*Key NPC:* Fitch Yarrow, procession drummer (proposed — promote to characters.md before
-script status).
+*Key NPC:* Fitch Yarrow, procession drummer (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [either unbinding] · themes: 1 · Calling hook: Waystation keeper
 
@@ -360,8 +351,7 @@ a modest spring high in the limestone, exactly where gravity says it should be. 
 region's proudest myth turns out to be nobody having climbed high enough to look — a
 small, satisfying puzzle rewarding the player who reads the land as land.
 
-*Key NPC:* Herder Sask Combe, who first tells the myth (proposed — promote to
-characters.md before script status).
+*Key NPC:* Herder Sask Combe, who first tells the myth (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [either unbinding] · themes: — · Calling hook: none
 
@@ -374,8 +364,7 @@ meaning what it meant, and Wren spends the quest deciding whether she was ever a
 besides the wall. The Fool doesn't get to decide for her; the ending stays honestly
 unresolved, per the region's own dry, hard-won grace.
 
-*Key NPC:* Wren Astley, hunter (proposed — promote to characters.md before script
-status).
+*Key NPC:* Wren Astley, hunter (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 2, 3 · Calling hook: none
 
@@ -407,8 +396,7 @@ into a ravine and never come out the other side — locals call it "swallowed." 
 further down the slope toward the lowlands, exactly where gravity and geology say it
 must — a quiet, satisfying answer to a "mystery" that was never supernatural.
 
-*Key NPC:* Lamplighter's apprentice Fenn Dusk (proposed — promote to characters.md
-before script status).
+*Key NPC:* Lamplighter's apprentice Fenn Dusk (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [either unbinding] · themes: — · Calling hook: Lamplighter
 
@@ -421,8 +409,7 @@ was never actually lost on. Coming home would undo everything he's made of himse
 coming home means the family's 300-year vigil never gets its ending. The Fool delivers
 his answer, not one of their own making.
 
-*Key NPC:* Ansel Corvenna, the "lost" son (proposed — promote to characters.md before
-script status).
+*Key NPC:* Ansel Corvenna, the "lost" son (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 2, 3 · Calling hook: none
 
@@ -433,8 +420,7 @@ his rounds for decades, convinced the number means something if it ever comes ou
 It never has. One round in the Fool's company is enough for him to finally admit the
 counting was never about the number.
 
-*Key NPC:* Wick Hollin, lamplighter (proposed — promote to characters.md before script
-status).
+*Key NPC:* Wick Hollin, lamplighter (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: 1 · Calling hook: Lamplighter
 
@@ -455,8 +441,7 @@ that got the district through three centuries of misfortune. There's no clean fi
 Fool can only help the district decide, together, what kind of neighbors they want to be
 now that luck is real again.
 
-*Key NPC:* Della Quill, cursed-district elder (proposed — promote to characters.md
-before script status).
+*Key NPC:* Della Quill, cursed-district elder (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 2, 3 · Calling hook: none
 
@@ -467,8 +452,7 @@ fair table for 300 years without ever once cheating — tremendous personal prid
 city that assumes everyone's rigged. He'll teach the Fool the difference between a good
 bluff and an honest tell, purely for the pleasure of a student who'll actually listen.
 
-*Key NPC:* Marrow Vance, croupier (proposed — promote to characters.md before script
-status).
+*Key NPC:* Marrow Vance, croupier (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [either unbinding] · themes: — · Calling hook: Croupier
 
@@ -481,8 +465,7 @@ charmed life ever has. Helping him quietly settle his debts before the wheel tur
 watching him gamble on his own luck holding one more day, is dry, funny, and a little
 cruel — exactly the best Wheelhouse stories.
 
-*Key NPC:* Ostentation Pryce, debtor (proposed — promote to characters.md before script
-status).
+*Key NPC:* Ostentation Pryce, debtor (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: 1 · Calling hook: none
 
@@ -502,8 +485,7 @@ after 300 years of hope. The dry comedy of the scarves collides with the very re
 of the wait meaning nothing in the end; Justice, the quest insists, was never a promise
 that waiting makes you right.
 
-*Key NPC:* Otho Petts, petitioner (proposed — promote to characters.md before script
-status).
+*Key NPC:* Otho Petts, petitioner (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 2, 3 · Calling hook: Queue-warden
 
@@ -514,8 +496,7 @@ filings with flawless, loving precision, taking genuine pride in penmanship nobo
 ever read. A request for one particular old record turns into an afternoon watching a
 true craftsman work — the Assize's driest, gentlest comedy.
 
-*Key NPC:* Wilhelmina Coates, scribe (proposed — promote to characters.md before script
-status).
+*Key NPC:* Wilhelmina Coates, scribe (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: 1 · Calling hook: Queue-warden
 
@@ -546,8 +527,7 @@ patient enough to receive yet. He isn't wrong that patience is the lesson; he's 
 that it's a lesson meant for him alone. A whimsical, gently comedy about seeking
 enlightenment from someone who's just having a very long nap.
 
-*Key NPC:* Fenwick Sorrel, seeker (proposed — promote to characters.md before script
-status).
+*Key NPC:* Fenwick Sorrel, seeker (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: 1 · Calling hook: none
 
@@ -560,8 +540,7 @@ forest rights itself, her home is suddenly, quietly upside-down by the world's n
 standard, and she must decide whether to rebuild it "correctly" or love it exactly as it
 was.
 
-*Key NPC:* Wick Alder, canopy-dweller (proposed — promote to characters.md before
-script status).
+*Key NPC:* Wick Alder, canopy-dweller (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 2, 3 · Calling hook: Rope-checker
 
@@ -573,8 +552,7 @@ with rope in it." A small traversal-flavored teaching quest that doubles as the
 Gallowwood's clearest statement of the Hanged Man's whole philosophy, worn completely
 lightly.
 
-*Key NPC:* Master rope-checker Corbenic Yew (proposed — promote to characters.md before
-script status).
+*Key NPC:* Master rope-checker Corbenic Yew (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [either unbinding] · themes: 1 · Calling hook: Rope-checker
 
@@ -593,8 +571,7 @@ been able to pass — hundreds of names, kept for no purpose except that somebod
 remember they were once here. Finding one particular missing name (misfiled, not lost)
 is a small, quiet honor.
 
-*Key NPC:* young ferryman's mate Perrin Loach (proposed — promote to characters.md
-before script status); Old Sallow (canon, `characters.md`) present throughout.
+*Key NPC:* young ferryman's mate Tarn Loach (canon, `characters.md` §Regional named NPCs); Old Sallow (canon, `characters.md`) present throughout.
 
 *Tags:* [either unbinding] · themes: 1 · Calling hook: Ferryman's mate
 
@@ -608,8 +585,7 @@ prepared for this for 300 years, discovers no amount of preparation makes the ac
 grief smaller. The quest doesn't resolve their grief; it only makes sure the Fool is
 present for it, which Old Sallow says is the whole job.
 
-*Key NPC:* The Hallow family, generations of vigil-keepers (proposed — promote to
-characters.md before script status).
+*Key NPC:* The Hallow family, generations of vigil-keepers (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 1, 3 · Calling hook: none
 
@@ -621,8 +597,7 @@ it means and tends it anyway, with a dry running joke about the tallow merchant'
 business. Gentle, funny, aching, and entirely undecided by the quest's end, per the
 Stillmarsh's whole character.
 
-*Key NPC:* Corse Millbank, widower (proposed — promote to characters.md before script
-status).
+*Key NPC:* Corse Millbank, widower (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: 1, 3 · Calling hook: none
 
@@ -641,8 +616,7 @@ great cups) shows the two rivers meet exactly where physics says a confluence mu
 matter what doctrine claims — and that the "eternal pour" is simply water that's been
 waiting 300 years to finish arriving at the sea.
 
-*Key NPC:* Mixer's apprentice Delphine Marchetti (proposed — promote to characters.md
-before script status).
+*Key NPC:* Mixer's apprentice Delphine Marchetti (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [either unbinding] · themes: — · Calling hook: Mixer's apprentice
 
@@ -654,8 +628,7 @@ cannot, structurally, ever be finished. When `WS_TEMPERANCE_UNBOUND` fires and t
 drains, the bridge is simply completed by physics, and Osgood's entire profession — and
 his rather large sense of self-importance — evaporates in an afternoon.
 
-*Key NPC:* Osgood Fenn, bridge-broker (proposed — promote to characters.md before script
-status).
+*Key NPC:* Osgood Fenn, bridge-broker (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 2, 3 · Calling hook: none
 
@@ -668,8 +641,7 @@ metaphysics. [If WS_TEMPERANCE_UNBOUND: she finally gets her cup, drinks it, and
 quietly disappointed it's merely very good tea and not a revelation — the most human beat
 in the region.]
 
-*Key NPC:* Alchemist Betony Cross (proposed — promote to characters.md before script
-status).
+*Key NPC:* Alchemist Comfrey Cross (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [either unbinding] · themes: 1 · Calling hook: Mixer's apprentice
 
@@ -688,8 +660,7 @@ honest contract. There is — the terms were always in plain print — but findi
 actually reading the whole thing, which nobody, including Fessy, ever has. A dry caper
 that plays the Devil's honesty as the joke it always is.
 
-*Key NPC:* Fessy Dunmore, contracted gambler (proposed — promote to characters.md before
-script status).
+*Key NPC:* Fessy Dunmore, contracted gambler (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: — · Calling hook: none
 
@@ -701,8 +672,7 @@ back down into the pit, unable to bear a life without the comfort his contract p
 The family cannot understand it and the Fool cannot fix it; the quest's only mercy is
 making sure the goodbye, this time, gets said properly.
 
-*Key NPC:* Wend Corrigan, the one who returned (proposed — promote to characters.md
-before script status).
+*Key NPC:* Wend Corrigan, the one who returned (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 3 · Calling hook: none
 
@@ -714,8 +684,7 @@ never once questioned his cage. One offhand, perfectly cheerful line — about h
 hasn't seen actual sunlight in longer than he can remember and doesn't miss it — is the
 whole region's darkest comedy in miniature, delivered without a flicker of self-pity.
 
-*Key NPC:* Prosper Vane, vault-teller (proposed — promote to characters.md before script
-status).
+*Key NPC:* Prosper Vane, vault-teller (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: 1 · Calling hook: Vault-teller
 
@@ -733,14 +702,13 @@ is charming nonsense, and the Fool's own arrival is the first thing to genuinely
 her readings in living memory — his presence nudges one piece of debris a visible inch,
 to her utter delight and mild panic.
 
-*Key NPC:* Fortune-reader Wisp Callow (proposed — promote to characters.md before script
-status).
+*Key NPC:* Fortune-reader Wisp Callow (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: — · Calling hook: none
 
 ### The Spotter's Last Watch
 
-Bell-watch veteran Harrow Vane has built his entire identity around watching, logging,
+Bell-watch veteran Harrow Brock has built his entire identity around watching, logging,
 and lecturing tourists on the Spire's frozen collapse — the region's foremost expert on a
 disaster that never finishes happening. When `WS_TOWER_UNBOUND` fires and the Spire
 finally falls, Harrow's post is destroyed out from under him, and a family in the town
@@ -748,8 +716,7 @@ below loses their home to the very real, non-metaphorical falling debris he spen
 years failing to meaningfully warn anyone about. The quest sits with both losses without
 pretending either cancels the other out.
 
-*Key NPC:* Harrow Vane, bell-watch veteran (proposed — promote to characters.md before
-script status).
+*Key NPC:* Harrow Brock, bell-watch veteran (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 2, 3 · Calling hook: Bell-watch
 
@@ -761,7 +728,7 @@ waiting for something to finally finish. The Fool is the first person ever to re
 whole log straight through, which matters more to its keeper than either expects.
 
 *Key NPC:* junior bell-watch keeper, unnamed (proposed — promote to characters.md before
-script status); distinct from Harrow Vane above.
+script status); distinct from Harrow Brock above.
 
 *Tags:* [pre-unbinding] · themes: 1 · Calling hook: Bell-watch
 
@@ -781,8 +748,7 @@ does have a modest, real outlet: a slow spring-fed seep that has, this whole tim
 carrying one coin's worth of wish a year to a marsh three days south. Proof the world was
 never as stopped as it looked, in the one region built entirely around looking stopped.
 
-*Key NPC:* Isolde Fenn, wish-tender (proposed — promote to characters.md before script
-status).
+*Key NPC:* Isolde Fenn, wish-tender (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [either unbinding] · themes: 1 · Calling hook: Wish-tender
 
@@ -795,8 +761,7 @@ finally, quietly answered (small and true: a letter, at last delivered, forgivin
 something old). Having spent three centuries as "the man who's waiting," he doesn't know
 how to be anything else, and the Fool can only sit with him while he finds out.
 
-*Key NPC:* Thomlin Reeve, pilgrim (proposed — promote to characters.md before script
-status).
+*Key NPC:* Thomlin Reeve, pilgrim (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 2, 3 · Calling hook: none
 
@@ -808,8 +773,7 @@ to help her retract it before it can ever come true. The region's gentle rules m
 there's no danger in this, only comedy and a very real, very old embarrassment finally
 spoken aloud.
 
-*Key NPC:* Pilgrim Betsy Marrow (proposed — promote to characters.md before script
-status).
+*Key NPC:* Pilgrim Betsy Marrow (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: — · Calling hook: none
 
@@ -829,8 +793,7 @@ toward the one real outlet) cuts a true line through the illusion where nothing 
 Rue's finished map, framed in her cottage, becomes the region's one reliably honest
 document.
 
-*Key NPC:* Rue Aldous, cartographer (proposed — promote to characters.md before script
-status).
+*Key NPC:* Rue Aldous, cartographer (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding; requires any true light per world.md's Mirrormarsh gate] ·
 themes: — · Calling hook: Fog-warden
@@ -843,8 +806,7 @@ built an entire new life and self in the marsh's fog, and does not want the resc
 everyone else calls a happy ending. The Fool delivers his answer, not the family's hoped-
 for one, and the region's post-unbinding joy gets its one honest, unresolved shadow.
 
-*Key NPC:* Corin Vesk, the reluctant returnee (proposed — promote to characters.md
-before script status).
+*Key NPC:* Corin Vesk, the reluctant returnee (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 2, 3 · Calling hook: none
 
@@ -855,8 +817,7 @@ replace, out of a superstition that a "perfect" rope would stop working — the 
 reasons, likes to be needed as much as anyone. A small, whimsical pre-unbinding beat
 about care disguised as ritual.
 
-*Key NPC:* fog-warden Nettle Vance (proposed — promote to characters.md before script
-status).
+*Key NPC:* fog-warden Nettle Vance (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: 1 · Calling hook: Fog-warden
 
@@ -876,8 +837,7 @@ been quietly starving the western fields long before drought became visible anyw
 else. Clearing it doesn't cure the region's deeper problem, but it does save one farm,
 now, honestly.
 
-*Key NPC:* Farmer Thatch Corley (proposed — promote to characters.md before script
-status).
+*Key NPC:* Farmer Thatch Corley (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: — · Calling hook: none
 
@@ -890,8 +850,7 @@ arrives, Sunny is the Noonlands' most frightened resident — not of the dark ex
 of the rest it's clearly asking her to finally take. Sitting with her through her first
 sunset turns out to be enough.
 
-*Key NPC:* Sunny Loft, harvest-hand (proposed — promote to characters.md before script
-status).
+*Key NPC:* Sunny Loft, harvest-hand (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 2, 3 · Calling hook: Harvest hand
 
@@ -902,8 +861,7 @@ tied, exactly, every single day for 300 years — an impossibility neither will 
 noticing. The Fool's arrival, and one honestly-thrown sheaf, finally breaks the tie, to
 the enormous, delighted outrage of both competitors.
 
-*Key NPC:* rival harvest hands Poll and Fenner Straw (proposed — promote to
-characters.md before script status).
+*Key NPC:* rival harvest hands Poll and Fenner Straw (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [pre-unbinding] · themes: — · Calling hook: Harvest hand
 
@@ -922,8 +880,7 @@ strange, patient act of hope-as-gardening. When `WS_JUDGEMENT_UNBOUND` fires and
 Hollows finally bloom, that plot is the first to flower, wildly, and Yew must find
 something new to tend in a graveyard that's finally, properly at peace.
 
-*Key NPC:* Yew Halloway, groundskeeper (proposed — promote to characters.md before
-script status).
+*Key NPC:* Yew Halloway, groundskeeper (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [post-unbinding] · themes: 1, 3 · Calling hook: Groundskeeper
 
@@ -934,8 +891,7 @@ undone — an apology, decades overdue even before the Stall — and asks the Fo
 delivering it before Judgement's trumpet can call them on. A quiet errand that makes an
 ending feel earned rather than simply arrived at.
 
-*Key NPC:* Elder Petronella Dusk, long-overdue soul (proposed — promote to
-characters.md before script status).
+*Key NPC:* Elder Petronella Dusk, long-overdue soul (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [requires WS_DEATH_UNBOUND, before WS_JUDGEMENT_UNBOUND] · themes: 1 · Calling
 hook: none
@@ -948,8 +904,7 @@ newly returned to the world. It's funnier than it sounds and sadder than it look
 she'll carve one for the Fool too, if asked, delivered as the single best joke in the
 Hollows.
 
-*Key NPC:* Stonemason Bess Corrigan (proposed — promote to characters.md before script
-status).
+*Key NPC:* Stonemason Bess Corrigan (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [requires WS_DEATH_UNBOUND] · themes: 1 · Calling hook: Groundskeeper
 
@@ -969,8 +924,7 @@ answer will turn out to be, and the Fool — who will eventually walk right up t
 Dancer — is the only person who could ever tell them so, and doesn't, because it isn't
 kind to yet.
 
-*Key NPC:* the Loach family, lens-grinders across generations (proposed — promote to
-characters.md before script status).
+*Key NPC:* the Loach family, lens-grinders across generations (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [either unbinding] · themes: 1 · Calling hook: none
 
@@ -982,8 +936,7 @@ isn't gated from entering — nothing is — he simply can't make himself, afrai
 will mean if the dancing ever stops. When the Fool finally does what he never could, he
 asks only one thing: to be told, gently, what it looked like up close.
 
-*Key NPC:* Corvin Rathe, rim-watcher (proposed — promote to characters.md before script
-status).
+*Key NPC:* Corvin Rathe, rim-watcher (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [either unbinding] · themes: 1, 3 · Calling hook: none
 
@@ -995,7 +948,6 @@ never was — the Dancer alone has held it — but the order's one elderly membe
 finally admits this aloud, to the Fool alone, does so with the particular relief of a
 person setting down an office they never actually needed to carry.
 
-*Key NPC:* Elder Sister Loveday of the Wreath-Order (proposed — promote to
-characters.md before script status).
+*Key NPC:* Elder Sister Loveday of the Wreath-Order (canon, `characters.md` §Regional named NPCs).
 
 *Tags:* [either unbinding] · themes: 2 · Calling hook: none

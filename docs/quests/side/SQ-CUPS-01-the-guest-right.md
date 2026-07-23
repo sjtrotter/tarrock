@@ -24,13 +24,12 @@ particular and this stubborn.
 
 ## Beats
 
-1. **The hook.** Goodwife Perrin Loosely (proposed NPC — promote to `characters.md`
-   before script status), a widow on the east bank, has not let her oldest friend across
+1. **The hook.** Goodwife Perrin Loosely (canon, `characters.md` §Regional named NPCs), a widow on the east bank, has not let her oldest friend across
    her threshold in decades — since before the Stall, even — over a slight neither of
    them can now fully agree on the details of. By Cups suit-law, the **guest-right**:
    *any* properly-made request for shelter, food, or welcome must be honored, no
    exceptions, no grudges. Perrin has spent thirty years making sure her friend Ambrose
-   Tench (proposed) never asks properly — deflecting, interrupting, changing the subject
+   Tench (canon, `characters.md` §Regional named NPCs) never asks properly — deflecting, interrupting, changing the subject
    at the exact moment a real request might land.
 2. **The complication.** The Fool learns the guest-right's actual ritual forms (a
    specific blessing-phrase, a specific gesture with an offered cup) from a Cups elder

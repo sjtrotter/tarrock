@@ -23,7 +23,7 @@ was going, ending in a single, gently absurd question.
 
 1. Arrival at the Gallowwood: canopy paths, gravity-flipped glades, a forest that
    forgot which way it was going.
-2. The Fool meets Fenwick Loft (proposed), a guide who has spent years learning to read
+2. The Fool meets Fenwick Loft (canon, `characters.md` §Regional named NPCs), a guide who has spent years learning to read
    the flipped terrain for lost travelers, and offers to lead partway.
 3. Approach step: a first, small hang from a low bough — a deliberate echo of the
    Cliff's opening leap of faith, teaching the "let go" motion this ordeal is built on.
@@ -52,7 +52,7 @@ was going, ending in a single, gently absurd question.
 
 - **The Hanged Man** (freed name Wendel, `characters.md` §XII) — the only Arcanum who is
   happy; regards the Fool with real affection and no urgency whatsoever.
-- **Fenwick Loft** (proposed — promote to `characters.md` before script status) — a
+- **Fenwick Loft** (canon, `characters.md` §Regional named NPCs) — a
   Gallowwood guide whose expertise is the flipped terrain; this quest's mourning NPC.
 
 ## Mourning

@@ -23,7 +23,7 @@ center.
 
 1. Arrival at the Chantry: bells tolling the same hour they've tolled for 300 years,
    choir acoustics carrying from every stone surface in town.
-2. The Fool meets Chorister Linnet (proposed), who has sung the same hymn every day of
+2. The Fool meets Chorister Linnet (canon, `characters.md` §Regional named NPCs), who has sung the same hymn every day of
    her life and quietly aches, without knowing quite what for, for one new note.
 3. Approach step: attending the endless service itself, a rhythm-tutorial disguised as
    worship, teaching the hymn's meter before the fight demands reading it.
@@ -53,7 +53,7 @@ center.
 
 - **The Hierophant** (freed name Bede, `characters.md` §V) — once a genuine comfort to
   his flock, now reciting a sermon so worn it has stopped meaning anything, even to him.
-- **Chorister Linnet** (proposed — promote to characters.md before script status) — a
+- **Chorister Linnet** (canon, `characters.md` §Regional named NPCs) — a
   young singer who has never known a hymn besides the one, and quietly hopes for another.
 
 ## Choices & branches
@@ -64,7 +64,7 @@ center.
 
 ## Mourning
 
-**Brother Tolliver** (proposed — promote to characters.md before script status), an
+**Brother Tolliver** (canon, `characters.md` §Regional named NPCs), an
 elder chorister who has structured his entire life around the one certain hour, mourns
 the unbinding: new songs mean the schedule he built his faith on is gone, and he isn't
 sure what to pray by instead.

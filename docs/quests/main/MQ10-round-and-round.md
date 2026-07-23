@@ -23,13 +23,13 @@ ring-arena that starts spinning the instant the fight begins.
 
 1. Arrival at the Wheelhouse: the lucky district gilded and absurd, the cursed district
    ruined and absurd in the opposite direction, one street apart.
-2. The Fool meets Deuce Halloway (proposed), a croupier who walks the line between both
+2. The Fool meets Deuce Halloway (canon, `characters.md` §Regional named NPCs), a croupier who walks the line between both
    districts daily and has stopped finding either of them funny.
 3. Approach step: a rigged dice parlor in the lucky district, where "winning" too
    easily reveals exactly how wrong guaranteed luck feels from the inside.
 4. Approach step: crossing the cursed district's hazard streets — falling signs,
    chronic bad luck made physical — to reach the access tunnels beneath the Wheel.
-5. Approach step: Baroness Fettle (proposed), the wealthiest resident of the lucky
+5. Approach step: Baroness Fettle (canon, `characters.md` §Regional named NPCs), the wealthiest resident of the lucky
    district, meets the Fool at the tunnel mouth and tries to buy them off — her whole
    fortune depends on nothing here ever changing.
 6. Reading the stasis: entry to the titanic stopped Wheel itself — a silent ring-arena,
@@ -58,9 +58,9 @@ ring-arena that starts spinning the instant the fight begins.
 - **Wheel of Fortune** (freed name Penny Farthing, `characters.md` §X; she/her) —
   genial, theatrical, delights in the Fool as the first unpredictable variable in three
   centuries.
-- **Deuce Halloway** (proposed — promote to `characters.md` before script status) — a
+- **Deuce Halloway** (canon, `characters.md` §Regional named NPCs) — a
   weary croupier who walks both districts daily.
-- **Baroness Fettle** (proposed — promote to `characters.md` before script status) —
+- **Baroness Fettle** (canon, `characters.md` §Regional named NPCs) —
   the lucky district's wealthiest resident; this quest's mourning NPC.
 
 ## Mourning

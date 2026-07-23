@@ -41,8 +41,8 @@ change the world will ever undergo.
 6. Approach step: the Fool takes over a small ferryman's duty — carrying a lantern to a
    bedside, sitting with someone briefly — so Mortimer can rest his feet for longer than
    he'll admit he's needed to.
-7. Approach step: the Fool meets Bettony Marsh (proposed), keeping a years-long vigil
-   over her grandfather, Gaffer Corlin (proposed) — deathless, bedridden, and utterly
+7. Approach step: the Fool meets Bettony Marsh (canon, `characters.md` §Regional named NPCs), keeping a years-long vigil
+   over her grandfather, Gaffer Corlin (canon, `characters.md` §Regional named NPCs) — deathless, bedridden, and utterly
    unable to let go. This is planted here so the aftermath lands with real weight.
 8. Mortimer states plainly, unasked, that he wants this fight: "anything less would be
    disrespect to the office." He is the only Arcanum in the game who asks for his own
@@ -92,9 +92,9 @@ change the world will ever undergo.
   meeting; the only Arcanum who asks to be fought; the game's keystone confession.
 - **Old Sallow** (canon, `characters.md` §Recurring named NPCs) — the Stillmarsh's
   ferry-keeper, "nearly done dying" for three centuries; gets the quest's final beat.
-- **Bettony Marsh** (proposed — promote to `characters.md` before script status) — this
+- **Bettony Marsh** (canon, `characters.md` §Regional named NPCs) — this
   quest's mourning NPC, keeping vigil over a deathless grandfather.
-- **Gaffer Corlin** (proposed — promote to `characters.md` before script status) —
+- **Gaffer Corlin** (canon, `characters.md` §Regional named NPCs) —
   Bettony's grandfather, deathless and bedridden for three centuries; his death is the
   game's first concrete demonstration of `WS_DEATH_UNBOUND`'s weight.
 

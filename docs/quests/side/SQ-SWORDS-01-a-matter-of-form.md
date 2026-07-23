@@ -23,9 +23,8 @@ disciplined act, not the lesser one.
 
 ## Beats
 
-1. **The hook.** Page-turned-hopeful Isolde Vantage (proposed NPC — promote to
-   `characters.md` before script status) intends to formally challenge retired champion
-   Ser Barrow Steel (proposed) for the rank of Knight, citing an old Bastion code that
+1. **The hook.** Page-turned-hopeful Isolde Vantage (canon, `characters.md` §Regional named NPCs) intends to formally challenge retired champion
+   Ser Barrow Steel (canon, `characters.md` §Regional named NPCs) for the rank of Knight, citing an old Bastion code that
    permits challenge "on any point of provable superiority." She's read the code
    carefully; she has not read it carefully *enough*.
 2. **The complication.** The Fool, asking around, learns from a garrison clerk that the

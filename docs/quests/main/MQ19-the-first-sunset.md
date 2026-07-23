@@ -64,8 +64,7 @@ creeping drought and sunstroke sidequests resolve the moment the sun finally mov
     WS_STAR_UNBOUND]`: the first sky is dark but starless, ordinary night without the
     Star's blessing yet — equally beautiful, differently so, and consistent with the
     order-independence rule (`world.md`).
-13. **Aftermath — the mourner.** Bramble Coss (proposed — promote to characters.md
-    before script status), the festival organizer from beat 2, watches the first
+13. **Aftermath — the mourner.** Bramble Coss (canon, `characters.md` §Regional named NPCs), the festival organizer from beat 2, watches the first
     sunset with open grief rather than joy: the endless festival was the only life she
     ever planned for, and she has no notion what a calendar with actual days in it is
     for. She doesn't ask for noon back. She just needs a minute.
@@ -76,8 +75,7 @@ creeping drought and sunstroke sidequests resolve the moment the sun finally mov
 ## Key NPCs
 
 - **Aurel (the Sun)** — canon, see `arcana.md` §XIX, `characters.md` §XIX.
-- **Bramble Coss, festival organizer (proposed — promote to characters.md before
-  script status)** — the quest's mourning NPC (beats 2, 13).
+- **Bramble Coss, festival organizer (canon, `characters.md` §Regional named NPCs)** — the quest's mourning NPC (beats 2, 13).
 - **The squire or training-dummy rig (proposed — promote to characters.md before
   script status)** — delivers the shadow-reading tutorial (beat 4); may remain an
   unnamed device if scope requires.

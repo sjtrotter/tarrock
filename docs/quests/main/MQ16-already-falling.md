@@ -35,7 +35,7 @@ finishing it means the whole thing comes down — with the Fool riding it to the
    a found-lore beat that foreshadows the danger without invoking a body (tone: warm
    dread, not grimdark).
 5. **Mini-challenge — the bell-keeper's warning.** The town's bell-keeper, Sorrel Vance
-   (proposed — promote to characters.md before script status), begs the Fool to
+   (canon, `characters.md` §Regional named NPCs), begs the Fool to
    reconsider — not out of concern for the Fool, but because the tower's silhouette is
    the only skyline she's ever known, and she is afraid of what a changed horizon means
    for people who navigate by it. Plants this quest's mourning beat early.
@@ -66,8 +66,7 @@ finishing it means the whole thing comes down — with the Fool riding it to the
 ## Key NPCs
 
 - **The Warden (the Tower)** — canon, see `arcana.md` §XVI, `characters.md` §XVI.
-- **Sorrel Vance, bell-keeper (proposed — promote to characters.md before script
-  status)** — the quest's mourning NPC (beats 5, 12).
+- **Sorrel Vance, bell-keeper (canon, `characters.md` §Regional named NPCs)** — the quest's mourning NPC (beats 5, 12).
 - **The fallen climber (mentioned only, not met)** — a found-journal device, beat 4;
   no new named NPC required if the journal stands alone.
 

@@ -33,8 +33,7 @@ here plays in the post-confession world as a baseline, not a variant.
 3. **Mini-challenge — the terraces.** Navigating the amphitheater's terraced graves
    means dealing with restless minor hauntings (not the boss) — small, contained
    scuffles that foreshadow the kill-order puzzle to come.
-4. **Mini-challenge — the reluctant ghost.** One spirit, Fennimore Ashgrove (proposed
-   — promote to characters.md before script status), begs the Fool not to hurry things
+4. **Mini-challenge — the reluctant ghost.** One spirit, Fennimore Ashgrove (canon, `characters.md` §Regional named NPCs), begs the Fool not to hurry things
    along on his account. He isn't ready to be called yet, whatever the Herald's meter
    says. Plants this quest's mourning beat early.
 5. **Mini-challenge — the ancestor shrines.** A handful of shrines around the
@@ -74,8 +73,7 @@ here plays in the post-confession world as a baseline, not a variant.
 ## Key NPCs
 
 - **The Herald (Judgement)** — canon, see `arcana.md` §XX, `characters.md` §XX.
-- **Fennimore Ashgrove, a reluctant ghost (proposed — promote to characters.md before
-  script status)** — the quest's mourning NPC (beats 4, 14).
+- **Fennimore Ashgrove, a reluctant ghost (canon, `characters.md` §Regional named NPCs)** — the quest's mourning NPC (beats 4, 14).
 - **A waiting ghost at the terraces (proposed — promote to characters.md before
   script status)** — delivers beat 2's tone-setting line; may remain unnamed if scope
   requires.

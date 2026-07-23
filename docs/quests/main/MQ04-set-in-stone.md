@@ -26,7 +26,7 @@ him is bureaucracy before it is combat; climbing him is the fight.
    that has not missed a schedule in 300 years.
 2. The Fool learns the law: no one approaches the Emperor's plinth without a Writ of
    Audience, issued only through proper channels.
-3. Meet Clerk Anselm (proposed), a Bastion functionary who processes the writ — brisk,
+3. Meet Clerk Anselm (canon, `characters.md` §Regional named NPCs), a Bastion functionary who processes the writ — brisk,
    correct, and quietly exhausted by a perfection he's never allowed to question aloud.
 4. Approach step: a training climb across the city's monumental statues and scaffolding
    to reach a vantage over the plinth, teaching the climb in miniature before it matters.
@@ -53,7 +53,7 @@ him is bureaucracy before it is combat; climbing him is the fight.
 - **The Emperor** (freed name Aldric, `characters.md` §IV) — built a perfect,
   unamendable law and has been strangled by his own perfection ever since; regards the
   Fool as a jurisdictional problem first, a person only once forced to.
-- **Clerk Anselm** (proposed — promote to characters.md before script status) — a
+- **Clerk Anselm** (canon, `characters.md` §Regional named NPCs) — a
   Bastion functionary who issues the Writ of Audience; correct on the surface, secretly
   tired of a rigidity he's never had the standing to question.
 

@@ -96,7 +96,9 @@ art detail belongs to [`art-audio.md`](art-audio.md) and the quest docs.
   like cathedral naves, an audience that cannot leave its seats, popcorn older than
   nations. Warm, gaslit, uncanny. Intended first region.
 - **The Veil (II):** A cloister-library in perpetual moonlit mist between two colossal
-  pillars. Silent order of archivist nuns; the world's secrets shelved and sealed.
+  pillars. Silent order of archivist nuns, plus a small lay staff of under-librarians
+  (addressed as Brother or Sister by cloister courtesy, not vow); the world's secrets
+  shelved and sealed.
   Stealth- and riddle-flavored.
 - **The Bower (III):** A garden gone glorious and wrong — orchards so heavy the boughs
   weep, wheat to the horizon that may never be cut. Overripe abundance as horror-lite.

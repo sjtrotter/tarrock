@@ -75,8 +75,7 @@ Spread, cast reversed.
 13. **Aftermath — the fog lifts.** Region-wide, the Mirrormarsh's fog clears. The
     "monsters" are revealed as lost people — a town un-curses. Illusion-type enemies
     lose their ambush bonus world-wide.
-14. **Aftermath — the mourner.** One of the freed fog-people, Ivy Ashby (proposed —
-    promote to characters.md before script status), grieves — not the fog itself, but
+14. **Aftermath — the mourner.** One of the freed fog-people, Ivy Ashby (canon, `characters.md` §Regional named NPCs), grieves — not the fog itself, but
     who she was inside it: uncomplicated, untethered from a name and a family she now
     has to be again. She doesn't ask to go back. She's just not ready to be herself
     yet, and says so.
@@ -88,8 +87,7 @@ Spread, cast reversed.
   to threaten him, per `characters.md` §Pip's protection rule.
 - **The Anti-Fool** — the player's own mirrored Pocket Spread; not a separate
   character, per `arcana.md` §XVIII.
-- **Ivy Ashby, freed fog-person (proposed — promote to characters.md before script
-  status)** — the quest's mourning NPC (beat 14).
+- **Ivy Ashby, freed fog-person (canon, `characters.md` §Regional named NPCs)** — the quest's mourning NPC (beat 14).
 
 ## [If CONFESSED] variants
 

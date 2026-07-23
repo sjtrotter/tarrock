@@ -30,7 +30,8 @@ demands it as the only way to win.
 2. **Reading the stasis.** A mixer at a public bench explains, unprompted and pleased
    about it: the tea has *nearly* finished steeping since the Stall. So has everything
    else worth doing properly. Nobody here considers this a tragedy. That's the tell.
-3. **Mini-challenge — the small blend.** A mixer's apprentice, mid-panic over a
+3. **Mini-challenge — the small blend.** Delphine Marchetti (canon, `characters.md`
+   §Regional named NPCs), a mixer's apprentice mid-panic over a
    simpler blend that keeps scalding or freezing, asks for help. The Fool learns to
    redirect hot into cold and back to cut a neutral path — the exact mechanic the boss
    arena will scale up. Skippable, but the fight is markedly harder without it.
@@ -38,8 +39,7 @@ demands it as the only way to win.
    twin-cup plaza means timing passage between alternating bands of scald-mist and
    frost-spray thrown off by the rivers themselves — an environmental preview of the
    arena's core hazard.
-5. **Mini-challenge — the mason's plea.** Elgin Thatch (proposed — promote to
-   characters.md before script status), the bridge-mason, intercepts the Fool at the
+5. **Mini-challenge — the mason's plea.** Elgin Thatch (canon, `characters.md` §Regional named NPCs), the bridge-mason, intercepts the Fool at the
    final span and asks, quite sincerely, that this one thing be left alone. He has laid
    the same stone for longer than he can be sad about. This is the quest's mourning
    beat planted early, so its return in the aftermath lands.
@@ -73,11 +73,10 @@ demands it as the only way to win.
 ## Key NPCs
 
 - **The Mixer (Temperance)** — canon, see `arcana.md` §XIV, `characters.md` §XIV.
-- **Elgin Thatch, bridge-mason (proposed — promote to characters.md before script
-  status)** — the quest's mourning NPC (beats 5, 12).
-- **The mixer's apprentice (proposed — promote to characters.md before script
-  status)** — delivers the tempering tutorial in beat 3; unnamed placeholder, "the
-  Apprentice," pending a proper name.
+- **Elgin Thatch, bridge-mason (canon, `characters.md` §Regional named NPCs)** — the quest's mourning NPC (beats 5, 12).
+- **Delphine Marchetti (canon, `characters.md` §Regional named NPCs)** — the mixer's
+  apprentice; delivers the tempering tutorial in beat 3. Also the lead of
+  SQ-CONFLUENCE-01, which shares her canon entry.
 
 ## [If CONFESSED] variants
 

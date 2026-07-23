@@ -24,7 +24,7 @@ hands and take the reins.
 
 1. Arrival at the Longroad: the ring-causeway stretches in both directions, and in the
    distance the war-train's dust cloud circles the Axis exactly as it has for 300 years.
-2. Meet Corporal Fitch (proposed), a marching soldier resting at a toll-fort, who
+2. Meet Corporal Pike (canon, `characters.md` §Regional named NPCs), a marching soldier resting at a toll-fort, who
    explains: the procession never stops, never arrives, and no one marching it remembers
    what it won.
 3. Approach step: a chase along the causeway on foot — cutting switchbacks, vaulting
@@ -52,23 +52,23 @@ hands and take the reins.
     the now-quiet Longroad.
 13. Mourner beat: Widow Tallow's roadside inn, built entirely around feeding a parade
     that will never pass her door again, stands unnervingly quiet for the first time.
-14. Closing: Corporal Fitch, still standing at his toll-fort, salutes a war that has
+14. Closing: Corporal Pike, still standing at his toll-fort, salutes a war that has
     finally, formally, ended.
 
 ## Key NPCs
 
 - **The Chariot** (freed name Cassian, `characters.md` §VII) — once the Longroad's
   conquering hero, quietly horrified at how long "just a little further" has lasted.
-- **Corporal Fitch** (proposed — promote to characters.md before script status) — a
+- **Corporal Pike** (canon, `characters.md` §Regional named NPCs) — a
   weary marching soldier who has served the endless procession so long he no longer
   remembers what victory it was meant to be celebrating.
-- **Widow Tallow** (proposed — promote to characters.md before script status) — keeper
+- **Widow Tallow** (canon, `characters.md` §Regional named NPCs) — keeper
   of a roadside inn whose entire trade was built on feeding and housing the eternal
   procession's marchers.
 
 ## Choices & branches
 
-- No hard branch. Minor choice: the Fool can spend a beat encouraging Corporal Fitch to
+- No hard branch. Minor choice: the Fool can spend a beat encouraging Corporal Pike to
   finally leave his post in the closing scene, or leave him to decide on his own —
   colors his closing line, no mechanical effect.
 
@@ -83,7 +83,7 @@ evening, the same weary faces at her door — is gone the moment the procession 
 - The Chariot's quiet horror, per `characters.md`, becomes explicit post-MQ13: he
   already knows the Fool is "the only soldier still capable of stopping" in both the
   literal and cosmic sense, and says so once the reins are taken.
-- Corporal Fitch's weary bark shifts from resigned to grateful-and-afraid — relieved the
+- Corporal Pike's weary bark shifts from resigned to grateful-and-afraid — relieved the
   march is over, unsettled by what its ending is part of.
 - Widow Tallow's mourning line, if CONFESSED, acknowledges she knows exactly why the road
   is closing to her particular parade, and grieves it with open eyes rather than surprise.

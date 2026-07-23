@@ -24,7 +24,7 @@ pass — or fail — three tests that are not answered but *done*.
 
 1. Arrival: the Fool crosses onto the Veil's causeway; mist thickens until the two
    pillars are the only fixed points in the world, moonlight frozen at one angle.
-2. First contact: Sister Amity (proposed), a young novice, meets the Fool at the
+2. First contact: Sister Amity (canon, `characters.md` §Regional named NPCs), a young novice, meets the Fool at the
    gatehouse and whispers the cloister's one rule before vanishing back into hush.
 3. Approach step — the Sleeping Scriptorium: the Fool threads a stealth passage between
    robed archivists dozing mid-sentence over their desks; waking one alerts the rest.
@@ -59,7 +59,7 @@ pass — or fail — three tests that are not answered but *done*.
 
 - **The High Priestess** (freed name Vesper, `characters.md` §II) — reads the Fool
   completely on sight and resents how little that tells her about what happens next.
-- **Sister Amity** (proposed — promote to characters.md before script status) — a young
+- **Sister Amity** (canon, `characters.md` §Regional named NPCs) — a young
   novice archivist, the cloister's one talkative exception; guides the Fool through the
   gatehouse and the Sleeping Scriptorium, and is quietly thrilled and terrified by
   visitors.

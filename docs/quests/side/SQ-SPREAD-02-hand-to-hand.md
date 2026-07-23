@@ -27,8 +27,8 @@ tying it together.
 ## The chain
 
 Nine links: eight trades and one final gift, cycling through Cups → Swords → Wands →
-Coins twice before resolving. All NPCs below are proposed and should be promoted to
-`characters.md` together, as a set, once this quest reaches `script` status.
+Coins twice before resolving. All NPCs below are now canon (`characters.md` §Regional named NPCs), promoted
+together as a set.
 
 | # | Suit / region (flexible — see below) | NPC | Gives up | Receives | What it says about the suit |
 |---|---|---|---|---|---|

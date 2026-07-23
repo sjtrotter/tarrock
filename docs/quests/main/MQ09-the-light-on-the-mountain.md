@@ -22,7 +22,7 @@ fought. Catching the light is not the victory. Being caught catching it is.
 
 1. Arrival at the Dim: a mountain of permanent dusk, cold wayfinding, hermit shacks
    scattered across star-blind valleys.
-2. The Fool meets Widow Fenner (proposed) at a waypoint shack — she has fed and warmed
+2. The Fool meets Widow Fenner (canon, `characters.md` §Regional named NPCs) at a waypoint shack — she has fed and warmed
    lost travelers for years and describes the light seen nightly on the far ridges,
    never caught.
 3. Approach step: tracking a trail of cold embers and half-buried footprints across a
@@ -55,7 +55,7 @@ fought. Catching the light is not the victory. Being caught catching it is.
 
 - **The Hermit** (freed name Ellery, `characters.md` §IX) — withdrew to think and never
   stopped; must be caught, not beaten.
-- **Widow Fenner** (proposed — promote to `characters.md` before script status) — a
+- **Widow Fenner** (canon, `characters.md` §Regional named NPCs) — a
   waypoint-shack keeper for the Dim's lost travelers; this quest's mourning NPC.
 
 ## Mourning

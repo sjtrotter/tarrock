@@ -67,8 +67,7 @@ comfort costs.
     over Trump XV — Bargain — with both hands, like a man closing a ledger for good.
 12. **Aftermath — the chains fall.** Across the Undervault, chains open. Most residents
     leave, dazed, blinking at unfamiliar daylight for the first time in decades.
-13. **Aftermath — the mourner.** Not everyone climbs out. Merrow Slate (proposed —
-    promote to characters.md before script status), the gambler from beat 3, walks
+13. **Aftermath — the mourner.** Not everyone climbs out. Merrow Slate (canon, `characters.md` §Regional named NPCs), the gambler from beat 3, walks
     partway up the stair, stops, and walks back down — quietly re-latching his own
     empty chain out of habit, because comfort, once worn long enough, fits like skin.
     This is per `world.md`'s explicit note that some freed folk walk back down.
@@ -78,8 +77,7 @@ comfort costs.
 ## Key NPCs
 
 - **Old Nick Lowry (the Devil)** — canon, see `arcana.md` §XV, `characters.md` §XV.
-- **Merrow Slate, a freed gambler (proposed — promote to characters.md before script
-  status)** — the quest's mourning NPC (beats 3, 13); embodies the "some walk back
+- **Merrow Slate, a freed gambler (canon, `characters.md` §Regional named NPCs)** — the quest's mourning NPC (beats 3, 13); embodies the "some walk back
   down" world-state note.
 - **The chained resident at the gate (proposed — promote to characters.md before
   script status)** — a Coins-culture minor NPC, delivers beat 2's tone-setting line.

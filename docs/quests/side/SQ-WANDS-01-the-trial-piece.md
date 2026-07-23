@@ -22,10 +22,9 @@ by the work itself, finished, side by side.
 
 ## Beats
 
-1. **The hook.** Master carver Sorrel Ashgrove (proposed NPC — promote to
-   `characters.md` before script status) has entered a "trial piece" — a carved
+1. **The hook.** Master carver Sorrel Ashgrove (canon, `characters.md` §Regional named NPCs) has entered a "trial piece" — a carved
    canopy-totem — into the Gallowwood's informal guild reckoning, a once-a-generation
-   showcase of the region's finest work. Her apprentice, Fenn Cobblewright (proposed),
+   showcase of the region's finest work. Her apprentice, Fenn Cobblewright (canon, `characters.md` §Regional named NPCs),
    insists loudly, to anyone who'll listen, that he carved the totem's best sections
    himself and Sorrel is claiming sole credit.
 2. **The complication.** Both are telling the truth as they understand it: Sorrel taught

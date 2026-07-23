@@ -290,3 +290,389 @@ three sentences is enough to brief a quest writer.
   300 years and knows it better than anyone. Wry, unhurried, and the closest thing the
   Stillmarsh has to a host; central to the Stillmarsh's region content around MQ13 (owned
   by that quest and `world.md`).
+
+## Regional named NPCs
+
+These NPCs were proposed across the quest docs and the side-quest slate; with this change
+they become canon and are safe to script against. Each is homed to the region where its
+story sits, and every entry cites the quest that first proposed it so writers know where
+the character is load-bearing — entries consolidate and lightly polish what the source
+docs already say, inventing nothing. Suit-culture and Spread-wide NPCs, who belong to no
+single region, are gathered in the final subsection.
+
+### The Prestige
+
+- **Old Cutter Voss** — Flick's rival barker, who has spent 300 years insisting his own
+  strongman sideshow is the "real" main event and challenges any passerby to out-showman
+  him at his own game. His signature trick is rigged in a way even he has forgotten how to
+  unrig, and the whole grudge is decades-deep with real affection underneath.
+  (SLATE — The Barker's Bet)
+- **Mags Dellow** — a lifelong audience member who has held the same third-row seat at
+  every showing for 300 years and can recite Wicke's patter better than he can. She isn't
+  stuck like the crowd around her; something in her chose the seat, and she's afraid to
+  examine why. (SLATE — The Front-Row Faithful)
+
+### The Veil
+
+- **Sister Amity** — a young novice archivist, the cloister's one talkative exception, who
+  guides the Fool through the gatehouse and the Sleeping Scriptorium, quietly thrilled and
+  terrified by visitors. (MQ02)
+- **Brother Fenwick Cray** — a lay under-librarian ("Brother" is the cloister's courtesy
+  title for lay staff, not a vow — `world.md` §The Veil) who has built decades of quiet faith
+  around one shelved volume he's convinced predicts the Reading can never end. The book is
+  simply unfinished, its ink running out mid-sentence, and he wants that left alone rather
+  than pointed out kindly or cruelly. (SLATE — The Book That Isn't Finished)
+- **Sister Aveline** — an archivist-nun who breaks three centuries of vow to whisper the
+  Fool a warning, then looks horrified at her own voice; she must now sit with having
+  spoken at all, in a cloister that worships withholding. (SLATE — What the Silence Costs)
+- **Sister Marrow** — an archivist-nun who has guarded one particular drawer, and only
+  that drawer, for 300 years. When the Veil opens, the drawer opens with it, the secret
+  inside turns out modest, and she is left grieving a purpose with nothing left to keep.
+  (SLATE — The Keeper's Last Secret)
+
+### The Bower
+
+- **Gaffer Nettle** — an elderly orchardman who has hand-pruned the throne's briars for
+  decades out of pure devotion, convinced it was working. (MQ03)
+- **Tibb Wren** — a farmhand who has convinced himself that finishing one single row
+  before the wheat regrows will break the Bower's curse; he knows he is wrong and races
+  the tide every morning anyway. (SLATE — The Uncut Row)
+- **Coraline Ashe** — an apiarist tending a hive whose bees have not swarmed, foraged, or
+  changed their comb in 300 years, and who has built a loving theory of "patient bees"
+  rather than admit what she suspects. (SLATE — The Hive That Never Swarms)
+- **Marchpane Boll** — a Coins-culture grain broker who has run the Bower's "famine" as a
+  private fiefdom for 300 years, quietly wealthy off a scarcity that was only stasis. Not
+  quite a villain — he's kept households fed who'd otherwise have starved on principle,
+  and knows exactly how thin that excuse has worn. (SLATE — The Hoarder's Ledger)
+
+### The Bastion
+
+- **Clerk Anselm** — a Bastion functionary who issues the Writ of Audience; correct on the
+  surface, secretly tired of a rigidity he's never had the standing to question. (MQ04)
+- **Nan Ostler** — a goodwife who has filed the same request for 300 years: a tiny
+  correction to an Edict that misnames her late husband's guild on a public plaque, which
+  the unamendable law cannot fix even as a spelling error.
+  (SLATE — The Amendment That Wasn't)
+- **Pell Ashgrove** — a junior clerk who stamps writs to the gong-rhythm and finds a life
+  with no decisions in it a kind of mercy; his first real discretionary case, once the
+  gates open, is quietly the most frightening moment of his life.
+  (SLATE — The Clerk Who Loved the Schedule)
+- **"Sixpence" Loft** — the Bastion's first thief in 300 years, spectacularly bad at it
+  with no living tradition to learn from; freedom, it turns out, needs practice.
+  (SLATE — The Petty Thief's Apprentice)
+
+### The Chantry
+
+- **Chorister Linnet** — a young singer who has never known a hymn besides the one, and
+  quietly hopes for another. (MQ05)
+- **Brother Tolliver** — an elder chorister who has structured his entire life around the
+  one certain hour; new songs mean the schedule he built his faith on is gone, and he
+  isn't sure what to pray by instead. (MQ05)
+- **Sister Perpetua Vane** — a chorister who has sung one note flat in the eternal hymn
+  for 300 years, unnoticed by anyone but her; the flat note is her only proof that time
+  passed at all before the Stall caught her mid-breath. (SLATE — The Wrong Note)
+- **Rennick Coombe** — a bell-ringer's mate whose hands know the rope better than his own
+  name; when the bells begin learning new peals, his hands shake trying to learn a rhythm
+  that isn't the one holding his whole life together.
+  (SLATE — The Bell-Ringer's Mate Who Can't Learn New Songs)
+- **Wren and Sorrel Tamsin** — a young Cups-culture couple who want to marry in the
+  Chantry, but doctrine allows weddings only at the sacred hour that, since the Stall,
+  never arrives; they have been "nearly married" for years, banns read and re-read.
+  (SLATE — The Wedding That Waits)
+
+### The Divide
+
+- **Ferryman Pell** — the Divide's neutral gossip and go-between, ferrying both towns'
+  business for longer than either town's living memory reaches. (MQ06)
+- **Cutwright Fenn** — an amateur bridge-builder, latest of three generations who have
+  tried to finish the Divide's unfinished bridge by hand, always failing at the exact
+  plank the Stall left half-nailed. (SLATE — The Bridge That Almost Was)
+- **Sculley Marsh** — a ferry hand who has rowed the gossip-ferry so long he knows every
+  household's business on both banks; the canyon's true bridge, left idle and quietly
+  bereft once the stone one completes. (SLATE — The Ferryman's Gossip)
+- **Aunt Perpetua (east bank) and Uncle Osric (west bank)** — two elderly relatives of the
+  Betrothed who have exchanged letters by messenger-bird across the canyon for 300 years,
+  quietly keeping a peace their younger kin couldn't manage.
+  (SLATE — The Letters That Cross Anyway)
+
+### The Longroad
+
+- **Corporal Pike** — a weary marching soldier who has served the endless procession so
+  long he no longer remembers what victory it was meant to be celebrating. (MQ07)
+- **Widow Tallow** — keeper of a roadside inn whose entire trade was built on feeding and
+  housing the eternal procession's marchers. (MQ07)
+- **Grubb Farrow** — a toll-fort keeper who has collected the same toll from the same
+  marchers for 300 years, a captive audience for terrible jokes and excellent maps; when
+  the procession halts he must learn, late in a long life, how to talk to someone who
+  isn't obliged to stop and listen. (SLATE — The Toll-Keeper Left Behind)
+- **Fitch Yarrow** — a procession drummer who has played the same triumphal march for 300
+  years and secretly composes new music at night, terrified of what it means to want
+  something the procession doesn't allow. (SLATE — The Marching Band's Last Tune)
+
+### The Maw
+
+- **Coz Yarrow** — a hide-hunter working the border camps whose livelihood is culling; a
+  Maw where beasts go neutral until provoked leaves him with a spear and no reason to
+  carry it. (MQ08)
+- **Herder Sask Combe** — a herder who first tells the Fool the Maw's proudest myth, that
+  its high river is "born of the mountain's own will"; the truth is a modest spring
+  exactly where gravity says it should be. (SLATE — The Spring No One's Found)
+- **Wren Astley** — a hunter who has built her whole reputation and self-regard on being
+  the Maw's finest, trophies floor to ceiling; when the wild goes neutral she must decide
+  whether she was ever anything besides the wall. (SLATE — The Trophy Hunter's Empty Wall)
+
+### The Dim
+
+- **Widow Fenner** — a waypoint-shack keeper who has fed and warmed the Dim's lost
+  travelers; the Dim, found at last, needs a great deal less tending. (MQ09)
+- **Fenn Dusk** — a lamplighter's apprentice who mentions in passing that the Dim's one
+  stream seems "swallowed" by a ravine; traced, it simply runs underground and daylights
+  lower down, exactly where geology says it must. (SLATE — The Stream That Starts in the
+  Dark)
+- **Ansel Corvenna** — a long-missing son who, when the lost come down from the hills,
+  turns out to be alive, well, and having built a quiet second life on a mountain he was
+  never actually lost on. (SLATE — The One Who Stayed)
+- **Wick Hollin** — an eccentric lamplighter who has privately counted every lamp still
+  burning on his rounds for decades, sure the number means something if it ever comes out
+  even; it never has. (SLATE — The Lamplighter's Count)
+
+### The Wheelhouse
+
+- **Deuce Halloway** — a weary croupier who walks the line between the lucky and cursed
+  districts daily. (MQ10)
+- **Baroness Fettle** — the lucky district's wealthiest resident, whose entire fortune was
+  built on a rigged wheel; a fair one terrifies her far more than a cursed one ever did.
+  (MQ10)
+- **Della Quill** — an elder of the eternally-cursed district, which has built a genuine
+  community of gallows humor and mutual aid out of shared bad luck; one resident's sudden
+  lucky streak threatens the very solidarity that carried them.
+  (SLATE — The Cursed Side's Quiet Pride)
+- **"Honest" Marrow Vance** — the Wheelhouse's most legendary croupier, who has dealt one
+  perfectly fair table for 300 years without once cheating, and will teach the Fool the
+  difference between a good bluff and an honest tell for the pleasure of a student who
+  actually listens. (SLATE — The Croupier's Tell)
+- **Ostentation Pryce** — a lucky-side debtor who has lived spectacularly on credit for
+  300 years, certain his luck can never run out; the prospect of the wheel turning
+  terrifies him as nothing in his charmed life ever has. (SLATE — The Lucky House's Debt)
+
+### The Assize
+
+- **Clerk Pettibone** — the Assize's archivist, who has spent three centuries matching
+  petitioners to their case files; a court that actually decides things needs a great deal
+  less filing. (MQ11)
+- **Otho Petts** — a petitioner who has knitted an almost architectural quantity of
+  scarves awaiting a verdict on a minor land dispute, only to finally lose it fair and
+  square after 300 years of hope. (SLATE — The Longest Wait, Decided)
+- **Wilhelmina Coates** — a court scribe who has spent centuries transcribing the same
+  dead-end filings with flawless, loving precision, taking genuine pride in penmanship
+  nobody will ever read. (SLATE — The Scribe Who Copied Nothing New)
+
+### The Gallowwood
+
+- **Fenwick Loft** — a Gallowwood guide whose entire expertise is reading the flipped
+  terrain; he spent years learning a forest that, righted, no longer needs reading. (MQ12)
+- **Fenwick Sorrel** — a Hermit-adjacent pilgrim who has spent 300 years trying to strike
+  up a real conversation with the Hanged Man, sure there's a profound teaching he's simply
+  not patient enough to receive; the patience is the lesson, but not one meant for him
+  alone. (SLATE — The World-Tree's Other Visitor)
+- **Wick Alder** — a canopy-dweller who built her whole home and rope-checking trade to
+  the inverted gravity; when the forest rights itself she must decide whether to rebuild
+  it "correctly" or love it exactly as it was.
+  (SLATE — The House That Faced the Wrong Way)
+- **Corbenic Yew** — a master rope-checker who teaches only knots that undo in one pull —
+  "a knot you can't reverse isn't a knot, it's a mistake with rope in it" — the
+  Gallowwood's whole philosophy worn completely lightly. (SLATE — The Reversible Knot)
+
+### The Stillmarsh
+
+- **Bettony Marsh** — a woman keeping a years-long vigil over her deathless grandfather;
+  MQ13's mourning NPC. (MQ13)
+- **Gaffer Corlin** — Bettony's grandfather, deathless and bedridden for three centuries;
+  his death is the game's first concrete demonstration of `WS_DEATH_UNBOUND`'s weight.
+  (MQ13)
+- **Tarn Loach** — Old Sallow's young ferryman's mate, who privately records in a
+  battered book the name of every soul who has waited at the ferry landing and not yet
+  passed, for no purpose except that somebody ought to remember they were here.
+  (SLATE — The Lantern Ledger)
+- **The Hallow family** — generations of vigil-keepers who have taken shifts over their
+  great-grandmother for 300 years; when she finally, gently dies, they discover no amount
+  of preparation makes the grief smaller. (SLATE — The Family That Waited Right)
+- **Corse Millbank** — a widower tending a candle for his wife that has burned unconsumed
+  since the night before the Stall; he knows exactly what it means and tends it anyway,
+  with a dry running joke about the tallow merchant's lost business.
+  (SLATE — The Candle That Won't Gutter)
+
+### The Confluence
+
+- **Elgin Thatch** — a bridge-mason who intercepts the Fool at the final span to ask,
+  quite sincerely, that this one thing be left alone; he has laid the same stone for
+  longer than he can be sad about. MQ14's mourning NPC. (MQ14)
+- **Delphine Marchetti** — a mixer's apprentice who delivers MQ14's tempering tutorial
+  and helps settle the mixers' endless argument over which river is "senior" at the
+  eternal pour: the two meet exactly where physics says a confluence must.
+  (MQ14; SLATE — Where the Two Rivers Actually Meet)
+- **Osgood Fenn** — a diplomat with a respected career mediating the dispute over the
+  half-finished bridge; when the delta drains and physics completes the span, his entire
+  profession evaporates in an afternoon. (SLATE — The Bridge-Broker's Last Case)
+- **Comfrey Cross** — an alchemist who has tried for 300 years to brew one perfect cup of
+  tea, always interrupted at the ideal moment because nothing here is allowed to finish.
+  (SLATE — The Tea That Never Steeps Right)
+
+### The Undervault
+
+- **Merrow Slate** — a freed gambler who walks partway up the stair when the chains fall,
+  stops, and walks back down, quietly re-latching his own empty chain out of habit; MQ15's
+  mourning NPC and the face of `world.md`'s "some walk back down" note. (MQ15)
+- **Fessy Dunmore** — a gambler who signed a Devil's bargain generations ago and now wants
+  desperately out, sure there's a loophole in Old Nick's scrupulously honest contract;
+  there is — the terms were always in plain print — but finding it means actually reading
+  the whole thing. (SLATE — Old Nick's Fine Print)
+- **Wend Corrigan** — the freed son who, three days after the chains fall, quietly walks
+  back down into the pit, unable to bear a life without the comfort his contract promised;
+  the quest's only mercy is making sure the goodbye gets said properly.
+  (SLATE — The One Who Walked Back Down)
+- **Prosper Vane** — a vault-teller who takes genuine pride in the most comfortable
+  Calling in the game and hasn't seen sunlight in longer than he can remember — and
+  doesn't miss it, the region's darkest comedy in a single cheerful line.
+  (SLATE — The Vault-Teller's Ledger)
+
+### The Spire
+
+- **Sorrel Vance** — the town's bell-keeper, who begs the Fool to reconsider — not out of
+  concern for the Fool, but because the tower's silhouette is the only skyline she's ever
+  known; MQ16's mourning NPC. (MQ16)
+- **Wisp Callow** — a fortune-reader who has spent decades "reading" the exact
+  configuration of rubble frozen mid-fall; the Fool's arrival nudges one piece a visible
+  inch, to her delight and mild panic. (SLATE — The Debris Reader)
+- **Harrow Brock** — a bell-watch veteran and the region's foremost expert on a disaster
+  that never finishes happening; when the Spire falls, his post is destroyed and a family
+  below loses their home to the very debris he spent 300 years failing to warn anyone
+  about. (SLATE — The Spotter's Last Watch)
+
+### The Mere
+
+- **Isolde Fenn** — a wish-tender who has wondered for 300 years whether wishes dropped
+  into the Mere go anywhere; a dive finds a modest, real outlet that has carried one
+  coin's worth of wish a year to a marsh three days south all along.
+  (SLATE — What the Lake Holds)
+- **Thomlin Reeve** — an elderly pilgrim who has kept vigil beside his own wish-light for
+  300 years; when the wells wake his wish is quietly answered, and having been "the man
+  who's waiting" so long, he doesn't know how to be anything else. (SLATE — The Last
+  Wisher)
+- **Betsy Marrow** — a young pilgrim, mortified, who confesses a wish made in petty spite
+  three centuries ago against a sister she's long since forgiven, and begs the Fool to
+  help her retract it before it can ever come true. (SLATE — The Pilgrim Who Wished Wrong)
+
+### The Mirrormarsh
+
+- **Ivy Ashby** — a freed fog-person who grieves not the fog but who she was inside it:
+  uncomplicated, untethered from a name and family she now has to be again. She doesn't
+  ask to go back; she's just not ready to be herself. MQ18's mourning NPC. (MQ18)
+- **Rue Aldous** — a cartographer who has failed for years to map the lying marsh; with
+  true light she learns that water doesn't lie, and her finished map becomes the region's
+  one reliably honest document. (SLATE — The One Truth in the Fog)
+- **Corin Vesk** — a lost man revealed when the fog lifts, long assumed a straightforward
+  tragedy, who has built an entire new life in the marsh and does not want the rescue
+  everyone else calls a happy ending. (SLATE — The One Who Didn't Want to Go Home)
+- **Nettle Vance** — a fog-warden who keeps one frayed, badly-knotted section of her
+  guide-rope out of a superstition that a "perfect" rope would stop working; the marsh,
+  she reasons, likes to be needed as much as anyone. (SLATE — The Fog-Warden's Rope)
+
+### The Noonlands
+
+- **Bramble Coss** — a festival organizer for whom the endless festival was the only life
+  she knew; she watches the first sunset with open grief rather than joy. MQ19's mourning
+  NPC. (MQ19)
+- **Thatch Corley** — a farmer whose drought, blamed on the stalled noon, is really a
+  collapsed culvert silted for 300 years; clearing it saves one farm, honestly, if not the
+  region's deeper trouble. (SLATE — The Canal That Ran Dry)
+- **Sunny Loft** — a harvest-hand and festival dancer who has never once experienced night
+  and has built her whole joyful self around an endless noon; the first sunset makes her
+  the Noonlands' most frightened resident, afraid of the rest it's clearly asking her to
+  take. (SLATE — The Reveller Afraid of the Dark)
+- **Poll and Fenner Straw** — two harvest hands whose good-natured sheaf-toss rivalry has
+  ended in an exact tie every single day for 300 years, an impossibility neither will
+  admit noticing until the Fool's honest throw finally breaks it.
+  (SLATE — The Harvest Hand's Wager)
+
+### The Hollows
+
+- **Fennimore Ashgrove** — a reluctant ghost who begs the Fool not to hurry things along
+  on his account; he isn't ready to be called yet, whatever the Herald's meter says.
+  MQ20's mourning NPC. (MQ20)
+- **Yew Halloway** — a groundskeeper who has tended, for 300 years, one plot reserved for
+  a soul who was never going to die while the Stall held; when the Hollows bloom, that plot
+  flowers first and wildest. (SLATE — The Groundskeeper's Empty Plot)
+- **Elder Petronella Dusk** — an ancient, long-overdue soul with one thing left undone, an
+  apology decades overdue even before the Stall, who asks the Fool's help delivering it
+  before the trumpet calls her on. (SLATE — The Long-Overdue's Last Request)
+- **Bess Corrigan** — a stonemason making peace with newly-returned mortality by carving
+  practice epitaphs for people who haven't died yet, her own cheerfully included; she'll
+  carve one for the Fool too, if asked. (SLATE — The Headstone Carver's Practice)
+
+### The Axis
+
+- **The Loach family** — lens-grinders across four generations, building ever-better
+  spyglasses to see the Dancer at the Axis's center clearly, gently wrong about what the
+  answer will turn out to be. (SLATE — The Telescope-Makers)
+- **Corvin Rathe** — a rim-watcher who has stood at the outermost edge of the Axis
+  approach for as long as anyone remembers, never once stepping closer, afraid of what it
+  will mean if the dancing ever stops; he asks only to be told, gently, what it looked
+  like up close. (SLATE — The Rim-Watcher)
+- **Elder Sister Loveday** — the one elderly member of the silent Wreath-Order who finally
+  admits aloud, to the Fool alone, that the order's unbroken maintenance never held the
+  world together — the Dancer alone did — with the relief of setting down an office she
+  never needed to carry. (SLATE — The Silent Wreath-Order)
+
+### Spread-wide and suit-culture quests
+
+- **The Cartomancer** — a dry, itinerant card-reader who is quietly reassembling the
+  Scattered Deck for a reason she never quite explains, met wherever the Fool finds their
+  first Minor and encountered again on the road ever after. She knows more than she says,
+  deflects every question about her purpose, and belongs — like the Fool — to no single
+  suit-culture or place. (SQ-SPREAD-01)
+- **Goodwife Perrin Loosely** — a Cups widow of the east bank who has not let her oldest
+  friend across her threshold in decades, over a slight neither can now fully recall, and
+  has spent thirty years making sure he never asks properly under the guest-right.
+  (SQ-CUPS-01)
+- **Ambrose Tench** — Perrin's estranged friend, who has been asking wrong for decades out
+  of pride, not ignorance: asking correctly would mean admitting how much he wants to be
+  let back in. (SQ-CUPS-01)
+- **Isolde Vantage** — a Page-turned-hopeful who intends to challenge a retired champion
+  for the rank of Knight, citing a Bastion code she has read carefully but not carefully
+  enough. (SQ-SWORDS-01)
+- **Ser Barrow Steel** — a retired champion, decades from the blade, who has won every
+  challenge put to him for years purely on the strength of premises, never once drawing
+  steel. (SQ-SWORDS-01)
+- **Sorrel Ashgrove** — a Wands master carver whose trial-piece canopy-totem sits at the
+  center of a credit dispute; she taught every technique her apprentice used and considers
+  guidance equivalent to authorship. (SQ-WANDS-01)
+- **Fenn Cobblewright** — Sorrel's apprentice, who insists loudly that he carved the
+  totem's best sections himself; both are telling the truth as they understand it, and
+  both are too passionate to notice they're about to wreck the piece arguing.
+  (SQ-WANDS-01)
+- **Grissom Tuppen** — a Coins merchant who has accused a rival of weighting the market's
+  shared grain-scale, with the grave seriousness his suit reserves for fairness; neither
+  is cheating, the scale itself having warped over 300 years of stasis.
+  (SQ-COINS-01)
+- **Marchpane Fell** — the rival Coins merchant in the same grain-scale dispute, equally
+  certain and equally honest; both have been unconsciously "correcting" for a fault
+  neither identified, which is why their figures never quite agree. (SQ-COINS-01)
+- **The trading-chain folk** — the eight NPCs the Fool's trade cycles through in
+  SQ-SPREAD-02, promoted together as a set, each a small honest portrait of their suit:
+  - **Wills**, a young Cups Page too shy to give the father's whistle-charm he means as a
+    courting keepsake.
+  - **Corporal Hale**, a Swords sentry spending his one hour off duty in 300 years, whose
+    small personal want briefly outranks his dress-medal.
+  - **Fell**, a Wands huntress-tanner who collects fine handiwork as craft-inspiration,
+    not rank.
+  - **Grissom**, a travelling Coins peddler who throws in an extra copper "for luck," the
+    tiny crack in the driest suit's armor.
+  - **Mother Loosely**, a Cups innkeeper who passes her coin straight on to settle a
+    kindness she owes.
+  - **Ser Colm**, a retired Swords duelist whose knees ache in the cold court halls and
+    who rarely admits needing a plain woolen comfort.
+  - **Cobb**, a Wands tinker who won't let a piece out of his hands unfinished.
+  - **Thrimsy**, a Coins vault-teller who recognizes the bell's worth and refuses payment,
+    then is bothered by the "value: immeasurable, price: nothing" ledger entry all day.
+  - (SQ-SPREAD-02)

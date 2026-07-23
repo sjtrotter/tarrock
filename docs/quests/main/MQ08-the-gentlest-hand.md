@@ -23,7 +23,7 @@ a turn. The fight that follows is won by calm, not damage.
 
 1. Arrival at the Maw's border: savage limestone highlands, hunting camps, vertical
    crags, the wilds-region houses a whole culture of monster hunts and taming.
-2. The Fool meets Coz Yarrow (proposed), a hide-hunter working the border camps, who
+2. The Fool meets Coz Yarrow (canon, `characters.md` §Regional named NPCs), a hide-hunter working the border camps, who
    explains the local trade — and points out the tableau on the far ridge: a woman,
    frozen, holding a lion's jaws.
 3. Approach step: a spooked mountain cat blocks a narrow crag path — the tutorial for
@@ -59,7 +59,7 @@ a turn. The fight that follows is won by calm, not damage.
   that mercy can be exhausting.
 - **The Lion of the Maw** (canon, `characters.md`) — a beast, not a talker; becomes a
   recurring friendly landmark after unbinding.
-- **Coz Yarrow** (proposed — promote to `characters.md` before script status) — a
+- **Coz Yarrow** (canon, `characters.md` §Regional named NPCs) — a
   hide-hunter whose livelihood is culling; this quest's mourning NPC.
 
 ## Mourning

@@ -28,7 +28,7 @@ rise. The player's task is not to kill anything that wants killing — it is to 
    abundance-as-famine irony.
 3. Approach step: borrowing a billhook from the family to cut a passable path through
    the swallowed road into the orchard interior.
-4. Approach step: meeting Gaffer Nettle (proposed) mid-prune, an old orchardman who has
+4. Approach step: meeting Gaffer Nettle (canon, `characters.md` §Regional named NPCs) mid-prune, an old orchardman who has
    spent decades hand-trimming the throne's briars out of devotion, and who warns the
    Fool off — "she doesn't take kindly to help."
 5. Approach step: following the attendants' tribute-path through the canopy, dodging
@@ -55,7 +55,7 @@ rise. The player's task is not to kill anything that wants killing — it is to 
 
 - **The Empress** (freed name Damson, `characters.md` §III) — loved the Bower into being
   and cannot stop; genuinely wounded that the Fool wants to change anything about it.
-- **Gaffer Nettle** (proposed — promote to characters.md before script status) — an
+- **Gaffer Nettle** (canon, `characters.md` §Regional named NPCs) — an
   elderly orchardman who has hand-pruned the throne's briars for decades out of pure
   devotion, convinced it was working.
 

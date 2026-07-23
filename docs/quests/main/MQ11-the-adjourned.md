@@ -23,7 +23,7 @@ to the Fool exactly what the Fool has dealt her.
 
 1. Arrival at the Assize: fog-grey court complexes, queues of the accused knitting
    through their three-hundredth year of waiting.
-2. The Fool meets Clerk Pettibone (proposed), the archivist who has kept the queue's
+2. The Fool meets Clerk Pettibone (canon, `characters.md` §Regional named NPCs), the archivist who has kept the queue's
    order since the Stall and takes visible pride in never having lost a single file.
 3. Approach step: navigating the Assize's absurd bureaucracy — the correct docket, the
    correct stamp, the correct queue — to be granted a hearing at all.
@@ -59,7 +59,7 @@ to the Fool exactly what the Fool has dealt her.
 
 - **Justice** (freed name Prudence, `characters.md` §XI) — scrupulously fair, unable to
   render a verdict; the fight audits the player's own tactics.
-- **Clerk Pettibone** (proposed — promote to `characters.md` before script status) —
+- **Clerk Pettibone** (canon, `characters.md` §Regional named NPCs) —
   the Assize's archivist; this quest's mourning NPC.
 - **Gorrister Vale, the Widow Culpepper, Corvin "Ninefingers" Rook** (canon,
   `characters.md` §Recurring named NPCs) — referenced only in aftermath (beat 11); each

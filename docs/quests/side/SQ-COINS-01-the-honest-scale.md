@@ -22,8 +22,7 @@ truly fair deal is, to this suit-culture, its own quiet form of care.
 
 ## Beats
 
-1. **The hook.** Merchants Grissom Tuppen and Marchpane Fell (proposed NPCs — promote to
-   `characters.md` before script status) have accused each other of weighting the
+1. **The hook.** Merchants Grissom Tuppen and Marchpane Fell (canon, `characters.md` §Regional named NPCs) have accused each other of weighting the
    market's shared grain-scale in their own favor, a dispute treated by both with the
    grave seriousness Coins culture reserves for fairness itself — no shouting, just cold,
    precise, increasingly personal accounting.

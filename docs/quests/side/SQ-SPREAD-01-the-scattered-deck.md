@@ -18,8 +18,7 @@ too-deliberate things: a card-shape cut into a shadow, a glint behind a waterfal
 doesn't belong to the rockface, a bell that only rings true if struck in the right order.
 These are the 56 Minor Arcana — the pip and Court cards of the Scattered Deck — thrown
 loose across the world in the Stall and never gathered back up, because nobody but a
-wandering card-reader ever thought to look. That reader is the **Cartomancer** (proposed
-NPC), met early and often, who is quietly trying to reassemble the deck for a reason she
+wandering card-reader ever thought to look. That reader is the **Cartomancer** (canon, `characters.md` §Regional named NPCs), met early and often, who is quietly trying to reassemble the deck for a reason she
 never quite explains. The Fool doesn't need a checklist or a nag to play this: cards are
 found by looking properly at a world built to reward it, brought back whenever
 convenient, and the finding is the whole game — this is Tarrock's Korok-scale collectible
@@ -27,7 +26,7 @@ hunt, and it must never feel like homework.
 
 ## The Cartomancer
 
-A proposed named NPC, met for the first time in whichever region the player finds their
+A named NPC (canon, `characters.md` §Regional named NPCs), met for the first time in whichever region the player finds their
 first card, and encountered again — never at a fixed post, always somewhere plausible on
 the road — every so often after.
 
@@ -175,6 +174,3 @@ walk, not like they failed a test.
   unreachable without an equivalent alternate route.
 - Exact 56 placements are a content-design pass once each region is greyboxed — this
   outline fixes philosophy and density, not the individual card list.
-- Whether the Cartomancer should be promotable to a full `characters.md` recurring-NPC
-  entry now or only once her dialogue is scripted — recommend promoting at `script`
-  status, per the standing rule for proposed NPCs.

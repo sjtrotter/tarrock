@@ -27,7 +27,7 @@ answer is permanent.
 
 1. Arrival at the Divide: two towns visible across a canyon, an unfinished bridge frozen
    mid-span, wedding bunting faded to the color of old bone on both sides.
-2. Meet Ferryman Pell (proposed), who rows the Fool across and gossips freely about both
+2. Meet Ferryman Pell (canon, `characters.md` §Regional named NPCs), who rows the Fool across and gossips freely about both
    families and the ancient non-wedding, taking no side and enjoying every side of it.
 3. Approach step: visiting the East town, meeting an elder of the bride's household who
    makes the case for their claim and their grief.
@@ -56,7 +56,7 @@ answer is permanent.
 - **The Lovers / the Betrothed** (freed names Elsbeth and Wystan, `characters.md` §VI) — two people
   frozen before a choice neither could make; three centuries of nearly-deciding turned
   devotion into an exquisite cowardice.
-- **Ferryman Pell** (proposed — promote to characters.md before script status) — the
+- **Ferryman Pell** (canon, `characters.md` §Regional named NPCs) — the
   Divide's neutral gossip and go-between, ferrying both towns' business for longer than
   either town's living memory reaches.
 
