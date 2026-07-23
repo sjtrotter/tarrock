@@ -64,7 +64,7 @@ orientations), not from grinding any one of them.
 
 | Slot | Unlocks | Rationale |
 |---|---|---|
-| **Present** | With the first Trump (MQ01) | The player's very first power teaches the core loop: spend Fortune, get an effect, on demand. |
+| **Present** | With the first Trump acquired — whichever quest grants it (MQ01 on the intended first-region path, but every unbinding quest handles the case) | The player's very first power teaches the core loop: spend Fortune, get an effect, on demand. |
 | **Past** | Upon holding 3 Trumps | Passive, always-on effects are a harder concept (nothing to press, just a standing truth) — introduced only once the player already trusts the Present slot. |
 | **Future** | Upon holding 7 Trumps | Triggered/fate effects are the subtlest axis (a condition the player doesn't directly control) — held back until Past and Present are both second nature. |
 

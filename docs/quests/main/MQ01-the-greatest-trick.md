@@ -21,8 +21,10 @@ House of Mirrors, the Menagerie, and the High Wire to earn three ticket stubs. A
 way the player meets the Troupe — Old Tomkin, Marigold Fen, Perrin Loom, Tansy Quill —
 and hears each one's opinion on what should happen to the show, should it ever end. The
 main event is the Bataleur, the Magician bound to three centuries of the same perfect
-trick; unbinding him is this quest's first Trump and the first time the Pocket Spread's
-Present slot opens (`progression.md` §Slot unlock pacing). The quest closes on a choice —
+trick; unbinding him grants a Trump — for most players their first, opening the Pocket
+Spread's Present slot (`progression.md` §Slot unlock pacing; the slot opens with the
+first Trump acquired, whichever quest grants it, and this script's unlock beat is
+written `[If Manifest is the Fool's first Trump]`). The quest closes on a choice —
 send the freed Troupe travelling or let them settle — and both options are written to
 ache. If the player reaches the Prestige after MQ13 (Death, "An Ending"), every scene
 below carries a `[If CONFESSED: …]` variant: the Prestige already knows, by then, what a
@@ -358,8 +360,10 @@ something over because it's finally, simply, his to give.
 > Trump I. Manifest, they'll call it, if anyone ever writes it down properly. Take it
 > — hands were always the trick, you know. Mine, yours. Everybody's, really.
 
-**[Tutorial prompt: the Pocket Spread's Present slot unlocks. Slot Manifest to try its
-Present effect — conjure a hand, grab and throw.]**
+**[Tutorial prompt — `[If Manifest is the Fool's first Trump]`: the Pocket Spread's
+Present slot unlocks. Slot Manifest to try its Present effect — conjure a hand, grab and
+throw. `[Else]`: Manifest joins the collection; a brief reminder prompt notes it can be
+slotted at the next Waystation.]**
 
 END CUT SCENE
 
@@ -457,7 +461,7 @@ open for the first time in three hundred years.
 
 | Trigger | Flag(s) | Player-visible result |
 |---|---|---|
-| Wicke unbound (defeat + cutscene) | `WS_MAGICIAN_UNBOUND` | The Prestige's show ends; the carnival packs up over in-game days; eastern roads out of the Prestige reopen; the Fool receives Trump I (Manifest) and the Pocket Spread's Present slot unlocks. |
+| Wicke unbound (defeat + cutscene) | `WS_MAGICIAN_UNBOUND` | The Prestige's show ends; the carnival packs up over in-game days; eastern roads out of the Prestige reopen; the Fool receives Trump I (Manifest); if it is the Fool's first Trump, the Pocket Spread's Present slot unlocks with it. |
 | Player encourages the Troupe to travel | `WS_TROUPE_TRAVELING` | The Troupe becomes a recurring touring act — vendors and pop-up shows across the Spread. |
 | Player encourages the Troupe to settle | `WS_TROUPE_SETTLED` | The Prestige becomes a permanent market town with unique Troupe-run shops. |
 
@@ -474,7 +478,7 @@ open for the first time in three hundred years.
 - `world.md` §The Prestige, §World-state matrix — carnival packing up over in-game
   days, eastern roads reopening, the troupe branch flags.
 - `progression.md` §Slot unlock pacing, §The Pocket Spread — Present slot unlocking
-  with the first Trump.
+  with the first Trump acquired, whichever quest grants it (order-independence).
 - `quests/TEMPLATE.md` — script format followed throughout.
 
 ## Open questions

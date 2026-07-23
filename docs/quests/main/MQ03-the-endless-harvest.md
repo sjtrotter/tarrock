@@ -571,7 +571,6 @@ falling harvest — cut, this time, and staying cut. MQ03 ends here.
   them to Marchpane Boll (as a household he gouged or quietly fed); keeping them unnamed here
   preserves that option without committing to it. Decide the cross-link when SQ-BOWER-03 reaches
   script status.
-- **New (delta):** MQ03 `requires: []`, so it may be a player's first Trump. The script handles the
-  Present-slot unlock case, but MQ01's script also stages the Present-slot unlock as its tutorial
-  cast; confirm `progression.md` intends "first Trump, any region" and that MQ01's tutorial text
-  reads gracefully for a player who already holds Bloom.
+- **Resolved:** `progression.md` §Slot unlock pacing now reads "the first Trump acquired,
+  whichever quest grants it," and MQ01's unlock beat carries an `[If first Trump / Else]`
+  conditional — this script's handling is the intended pattern.

@@ -817,13 +817,9 @@ no other quest reads it.
   identically, or should its reward text acknowledge the harder road (per `arcana.md`:
   "liars earn it the hard way")? (Scripted to converge, with a single optional liar's-path
   acknowledgment line marked in-place at the Unbinding, pending this decision.)
-- **[New]** Order-independence with MQ01's Present-slot unlock: `progression.md` §Slot
-  unlock pacing and MQ01 both peg the Pocket Spread's **Present** slot unlock to "the first
-  Trump (MQ01)" — but MQ02 has `requires: []` and may legally be the Fool's first unbinding,
-  in which case Trump II must unlock the Present slot instead. The script handles this with a
-  conditional at the handover ("if this is the Fool's first Trump…"). Confirm the intended
-  rule is "the first Trump acquired, whichever quest," and that the wording in MQ01 and
-  progression.md is generalised to match (a doc-consistency edit outside this quest).
+- **[Resolved]** Present-slot order-independence: `progression.md` §Slot unlock pacing and
+  MQ01 now read "the first Trump acquired, whichever quest grants it"; this script's
+  conditional at the handover is the intended pattern for every unbinding quest.
 - **[New]** Task One and Task Two each carry a light honesty hinge (a false option that
   flips the Examination state), so the "lie at any step" rule in `arcana.md` has concrete
   purchase before Task Three. Confirm this is desired, versus driving the honest/lie state
