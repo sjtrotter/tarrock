@@ -27,6 +27,7 @@ no attribution; we track and credit it anyway.
 | Quaternius Fantasy Props MegaKit (19-prop camp/waystation subset, Standard) | Quaternius — [quaternius.com](https://quaternius.com) | CC0 1.0 | `Assets/ThirdParty/Quaternius/FantasyProps/` | Cliff scene dressing. |
 | Quaternius Medieval Village MegaKit (Standard, downloaded, not yet vendored) | Quaternius — [quaternius.com](https://quaternius.com) | CC0 1.0 | staged in `~/Downloads`; vendored on first use | Modular buildings for settled regions (Prestige etc.). |
 | Quaternius Ultimate Stylized Nature (May 2022; dead trees, trees, rocks, grass, bushes subset) | Quaternius — [quaternius.com](https://quaternius.com) | CC0 1.0 | `Assets/ThirdParty/Quaternius/StylizedNature/` | Cliff nature dressing — incl. MQ00's canon dead tree. |
+| Quaternius Ultimate Animated Animals (ShibaInu subset; full pack staged in `~/Downloads/UltimateAnimatedAnimals`) | Quaternius — [quaternius.com](https://quaternius.com) | CC0 1.0 | `Assets/ThirdParty/Quaternius/AnimatedAnimals/` | Pip stand-in (Shiba, to be retextured white per characters.md); embedded animations. |
 
 ## Documents
 
