@@ -119,6 +119,22 @@ namespace Tarrock.Editor
         private const string MatDir = "Assets/_Project/Art/Materials";
         private static Material s_dirtMat; // cached: one asset, referenced by several decals
 
+        // Double-sided TERRAIN materials (FIX 2, prong b): the wall/floor tiles share the KayKit hex
+        // atlas material, whose backfaces are culled — so when the wall camera is pushed hard against a
+        // wall and its final position grazes the undesigned tile interior, it would see THROUGH the wall
+        // (backface holes). A Cull-Off (Render Face = Both) variant of each terrain material is created
+        // once per run and used for every tile, so any residual interior view reads as solid ground-
+        // coloured geometry, never a see-through hole. Props/characters keep their own materials (this
+        // only touches the tile meshes built by MakeTile), so their silhouettes are unaffected.
+        //
+        // Keyed by source material NAME, not instance: the grass/bottom/slope FBXs each ship their OWN
+        // copy of the shared "hexagons_medieval" atlas material (same name, different instances). Keying
+        // by name means one variant asset is created and reused for all of them — keying by instance
+        // made three variants collide on one asset path, and each DeleteAsset+CreateAsset destroyed the
+        // previous variant, leaving earlier tiles pointing at a deleted (magenta) material.
+        private static readonly Dictionary<string, Material> s_doubleSidedTerrain =
+            new Dictionary<string, Material>();
+
         // -- Bound-state ambience (art-audio.md §world-state rules) ----------------------------
         // The bound world holds its breath: a short, near-static air bed whose loop is *allowed*
         // to be audible (NOT wind gusts). 2D, gentle, always on.
@@ -165,6 +181,8 @@ namespace Tarrock.Editor
         private static readonly List<Vector3> s_rampCenters = new List<Vector3>();
         private static int s_sweepBefore, s_sweepAfter, s_sweepNudged;
         private static int s_bushShort, s_bushTall, s_treePass, s_treeFail;
+        private static int s_groundChecked, s_groundCorrected;
+        private static readonly List<string> s_groundLog = new List<string>();
 
         // Player capsule dimensions for the walkability sweep (must match the CharacterController in
         // BuildPlayerRig: height 0.71 m, radius 0.16 m).
@@ -317,6 +335,8 @@ namespace Tarrock.Editor
             var deco = new GameObject(DecoGroupName);
             deco.transform.SetParent(terrain.transform, false);
 
+            s_doubleSidedTerrain.Clear(); // FIX 2b: terrain Cull-Off variants rebuilt this run (before tiles)
+
             // 1) Walkable cells (valley floor, pockets, knoll) and their floor levels.
             var walkable = new Dictionary<(int, int), Vector2>();
             var floorLvl = new Dictionary<(int, int), int>();
@@ -448,6 +468,8 @@ namespace Tarrock.Editor
             s_colliderNotes.Clear();
             s_treeMeasureLog.Clear();
             s_bushShort = s_bushTall = s_treePass = s_treeFail = 0;
+            s_groundChecked = s_groundCorrected = 0;
+            s_groundLog.Clear();
             s_dirtMat = null; // rebuilt on first dressing use this run
             s_propColliders = new GameObject("PropColliders").transform; // world scale 1, unrotated
             s_foliageTriggers = new GameObject("FoliageTriggers").transform; // world scale 1, soft drag volumes
@@ -462,6 +484,7 @@ namespace Tarrock.Editor
             DressClouds(deco.transform);
 
             int propColliders = BuildPropColliders(out int solidCols, out int treeCols);
+            GroundDressing(tiles.transform);
             WalkabilitySweep(deco.transform);
 
             BuildMarkers();
@@ -483,6 +506,10 @@ namespace Tarrock.Editor
                 $"Convex-limit fallbacks: {notes}. " +
                 $"Walkability sweep: {s_sweepBefore} violations before, {s_sweepAfter} after " +
                 $"({s_sweepNudged} props nudged). Run 'Install Player In Cliff Hex' next.");
+
+            Debug.Log($"[Tarrock] Grounding audit (FIX 3): {s_groundChecked} dressing units checked, " +
+                $"{s_groundCorrected} floaters lowered onto the terrain" +
+                (s_groundLog.Count == 0 ? " (none floating)." : ":\n  " + string.Join("\n  ", s_groundLog)));
 
             Debug.Log("[Tarrock] Tree trunk measurement table (radius m, verify): " +
                 (s_treeMeasureLog.Count == 0 ? "no trees" : "\n  " + string.Join("\n  ", s_treeMeasureLog)));
@@ -707,7 +734,7 @@ namespace Tarrock.Editor
             go.transform.localScale = Vector3.one;
 
             go.AddComponent<MeshFilter>().sharedMesh = mesh;
-            go.AddComponent<MeshRenderer>().sharedMaterials = mats;
+            go.AddComponent<MeshRenderer>().sharedMaterials = DoubleSidedTerrain(mats);
             go.AddComponent<MeshCollider>().sharedMesh = mesh;
             go.isStatic = true;
             return go;
@@ -1348,6 +1375,48 @@ namespace Tarrock.Editor
             return s_dirtMat;
         }
 
+        // Returns Cull-Off (double-sided) persisted variants of the given terrain materials (FIX 2b),
+        // one per distinct source material, cached for the run. URP/Lit renders its pass with
+        // Cull [_Cull]; _Cull = 0 is Render Face = Both. doubleSidedGI keeps lightmap/GI consistent.
+        private static Material[] DoubleSidedTerrain(Material[] mats)
+        {
+            if (mats == null)
+            {
+                return null;
+            }
+
+            var outp = new Material[mats.Length];
+            for (int i = 0; i < mats.Length; i++)
+            {
+                Material src = mats[i];
+                if (src == null)
+                {
+                    outp[i] = null;
+                    continue;
+                }
+
+                if (!s_doubleSidedTerrain.TryGetValue(src.name, out Material ds))
+                {
+                    Directory.CreateDirectory(MatDir);
+                    ds = new Material(src) { name = src.name + "_Terrain2Sided" };
+                    if (ds.HasProperty("_Cull"))
+                    {
+                        ds.SetFloat("_Cull", (float)UnityEngine.Rendering.CullMode.Off); // Render Face = Both
+                    }
+
+                    ds.doubleSidedGI = true;
+                    string path = MatDir + "/" + ds.name + ".mat";
+                    AssetDatabase.DeleteAsset(path);
+                    AssetDatabase.CreateAsset(ds, path);
+                    s_doubleSidedTerrain[src.name] = ds;
+                }
+
+                outp[i] = ds;
+            }
+
+            return outp;
+        }
+
         private static Material BuildWhiteRoseMaterial()
         {
             // Warm cream white — reads as a white rose in the dawn-gold light, never the atlas's blue.
@@ -1505,6 +1574,12 @@ namespace Tarrock.Editor
         {
             solidCount = 0;
             treeCount = 0;
+
+            // Foliage (tree trunks + bush colliders) goes on the CameraTransparent layer so the wall
+            // camera (SPEC A) never pulls in on grass/trees — only terrain/rampart/rock still occlude.
+            // The player still collides with them (layer collision matrix is unchanged).
+            int foliageLayer = CameraRigConfig.EnsureCameraTransparentLayer();
+
             foreach (PropRec rec in s_props)
             {
                 if (rec.Root == null)
@@ -1522,6 +1597,7 @@ namespace Tarrock.Editor
                     if (cap != null)
                     {
                         cap.transform.SetParent(s_propColliders, false);
+                        cap.layer = foliageLayer; // tree trunk: foliage, camera-transparent
                         rec.ColliderObjs.Add(cap);
                         foreach (Collider c in cap.GetComponents<Collider>())
                         {
@@ -1537,8 +1613,10 @@ namespace Tarrock.Editor
                     float height = MeasuredWorldHeight(rec.Root);
                     if (height > TallBushHeight)
                     {
-                        // TALL bush → SOLID, same policy as a rock; swept out of lanes.
+                        // TALL bush → SOLID, same policy as a rock; swept out of lanes. Foliage layer
+                        // so the wall camera glides past it (still a solid obstacle to the player).
                         solidCount += BuildSolidMeshColliders(rec);
+                        SetCollidersLayer(rec.Root, foliageLayer);
                         s_bushTall++;
                     }
                     else
@@ -1583,6 +1661,17 @@ namespace Tarrock.Editor
             }
 
             return count;
+        }
+
+        // Puts every collider-carrying object under a prop on the given layer (used to mark foliage
+        // solids CameraTransparent — see BuildPropColliders). Only touches objects that actually
+        // carry a collider so the visual meshes' render layer is left alone.
+        private static void SetCollidersLayer(GameObject prop, int layer)
+        {
+            foreach (Collider c in prop.GetComponentsInChildren<Collider>(true))
+            {
+                c.gameObject.layer = layer;
+            }
         }
 
         // World-space rendered height of a prop (max encapsulated renderer bounds).
@@ -1854,6 +1943,165 @@ namespace Tarrock.Editor
             }
 
             return found;
+        }
+
+        // ------------------------------------------------------------------------------------
+        // Grounding audit (FIX 3) — the recent rock/stone dressing (cairns, offering stones, boulders)
+        // read as FLOATING above the meadow. Cause: props are placed at localPosition.y = FloorLevelAt·
+        // StepWorld — the LOGICAL floor level — while the rendered tile surface a prop actually rests on
+        // can sit lower (a prop whose model pivot is above its own base ends up hovering; benches/knoll/
+        // hollows amplify it). Rather than re-derive every constant, this snaps each dressing unit onto
+        // the real terrain: a downward ray to the TILE colliders finds the surface under the unit's
+        // footprint, and the unit is lowered so its bounds.min sits on the surface (a −0.005 m embed
+        // kills z-fighting). Only FLOATERS are corrected (downward) — deliberately half-buried dressing
+        // (collapsed tents, sunk crates, sunk offerings) is left where it was placed, never raised.
+        // Runs AFTER colliders (so trunk capsules move with their tree) and BEFORE the walkability sweep
+        // (which only nudges XZ), so the sweep resolves against final, grounded geometry.
+        //
+        // Granularity: each SOLID/TREE/TALL-bush prop is grounded as a whole; a cairn (a deliberate
+        // vertical STACK of stones) is grounded by its container so the stack is not flattened — its
+        // member stones are skipped as individual units. Non-colliding decals (flat earth patches) and
+        // clouds (canon: floating below the rim) are never touched.
+        // ------------------------------------------------------------------------------------
+        private static void GroundDressing(Transform tiles)
+        {
+            Physics.SyncTransforms();
+
+            var tileColliders = new HashSet<Collider>();
+            foreach (MeshCollider mc in tiles.GetComponentsInChildren<MeshCollider>())
+            {
+                tileColliders.Add(mc);
+            }
+
+            // Assemble grounding units: non-cairn props (moved with their external colliders) plus each
+            // distinct cairn container (moved whole).
+            var unitRoots = new List<GameObject>();
+            var unitExternals = new List<List<GameObject>>();
+            var cairnContainers = new HashSet<GameObject>();
+
+            foreach (PropRec rec in s_props)
+            {
+                if (rec.Root == null)
+                {
+                    continue;
+                }
+
+                GameObject cairn = CairnAncestor(rec.Root.transform);
+                if (cairn != null)
+                {
+                    cairnContainers.Add(cairn);
+                    continue;
+                }
+
+                unitRoots.Add(rec.Root);
+                unitExternals.Add(rec.ColliderObjs);
+            }
+
+            foreach (GameObject c in cairnContainers)
+            {
+                unitRoots.Add(c);
+                unitExternals.Add(null);
+            }
+
+            for (int i = 0; i < unitRoots.Count; i++)
+            {
+                GameObject root = unitRoots[i];
+                if (root == null || !TryBounds(root, out Bounds b))
+                {
+                    continue;
+                }
+
+                s_groundChecked++;
+
+                // Ray from just above the unit's base, straight down onto the tiles: the nearest tile hit
+                // is the surface the unit rests on (starting below the unit's top avoids catching an
+                // overhead/adjacent wall crown).
+                var origin = new Vector3(b.center.x, b.min.y + 2f, b.center.z);
+                if (!NearestTileHit(origin, tileColliders, out float surfaceY))
+                {
+                    continue;
+                }
+
+                float shift = (surfaceY - 0.005f) - b.min.y;
+                if (shift >= -0.01f)
+                {
+                    continue; // grounded or intentionally embedded — leave it (never raise a buried prop)
+                }
+
+                var delta = new Vector3(0f, shift, 0f);
+                root.transform.position += delta;
+                if (unitExternals[i] != null)
+                {
+                    foreach (GameObject co in unitExternals[i])
+                    {
+                        if (co != null && !co.transform.IsChildOf(root.transform))
+                        {
+                            co.transform.position += delta;
+                        }
+                    }
+                }
+
+                s_groundCorrected++;
+                s_groundLog.Add($"{root.name}: Δy={shift:F3} m (was floating)");
+            }
+
+            Physics.SyncTransforms();
+        }
+
+        // The cairn container an object belongs to (a deliberate vertical stack — see BuildCairn), or
+        // null. Walks ancestors for a name containing "cairn"; the stack is grounded whole, not per-stone.
+        private static GameObject CairnAncestor(Transform t)
+        {
+            for (Transform c = t; c != null; c = c.parent)
+            {
+                if (c.name.IndexOf("cairn", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return c.gameObject;
+                }
+            }
+
+            return null;
+        }
+
+        // Combined world renderer bounds of a prop (false if it has none).
+        private static bool TryBounds(GameObject go, out Bounds bounds)
+        {
+            Renderer[] renderers = go.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0)
+            {
+                bounds = default;
+                return false;
+            }
+
+            bounds = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+            {
+                bounds.Encapsulate(renderers[i].bounds);
+            }
+
+            return true;
+        }
+
+        // Highest tile-collider surface directly below the origin (false if the ray hits no tile).
+        private static bool NearestTileHit(Vector3 origin, HashSet<Collider> tileColliders, out float surfaceY)
+        {
+            surfaceY = 0f;
+            float best = float.NegativeInfinity;
+            foreach (RaycastHit h in Physics.RaycastAll(origin, Vector3.down, 60f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (tileColliders.Contains(h.collider) && h.point.y > best)
+                {
+                    best = h.point.y;
+                }
+            }
+
+            if (best > float.NegativeInfinity)
+            {
+                surfaceY = best;
+                return true;
+            }
+
+            return false;
         }
 
         // ------------------------------------------------------------------------------------
@@ -2433,6 +2681,12 @@ namespace Tarrock.Editor
             controller.radius = Mathf.Min(0.16f, visualHeight * 0.28f);
             controller.center = new Vector3(0f, visualHeight * 0.5f, 0f);
             controller.stepOffset = Mathf.Min(0.18f, visualHeight * 0.28f);
+            // Unity's default 0.08 m skin is ~half this miniature controller's radius — it rests the
+            // capsule that far above the ground. Shrink it to a small fraction of the radius so the
+            // rest gap is negligible (FIX 3 — hero zero), then drop the Visual by exactly that skin so
+            // the boots meet the true ground contact (the CC bottom always floats skinWidth up).
+            controller.skinWidth = controller.radius * 0.1f;
+            DropVisualBySkin(playerRig.transform, controller.skinWidth);
 
             var inputReader = playerRig.AddComponent<PlayerInputReader>();
             PlayerDodge dodge = playerRig.AddComponent<PlayerDodge>();
@@ -2492,6 +2746,7 @@ namespace Tarrock.Editor
             }
 
             visualHeight = MeasureHeight(visual);
+            AlignFeetToOrigin(visual, parent);
 
             Animator animator = visual.GetComponent<Animator>() ?? visual.AddComponent<Animator>();
             var controller = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(ControllerPath);
@@ -2505,6 +2760,46 @@ namespace Tarrock.Editor
             }
 
             return animator;
+        }
+
+        // Plants the Fool's feet on the ground (FIX 3 — "check the player's zero"): the Rogue_Hooded
+        // model's lowest rendered point sits a little below its own pivot, so with the Visual at local
+        // zero the feet clipped ~0.05 m into the terrain. Align the visual's bounds.min (the feet) to
+        // the rig origin — which is the CharacterController's bottom — so the feet rest exactly on the
+        // ground contact point in play, neither hovering nor sinking. Model-measured, so it stays
+        // correct if the visual scale changes.
+        private static void AlignFeetToOrigin(GameObject visual, Transform rig)
+        {
+            Renderer[] renderers = visual.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0)
+            {
+                return;
+            }
+
+            Bounds b = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+            {
+                b.Encapsulate(renderers[i].bounds);
+            }
+
+            float footOffset = b.min.y - rig.position.y; // <0 when the feet dip below the rig origin
+            Vector3 lp = visual.transform.localPosition;
+            visual.transform.localPosition = new Vector3(lp.x, lp.y - footOffset, lp.z);
+        }
+
+        // Lowers the Visual by the controller's skin width so the feet — already aligned to the CC
+        // bottom by AlignFeetToOrigin — render at the true ground contact (the CC bottom rests skinWidth
+        // above the surface). FIX 3, hero zero.
+        private static void DropVisualBySkin(Transform rig, float skin)
+        {
+            Transform visual = rig.Find("Visual");
+            if (visual == null)
+            {
+                return;
+            }
+
+            Vector3 lp = visual.localPosition;
+            visual.localPosition = new Vector3(lp.x, lp.y - skin, lp.z);
         }
 
         private static float MeasureHeight(GameObject visual)
@@ -2562,18 +2857,11 @@ namespace Tarrock.Editor
 
             vcamGo.AddComponent<CinemachineRotationComposer>();
 
-            // The wide tilt range (CamVerticalMin) can sweep the camera toward the meadow floor or
-            // the gorge walls; the deoccluder nudges it out of geometry instead of letting it clip
-            // under the grass when the player looks fully up.
-            var deoccluder = vcamGo.AddComponent<CinemachineDeoccluder>();
-            deoccluder.CollideAgainst = 1; // Default layer: terrain, walls, prop colliders
-            deoccluder.IgnoreTag = PlayerTag;
-            deoccluder.AvoidObstacles.Enabled = true;
-            deoccluder.AvoidObstacles.CameraRadius = 0.1f;
-            deoccluder.AvoidObstacles.DistanceLimit = orbitRadius;
-            // Slide around obstacles at range rather than zooming into the Fool's back.
-            deoccluder.AvoidObstacles.Strategy =
-                CinemachineDeoccluder.ObstacleAvoidance.ResolutionStrategy.PreserveCameraDistance;
+            // Wall response (SPEC A): the deoccluder pulls the camera forward and clamps at 1 m, a
+            // decollider keeps it out of walls, and CameraWallResponse stages the whisker bias, the
+            // head-top framing shift and the character fade. Never drives pitch (no more up-and-over).
+            // Configured identically to KayKitCharacterInstaller via the shared CameraRigConfig helper.
+            CameraRigConfig.Apply(vcamGo, orbital, vcam, followTarget.gameObject, orbitRadius, PlayerTag);
 
             Vector3 lookPoint = followTarget.position + new Vector3(0f, pivotHeight, 0f);
             Vector3 startPos = lookPoint - (followTarget.forward * orbitRadius) + (Vector3.up * playerHeight * 0.6f);

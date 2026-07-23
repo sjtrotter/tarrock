@@ -41,3 +41,4 @@ Thumbs.db
 # Screenshot tool output (test artifacts)
 Assets/Screenshots/
 Screenshots/
+*.blend1

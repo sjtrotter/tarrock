@@ -98,7 +98,7 @@ namespace Tarrock.Editor
         private const float GrandLandingExitTime = 0.9f;     // play the crouch→rise, then rejoin locomotion
 
         // Jump clip names (Rig_Medium_MovementBasic). Jump_Full_Short is a complete authored hop
-        // arc (anticipation → launch → airborne → land, ~1.2s); the normal ground hop plays it
+        // arc (anticipation → launch → airborne → land, ~1.17s); the normal ground hop plays it
         // time-compressed to the airborne window so the whole arc reads (director round: the
         // Start→Idle→Land chain barely showed on a short hop). Start/Idle/Land are kept only for the
         // long-fall tail (airborne past the hop window).
@@ -107,13 +107,27 @@ namespace Tarrock.Editor
         private const string JumpIdleClipName = "Jump_Idle";
         private const string JumpLandClipName = "Jump_Land";
 
-        // Airborne window a flat ground hop's Jump_Full_Short is compressed into. The nominal airborne
-        // time is 2·_jumpSpeed / |_gravity| = 2·5.2 / 25 ≈ 0.42s (must track PlayerMotor._jumpSpeed /
-        // _gravity); a small +0.03s margin means the compressed arc finishes a hair AFTER touchdown,
-        // so the landing (Airborne-false) transition always wins the race and a flat hop never dips
-        // into the long-fall tail. A real drop stays airborne well past this and branches to the
-        // airborne-hold (Jump_Idle) → Land tail once the clip plays out.
-        private const float HopAirborneSeconds = 0.45f;
+        // Airborne window the hop's Jump_Full_Short is compressed into. Sized to the LONGEST jump the
+        // motor can launch — the momentum sprint jump (FIX 1: running jumps clear more). Airtime is
+        // 2·v / |_gravity| with v = _jumpSpeed·√(_momentumJumpApexScale): 2·(5.6·√1.35) / 25 ≈ 0.520s
+        // (must track PlayerMotor._jumpSpeed / _gravity / _momentumJumpApexScale). A small +0.03s margin
+        // means even that longest arc finishes a hair AFTER touchdown, so the landing (Airborne-false)
+        // transition — ordered before the fall branch — always wins and NO jump tier dips into the
+        // long-fall tail. Shorter jumps (standstill ~0.448s, jog between) simply land earlier via that
+        // same Airborne-false transition, cutting the compressed clip a little before its end frame; the
+        // actual land is owned by locomotion, so both tiers read as a clean grounded landing. A real
+        // ledge drop stays airborne well past this and branches to the airborne-hold (Jump_Idle) → Land.
+        private const float HopAirborneSeconds = 0.55f;
+
+        // Jump_Full_Short opens with ~0.22 of its length as a GROUND anticipation crouch (the hips DIP
+        // from the rest pose to their lowest at normalized time 0.22, then the launch push rises them —
+        // verified by sampling the hips' height across the clip). The motor launches the Fool with an
+        // INSTANT upward impulse, so entering the clip at 0 played that ground wind-up in mid-air — the
+        // Fool crouched WHILE already rising, reading floaty/wrong (the "something weird" the director
+        // caught). Entering the hop state at this offset skips straight to the takeoff push, so the legs
+        // EXTEND as the body ascends. The state speed is refit to the remaining (1 − offset) of the clip
+        // so it still fills the airtime.
+        private const float JumpHopClipOffset = 0.22f;
 
         // Blend thresholds map to PlayerMotor's jog (3.0) / sprint (4.8) / crouch (1.2) speeds so the
         // blend tracks the actual planar speed the driver feeds in (avoids the "gliding" mismatch).
@@ -151,6 +165,12 @@ namespace Tarrock.Editor
 
         // PlayerDodge's movement window; the dodge clips are time-scaled to fit it.
         private const float DodgeMovementSeconds = 0.6f; // must track PlayerDodge._dodgeDuration
+
+        // The Focus side-hops (Dodge_Left/Right) run their OWN shorter window (director round 5: SHORT
+        // window, FAST clip). The hop leg clips are time-scaled so their VISIBLE duration == this window,
+        // so the fast hop animation ends exactly when the shorter hop dodge window (and its end-poof and
+        // control return) does. Must track PlayerDodge._hopWindowSeconds.
+        private const float HopWindowSeconds = 0.42f;
 
         // The Focus strafe-hops (Dodge_Left/Right) play near full cadence so the SHORTER, front-loaded
         // burst reads snappy (director round 3: "jarring beats smooth"). Was 0.45 (matched the old slow
@@ -544,17 +564,31 @@ namespace Tarrock.Editor
             tree.children = children;
         }
 
-        // Slows the Left/Right (X = ±1) legs of the dodge blend to HopClipTimeScale so the shorter
-        // strafe-hop's feet do not slide; the roll legs (X ≈ 0) are left at full speed. Matched by X
-        // sign, not clip identity, because the directional blend is authored by position.
-        private static void ApplyHopClipTimeScales(BlendTree tree)
+        // Retimes the Left/Right (X = ±1) strafe-hop legs so the hop clip's VISIBLE duration equals the
+        // hop's OWN (shorter) window exactly (director round 5: SHORT window, FAST clip — round 4 did the
+        // opposite, stretching the clip to fill the roll's 0.6s window). The visible duration is
+        // clip.length / (dodge.speed · childTimeScale); solving for == HopWindowSeconds gives
+        // childTimeScale = clip.length / (HopWindowSeconds · dodgeSpeed). So the fast hop leg finishes ON
+        // the short-window end-poof, when control returns. The roll legs (X ≈ 0) keep the full 0.6s window
+        // at full cadence. Matched by X sign, not clip identity, because the blend is authored by position.
+        private static void ApplyHopClipTimeScales(BlendTree tree, float dodgeSpeed)
         {
             ChildMotion[] children = tree.children;
             for (int i = 0; i < children.Length; i++)
             {
-                if (Mathf.Abs(children[i].position.x) > 0.5f)
+                if (Mathf.Abs(children[i].position.x) <= 0.5f)
                 {
-                    children[i].timeScale = HopClipTimeScale;
+                    continue;
+                }
+
+                var clip = children[i].motion as AnimationClip;
+                if (clip != null && clip.length > 0.01f && dodgeSpeed > 0.001f)
+                {
+                    children[i].timeScale = clip.length / (HopWindowSeconds * dodgeSpeed);
+                }
+                else
+                {
+                    children[i].timeScale = HopClipTimeScale; // fallback if the clip length is unavailable
                 }
             }
 
@@ -683,19 +717,19 @@ namespace Tarrock.Editor
                 tree.AddChild(dodgeR, new Vector2(1f, 0f));
             }
 
-            // Slow the strafe-hop legs (X = ±1, the Left/Right clips) so the shorter hop's feet stay
-            // planted; the forward/back roll legs (X = 0) keep full cadence. AddChild has no timeScale
-            // arg, so the children are rewritten after the fact (matched by X sign, not clip identity).
-            ApplyHopClipTimeScales(tree);
-
             dodge.motion = tree;
 
             // Fit the dodge into the movement window; never slow below authored speed (an
             // under-cranked dodge reads floaty). Snappier is the safer error.
-            if (reference.length > 0.01f)
-            {
-                dodge.speed = Mathf.Clamp(reference.length / DodgeMovementSeconds, 0.9f, 1.4f);
-            }
+            float dodgeSpeed = reference.length > 0.01f
+                ? Mathf.Clamp(reference.length / DodgeMovementSeconds, 0.9f, 1.4f)
+                : 1f;
+            dodge.speed = dodgeSpeed;
+
+            // Retime the strafe-hop legs (X = ±1) so their visible clip length fills the window exactly —
+            // the hop animation ends ON the poof (FIX 3). Needs the resolved dodge.speed, so it runs after
+            // it is set. The forward/back roll legs (X = 0) keep full cadence.
+            ApplyHopClipTimeScales(tree, dodgeSpeed);
 
             AnimatorStateTransition toDodge = locomotion.AddTransition(dodge);
             toDodge.hasExitTime = false;
@@ -710,11 +744,21 @@ namespace Tarrock.Editor
                 crouchToDodge.AddCondition(AnimatorConditionMode.If, 0f, DodgeParameter);
             }
 
-            // A dodge exits crouch (PlayerMotor stands the Fool up), so always return to standing.
+            // SPEC B — dodge exit blend: the old 0.03s conditioned instant-exit produced a jump cut at
+            // the end of the hop (the recovery pose snapping straight to the run). Now the dodge recovery
+            // BLENDS into locomotion on exit time: it begins ~70% through the (window-fitted) clip and
+            // crossfades over a fixed 0.22s, finishing a hair past the end-poof / control return — the
+            // control still returns at the poof (PlayerDodge timings untouched); only the VISUAL blends
+            // past it. No conditions (pure exit-time), so it fires regardless of the Dodge bool. The
+            // interruption settings let a chained re-dodge (Locomotion→Dodge, the NEXT state's transition)
+            // cut back in mid-blend without waiting for the crossfade to finish.
             AnimatorStateTransition fromDodge = dodge.AddTransition(locomotion);
-            fromDodge.hasExitTime = false;
-            fromDodge.duration = 0.1f;
-            fromDodge.AddCondition(AnimatorConditionMode.IfNot, 0f, DodgeParameter);
+            fromDodge.hasExitTime = true;
+            fromDodge.exitTime = 0.70f;
+            fromDodge.hasFixedDuration = true;
+            fromDodge.duration = 0.22f;
+            fromDodge.interruptionSource = TransitionInterruptionSource.Destination; // "Next State"
+            fromDodge.orderedInterruption = true;
 
             return dodge;
         }
@@ -724,10 +768,11 @@ namespace Tarrock.Editor
         /// round — a short ground hop barely showed the old Start→Idle→Land chain (the crossfades ate
         /// the ~0.42s window), so the normal hop now plays ONE complete authored arc:
         ///
-        /// - <b>Jump_Hop</b> — <c>Jump_Full_Short</c> time-compressed (state speed = clip length /
-        ///   <see cref="HopAirborneSeconds"/>) so the full anticipation→launch→airborne→land arc
-        ///   lands exactly when the Fool lands. Entered from locomotion the instant <c>Airborne</c>
-        ///   goes true, with NO exit time and a ≤0.05 crossfade so the anticipation frame reads.
+        /// - <b>Jump_Hop</b> — <c>Jump_Full_Short</c> entered at its takeoff frame
+        ///   (<see cref="JumpHopClipOffset"/>, skipping the ground anticipation crouch that otherwise
+        ///   played mid-air) and time-compressed (state speed fits the REMAINING clip into
+        ///   <see cref="HopAirborneSeconds"/>) so the launch→airborne→land arc lands exactly when the
+        ///   Fool lands. Entered from locomotion the instant <c>Airborne</c> goes true, NO exit time.
         /// - <b>Jump_Idle → Jump_Land</b> — the long-fall tail: if the compressed hop clip plays all
         ///   the way out while still airborne (a drop off a ledge, past the hop window) the graph
         ///   holds the looping airborne pose, then lands. A normal hop lands first (the
@@ -777,14 +822,20 @@ namespace Tarrock.Editor
             hop.motion = fullShortClip;
             if (fullShortClip.length > 0.01f)
             {
-                // Compress the whole arc into the hop's airborne window so it lands with the Fool.
-                hop.speed = fullShortClip.length / HopAirborneSeconds;
+                // Compress the REMAINING clip (from the takeoff offset to the end — the launch, airborne
+                // and land, with the ground anticipation crouch skipped) into the hop's airborne window
+                // so it lands with the Fool. Without the (1 − offset) factor the skipped anticipation
+                // would steal time and the arc would land early.
+                hop.speed = (fullShortClip.length * (1f - JumpHopClipOffset)) / HopAirborneSeconds;
             }
 
-            // Enter the hop the frame the motor leaves the ground — instant, so the anticipation reads.
+            // Enter the hop the frame the motor leaves the ground — offset straight to the takeoff push
+            // (JumpHopClipOffset) so the ground anticipation crouch never plays in mid-air, and the legs
+            // extend as the Fool ascends.
             AnimatorStateTransition toHop = locomotion.AddTransition(hop);
             toHop.hasExitTime = false;
             toHop.duration = 0.05f;
+            toHop.offset = JumpHopClipOffset;
             toHop.AddCondition(AnimatorConditionMode.If, 0f, AirborneParameter);
 
             // ORDER MATTERS: landing wins over the fall branch. A normal hop lands (Airborne false)
@@ -1026,6 +1077,11 @@ namespace Tarrock.Editor
             controller.radius = Mathf.Min(0.16f, visualHeight * 0.28f);
             controller.center = new Vector3(0f, visualHeight * 0.5f, 0f);
             controller.stepOffset = Mathf.Min(0.18f, visualHeight * 0.28f);
+            // Unity's default 0.08 m skin is ~half this miniature controller's radius — it rests the
+            // capsule that far above the ground. Shrink it, then drop the Visual by exactly that skin so
+            // the boots meet the true ground contact (FIX 3 — hero zero).
+            controller.skinWidth = controller.radius * 0.1f;
+            DropVisualBySkin(playerRig.transform, controller.skinWidth);
 
             var inputReader = playerRig.AddComponent<PlayerInputReader>();
             PlayerDodge dodge = playerRig.AddComponent<PlayerDodge>();
@@ -1069,6 +1125,7 @@ namespace Tarrock.Editor
 
             DisableAttachmentProps(visual);
             visualHeight = MeasureHeight(visual);
+            AlignFeetToOrigin(visual, parent);
 
             Animator animator = visual.GetComponent<Animator>();
             if (animator == null)
@@ -1115,6 +1172,45 @@ namespace Tarrock.Editor
             {
                 Debug.Log($"[Tarrock] Disabled {disabled} weapon attachment prop(s) on the visual.");
             }
+        }
+
+        // Plants the Fool's feet on the ground (FIX 3 — "check the player's zero"): the Rogue_Hooded
+        // model's lowest rendered point sits a little below its own pivot, so with the Visual at local
+        // zero the feet clipped ~0.05 m into the terrain. Align the visual's bounds.min (the feet) to
+        // the rig origin — the CharacterController bottom — so the feet rest on the ground contact point
+        // in play, neither hovering nor sinking. Model-measured, so it survives a visual-scale change.
+        private static void AlignFeetToOrigin(GameObject visual, Transform rig)
+        {
+            Renderer[] renderers = visual.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0)
+            {
+                return;
+            }
+
+            Bounds b = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+            {
+                b.Encapsulate(renderers[i].bounds);
+            }
+
+            float footOffset = b.min.y - rig.position.y; // <0 when the feet dip below the rig origin
+            Vector3 lp = visual.transform.localPosition;
+            visual.transform.localPosition = new Vector3(lp.x, lp.y - footOffset, lp.z);
+        }
+
+        // Lowers the Visual by the controller's skin width so the feet — already aligned to the CC
+        // bottom by AlignFeetToOrigin — render at the true ground contact (the CC bottom rests skinWidth
+        // above the surface). FIX 3, hero zero.
+        private static void DropVisualBySkin(Transform rig, float skin)
+        {
+            Transform visual = rig.Find(VisualName);
+            if (visual == null)
+            {
+                return;
+            }
+
+            Vector3 lp = visual.localPosition;
+            visual.localPosition = new Vector3(lp.x, lp.y - skin, lp.z);
         }
 
         private static float MeasureHeight(GameObject visual)
@@ -1191,17 +1287,11 @@ namespace Tarrock.Editor
 
             vcamGo.AddComponent<CinemachineRotationComposer>();
 
-            // The wide tilt range (CamVerticalMin) can sweep the camera toward the ground; the
-            // deoccluder nudges it out of geometry instead of letting it clip under the terrain.
-            var deoccluder = vcamGo.AddComponent<CinemachineDeoccluder>();
-            deoccluder.CollideAgainst = 1; // Default layer: terrain + rampart colliders
-            deoccluder.IgnoreTag = PlayerTag;
-            deoccluder.AvoidObstacles.Enabled = true;
-            deoccluder.AvoidObstacles.CameraRadius = 0.1f;
-            deoccluder.AvoidObstacles.DistanceLimit = orbitRadius;
-            // Slide around obstacles at range rather than zooming into the Fool's back.
-            deoccluder.AvoidObstacles.Strategy =
-                CinemachineDeoccluder.ObstacleAvoidance.ResolutionStrategy.PreserveCameraDistance;
+            // Wall response (SPEC A): the deoccluder pulls the camera forward and clamps at 1 m, a
+            // decollider keeps it out of walls, and CameraWallResponse stages the whisker bias, the
+            // head-top framing shift and the character fade. Never drives pitch (no more up-and-over).
+            // Configured identically to CliffHexGenerator via the shared CameraRigConfig helper.
+            CameraRigConfig.Apply(vcamGo, orbital, vcam, followTarget.gameObject, orbitRadius, PlayerTag);
 
             // Start behind the player so the first frame is composed (no glide-in).
             Vector3 lookPoint = followTarget.position + new Vector3(0f, pivotHeight, 0f);

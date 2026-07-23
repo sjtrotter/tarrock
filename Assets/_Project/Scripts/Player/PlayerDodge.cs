@@ -32,6 +32,16 @@ namespace Tarrock.Player
         [SerializeField] private float _dodgeDuration = 0.6f; // was 0.45 — UAL roll clip needs the room (playtest: "way too fast")
         [SerializeField] private float _cooldownDuration = 0.15f;
 
+        [Header("Side-hop window (director round 5: SHORT window, FAST clip)")]
+        // Round 4 stretched the hop LEG animation (timeScale ≈ 0.74) to fill the roll's 0.6s window —
+        // the opposite of intent. The director wants the hop SNAPPY and over quickly: the clip stays
+        // fast and the hop's own dodge window is cut to match it. Hops get their own window + cooldown,
+        // separate from rolls/backflips (which keep _dodgeDuration / _cooldownDuration).
+        [Tooltip("Movement-window length for the Focus strafe-hops (left/right) — shorter than a roll so the hop is over quickly. The hop leg clip is time-scaled to this in KayKitCharacterInstaller (HopWindowSeconds must track this value).")]
+        [SerializeField] private float _hopWindowSeconds = 0.42f;
+        [Tooltip("Cooldown after a hop before another dodge is allowed. Near-zero so chained hops fire immediately (director round 5: 'dodge→dodge right away'); rolls keep the longer _cooldownDuration.")]
+        [SerializeField] private float _hopCooldownDuration = 0.02f;
+
         [Tooltip("How long a dodge press stays buffered waiting for the dodge to come off cooldown.")]
         [SerializeField] private float _inputBufferSeconds = 0.25f;
 
@@ -52,6 +62,7 @@ namespace Tarrock.Player
         private float _currentSpeedScale = 1f;
         private float _dodgeBufferedUntil = float.NegativeInfinity;
         private float _hopCurveMean = 1f;
+        private float _hopDistanceCompensation = 1f;
         private bool _wasDodgingForDust;
 
         /// <summary>True while a roll is active and driving movement.</summary>
@@ -80,10 +91,13 @@ namespace Tarrock.Player
                 float scale = _dodgeSpeed * _currentSpeedScale;
 
                 // Side-hops burst front-loaded (director round 3: "sharp burst, not a soft glide");
-                // the unit-area curve redistributes the SAME total distance toward the first ~40%.
+                // the unit-area curve redistributes the total distance toward the first ~40%. The
+                // distance-compensation (round 5) multiplies by _dodgeDuration/_hopWindowSeconds so the
+                // hop still covers its full 0.38×-of-roll distance even though the window is now shorter —
+                // the same ground crossed faster (a higher peak burst), not less ground.
                 if (_variant == DodgeVariant.HopLeft || _variant == DodgeVariant.HopRight)
                 {
-                    scale *= HopSpeedFactor(Progress);
+                    scale *= HopSpeedFactor(Progress) * _hopDistanceCompensation;
                 }
 
                 return _dodgeDirection * scale;
@@ -123,6 +137,11 @@ namespace Tarrock.Player
         {
             _state = new DodgeState(_dodgeDuration, _cooldownDuration, _invulnerableStartOffset, _invulnerableDuration);
             _hopCurveMean = ComputeCurveMean(_hopSpeedCurve);
+
+            // Preserve the hop's total distance (0.38× a roll = _dodgeSpeed·_hopDistanceScale·_dodgeDuration)
+            // when it is delivered over the shorter _hopWindowSeconds: velocity is scaled up by the window
+            // ratio so distance = velocity·window stays put. Guarded against a zero/negative window.
+            _hopDistanceCompensation = _hopWindowSeconds > 0.0001f ? _dodgeDuration / _hopWindowSeconds : 1f;
 
             if (_input == null)
             {
@@ -233,7 +252,14 @@ namespace Tarrock.Player
             }
 
             ResolveDodge(out Vector3 direction, out DodgeVariant variant, out float speedScale);
-            if (_state.TryStartDodge())
+
+            // Side-hops run a SHORTER, near-cooldownless window (director round 5) so the hop is snappy
+            // and chains immediately; rolls/backflips keep the default roll window + cooldown.
+            bool isHop = variant == DodgeVariant.HopLeft || variant == DodgeVariant.HopRight;
+            float window = isHop ? _hopWindowSeconds : _dodgeDuration;
+            float cooldown = isHop ? _hopCooldownDuration : _cooldownDuration;
+
+            if (_state.TryStartDodge(window, cooldown))
             {
                 _dodgeDirection = direction;
                 _variant = variant;

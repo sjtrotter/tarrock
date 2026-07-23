@@ -206,5 +206,50 @@ namespace Tarrock.Tests.EditMode
             state.Tick(CooldownDuration);
             Assert.AreEqual(DodgeState.Phase.Idle, state.CurrentPhase);
         }
+
+        [Test]
+        public void PerVariantWindow_EndsAtItsOwnDuration_NotTheDefault()
+        {
+            // A side-hop runs a SHORTER window than the default roll (0.5). At 0.3s the default
+            // window would still be rolling; the 0.25s hop window must already be past it.
+            const float hopWindow = 0.25f;
+            var state = NewState();
+            state.TryStartDodge(hopWindow, 0f);
+
+            state.Tick(hopWindow - 0.02f);
+            Assert.IsTrue(state.IsDodging, "hop should still be dodging just before its own window ends");
+
+            state.Tick(0.04f); // cross the hop window end (well before the 0.5 default)
+            Assert.IsFalse(state.IsDodging, "hop must end at its own shorter window, not the default");
+        }
+
+        [Test]
+        public void PerVariantZeroCooldown_ReturnsToIdle_ForImmediateReDodge()
+        {
+            // A near-immediate re-dodge (chained hops): a zero cooldown returns straight to Idle at
+            // the window end, so the next dodge can fire without a lock-out.
+            const float hopWindow = 0.25f;
+            var state = NewState();
+            state.TryStartDodge(hopWindow, 0f);
+
+            state.Tick(hopWindow);
+
+            Assert.AreEqual(DodgeState.Phase.Idle, state.CurrentPhase);
+            Assert.IsTrue(state.CanDodge);
+            Assert.IsTrue(state.TryStartDodge(hopWindow, 0f), "a chained hop should start immediately");
+        }
+
+        [Test]
+        public void PerVariantWindow_DodgeProgress_TracksActiveDuration()
+        {
+            const float hopWindow = 0.25f;
+            var state = NewState();
+            state.TryStartDodge(hopWindow, 0f);
+
+            state.Tick(hopWindow * 0.5f);
+
+            // Progress must be relative to the ACTIVE hop window, not the default roll duration.
+            Assert.AreEqual(0.5f, state.DodgeProgress, 1e-4f);
+        }
     }
 }

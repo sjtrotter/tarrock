@@ -48,11 +48,23 @@ namespace Tarrock.Player
         [SerializeField] private float _foliageSpeed = 1.5f;
 
         [Header("Jump (out-of-Focus dodge input)")]
-        // apex = _jumpSpeed² / (2·|_gravity|); with _gravity −25 this gives ~0.54 m for the 0.7 m
-        // miniature — the "reads right at jog speed" arc the director asked for (0.5-0.7 m). The 3.2
+        // apex = _jumpSpeed² / (2·|_gravity|); with _gravity −25 this gives ~0.63 m for the 0.7 m
+        // miniature — the "reads right at jog speed" arc the director asked for (0.5-0.7 m). Director
+        // round 5: nudged +15% apex (5.2 → 5.6; apex 0.54 → 0.63 m, "higher but not by much"). The 3.2
         // first guess only cleared ~0.2 m under this gravity, so it was tuned up.
-        [Tooltip("Upward launch speed (m/s) of the jump — tuned for a ~0.5-0.7 m apex on the 0.7 m miniature.")]
-        [SerializeField] private float _jumpSpeed = 5.2f;
+        [Tooltip("Upward launch speed (m/s) of the jump — tuned for a ~0.6 m apex on the 0.7 m miniature (director round 5: +15%).")]
+        [SerializeField] private float _jumpSpeed = 5.6f;
+
+        [Header("Momentum jump (running jumps clear more)")]
+        // A jump launched at speed carries more up: the horizontal momentum at the press feeds the arc.
+        // Below the threshold (standstill / walk) the jump is unchanged (~0.60 m apex); from the
+        // threshold up to sprint speed the APEX is lerped 1.0x → _momentumJumpApexScale. Because apex
+        // scales with launch-velocity², the impulse is multiplied by √(apexScale) (see MomentumJumpBoost).
+        // With _jumpSpeed 5.6 / _gravity −25: base apex 0.63 m; sprint (4.8 m/s) apex ≈ 0.85 m.
+        [Tooltip("Planar speed (m/s) at the jump-press above which the jump gains momentum height. At or below this, the jump is the standstill jump (unchanged).")]
+        [SerializeField] private float _momentumJumpSpeedThreshold = 2.5f;
+        [Tooltip("Apex multiplier at full sprint speed (_sprintSpeed): the running-jump apex relative to the standstill jump. Lerped in from 1.0x at the threshold.")]
+        [SerializeField] private float _momentumJumpApexScale = 1.35f;
 
         [Header("Grand backflip (crouched jump — combat.md §Focus)")]
         // Crouched + jump performs the GRAND BACKFLIP (canon: "a high, deliberately majestic backflip
@@ -60,12 +72,18 @@ namespace Tarrock.Player
         // with an emphatic landing"). Distinct from the Focus back-dodge (a quick evasive flip). It
         // reuses the jump's vertical launch (scaled) and the procedural-flip machinery in
         // PlayerAnimationDriver, adding a constant backward planar drift over the airtime.
-        [Tooltip("Apex height of the grand backflip as a multiple of the normal jump's apex (canon: ~1.6x, taller and majestic).")]
-        [SerializeField] private float _grandBackflipApexScale = 1.6f;
-        [Tooltip("Backward travel of the grand backflip, in metres (~1.5 body-widths at the 0.30-scale miniature ≈ 0.45 m).")]
+        // Director round 4: apex boosted +50% (1.6 → 2.4) for a taller, more pronounced arc, and the
+        // fixed backward drift was KEPT at 0.45 base while adding limited AIR CONTROL so the player aims
+        // the landing (see _grandBackflipAirControlCap). To instead bake in a bigger fixed backtrack (the
+        // +50% backtrack alternative the director passed on), just raise _grandBackflipBackTravel.
+        [Tooltip("Apex height of the grand backflip as a multiple of the normal jump's apex (director round 4: 2.4x — taller/majestic, +50% over the old 1.6x).")]
+        [SerializeField] private float _grandBackflipApexScale = 2.4f;
+        [Tooltip("Base backward travel of the grand backflip, in metres (~1.5 body-widths at the 0.30-scale miniature ≈ 0.45 m). Neutral input lands here; air control steers ±_grandBackflipAirControlCap around it.")]
         [SerializeField] private float _grandBackflipBackTravel = 0.45f;
-        [Tooltip("Seconds over which the full backward 360° completes; kept a touch under the airtime so the flip is upright before the landing. Majestic = a hang, not a snap.")]
-        [SerializeField] private float _grandBackflipRotationTime = 0.48f;
+        [Tooltip("Limited air control (director round 4): movement input steers the grand backflip's landing up to this many metres from the base drift. Back held extends the backtrack (~0.8 m), forward shortens it (~0.1 m), lateral drifts sideways — enough to aim, not to fly.")]
+        [SerializeField] private float _grandBackflipAirControlCap = 0.35f;
+        [Tooltip("Seconds over which the full backward 360° completes; scaled to finish ~85% through the (now longer) airtime so the flip is upright before the emphatic landing. Majestic = a hang, not a snap.")]
+        [SerializeField] private float _grandBackflipRotationTime = 0.55f;
 
         [Header("Crouch")]
         [Tooltip("Planar speed while crouched (sneak tier).")]
@@ -91,7 +109,9 @@ namespace Tarrock.Player
         private float _airborneTime;
         private bool _grandBackflip;
         private float _grandBackflipTime;
-        private Vector3 _grandBackflipVelocity;
+        private float _grandBackflipAirtime;
+        private Vector3 _grandBackflipForward;
+        private Vector3 _grandBackflipRight;
         private bool _wasFocused;
         private float _focusEntryYaw;
         private int _foliageOverlaps;
@@ -225,10 +245,27 @@ namespace Tarrock.Player
             }
             else
             {
-                _verticalVelocity = _jumpSpeed;
+                _verticalVelocity = _jumpSpeed * MomentumJumpBoost();
                 _airborne = true;
                 _airborneTime = 0f;
             }
+        }
+
+        // Launch-velocity multiplier for the momentum jump: 1.0 at/below the momentum threshold,
+        // rising to √(_momentumJumpApexScale) at sprint speed, using the planar speed being carried at
+        // the jump-press. Multiplying the impulse by √(apexScale) scales the APEX by apexScale (apex ∝
+        // v²). Standstill and walk jumps return exactly 1.0 (unchanged 0.60 m arc).
+        private float MomentumJumpBoost()
+        {
+            float speed = _currentPlanarSpeed;
+            if (speed <= _momentumJumpSpeedThreshold || _sprintSpeed <= _momentumJumpSpeedThreshold)
+            {
+                return 1f;
+            }
+
+            float t = Mathf.Clamp01(Mathf.InverseLerp(_momentumJumpSpeedThreshold, _sprintSpeed, speed));
+            float apexScale = Mathf.Lerp(1f, _momentumJumpApexScale, t);
+            return Mathf.Sqrt(apexScale);
         }
 
         // The grand backflip (combat.md §Focus): a taller, majestic backward flip launched from the
@@ -244,14 +281,41 @@ namespace Tarrock.Player
             float apex = normalApex * _grandBackflipApexScale;
             _verticalVelocity = Mathf.Sqrt(2f * g * apex);
 
-            float airtime = 2f * _verticalVelocity / g;
-            float backSpeed = airtime > 0.001f ? _grandBackflipBackTravel / airtime : 0f;
-            _grandBackflipVelocity = -transform.forward * backSpeed;
+            _grandBackflipAirtime = 2f * _verticalVelocity / g;
+
+            // Capture the launch facing frame (flattened) so the base backward drift and the air-control
+            // adjustment both compose in a stable frame for the whole flight, regardless of look/turn.
+            Vector3 fwd = transform.forward;
+            fwd.y = 0f;
+            _grandBackflipForward = fwd.sqrMagnitude > 0.0001f ? fwd.normalized : Vector3.forward;
+            _grandBackflipRight = new Vector3(_grandBackflipForward.z, 0f, -_grandBackflipForward.x);
 
             _airborne = true;
             _airborneTime = 0f;
             _grandBackflip = true;
             _grandBackflipTime = 0f;
+        }
+
+        // The grand backflip's live horizontal drift: a fixed base travel straight back, plus limited
+        // air control (director round 4) so movement input aims the landing. The steer vector is clamped
+        // to the unit disc and scaled by _grandBackflipAirControlCap, then added in the launch frame:
+        // back input deepens the backtrack, forward input shortens it, lateral input drifts sideways —
+        // capped so the Fool can aim but not fly. Recomputed each frame from current input and divided by
+        // the (fixed) airtime, so holding a direction integrates to base ± cap over the flight.
+        private Vector3 ComputeGrandBackflipVelocity()
+        {
+            if (_grandBackflipAirtime <= 0.001f)
+            {
+                return Vector3.zero;
+            }
+
+            Vector2 move = _input != null ? _input.MoveInput : Vector2.zero;
+            Vector2 steer = Vector2.ClampMagnitude(move, 1f);
+
+            Vector3 displacement = (-_grandBackflipForward * _grandBackflipBackTravel)
+                + (((_grandBackflipForward * steer.y) + (_grandBackflipRight * steer.x)) * _grandBackflipAirControlCap);
+
+            return displacement / _grandBackflipAirtime;
         }
 
         private void Update()
@@ -265,8 +329,9 @@ namespace Tarrock.Player
             Vector3 horizontal;
             if (_grandBackflip)
             {
-                // The grand backflip owns horizontal motion while airborne: a constant backward drift.
-                horizontal = _grandBackflipVelocity;
+                // The grand backflip owns horizontal motion while airborne: a base backward drift plus
+                // limited, input-steered air control (recomputed live so the landing can be aimed).
+                horizontal = ComputeGrandBackflipVelocity();
                 _grandBackflipTime += Time.deltaTime;
             }
             else if (_dodge != null && _dodge.IsDodging)

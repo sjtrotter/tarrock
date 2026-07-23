@@ -38,6 +38,12 @@ namespace Tarrock.Player
         // Seconds elapsed within the current non-idle phase (Dodging or Cooldown).
         private float _phaseTime;
 
+        // The window + cooldown of the CURRENTLY active dodge. Per-variant: a side-hop runs a shorter
+        // window (and near-zero cooldown) than a roll, latched at TryStartDodge time. The constructor's
+        // _dodgeDuration / _cooldownDuration are the defaults (rolls/backflips).
+        private float _activeDodgeDuration;
+        private float _activeCooldownDuration;
+
         /// <summary>Creates a dodge state machine. All parameters are in seconds.</summary>
         /// <param name="dodgeDuration">How long the roll drives movement.</param>
         /// <param name="cooldownDuration">Lock-out after the roll before another dodge is allowed.</param>
@@ -53,6 +59,8 @@ namespace Tarrock.Player
             _cooldownDuration = cooldownDuration;
             _invulnerableStartOffset = invulnerableStartOffset;
             _invulnerableDuration = invulnerableDuration;
+            _activeDodgeDuration = dodgeDuration;
+            _activeCooldownDuration = cooldownDuration;
         }
 
         /// <summary>The current phase of the cycle.</summary>
@@ -75,12 +83,12 @@ namespace Tarrock.Player
         {
             get
             {
-                if (_phase != Phase.Dodging || _dodgeDuration <= 0f)
+                if (_phase != Phase.Dodging || _activeDodgeDuration <= 0f)
                 {
                     return 1f;
                 }
 
-                float t = _phaseTime / _dodgeDuration;
+                float t = _phaseTime / _activeDodgeDuration;
                 return t < 0f ? 0f : (t > 1f ? 1f : t);
             }
         }
@@ -97,17 +105,34 @@ namespace Tarrock.Player
             && _phaseTime < _invulnerableStartOffset + _invulnerableDuration;
 
         /// <summary>
-        /// Attempts to begin a dodge. Succeeds only from <see cref="Phase.Idle"/>; returns
-        /// <c>false</c> (and changes nothing) while dodging or on cooldown.
+        /// Attempts to begin a dodge with the default (roll) window and cooldown. Succeeds only from
+        /// <see cref="Phase.Idle"/>; returns <c>false</c> (and changes nothing) while dodging or on
+        /// cooldown.
         /// </summary>
         /// <returns><c>true</c> if a new roll started this call.</returns>
         public bool TryStartDodge()
+        {
+            return TryStartDodge(_dodgeDuration, _cooldownDuration);
+        }
+
+        /// <summary>
+        /// Attempts to begin a dodge with a per-variant window and cooldown (a side-hop runs a shorter,
+        /// snappier window than a roll). Succeeds only from <see cref="Phase.Idle"/>; returns
+        /// <c>false</c> (and changes nothing) while dodging or on cooldown. A non-positive
+        /// <paramref name="dodgeDuration"/> falls back to the default; a negative
+        /// <paramref name="cooldownDuration"/> falls back to the default (zero is honoured, for an
+        /// immediate re-dodge).
+        /// </summary>
+        /// <returns><c>true</c> if a new dodge started this call.</returns>
+        public bool TryStartDodge(float dodgeDuration, float cooldownDuration)
         {
             if (_phase != Phase.Idle)
             {
                 return false;
             }
 
+            _activeDodgeDuration = dodgeDuration > 0f ? dodgeDuration : _dodgeDuration;
+            _activeCooldownDuration = cooldownDuration >= 0f ? cooldownDuration : _cooldownDuration;
             _phase = Phase.Dodging;
             _phaseTime = 0f;
             return true;
@@ -127,13 +152,13 @@ namespace Tarrock.Player
 
             _phaseTime += deltaSeconds;
 
-            if (_phase == Phase.Dodging && _phaseTime >= _dodgeDuration)
+            if (_phase == Phase.Dodging && _phaseTime >= _activeDodgeDuration)
             {
-                _phaseTime -= _dodgeDuration;
+                _phaseTime -= _activeDodgeDuration;
                 _phase = Phase.Cooldown;
             }
 
-            if (_phase == Phase.Cooldown && _phaseTime >= _cooldownDuration)
+            if (_phase == Phase.Cooldown && _phaseTime >= _activeCooldownDuration)
             {
                 _phaseTime = 0f;
                 _phase = Phase.Idle;
