@@ -30,7 +30,7 @@ she can live with.
    to help "put it right." Her competence, built for a forest that no longer exists, is
    suddenly the odd one out.
 2. **The complication.** Theme 2: her whole self is *the rope-checker who reads the flipped
-   canopy* — an expertise, like Fenwick Loft's in MQ12, in something that stopped existing
+   canopy* — an expertise, like Bracken Loft's in MQ12, in something that stopped existing
    overnight. Righting the house means unlearning the only "up" she ever mastered.
 3. **The survey.** The Fool helps her walk the house (Rope-checker Calling tasks — re-rigging
    lines, testing anchors). Comedy of a home where everything is where it shouldn't be: the
@@ -47,7 +47,7 @@ she can live with.
    beat: she admits she isn't sure she wants to learn a whole new "up" this late in a very
    long life.
 6. **Closing beat.** The house stands corrected or gloriously wrong per the choice; Wick's
-   barks shift accordingly, and — like Fenwick Loft — she becomes one of the Gallowwood's
+   barks shift accordingly, and — like Bracken Loft — she becomes one of the Gallowwood's
    living keepers of "how it used to hang." No `WS_*` flag is set.
 
 ## World-state changes
@@ -61,7 +61,7 @@ she can live with.
 - `world.md` §The Gallowwood; §World-state matrix (`WS_HANGEDMAN_UNBOUND`) — "Gallowwood
   rights itself (traversal reshuffles)"; requires that flag, and the reshuffle is the
   quest's whole premise.
-- `MQ12-a-change-of-perspective.md` — Fenwick Loft's mourning (an expert in reading the
+- `MQ12-a-change-of-perspective.md` — Bracken Loft's mourning (an expert in reading the
   flipped terrain, made useless overnight). Wick is a *distinct* NPC and a distinct home;
   this quest deliberately rhymes with Loft's beat without duplicating him.
 - `callings.md` §The Callings — Rope-checker ("inspect and re-knot canopy lines"; post-MQ12
@@ -78,6 +78,6 @@ she can live with.
 - Should the rebuild-vs-preserve choice be readable by later Gallowwood ambient content (a
   landmark the player passes), or stay local? Recommend making the house a visible landmark
   either way — it's a strong, cheap piece of environmental storytelling.
-- Confirm Wick and Fenwick Loft are kept clearly separate at script status (two keepers of
+- Confirm Wick and Bracken Loft are kept clearly separate at script status (two keepers of
   the old wood), or whether one should be folded into the other to avoid redundancy.
   Recommend keeping both — a private grief (a home) beside a public one (a trade).

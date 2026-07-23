@@ -469,7 +469,7 @@ single region, are gathered in the final subsection.
 
 ### The Gallowwood
 
-- **Fenwick Loft** — a Gallowwood guide whose entire expertise is reading the flipped
+- **Bracken Loft** — a Gallowwood guide whose entire expertise is reading the flipped
   terrain; he spent years learning a forest that, righted, no longer needs reading. (MQ12)
 - **Fenwick Sorrel** — a Hermit-adjacent pilgrim who has spent 300 years trying to strike
   up a real conversation with the Hanged Man, sure there's a profound teaching he's simply
