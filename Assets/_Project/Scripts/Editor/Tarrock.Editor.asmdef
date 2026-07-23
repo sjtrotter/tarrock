@@ -4,8 +4,10 @@
     "references": [
         "Tarrock.Core",
         "Tarrock.WorldState",
+        "Tarrock.Quests",
         "Tarrock.Regions",
         "Tarrock.Player",
+        "Tarrock.Companion",
         "Unity.InputSystem",
         "Unity.Cinemachine"
     ],
