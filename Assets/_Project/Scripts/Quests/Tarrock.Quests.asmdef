@@ -1,0 +1,17 @@
+{
+    "name": "Tarrock.Quests",
+    "rootNamespace": "Tarrock.Quests",
+    "references": [
+        "Tarrock.Core",
+        "Tarrock.WorldState"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
