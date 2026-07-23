@@ -101,7 +101,7 @@ doc had occasion to name them before this manifest. Two-handed grip throughout �
 | **HitReact** | Player-side hit reaction (impact flinch). Not to be confused with the Blanks' own defeat/fade (combat.md §Enemies: the Blanks — that's an enemy VFX/animation concern, out of scope here). | One-shot | No | P1 | `Hit_A` / `Hit_B` — exist in KayKit's General library, unused by any installer today. |
 | **Stagger** | A heavier, longer knockback reaction distinct from a light hit-react (implied by any real difficulty curve; not explicitly separately named in `combat.md` — flagged as inferred, not quoted canon). | One-shot | No | P2 | None distinct — `Hit_B` reused as the heavier of the two hit-reacts is the only candidate; flagged as a placeholder overlap, not a real second pose. |
 | **FoolsChanceFlourish** *(proposed name)* | combat.md §Defense: Fool's Chance is "the skill-expression centerpiece of combat" — a perfectly-timed dodge triggering ~1.5s slow motion and a free Present cast. The brief for this manifest calls out a dedicated "slow-time dodge flourish," i.e. a visually distinguished version of the dodge for this moment, not just the normal roll played at reduced timescale under the global slow-mo. **Flag:** `combat.md` does not currently specify a visually distinct Fool's Chance pose — this is a production ask this manifest is surfacing, not existing canon; whether Fool's Chance gets its own clip or stays "the normal dodge, but everything else is slow" is a director call, not decided here. | One-shot | No | P1 | None — no stand-in attempted; the current build (no combat layer yet) doesn't trigger this at all. |
-| **Defeat_Collapse / Defeat_NotYetRise** *(proposed names)* | combat.md §Pip establishes the canon mechanism for Pip specifically ("cannot die... yelps, retreats, shakes it off, returns... nothing in the Spread can truly end before `WS_DEATH_UNBOUND`"). **Flag, do not invent canon:** combat.md is silent on what happens when the *Fool's* health reaches zero — no doc states whether the Fool has a fail state at all, and if so whether it mirrors Pip's "can't truly end" rule or is a conventional game-over/reload. This manifest proposes two clips (a collapse, and a "not yet" rise consistent with the world's own can't-truly-end rule, per the brief) as a *production placeholder pairing* on the reasonable-but-unconfirmed assumption that the Fool's defeat state will lean on the same canon Pip already demonstrates — this needs a design decision in `combat.md` before it is treated as settled, not just an animation. | One-shot each | No | P2 | None. |
+| **Defeat_Collapse / Defeat_NotYetRise** | **Canon, decided** — `combat.md` §Defeat (the Fool at zero petals): stumble → one knee → fold down where they stand; Pip trots over matter-of-fact and licks the Fool's face (the defeat screen, allowed to be a little funny); fade; wake at the last Waystation, Rose regrown. Collapse is the fall; NotYetRise is the Waystation wake-up. Pairs with one `LickFace` clip on **Pip's** future set (not this manifest). | One-shot each | No | P1 (the defeat loop ships with combat) | None. |
 
 ---
 
@@ -193,8 +193,10 @@ scenework it doesn't own).*
   throughout production"); this manifest's three `LightString_*` clips assume the
   three-hit count `combat.md` currently states, but the *feel* of each hit (speed,
   reach, recovery) is not locked.
-- **Fool's own defeat/death behavior is undecided in canon** (see the
-  `Defeat_Collapse`/`Defeat_NotYetRise` row, Tier 2) — this needs a `combat.md`
+- **[Resolved]** The Fool's defeat behavior is now canon in `combat.md` §Defeat (fall →
+  Pip licks face → fade → Waystation wake; the Reading protects its own Fool). The
+  remaining note below predates that decision and is kept only for the clip-naming trail:
+  it originally needed a `combat.md`
   decision, not an animation decision, before those two clips are treated as more than
   a production placeholder guess.
 - **Focus stance's visual distinctness from the stealth crouch** (see the Focus row,

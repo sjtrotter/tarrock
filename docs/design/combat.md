@@ -100,7 +100,33 @@ canon: nothing in the Spread can truly end before `WS_DEATH_UNBOUND` (see
 invulnerability needs no in-fiction excuse after that state fires either; he is simply
 the one creature the Reading never intended to lose.
 
-## Fortune in combat
+## Defeat (the Fool at zero petals)
+
+Owns the player's defeat loop (decided with the director, 2026-07-23). The Fool cannot
+die, and the reason is the same one that protects Pip: **nothing in the Spread can truly
+end before `WS_DEATH_UNBOUND` — and the Fool, the world's own ending, can be delayed but
+never spent even after it.** The Reading protects its last card-turner. Defeat therefore
+plays as the world's rule, not a videogame convention:
+
+1. **The fall.** At zero petals the Fool stumbles, goes to one knee, and folds down where
+   they stand. No ragdoll, no death sting, no desaturation drama — a body that has been
+   told, gently, *not yet*.
+2. **Pip's beat.** Pip trots over — matter-of-fact, never performing concern (his canon
+   rule holds even here, `characters.md` §Pip) — and licks the Fool's face: a dog solving
+   a practical problem, exactly as unbothered as ever. This is the defeat screen. It
+   should be allowed to be a little funny every single time.
+3. **The fade and the return.** A brief fade over the lick; the Fool wakes at the last
+   Waystation rested at, White Rose regrown, Pip already beside them. No currency loss,
+   no corpse run, no penalty beyond the walk back (difficulty modes may adjust elsewhere;
+   the loop itself never changes).
+4. **One voice, rarely.** The Querent may remark on a defeat at most occasionally (a
+   rotating low-frequency pool, warm and dry, never scolding). Repeated defeats at the
+   same encounter go quiet rather than needling — the game does not rub it in.
+
+Boss-specific defeat barks (e.g. Mortimer's duel) may layer a line per `arcana.md`/quest
+scripts, but the loop above is invariant across the whole game. Animation surfaces:
+`Defeat_Collapse` and a wake-up rise on the Fool (see the Fool animation manifest), one
+`LickFace` interaction clip on Pip's set.
 
 Fortune is the single resource spent by Present-slot Trump powers; its meter size, exact
 costs, and out-of-combat earn sources (discovery, daring) are owned by
