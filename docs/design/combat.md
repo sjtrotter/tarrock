@@ -63,6 +63,15 @@ becomes camera-relative strafing. Focus is what separates *traveling* from *figh
   as **learned skills** rather than defaults — taught in the world (a move teacher or
   similar), not necessarily Trump-granted. Acquisition model: **TBD**, to be settled in
   [`progression.md`](progression.md) before any skill is gated.
+- **Climb-lite: TBD.** `GDD.md` §Traversal commits to "climb-lite" and `world.md` soft-
+  gates by "climbable but punishing ridges", but the mechanic itself is undecided
+  (punishing steep-slope traversal? stamina-limited scramble? Trump-gated?). Whatever
+  it becomes, it must not break the terrain grammar: **true cliffs always refuse**
+  (`art-audio.md` swap rule 5) — climb-lite applies to the punishing-slope band between
+  walkable and refused, never to sheer faces. Free-climbing (climb-anything) is ruled
+  out; it would dissolve every geographic gate in `world.md`. Scripted climbs (the
+  Emperor colossus, taught in miniature in MQ04) are set-pieces, not this verb. Until
+  decided, the build's controller slope limit stands in for the walkable/punishing line.
 
 ## Defense
 

@@ -9,7 +9,9 @@
         "Tarrock.Player",
         "Tarrock.Companion",
         "Unity.InputSystem",
-        "Unity.Cinemachine"
+        "Unity.Cinemachine",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Core.Runtime"
     ],
     "includePlatforms": [
         "Editor"

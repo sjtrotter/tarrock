@@ -89,9 +89,14 @@ One paragraph each — enough to brief a quest writer or a greybox. Full sensory
 art detail belongs to [`art-audio.md`](art-audio.md) and the quest docs.
 
 - **The Cliff (0):** A high meadow plateau at the world's broken edge, scattered with
-  the campsites of Fools long gone. Tutorial space: sealed from the Spread by sheer
-  drop; exit is the leap of faith. Contains the first Waystation and the game's thesis
-  in miniature — one tree here is the only thing on the plateau that visibly *dies*.
+  the campsites of Fools long gone. Tutorial space: an **island in a sea of cloud** —
+  sealed from the Spread by sheer drop on every side, the drop lost in a bright,
+  motionless cloud deck below the lip; the sanctioned exit is the leap of faith.
+  An unscripted fall from any other edge is just a defeat (`combat.md` §Defeat — Pip,
+  lick, Waystation); no other landing exists. Contains the first Waystation and the
+  game's thesis in miniature — one tree here is the only thing on the plateau that
+  visibly *dies*. (Deferred idea, not current canon: a late-game callback vantage
+  where the Spread is finally visible from this height — revisit at MQ19+.)
 - **The Prestige (I):** A carnival that has been mid-performance for 300 years. Tents
   like cathedral naves, an audience that cannot leave its seats, popcorn older than
   nations. Warm, gaslit, uncanny. Intended first region.
