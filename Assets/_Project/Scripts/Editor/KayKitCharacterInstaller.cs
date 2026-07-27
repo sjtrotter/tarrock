@@ -182,9 +182,11 @@ namespace Tarrock.Editor
         // Locomotion clip families that must loop; dodges and one-shots stay as imported.
         private static readonly string[] LoopingFamilies = { "idle", "walk", "run", "strafe", "sneak", "crouch" };
 
-        // -- Diorama scale contract (art-audio.md §Current build, swap rule 3): the playable Fool is
-        // sized to the scene's decorative seated Rogue, 0.30. This is the director's in-scene choice.
-        private const float VisualScale = 0.30f;
+        // -- Scale contract (art-audio.md §Current build, swap rule 3): 1 unit = 1 metre and the Fool
+        // is human-scale. The mesh multiplier is DERIVED from this target against the model's measured
+        // bounds, not hard-coded, so swapping the character model cannot silently change player size.
+        // (Superseded the 0.30 diorama multiplier when the hex module was retired, 2026-07-25.)
+        private const float PlayerTargetHeight = 1.7f;
 
         // -- Spawn: open ground by the camp, facing the funnel corridor (south, −Z).
         private static readonly Vector3 SpawnPosition = new Vector3(10f, 0f, -9f);
@@ -209,28 +211,7 @@ namespace Tarrock.Editor
         [MenuItem("Tarrock/Setup/Install KayKit Fool In Hex Scene")]
         public static void Install()
         {
-            if (AssetImporter.GetAtPath(CharacterModelPath) is not ModelImporter)
-            {
-                Debug.LogError($"[Tarrock] KayKit Rogue_Hooded FBX not found at {CharacterModelPath}; aborting.");
-                return;
-            }
-
-            EnsurePlayerTag();
-
-            Avatar avatar = ConfigureCharacterModel();
-            foreach (string path in AnimationLibraryPaths)
-            {
-                ConfigureAnimationLibrary(path, avatar);
-            }
-
-            bool animatorReady = BuildAnimatorController();
-            if (!animatorReady)
-            {
-                Debug.LogError("[Tarrock] RogueKayKit.controller was not built; aborting scene install.");
-                return;
-            }
-
-            InstallIntoScene();
+            InstallInto(ScenePath, SpawnPosition, SpawnFacing);
         }
 
         /// <summary>
@@ -916,19 +897,50 @@ namespace Tarrock.Editor
         // 3. Scene install (rig + camera + colliders + set-dressing rename)
         // ---------------------------------------------------------------------------------
 
-        private static void InstallIntoScene()
+        /// <summary>
+        /// Prepares the shared model/animator assets, then installs the Fool rig + orbit camera into
+        /// <paramref name="scenePath"/> at <paramref name="spawnHint"/> (grounded by raycast).
+        /// Public so terrain-built regions (<see cref="TerrainRegionGenerator"/>) reuse the exact same
+        /// rig rather than growing a second, drifting copy of it.
+        /// </summary>
+        public static void InstallInto(string scenePath, Vector3 spawnHint, Vector3 facingDir)
         {
-            if (!File.Exists(ScenePath))
+            if (AssetImporter.GetAtPath(CharacterModelPath) is not ModelImporter)
             {
-                Debug.LogError($"[Tarrock] Sandbox scene missing at {ScenePath}; cannot install the rig.");
+                Debug.LogError($"[Tarrock] KayKit Rogue_Hooded FBX not found at {CharacterModelPath}; aborting.");
+                return;
+            }
+
+            EnsurePlayerTag();
+
+            Avatar avatar = ConfigureCharacterModel();
+            foreach (string path in AnimationLibraryPaths)
+            {
+                ConfigureAnimationLibrary(path, avatar);
+            }
+
+            if (!BuildAnimatorController())
+            {
+                Debug.LogError("[Tarrock] RogueKayKit.controller was not built; aborting scene install.");
+                return;
+            }
+
+            InstallIntoScene(scenePath, spawnHint, facingDir);
+        }
+
+        private static void InstallIntoScene(string scenePath, Vector3 spawnHint, Vector3 facingDir)
+        {
+            if (!File.Exists(scenePath))
+            {
+                Debug.LogError($"[Tarrock] Scene missing at {scenePath}; cannot install the rig.");
                 return;
             }
 
             // Operate on the already-open scene when possible (avoids a reload); else open it.
             UnityEngine.SceneManagement.Scene scene = EditorSceneManager.GetActiveScene();
-            if (scene.path != ScenePath)
+            if (scene.path != scenePath)
             {
-                scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+                scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
             }
 
             RenameDecorativeRogue(scene);
@@ -946,8 +958,8 @@ namespace Tarrock.Editor
 
             InputActionReference lookReference = FindActionReference(InputAssetPath, LookActionName);
 
-            Vector3 spawn = ResolveGroundedSpawn();
-            Quaternion facing = Quaternion.LookRotation(SpawnFacing, Vector3.up);
+            Vector3 spawn = ResolveGroundedSpawn(spawnHint);
+            Quaternion facing = Quaternion.LookRotation(facingDir, Vector3.up);
 
             GameObject playerRig = BuildPlayerRig(spawn, facing, inputAsset, out float visualHeight);
             GameObject mainCamera = BuildCameraRig(playerRig.transform, lookReference, visualHeight);
@@ -969,12 +981,12 @@ namespace Tarrock.Editor
             }
 
             EditorSceneManager.MarkSceneDirty(scene);
-            EditorSceneManager.SaveScene(scene, ScenePath);
+            EditorSceneManager.SaveScene(scene, scenePath);
             AssetDatabase.SaveAssets();
 
             Debug.Log(
-                $"[Tarrock] KayKit Fool installed into {ScenePath}: '{PlayerRootName}' at {spawn} " +
-                $"(height {visualHeight:F2}m, scale {VisualScale}) + '{CameraRootName}' orbit camera, " +
+                $"[Tarrock] KayKit Fool installed into {scenePath}: '{PlayerRootName}' at {spawn} " +
+                $"(height {visualHeight:F2}m, target {PlayerTargetHeight}m) + '{CameraRootName}' orbit camera, " +
                 $"{colliders} terrain/rampart collider(s)" +
                 (lookReference != null ? ", Look wired." : ", Look reference NOT found (camera look inert)."));
         }
@@ -1074,12 +1086,16 @@ namespace Tarrock.Editor
 
             var controller = playerRig.AddComponent<CharacterController>();
             controller.height = visualHeight;
-            controller.radius = Mathf.Min(0.16f, visualHeight * 0.28f);
+            // Ratios, not absolutes: at the human-scale target these give r ≈ 0.31 m and a 0.37 m step,
+            // so the Fool clears sculpted terraces and stair-sized ground without catching. (The old
+            // Mathf.Min(0.16/0.18) caps existed to bound the 0.7 m diorama player; at 1.7 m they would
+            // pin a human to a toy's radius and a 0.18 m step he could not walk up.)
+            controller.radius = visualHeight * 0.18f;
             controller.center = new Vector3(0f, visualHeight * 0.5f, 0f);
-            controller.stepOffset = Mathf.Min(0.18f, visualHeight * 0.28f);
-            // Unity's default 0.08 m skin is ~half this miniature controller's radius — it rests the
-            // capsule that far above the ground. Shrink it, then drop the Visual by exactly that skin so
-            // the boots meet the true ground contact (FIX 3 — hero zero).
+            controller.stepOffset = visualHeight * 0.22f;
+            // Unity's default 0.08 m skin rests the capsule that far above the ground. Keep it at a
+            // tenth of the radius, then drop the Visual by exactly that skin so the boots meet the true
+            // ground contact (FIX 3 — hero zero).
             controller.skinWidth = controller.radius * 0.1f;
             DropVisualBySkin(playerRig.transform, controller.skinWidth);
 
@@ -1108,7 +1124,7 @@ namespace Tarrock.Editor
         }
 
         /// <summary>
-        /// Builds the "Visual" child from Rogue_Hooded at the diorama scale (0.30), facing +Z (KayKit
+        /// Builds the "Visual" child from Rogue_Hooded at human scale, facing +Z (KayKit
         /// authors the model facing +Z, matching PlayerMotor's forward), wires the RogueKayKit
         /// controller, and disables the weapon attachment props. Returns the Animator and the visual's
         /// measured world height so the caller can size the CharacterController + camera to it.
@@ -1121,9 +1137,24 @@ namespace Tarrock.Editor
             visual.transform.SetParent(parent, false);
             visual.transform.localPosition = Vector3.zero; // model origin at feet → controller bottom
             visual.transform.localRotation = Quaternion.identity; // KayKit faces +Z
-            visual.transform.localScale = Vector3.one * VisualScale;
 
             DisableAttachmentProps(visual);
+
+            // Derive the mesh multiplier from the measured model so PlayerTargetHeight is the single
+            // source of truth for player size (scale rule 3). Measure at 1:1, then scale to target.
+            // (MeasureHeight's no-renderer fallback returns PlayerTargetHeight, so the degenerate case
+            // must be detected here, on the renderers themselves, not inferred from the measurement.)
+            bool measurable = visual.GetComponentsInChildren<Renderer>().Length > 0;
+            visual.transform.localScale = Vector3.one;
+            float visualScale = measurable ? PlayerTargetHeight / MeasureHeight(visual) : 1f;
+            if (!measurable)
+            {
+                Debug.LogWarning(
+                    $"[Tarrock] Could not measure '{CharacterModelPath}' bounds; player left at 1:1 " +
+                    "instead of the human-scale target. Check the model's renderers.");
+            }
+
+            visual.transform.localScale = Vector3.one * visualScale;
             visualHeight = MeasureHeight(visual);
             AlignFeetToOrigin(visual, parent);
 
@@ -1218,7 +1249,7 @@ namespace Tarrock.Editor
             Renderer[] renderers = visual.GetComponentsInChildren<Renderer>();
             if (renderers.Length == 0)
             {
-                return VisualScale; // degenerate fallback
+                return PlayerTargetHeight; // degenerate fallback — keeps the controller sanely sized
             }
 
             Bounds bounds = renderers[0].bounds;
@@ -1231,24 +1262,29 @@ namespace Tarrock.Editor
         }
 
         // Raycast down onto the freshly added terrain colliders so the rig's feet land on the ground.
-        private static Vector3 ResolveGroundedSpawn()
+        // Drops from well above the hint so it lands on sculpted Terrain as readily as on hex tiles;
+        // the cast range is generous because terrain relief puts far more air under a spawn than a
+        // tile floor ever did.
+        private static Vector3 ResolveGroundedSpawn(Vector3 spawnHint)
         {
-            var origin = new Vector3(SpawnPosition.x, SpawnPosition.y + 20f, SpawnPosition.z);
-            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 60f))
+            var origin = new Vector3(spawnHint.x, spawnHint.y + 200f, spawnHint.z);
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 500f))
             {
-                return new Vector3(SpawnPosition.x, hit.point.y + 0.02f, SpawnPosition.z);
+                return new Vector3(spawnHint.x, hit.point.y + 0.02f, spawnHint.z);
             }
 
-            Debug.LogWarning("[Tarrock] Spawn ground raycast missed; using y=0.05 fallback.");
-            return new Vector3(SpawnPosition.x, 0.05f, SpawnPosition.z);
+            Debug.LogWarning(
+                $"[Tarrock] Spawn ground raycast missed at {spawnHint.x},{spawnHint.z}; using the hint's own Y.");
+            return new Vector3(spawnHint.x, spawnHint.y + 0.05f, spawnHint.z);
         }
 
         // ---------------------------------------------------------------------------------
-        // 3c. Camera rig (Cinemachine 3.x) — offsets scaled to the diorama-sized player
+        // 3c. Camera rig (Cinemachine 3.x) — offsets expressed as ratios of player height
         // ---------------------------------------------------------------------------------
 
-        // Feel ratios lifted from PlayerRigInstaller's playtest-tuned human rig (offset ≈ 0.78×height,
-        // radius ≈ 2.8×height) and applied to this scene's ~0.70m player so framing matches.
+        // Feel ratios from PlayerRigInstaller's playtest-tuned rig, since re-tuned in CliffHex (pivot at
+        // head, pulled back). Because they are ratios of playerHeight, the human-scale change carries
+        // the same framing through automatically — only the absolute distances grow.
         private static GameObject BuildCameraRig(
             Transform followTarget, InputActionReference lookReference, float playerHeight)
         {
@@ -1311,9 +1347,20 @@ namespace Tarrock.Editor
         {
             System.Type urpDataType = System.Type.GetType(
                 "UnityEngine.Rendering.Universal.UniversalAdditionalCameraData, Unity.RenderPipelines.Universal.Runtime");
-            if (urpDataType != null && cameraGo.GetComponent(urpDataType) == null)
+            if (urpDataType == null)
             {
-                cameraGo.AddComponent(urpDataType);
+                return;
+            }
+
+            Component data = cameraGo.GetComponent(urpDataType) ?? cameraGo.AddComponent(urpDataType);
+
+            // Post-processing ON at the camera (the scene's PostVolume is inert without it — the
+            // 2026-07-26 audit found builds shipping raw untonemapped shader output) + SMAA.
+            var urpData = data as UnityEngine.Rendering.Universal.UniversalAdditionalCameraData;
+            if (urpData != null)
+            {
+                urpData.renderPostProcessing = true;
+                urpData.antialiasing = UnityEngine.Rendering.Universal.AntialiasingMode.SubpixelMorphologicalAntiAliasing;
             }
         }
 

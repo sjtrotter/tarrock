@@ -41,33 +41,54 @@ time for what matters; they are not a poverty plan):
   is multiple beings (the Lovers). The 21 Arcana are the game's art budget's first
   priority, and each is iterated until it could carry a poster.
 
-## Current build: stand-in art (playtest phase)
+## Current build: sculpted terrain, stand-in characters (playtest phase)
 
-**Status (blessed 2026-07-15): all 3D art in playable builds is CC0 stand-in art**,
-adopted deliberately so playtesting can start now. It is not the final direction — the
-Visual pillars above remain the target — and every system is built assuming this art
-gets swapped.
+**Status (blessed 2026-07-25, superseding the 2026-07-15 hex-diorama call):** the world
+is built as **continuous sculpted terrain at human scale**, authored in-engine; only
+**characters** remain CC0 stand-in art. The Visual pillars above remain the target, and
+every system is built assuming character art gets swapped.
 
-The stand-in family is the **KayKit hex-diorama set** (single author, so it reads as one
-style): Medieval Hexagon terrain, Adventurers 2.0 baked-outfit characters, Character
-Animations 1.1 (161 clips on the shared Rig_Medium), Forest Nature dressing — plus
-legacy Quaternius/Kenney pieces where already vendored. Licenses in
-`THIRD-PARTY-NOTICES.md`. Chosen because: baked outfits eliminate the clothing-clipping
-class of problems; hex-tile terrain makes every region read as a **diorama on a table**,
-which rehearses the map-as-cards conceit for free; and the whole family is CC0.
+**Why the hex module was dropped.** The tile kit read as a *diorama on a table*, which
+was chosen to rehearse the map-as-cards conceit for free. It cost more than it bought: a
+4 m tile module cannot author the breathing path rule 6 below already demanded — no
+terraces reached by ramps, no ridge heights that rise and fall, no pinch points. The
+conceit is better served where it belongs, at the map layer (the Spread as a dealt
+layout, region silhouettes, distant framing) than underfoot. The ground the player walks
+on should feel like a place, not a board.
 
-**Swap discipline — the rules that make the art replaceable:**
+**What the world is made of:**
+
+- **Terrain: Unity Terrain, one per region scene** — heightmap-sculpted, no tile kit.
+  Regions stay **discrete authored scenes with gating boundaries**; Tarrock is not a
+  seamless streamed landmass, and smooth terrain must not be read as license to build
+  one. Overhangs and true refusing cliffs are separate meshes — Terrain heightmaps
+  cannot overhang.
+- **Ground material: procedural Shader Graph** — triplanar noise with slope and height
+  blending into color ramps, not tiling photo-splats. This reads painterly by default
+  (Visual pillar 1), needs no texture assets, and makes the bound/unbound state swap a
+  shader-parameter change rather than a second texture set across 22 regions.
+- **Foliage, rocks, props: authored in-house** (Blender, or ProBuilder/Polybrush
+  in-editor). Low-poly meshes with hand-painted or procedural surfacing are the *target*
+  direction per `art-bible.md`, so this work is banked, not thrown away.
+- **Characters: CC0 stand-ins remain** (Quaternius/Kenney/KayKit pieces already
+  vendored; licenses in `THIRD-PARTY-NOTICES.md`). Rigged, animated humanoids are the
+  one gap in-house authoring should not fill yet: the 21 Arcana are the art budget's
+  first priority (`art-bible.md` §Production standards), and that budget is not spent on
+  mooks or scenery.
+
+**Swap discipline — the rules that keep the art replaceable:**
 
 1. **No content may depend on stand-in geometry.** Layout, gating, and mood facts live
    in `world.md`; quests and code reference marker IDs and definitions, never a
    particular mesh or its dimensions.
 2. **Asset references live only in definitions/installers** (per `technical.md`'s
    data-driven rule). Gameplay code never names an art asset inline.
-3. **Scale contract** (survives any swap): one hex ≈ 4 m flat-to-flat; the player is a
-   **game-piece miniature** at ≈ 18% of hex width (~0.7 m against a 4 m hex — the
-   director-calibrated figurine read, sized to walk under the wayside-stall canopy);
-   human-usable props are tagged `PropHumanScale` and sized relative to the player,
-   terrain furniture is sized to the diorama.
+3. **Scale contract: 1 unit = 1 metre, everywhere.** The player is human-scale at
+   **≈ 1.7 m**, transforms applied, origin at the base — the same rule `art-bible.md`
+   §Production standards already sets for target assets. Human-usable props are tagged
+   `PropHumanScale` and sized to the player; terrain features are sized to the space
+   they describe. (The former miniature/game-piece contract — player ≈ 0.7 m against a
+   4 m hex — is retired with the hex module.)
 4. **Animation contract**: gameplay addresses animations by logical state (Idle, Walk,
    Run, Dodge, Dig, Sit…) through the Animator; which clip asset fills a state is an
    installer concern, swappable per rig.

@@ -27,7 +27,8 @@ namespace Tarrock.Editor
         private const string PlayerRootName = "PlayerRig";
         private const string VisualName = "Visual";
 
-        // Small dog on the 0.7 m game-piece miniature (art-audio.md scale contract).
+        // Small scrappy dog at human scale (art-audio.md swap rule 3, 1 u = 1 m): ~0.35 m at the
+        // haunch is a real Shiba beside the 1.7 m Fool.
         private const float ControllerHeight = 0.35f;
         private const float ControllerRadius = 0.18f;
         private const float SideOffset = 0.5f; // spawn beside the Fool, not inside him

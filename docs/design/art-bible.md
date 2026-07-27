@@ -12,10 +12,11 @@ personality by [`characters.md`](characters.md); fight design by
 [`arcana.md`](arcana.md); influences by [`../GDD.md`](../GDD.md); engine conventions by
 [`technical.md`](technical.md).
 
-**Status note.** Playable builds currently use CC0 stand-in art under the swap
-discipline in `art-audio.md` §Current build — including its scale contract (the
-player as game-piece miniature against hex-diorama terrain). This bible describes the
-**target** art the stand-ins will be swapped for. Where a target decision is still
+**Status note.** Playable builds currently use CC0 stand-in art **for characters**
+under the swap discipline in `art-audio.md` §Current build; terrain, foliage, and
+props are authored in-house at human scale (1 unit = 1 m), so that work is already
+target art rather than stand-in. This bible describes the **target** art the character
+stand-ins will be swapped for. Where a target decision is still
 open (final character proportions, texture pipeline), it is marked TBD rather than
 guessed — those calls belong to the in-progress character-art direction pass.
 
@@ -217,8 +218,8 @@ art direction). Boss animation sets are budgeted per Arcana in `arcana.md`.
 - **Modularity (hero assets):** hair, equipment, and accessories are separate
   meshes; one material per logical surface, no orphan material slots.
 - **Scale:** 1 unit = 1 meter in Blender and Unity alike, transforms applied,
-  origin at the base. (World assembly currently obeys the stand-in scale contract
-  in `art-audio.md` — hex module, miniature player read — until the swap.)
+  origin at the base. The player is human-scale at ≈ 1.7 m; world assembly obeys
+  the same contract (`art-audio.md` §Current build, rule 3).
 - **Proportions: TBD.** Head-count and stylization degree are locked by the pending
   character-art direction pass, not this document. Until then, match the direction
   of whatever bespoke character ships first, and keep rigs Humanoid-compatible so
@@ -228,6 +229,11 @@ art direction). Boss animation sets are budgeted per Arcana in `arcana.md`.
 
 ### Environments & props
 
+- **Landform silhouette benchmark (the gate for "region terrain done"):** render the
+  region flat black at gameplay camera distance from the spawn point and its three
+  main vantages. The skyline must show one dominant designed shape (and read as this
+  region's card and no other's); if it is an undifferentiated band of noise, the
+  terrain is not done — the same shape-first gate characters pass, applied to ground.
 - Kit pieces obey the region's card geometry (shape-language leak rule) and the
   suit craft-motif rule for anything made by hands.
 - Human-usable props are sized to people and tagged per the prop-scale rule in
