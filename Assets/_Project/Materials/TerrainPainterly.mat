@@ -17,7 +17,8 @@ Material:
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap: {}
+  stringTagMap:
+    RenderType: Opaque
   disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
@@ -26,31 +27,87 @@ Material:
     m_Ints: []
     m_Floats:
     - _AmbientBoost: 1
-    - _GrassBias: 0.3
-    - _GrassDryAmount: 1.8
-    - _GrassGrain: 0.06
-    - _GrassHueScale: 26
-    - _GrassMacroAmount: 0.55
-    - _GrassMacroScale: 34
-    - _GrassMesoAmount: 0.7
-    - _GrassMesoScale: 4.5
-    - _GrassMicroScale: 0.55
-    - _GrassVariation: 11
+    - _BedFormRate: 0.34
+    - _BedValueJitter: 0.09
+    - _BeddingDarken: 0.36
+    - _BeddingLineWidth: 0.085
+    - _BeddingLip: 0.2
+    - _BeddingRough: 0.22
+    - _BeddingSlopeEnd: 48
+    - _BeddingSlopeStart: 35
+    - _BeddingSpacing: 2.6
+    - _BeddingWarp: 0.55
+    - _BeddingWidthJitter: 0.6
+    - _BlendFieldScale: 14
+    - _CavityContrast: 4.5
+    - _CavityDarken: 0.34
+    - _CavityGroundDarken: 0.16
+    - _CavityScale: 3.4
+    - _CliffEnd: 0.7243626
+    - _CliffStart: 0.5
+    - _CrevasseDarken: 0.42
+    - _CrevasseScale: 2.9
+    - _CrevasseWidth: 0.045
+    - _DetailFadeRange: 28
+    - _DetailFadeStart: 10
     - _HeightHigh: 48
     - _HeightLow: 8
-    - _RockVariation: 5
-    - _ShadeWrap: 0.3
-    - _SlopeEnd: 0.62
-    - _SlopeStart: 0.3
-    - _StrataScale: 5.5
-    - _StrataStrength: 0.18
+    - _MeadowCoolAmount: 0.7
+    - _MeadowDabEdge: 0.1
+    - _MeadowDabScale: 6
+    - _MeadowDabWarp: 0.55
+    - _MeadowFineScale: 0.95
+    - _MeadowFineStraw: 0.28
+    - _MeadowFineTone: 0.16
+    - _MeadowGrain: 0.13
+    - _MeadowGrainScale: 0.34
+    - _MeadowHueScale: 21
+    - _MeadowMacroScale: 38
+    - _MeadowScuffAmount: 0.55
+    - _MeadowStrawAmount: 0.85
+    - _NormalDetailFadeRange: 55
+    - _NormalDetailFadeStart: 45
+    - _NormalDetailHeight: 0.3
+    - _NormalDetailStrength: 1
+    - _RockBedTint: 0.55
+    - _RockLichenAmount: 0.4
+    - _RockMottleScale: 6.5
+    - _ShadeWrap: 0.4
+    - _SlopeEnd: 0.35721236
+    - _SlopeJitter: 0.13
+    - _SlopeStart: 0.18084794
+    - _StrataLineWidth: 0.11
+    - _StrataRough: 1.1
+    - _StrataRoughScale: 2.2
+    - _StrataScale: 3.4
+    - _StrataStrength: 0.42
+    - _StrataWander: 6.5
+    - _TurfAmount: 0.78
+    - _TurfContact: 0.2
+    - _TurfFeatherDeg: 8
+    - _TurfFeatherM: 6
+    - _TurfHeightHigh: 52
+    - _TurfHeightLow: 13
+    - _TurfPatchScale: 22.222221
+    - _TurfScale: 2.8
+    - _TurfScourAmount: 0.85
+    - _TurfScourScale: 9.5
+    - _TurfSteepMax: 24
     m_Colors:
     - _AmbientFloor: {r: 0.1, g: 0.11, b: 0.14, a: 1}
-    - _CliffColor: {r: 0.29, g: 0.3, b: 0.34, a: 1}
-    - _GrassDry: {r: 0.56, g: 0.48, b: 0.24, a: 1}
-    - _GrassHigh: {r: 0.58, g: 0.62, b: 0.3, a: 1}
-    - _GrassLow: {r: 0.24, g: 0.33, b: 0.18, a: 1}
-    - _RockColor: {r: 0.5, g: 0.44, b: 0.35, a: 1}
+    - _BeddingDip: {r: 0.06, g: 0, b: -0.045, a: 0}
+    - _CliffColor: {r: 0.3, g: 0.31, b: 0.35, a: 1}
+    - _MeadowCool: {r: 0.27, g: 0.35, b: 0.36, a: 1}
+    - _MeadowGreen: {r: 0.28, g: 0.36, b: 0.2, a: 1}
+    - _MeadowScuff: {r: 0.42, g: 0.32, b: 0.21, a: 1}
+    - _MeadowStraw: {r: 0.66, g: 0.58, b: 0.31, a: 1}
+    - _RockCool: {r: 0.4, g: 0.41, b: 0.45, a: 1}
+    - _RockLichen: {r: 0.35, g: 0.4, b: 0.26, a: 1}
+    - _RockWarm: {r: 0.56, g: 0.51, b: 0.42, a: 1}
     - _ShadowTint: {r: 0.8, g: 0.88, b: 1.06, a: 1}
+    - _StrataAxis: {r: 0.62, g: 1, b: -0.4, a: 0}
+    - _TurfBlade: {r: 0.25, g: 0.33, b: 0.19, a: 1}
+    - _TurfOchre: {r: 0.5, g: 0.42, b: 0.23, a: 1}
+    - _TurfSoil: {r: 0.17, g: 0.2, b: 0.13, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

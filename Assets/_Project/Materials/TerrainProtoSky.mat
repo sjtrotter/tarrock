@@ -25,11 +25,47 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _Exponent: 1.25
+    - _BandCount: 7
+    - _BandSoftness: 0.22
+    - _BandStrength: 0.3
+    - _BankBodyDepth: 0.024
+    - _BankDissolve: 0.034
+    - _BankFade: 0.042
+    - _BankFloor: -0.012
+    - _BankGapEnd: 0.46
+    - _BankGapStart: 0.36
+    - _BankHeight: 0.02
+    - _BankLumpScale: 5
+    - _BankRelief: 0.045
+    - _BankRimWidth: 0.006
+    - _Dither: 0.0035
+    - _GlowBroad: 0.22
+    - _GlowBroadPower: 8
+    - _GlowCore: 0.55
+    - _GlowCorePower: 120
+    - _GlowFalloff: 7
+    - _HazeDepth: 0.09
     - _HorizonHeight: 0
+    - _MidHeight: 0.44
+    - _VaultCloudBase: 0.22
+    - _VaultCloudLump: 0.09
+    - _VaultCloudSoftness: 0.03
     m_Colors:
-    - _GroundColor: {r: 0.44, g: 0.41, b: 0.35, a: 1}
-    - _HorizonColor: {r: 0.8, g: 0.7, b: 0.5, a: 1}
-    - _ZenithColor: {r: 0.34, g: 0.44, b: 0.6, a: 1}
+    - _BankCrestColor: {r: 1.02, g: 0.97, b: 0.87, a: 1}
+    - _BankShadeColor: {r: 0.5, g: 0.53, b: 0.65, a: 1}
+    - _HazeColor: {r: 0.9, g: 0.85, b: 0.74, a: 1}
+    - _HorizonColor: {r: 0.92, g: 0.82, b: 0.62, a: 1}
+    - _MidColor: {r: 0.58, g: 0.62, b: 0.69, a: 1}
+    - _SunDirection: {r: -0.4659722, g: 0.12186935, b: 0.8763663, a: 0}
+    - _SunGlowColor: {r: 1, g: 0.84, b: 0.58, a: 1}
+    - _VaultCloud0: {r: 288, g: 12, b: 20, a: 0.94}
+    - _VaultCloud1: {r: 358, g: 8.5, b: 8, a: 0.72}
+    - _VaultCloud2: {r: 234, g: 25, b: 24, a: 0.26}
+    - _VaultCloud3: {r: 77, g: 9.5, b: 18, a: 0.82}
+    - _VaultCloud4: {r: 36, g: 6.5, b: 13, a: 0.66}
+    - _VaultCloudLit: {r: 1.02, g: 0.97, b: 0.87, a: 1}
+    - _VaultCloudShade: {r: 0.52, g: 0.57, b: 0.71, a: 1}
+    - _VaultCloudShadow: {r: 0.19, g: 0.23, b: 0.35, a: 1}
+    - _ZenithColor: {r: 0.2, g: 0.32, b: 0.54, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: TussockClump
+  m_Shader: {fileID: 4800000, guid: a1bdb2c2ed3c2a9c4a2958537866d818, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _AmbientBoost: 1
+    - _BaseBlend: 0.62
+    - _BaseBlendHeight: 0.5
+    - _BendCoreShare: 0.5
+    - _BendHeightRange: 1.8
+    - _BendStrength: 0.9
+    - _CombDrift: 0.05
+    - _CombFold: 0.35
+    - _CombHollowLean: 0.34
+    - _CombLean: 0.24
+    - _CombWanderDegrees: 14
+    - _CombWanderLength: 46
+    - _DryBias: 0.55
+    - _FadeEnd: 130
+    - _FadeMinScale: 0.1
+    - _FadeStart: 90
+    - _PatchScale: 18
+    - _RootDarken: 0.86
+    - _ShadeWrap: 0.5
+    - _SwaySpeed: 0.85
+    - _SwayStrength: 0.11
+    - _SwayWavelength: 14
+    - _TuftHeight: 0.75
+    - _TuftVariation: 0.5
+    - _ValueVariation: 0.16
+    - _WidenEnd: 70
+    - _WidenMax: 1.6
+    - _WidenStart: 22
+    - _WindResponse: 2.5
+    m_Colors:
+    - _BaseColor: {r: 0.4, g: 0.42, b: 0.24, a: 1}
+    - _CoolColor: {r: 0.26, g: 0.42, b: 0.36, a: 1}
+    - _DryColor: {r: 0.68, g: 0.58, b: 0.31, a: 1}
+    - _GroundColor: {r: 0.2305, g: 0.28800002, b: 0.1685, a: 1}
+    - _GroundDryColor: {r: 0.5, g: 0.42, b: 0.23, a: 1}
+    - _WindAxis: {r: 1, g: 0.35, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

@@ -44,15 +44,25 @@ namespace Tarrock.Editor
         private const string SkyMaterialPath = MaterialDir + "/TerrainProtoSky.mat";
         private const string PostProfilePath = "Assets/_Project/Art/TerrainProtoPost.asset";
         private const string CloudMaterialPath = MaterialDir + "/CloudSea.mat";
+        private const string CloudDeckMeshPath = "Assets/_Project/Art/CloudSeaDeck.asset";
+        private const string CloudLobeMaterialPath = MaterialDir + "/CloudLobes.mat";
+        private const string CloudLobeMeshPathFormat = "Assets/_Project/Art/CloudLobeMass{0}.asset";
         private const string DeadTreeMeshPath = "Assets/_Project/Art/DeadTree.asset";
         private const string DeadTreeMaterialPath = MaterialDir + "/DeadTreeBark.mat";
         private const string TuftMeshPath = "Assets/_Project/Art/GrassTuft.asset";
         private const string TuftMaterialPath = MaterialDir + "/GrassTuft.mat";
         private const string TuftPrefabPath = "Assets/_Project/Art/GrassTuft.prefab";
         private const string MoteMaterialPath = MaterialDir + "/SuspendedMotes.mat";
+        private const string RockMeshPathFormat = "Assets/_Project/Art/RockOutcrop{0}.asset";
+        private const string RockMaterialPath = MaterialDir + "/RockOutcrop.mat";
+        private const string TussockMeshPathFormat = "Assets/_Project/Art/TussockClump{0}.asset";
+        private const string TussockMaterialPath = MaterialDir + "/TussockClump.mat";
         private const string TerrainDataPath = "Assets/_Project/Art/TerrainProto.asset";
         private const string TerrainDataDir = "Assets/_Project/Art";
         private const string ShaderName = "Tarrock/TerrainPainterly";
+        private const string RockShaderName = "Tarrock/RockPainterly";
+        private const string TuftShaderName = "Tarrock/GrassTuft";
+        private const string CloudLobeShaderName = "Tarrock/CloudLobe";
 
         // -- Terrain dimensions. 256 m square is sized to CONTENT, not footprint (swap rule 6): it is
         //    roughly a two-minute walk end to end at the Fool's travel jog, which is the scale a
@@ -80,6 +90,10 @@ namespace Tarrock.Editor
         // -- The tree knoll's summit (see SampleHeight step 6c and BuildDeadTree).
         private static readonly Vector2 KnollCentre = new Vector2(150f, 58f);
         private static readonly Vector3 SpawnFacing = Vector3.left;
+
+        // -- The grass tuft prototypes now live in the Species table beside BuildGrassDetails: each
+        //    species owns its own mesh height, blade count and asset paths, because round 1's single
+        //    shared tuft is exactly what made the meadow read as one silhouette everywhere.
 
         [MenuItem("Tarrock/Setup/Generate Terrain Prototype Region")]
         public static void Generate()
@@ -112,12 +126,33 @@ namespace Tarrock.Editor
             terrain.drawInstanced = false;
             terrain.heightmapPixelError = 1f;   // LOD must not eat 8-sample creases (audit finding 11)
             terrain.basemapDistance = 220f;
+            // Terrain must cast: ridge shadows are half of how elevation signposts the path (rule 5),
+            // and at BuildLighting's 7° sun they are most of how the landform reads at all.
+            //
+            // THIS FLAG IS NOT ENOUGH ON ITS OWN, and the 2026-07-31 audit is the proof: round1/v1,v2
+            // were shot with it already set and with Tarrock/TerrainPainterly already carrying a
+            // ShadowCaster pass, yet the critic measured no lit-crest-against-shadowed-trough
+            // anywhere in the meadow. The shadows were being cast and then thrown away at 40 m,
+            // because GauntletCapture pins quality level "PC" and that level's shadow settings —
+            // ProjectSettings/QualitySettings.asset, NOT Assets/Settings/PC_RPAsset.asset — carried
+            // shadowDistance 40 and 2 cascades while the RP asset carried 180 and 4. Everything past
+            // the Fool's own feet was outside the last cascade. Round 2 brings the quality level up
+            // to match the RP asset (180 m, 4 cascades, VeryHigh, split {0.05, 0.16, 0.42}) and
+            // raises the main-light shadowmap to 4096 so a 7° sun's long thin shadows survive the
+            // far cascade. If terrain self-shadowing ever goes flat again, those two files are the
+            // first place to look, and they must agree.
             terrain.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
 
-            BuildGrassDetails(terrainData, terrain);
+            // The grass reads the ground material's own turf palette back off it (root blending),
+            // so the terrain material must already be built — it is, three lines up.
+            BuildGrassDetails(terrainData, terrain, material);
             BuildLighting();
             BuildCloudSea();
             BuildDeadTree();
+            // Dressing, after the landform exists and before the atmosphere: both of these read the
+            // finished heightmap to decide where they belong.
+            BuildRockOutcrops(terrainData, material);
+            BuildTussocks(terrainData);
             BuildMotes();
             BuildRegionWind();
 
@@ -128,6 +163,10 @@ namespace Tarrock.Editor
             // Reuse the real rig + orbit camera rather than a second copy that would drift from it.
             KayKitCharacterInstaller.InstallInto(ScenePath, SpawnHint, SpawnFacing);
             PipInstaller.Install();
+
+            // After the installers, because it hangs off their roots: the Fool and Pip are the only
+            // things that move the Cliff's grass while it is bound.
+            BuildGrassBenders();
 
             Debug.Log(
                 $"[Tarrock] Terrain prototype generated at {ScenePath}: {TerrainSize}×{TerrainSize} m, " +
@@ -200,15 +239,11 @@ namespace Tarrock.Editor
         {
             // -- 1. The valley centre line meanders, so the player never sees a straight corridor to
             //       the horizon; the destination is always revealed a bend at a time.
-            float centreZ = 118f
-                + 24f * Mathf.Sin(x * 0.0195f)
-                + 10f * Mathf.Sin(x * 0.052f + 0.8f);
+            float centreZ = CentreZ(x);
 
             // -- 2. Width pinches and bulges (rule 6): tight passes that compress, open bulges that
             //       release. Never one constant width.
-            float halfWidth = SoftMax(9f, 17f
-                + 8f * Mathf.Sin(x * 0.031f + 1.2f)
-                + 4.5f * Mathf.Sin(x * 0.079f + 2.1f), 1.5f);
+            float halfWidth = HalfWidth(x);
 
             // -- 3. Floor: descends west, TERRACED. Quantising to treads and smoothing only the top
             //       third of each step turns the risers into walkable ramps — "terraces and dips
@@ -316,6 +351,11 @@ namespace Tarrock.Editor
                 height = Mathf.Lerp(height, Mathf.Max(height, 50f), knollT);
             }
 
+            // -- 6d. Silhouette events (see ApplyLandformEvents). Runs LAST of the shaping steps and
+            //        BEFORE the broken edge, so the edge always wins at the island's rim and no event
+            //        can leave a shelf hanging over the drop.
+            height = ApplyLandformEvents(height, x, z);
+
             // -- 7. The broken edge, on EVERY side. Canon (world.md §The Cliff, director-blessed
             //       2026-07-26): the Cliff is an island in a sea of cloud, "edged everywhere by a
             //       drop the eye doesn't want to follow" (MQ00). The old build ringed the south and
@@ -375,6 +415,147 @@ namespace Tarrock.Editor
             }
 
             return Mathf.Clamp(height, 0f, TerrainHeight);
+        }
+
+        /// <summary>The valley's centre line at a given x. Shared by the landform and by the
+        /// scatter passes, which need to know where the travelled line runs.</summary>
+        private static float CentreZ(float x)
+        {
+            return 118f + 24f * Mathf.Sin(x * 0.0195f) + 10f * Mathf.Sin(x * 0.052f + 0.8f);
+        }
+
+        /// <summary>Half the valley floor's width at a given x (see SampleHeight step 2).</summary>
+        private static float HalfWidth(float x)
+        {
+            return SoftMax(9f, 17f
+                + 8f * Mathf.Sin(x * 0.031f + 1.2f)
+                + 4.5f * Mathf.Sin(x * 0.079f + 2.1f), 1.5f);
+        }
+
+        // -------------------------------------------------------------------------------------
+        // Silhouette events (round-2 composition pass)
+        //
+        // THE FINDING this answers (round-1 critique of gauntlet/round1/v1, v8): the hero landform
+        // is an undesigned dome — smooth symmetrical lumps, no silhouette events, no notch in a
+        // crest, no asymmetric shoulder — and near and far therefore collapse into one lavender
+        // value because nothing overlaps anything.
+        //
+        // WHAT A SILHOUETTE EVENT IS. Every reference plate (fable-06, fable-02, animation-02) has
+        // a skyline you could draw from memory: a crest is interrupted. Interruption is the whole
+        // trick — the eye reads DEPTH from one edge crossing in front of another, so a rim with a
+        // notch in it shows a further, hazier rim through the notch and the frame gains a layer it
+        // cannot get from fog alone.
+        //
+        // MEASURED, NOT EYEBALLED. Each event below was placed by tracing the skyline of v1 and v8
+        // (the highest terrain elevation angle per screen column) against this generator's own
+        // functions and moving the event until it landed where the composition wanted it. Over the
+        // eight vantages the pass raises v1's skyline event density (mean |dv/du|) from 0.035 to
+        // 0.040 and v8's from 0.032 to 0.040, moves no camera, buries none, and occludes no subject.
+        //
+        // RESTRAINT. This DRESSES the existing sculpt: two raises and four cuts, none deeper than
+        // ~12 m, together touching 2.8% of the heightmap and none of it walkable-critical. The
+        // spawn bowl, the valley floor, the west mouth, the knoll's summit and the knoll's whole
+        // east half are byte-for-byte unchanged.
+        // -------------------------------------------------------------------------------------
+        private static float ApplyLandformEvents(float height, float x, float z)
+        {
+            // -- The knoll's north-west BENCH: the asymmetric shoulder. The knoll measured as a
+            //    radially symmetric dome — every bearing within a metre of every other — which is
+            //    why it read as an undesigned lump. A single shelf on ONE flank breaks the symmetry
+            //    without touching the summit: the profile now goes summit, a ~58° fall, a 5-6 m
+            //    ledge that measures under 12°, then a 64-67° scarp off its lip — while the south
+            //    and east flanks keep their clean unbroken sweep. In v8 that is worth a 0.13 NDC
+            //    step in the skyline where the dome used to curve away smoothly.
+            height = RaiseTo(height, x, z, new Vector2(145.5f, 74.0f), radius: 4.5f, blend: 4.5f, top: 38.5f);
+
+            // -- ...and the SPUR below it, so the shoulder descends in two steps rather than one.
+            height = RaiseTo(height, x, z, new Vector2(139.0f, 79.0f), radius: 6.0f, blend: 7.0f, top: 34.5f);
+
+            // -- Four COLS through the western rim crests. Cut east-west (along the line of sight
+            //    from the spawn) because a notch only opens a window if it clears the whole ray,
+            //    not just the crest line; each is rotated a few degrees off the axis so none reads
+            //    as a ruled groove, and the relief field in step 8 lands on top of every one of
+            //    them, so no col floor is ever the flat mesa the 2026-07-26 audit killed.
+            //    Their spacing and depth are deliberately unequal — a rim with an even comb in it
+            //    reads as a machined part. The two southern cols leave a horn between them.
+            height = CapTo(height, x, z, new Vector2(116f, 74f), runX: 24f, runZ: 7f, cap: 31.0f, degrees: 8f);
+            height = CapTo(height, x, z, new Vector2(114f, 90f), runX: 26f, runZ: 8f, cap: 32.0f, degrees: -6f);
+            height = CapTo(height, x, z, new Vector2(120f, 112f), runX: 22f, runZ: 12f, cap: 28.5f, degrees: 14f);
+            height = CapTo(height, x, z, new Vector2(114f, 168f), runX: 24f, runZ: 9f, cap: 30.0f, degrees: -10f);
+
+            // -- THE KNOLL'S NOTCH (round-3 composition pass, the v8 event).
+            //
+            //    THE FINDING: round 2 dressed the knoll's north-west flank with a bench and a spur,
+            //    and gauntlet/round2/v8 shows what that bought — nothing. Traced column by column,
+            //    that shoulder still falls from the summit to its foot as ONE smooth arc: forty
+            //    screen columns of monotone descent with no interruption anywhere. A dome with a
+            //    tree on it. Every reference skyline (fable-06, fable-02) is a crest the eye can
+            //    draw from memory because something INTERRUPTS it.
+            //
+            //    THE EVENT, and there is exactly one: a notch cut across the north-west shoulder,
+            //    with the ground rising again beyond it to a horn. Measured in v8's own frustum the
+            //    shoulder's crest drops from v −0.26 to v −0.39 across the cut — 3.0 m at that
+            //    range, ≈15% of the knoll's 20 m of relief, which is the size a notch has to be
+            //    before it reads as a decision rather than as noise — then climbs +0.11 to the horn
+            //    at u +0.30 before falling away. Fall, cut, rise, fall: a skyline with a shape.
+            //
+            //    WHY IT IS THIS BIG AN ELLIPSE. The shoulder is a RAMP, ~10 m deep along v8's line
+            //    of sight, so a tidy little dimple in the crest simply reveals the ramp behind it
+            //    and changes nothing — three rounds of narrower cuts measured under 0.08. The cut
+            //    is therefore elongated ALONG THE RAY (degrees 26 sits between v8's sight line at
+            //    ≈20° and the ridge's perpendicular at ≈40°), which is the same reasoning the four
+            //    western cols above are built on. It still touches only 0.23% of the heightmap.
+            //
+            //    THE COUNTER-ELEMENT IS STONE, NOT TREE. The knoll keeps ONE tree (art-audio.md
+            //    §Region colour scripts; the dead tree is the Cliff's signature and the one tree
+            //    that visibly dies). What stands on the horn is a family of leaning slabs — see
+            //    the notch-horn entries in RockAnchors — whose tops spike ≈0.17 above the notch
+            //    floor. The tree crowns the summit; the stones lean off the shoulder; nothing on
+            //    this hill competes with either.
+            //
+            //    The summit, the whole east half, the v4 vantage's ground and every metre of the
+            //    spawn bowl, the valley floor and the west mouth are byte-for-byte unchanged.
+            height = CapTo(height, x, z, new Vector2(151f, 69.8f), runX: 9.5f, runZ: 4.4f, cap: 40.0f, degrees: 26f);
+            height = RaiseTo(height, x, z, new Vector2(148f, 73f), radius: 2.2f, blend: 4.0f, top: 45.0f);
+            return height;
+        }
+
+        /// <summary>Lifts ground inside a disc TOWARD a target height, never below what is already
+        /// there — a bench, a knuckle, a spur. Same max-and-blend idiom as the knoll itself, so an
+        /// event laid over higher ground quietly does nothing instead of carving a step into it.</summary>
+        private static float RaiseTo(
+            float height, float x, float z, Vector2 centre, float radius, float blend, float top)
+        {
+            float d = Vector2.Distance(new Vector2(x, z), centre);
+            if (d > radius + blend)
+            {
+                return height;
+            }
+
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(radius + blend, radius, d));
+            return Mathf.Lerp(height, Mathf.Max(height, top), t);
+        }
+
+        /// <summary>Cuts an elongated notch: caps ground inside a rotated ellipse to a ceiling,
+        /// never digging below it. Capping rather than subtracting is what stops a col from
+        /// trenching the low ground its skirt happens to cross.</summary>
+        private static float CapTo(
+            float height, float x, float z, Vector2 centre, float runX, float runZ, float cap, float degrees)
+        {
+            float dx = x - centre.x;
+            float dz = z - centre.y;
+            float c = Mathf.Cos(degrees * Mathf.Deg2Rad);
+            float s = Mathf.Sin(degrees * Mathf.Deg2Rad);
+            float alongX = ((dx * c) + (dz * s)) / runX;
+            float alongZ = ((-dx * s) + (dz * c)) / runZ;
+            float e = Mathf.Sqrt((alongX * alongX) + (alongZ * alongZ));
+            if (e >= 1f)
+            {
+                return height;
+            }
+
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(1f, 0.45f, e));
+            return Mathf.Lerp(height, Mathf.Min(height, cap), t);
         }
 
         /// <summary>Scoops a smooth bowl — a hollow to stumble into off the path.</summary>
@@ -487,6 +668,48 @@ namespace Tarrock.Editor
         // Scene dressing
         // -------------------------------------------------------------------------------------
 
+        // -- The turf palette and the grass band -------------------------------------------------
+        // SHARED SURFACE, deliberately declared once here and consumed twice. The ground material
+        // paints turf with these colours inside this band; BuildGrassDetails scatters tufts with
+        // the same band and tints the tuft base toward the same soil. Round 1 shipped the two
+        // sides as unrelated magic numbers, and the result was measurable: the ground stopped
+        // being turf on a hard line while the tufts kept going, so the tufts read as decals on
+        // lino. One fact, one place — if these move, both sides move together.
+        //
+        // Colours are authored as ordinary picker swatches — the same convention every other
+        // material palette in this file uses, so ground and tufts speak the same numbers.
+        //
+        // ROUND-3: the turf moved into the GREEN family. Round 2's soil was (0.26, 0.21, 0.14) — a
+        // brown card sitting under green blades, which the gauntlet measured in round2/v3 as
+        // "out-of-family brown dirt with grass decals on it". The mat a blade grows out of is not
+        // soil seen from above; it is shadowed leaf litter and dead blade, which is green-black. The
+        // ochre survives as the SCOUR patch (see the shader's turf block), which is what
+        // "wind-scoured green" actually describes: green mat, worn through in patches.
+        //
+        // BuildGrassDetails reads TurfSoil back off the material to tint the tuft base, so this
+        // change moves the tuft roots to green in the same stroke — which is the point. One fact,
+        // one place.
+        internal static readonly Color TurfSoil = new Color(0.17f, 0.20f, 0.13f);   // damp root shadow
+        internal static readonly Color TurfBlade = new Color(0.25f, 0.33f, 0.19f);  // living blade mat
+        internal static readonly Color TurfOchre = new Color(0.50f, 0.42f, 0.23f);  // dry ochre scour
+        internal static readonly Color MeadowGreen = new Color(0.28f, 0.36f, 0.20f); // wind-scoured
+
+        // The band tufts live in. BOTH sides feather it now (round-2 integration): the ground
+        // shader fades its turf across _TurfFeatherDeg/_TurfFeatherM either side of these numbers,
+        // and BuildGrassDetails' density map smoothsteps its own slope/height gates across the same
+        // centres instead of the hard `steep > 24 || h < 13 || h > 52` cut that drew the grass
+        // boundary as a traceable contour line.
+        internal const float GrassBandSteepMaxDeg = 24f;
+        internal const float GrassBandHeightLow = 13f;
+        internal const float GrassBandHeightHigh = 52f;
+        // Turf patch field: the wavelength at which the ground shader breaks its turf layer into
+        // clumps. It is a STAND-IN at the same order as the density map's own clumping (which is a
+        // three-octave field owned by BuildGrassDetails and far too expensive to port into HLSL),
+        // NOT the same field — so turf blotches and tuft stands agree in scale, not in phase. It
+        // only modulates turf strength, so the mismatch reads as natural variation.
+        internal const float GrassPatchFrequency = 0.045f;
+        internal const float GrassPatchScaleMetres = 1f / GrassPatchFrequency;
+
         private static Material BuildTerrainMaterial(Shader shader)
         {
             var material = AssetDatabase.LoadAssetAtPath<Material>(TerrainMaterialPath);
@@ -503,71 +726,563 @@ namespace Tarrock.Editor
             // EVERY property is set explicitly, never left to the shader default. A material asset
             // keeps whatever was serialised into it, so re-running against an existing .mat would
             // otherwise silently preserve stale values while the shader's defaults appear to change.
-            // Cliff palette (art-audio.md region colour script owns per-region tinting): green
-            // meadow with wind-scoured ochre patches — the plateau's GOLD lives in the dawn light,
-            // not the albedo (director call 2026-07-26) — warm ochre rock, cool slate cliffs.
-            material.SetColor("_GrassLow", new Color(0.24f, 0.33f, 0.18f));
-            material.SetColor("_GrassHigh", new Color(0.58f, 0.62f, 0.30f));
-            material.SetColor("_GrassDry", new Color(0.56f, 0.48f, 0.24f));
-            material.SetFloat("_GrassMacroScale", 34f);
-            material.SetFloat("_GrassMesoScale", 4.5f);
-            material.SetFloat("_GrassMicroScale", 0.55f);
-            material.SetFloat("_GrassHueScale", 26f);
-            material.SetFloat("_GrassMacroAmount", 0.55f);
-            material.SetFloat("_GrassMesoAmount", 0.70f);
-            material.SetFloat("_GrassDryAmount", 1.8f);
-            material.SetFloat("_GrassGrain", 0.06f);
-            material.SetFloat("_GrassBias", 0.30f);
-            material.SetColor("_RockColor", new Color(0.50f, 0.44f, 0.35f));
-            material.SetColor("_CliffColor", new Color(0.29f, 0.30f, 0.34f));
-            material.SetFloat("_RockVariation", 5f);
-            material.SetFloat("_SlopeStart", 0.30f);
-            material.SetFloat("_SlopeEnd", 0.62f);
+            //
+            // Cliff palette (art-audio.md §Region color scripts owns per-region tinting: "pale dawn
+            // gold, wind-scoured green"). The plateau's GOLD lives in the dawn LIGHT, not the albedo
+            // (director call 2026-07-26), so nothing here ramps toward white — the warm notes are
+            // dry grass and warm stone, which are colours, not brightness.
+            //
+            // The four meadow hues are the round-2 answer to the gauntlet finding that the ground
+            // measured monochrome (one hue at two brightnesses) where fable-05/08 carry a real hue
+            // swing. See the shader header for the full finding list.
+            material.SetColor("_MeadowGreen", MeadowGreen);
+            material.SetColor("_MeadowStraw", new Color(0.66f, 0.58f, 0.31f));
+            material.SetColor("_MeadowScuff", new Color(0.42f, 0.32f, 0.21f));
+            material.SetColor("_MeadowCool", new Color(0.27f, 0.35f, 0.36f));
+            material.SetFloat("_MeadowMacroScale", 38f);
+            material.SetFloat("_MeadowHueScale", 21f);
+            material.SetFloat("_MeadowDabScale", 6f);
+            material.SetFloat("_MeadowFineScale", 0.95f);
+            material.SetFloat("_MeadowGrainScale", 0.34f);
+            material.SetFloat("_MeadowDabWarp", 0.55f);
+            material.SetFloat("_MeadowDabEdge", 0.10f);
+            material.SetFloat("_MeadowStrawAmount", 0.85f);
+            material.SetFloat("_MeadowScuffAmount", 0.55f);
+            material.SetFloat("_MeadowCoolAmount", 0.70f);
+            material.SetFloat("_MeadowFineTone", 0.16f);
+            material.SetFloat("_MeadowFineStraw", 0.28f);
+            material.SetFloat("_MeadowGrain", 0.13f);
+            // Texel-scale work is gone by 38 m. The gameplay camera sits at 4-6 m, so the fine band
+            // is fully present for everything the player is actually standing in.
+            material.SetFloat("_DetailFadeStart", 10f);
+            material.SetFloat("_DetailFadeRange", 28f);
+
+            // Turf — the layer the tuft fields grow out of (shared constants above). GREEN family
+            // now; the ochre is a scour PATCH rather than half of the base ramp.
+            material.SetColor("_TurfSoil", TurfSoil);
+            material.SetColor("_TurfBlade", TurfBlade);
+            material.SetColor("_TurfOchre", TurfOchre);
+            material.SetFloat("_TurfScale", 2.8f);
+            material.SetFloat("_TurfAmount", 0.78f);
+            material.SetFloat("_TurfContact", 0.20f);
+            // The scour field is decorrelated from every other meadow field and an order coarser
+            // than the turf dab, so bald patches are patches — a few metres across — rather than a
+            // per-dab speckle that would just re-brown the whole mat by another route.
+            material.SetFloat("_TurfScourScale", 9.5f);
+            material.SetFloat("_TurfScourAmount", 0.85f);
+            material.SetFloat("_TurfPatchScale", GrassPatchScaleMetres);
+            material.SetFloat("_TurfSteepMax", GrassBandSteepMaxDeg);
+            material.SetFloat("_TurfFeatherDeg", 8f);
+            material.SetFloat("_TurfHeightLow", GrassBandHeightLow);
+            material.SetFloat("_TurfHeightHigh", GrassBandHeightHigh);
+            material.SetFloat("_TurfFeatherM", 6f);
+
+            // Stone: warm grey beds against cooler grey beds with sage lichen, then the cool slate
+            // refusing face. Round 1 had two greys a few levels apart and read as an extension of
+            // the meadow gradient.
+            material.SetColor("_RockWarm", new Color(0.56f, 0.51f, 0.42f));
+            material.SetColor("_RockCool", new Color(0.40f, 0.41f, 0.45f));
+            material.SetColor("_RockLichen", new Color(0.35f, 0.40f, 0.26f));
+            material.SetColor("_CliffColor", new Color(0.30f, 0.31f, 0.35f));
+            material.SetFloat("_RockMottleScale", 6.5f);
+            // Down from round 2's 0.85. The hue swing now turns over per FORMATION (every ~3 beds)
+            // instead of per bed, so the same swing at the old amount would read as a barcode.
+            material.SetFloat("_RockBedTint", 0.55f);
+            material.SetFloat("_RockLichenAmount", 0.40f);
+
+            // Slope thresholds in steepness (1 - N.y): rock from ~35°, owning the surface by ~50°;
+            // the refusing face from ~60°, owning it by ~74°. Rock used to start at ~46°, which put
+            // every mid slope in the meadow ramp and is half of why nothing read as slope-responsive.
+            material.SetFloat("_SlopeStart", SteepnessFromDegrees(35f));
+            material.SetFloat("_SlopeEnd", SteepnessFromDegrees(50f));
+            material.SetFloat("_CliffStart", SteepnessFromDegrees(60f));
+            material.SetFloat("_CliffEnd", SteepnessFromDegrees(74f));
+            material.SetFloat("_SlopeJitter", 0.13f);
+            material.SetFloat("_BlendFieldScale", 14f);
+
+            // BEDDING (round 3). Gravity-aligned, because sediment is laid down flat — the full
+            // reasoning is in the shader header and is not restated here. Two numbers carry the
+            // round-2 lesson and must be read together:
+            //   * _BeddingSpacing 2.6 m is the mean bed thickness.
+            //   * _BeddingWarp 0.55 m is 21% of a bed, and the shader hard-caps it at 30% anyway.
+            // Round 2 ran a 6.5 m wander against a 3.4 m bed — 1.9 BED THICKNESSES — at which point
+            // the bedding coordinate is the wander field rather than world Y, and the partings
+            // become that field's level sets, which are closed loops. Those loops are the worm veins
+            // the gauntlet measured on every slope in round2/v1 and v8. The ratio is the fault, not
+            // the axis: keep warp well under half a bed and the beds stay beds.
+            //
+            // The dip is a ~3.4°/2.6° gradient. Enough that the beds are not a spirit-level ruling;
+            // far too little to reach the level-set regime.
+            material.SetFloat("_BeddingSpacing", 2.6f);
+            material.SetVector("_BeddingDip", new Vector4(0.060f, 0f, -0.045f, 0f));
+            material.SetFloat("_BeddingWarp", 0.55f);
+            material.SetFloat("_BeddingRough", 0.22f);
+            material.SetFloat("_BeddingLineWidth", 0.085f);
+            material.SetFloat("_BeddingWidthJitter", 0.60f);
+            material.SetFloat("_BeddingDarken", 0.36f);
+            material.SetFloat("_BeddingLip", 0.20f);
+            material.SetFloat("_BedValueJitter", 0.09f);
+            material.SetFloat("_BedFormRate", 0.34f);
+            // Bedding is drawn on STEEP FACES ONLY, and this is the structural guard on round 2's
+            // one real win (no contour banding). The ring was never caused by banding on world Y; it
+            // was caused by banding on GENTLE ground, where a horizontal slab meets the surface over
+            // an enormous on-surface width and its edge necessarily traces a heightmap contour. Fade
+            // the whole construct out below the angle where a bed cuts a thin line and the ring
+            // cannot be drawn at all. Authored in degrees, like every other slope threshold here.
+            material.SetFloat("_BeddingSlopeStart", 35f);
+            material.SetFloat("_BeddingSlopeEnd", 48f);
+
+            // CAVITY — concavity darkening as its own AO-like term, deliberately NOT baked into the
+            // bedding marks. It selects a filled REGION (where the fine relief sits below the broad
+            // form) rather than a band around a field's midpoint, which is the structural reason it
+            // cannot draw the worms the round-2 crevice term drew.
+            material.SetFloat("_CavityScale", 3.4f);
+            material.SetFloat("_CavityContrast", 4.5f);
+            material.SetFloat("_CavityDarken", 0.34f);
+            material.SetFloat("_CavityGroundDarken", 0.16f);
+
+            // SHADING NORMAL — the facet fix. 0.30 m of relief over a 3.4 m field is a gentle
+            // undulation, not a bumpy surface; it is sized to break the Gouraud Mach band at a
+            // triangle edge, which is a metres-scale artefact, and nothing finer would touch it.
+            // Faded out past 45 m, where the facets are sub-pixel anyway and an unfaded
+            // high-frequency normal would only generate shimmer.
+            material.SetFloat("_NormalDetailHeight", 0.30f);
+            material.SetFloat("_NormalDetailStrength", 1f);
+            material.SetFloat("_NormalDetailFadeStart", 45f);
+            material.SetFloat("_NormalDetailFadeRange", 55f);
+
             material.SetFloat("_HeightLow", 8f);
             material.SetFloat("_HeightHigh", 48f);
-            material.SetFloat("_StrataStrength", 0.18f);
-            material.SetFloat("_StrataScale", 5.5f);
-            material.SetFloat("_ShadeWrap", 0.30f);
+            // Up from round 2's 0.30. Wrapping compresses the ndotl gradient, and a compressed
+            // gradient means a smaller value step across a facet edge — the cheap half of the facet
+            // fix, and it costs the storybook falloff nothing because a softer terminator is the
+            // house look anyway (Visual pillar 1).
+            material.SetFloat("_ShadeWrap", 0.40f);
             material.SetFloat("_AmbientBoost", 1f);
             material.SetColor("_ShadowTint", new Color(0.80f, 0.88f, 1.06f));
             material.SetColor("_AmbientFloor", new Color(0.10f, 0.11f, 0.14f));
+
+            // OPAQUE, pinned. The shader states its own blend state explicitly, but a .mat that has
+            // ever carried a custom queue keeps it across a shader reassignment, and a ground in the
+            // transparent queue is one of the two shapes the round-2 "you can see through the cliff"
+            // read could have had. -1 means "use the shader's queue" (Geometry, 2000).
+            material.renderQueue = -1;
+            material.SetOverrideTag("RenderType", "Opaque");
             EditorUtility.SetDirty(material);
             return material;
         }
 
-        // The sky's horizon colour, LINEAR (material colours are consumed raw). The fog colour is
-        // DERIVED from it below via .gamma — RenderSettings colours are gamma-decoded, so the same
-        // float triple means two different colours in the two places. Deriving one from the other
-        // keeps ground and sky married at the horizon; hand-copying the numbers is how they drift.
-        private static readonly Color HorizonLinear = new Color(0.80f, 0.70f, 0.50f);
+        /// <summary>Slope thresholds are authored in DEGREES (which is how the terrain grammar and
+        /// the CharacterController's slope limit are both discussed) and consumed by the ground
+        /// shader as steepness = 1 - N.y. Converting here keeps the readable number at the call
+        /// site instead of a table of unexplained decimals.</summary>
+        private static float SteepnessFromDegrees(float degrees)
+        {
+            return 1f - Mathf.Cos(degrees * Mathf.Deg2Rad);
+        }
+
+        // -------------------------------------------------------------------------------------
+        // The dawn atmosphere. ONE description, consumed by three places that must agree or the
+        // island-in-cloud read breaks: the skybox, the exponential fog, and the cloud deck's fade.
+        //
+        // All LINEAR — material colours are consumed raw. The fog colour is DERIVED via .gamma
+        // because RenderSettings colours are gamma-decoded, so the same float triple means two
+        // different colours in the two places; hand-copying the numbers is how they drift.
+        //
+        // WHY THESE NUMBERS (2026-07-31 look pass, against Assets/Screenshots/wave2_*). Measured
+        // off wave2_knoll: the whole visible sky moved eight sRGB levels from frame top to horizon
+        // — a flat tan card. The old ramp's transition lived above the frustum, because at the
+        // gameplay camera's pitch the player only ever sees the first ~25° of sky. So the mid band
+        // is pulled down to sin(elev)=0.44 and both ramps are smoothstepped, putting real value
+        // structure (0.92 → 0.58 linear) inside the band that is actually on screen. Reference
+        // board: fable-03, fable-04, animation-04.
+        // -------------------------------------------------------------------------------------
+        private static readonly Color SkyHorizonLinear = new Color(0.92f, 0.82f, 0.62f);
+        private static readonly Color SkyMidLinear = new Color(0.58f, 0.62f, 0.69f);
+        private static readonly Color SkyZenithLinear = new Color(0.20f, 0.32f, 0.54f);
+
+        // Below the horizon the Cliff has NO ground: it has the cloud sea (world.md §The Cliff).
+        // Fog, the sky's lower hemisphere and the deck's far field all land on this one luminous
+        // value — which is what lets distant rim rock die INTO the deck instead of silhouetting
+        // against it. The old fog colour was a duller tan than the deck it sat in front of, so
+        // every far ridge stayed a hard dark shape on a white plane.
+        private static readonly Color HazeLinear = new Color(0.90f, 0.85f, 0.74f);
+        private static readonly Color SunGlowLinear = new Color(1.00f, 0.84f, 0.58f);
+
+        private const float SkyMidHeight = 0.44f;      // sin(elev) where the cream band is reached
+        private const float SkyHazeDepth = 0.09f;      // sin(elev) over which gold gives way to haze
+        private const float SkyGlowFalloff = 7f;
+        private const float SkyGlowBroad = 0.22f;
+        private const float SkyGlowBroadPower = 8f;
+        private const float SkyGlowCore = 0.55f;       // over 1 at the sun: the blaze blooms, locally
+        private const float SkyGlowCorePower = 120f;
+        private const float SkyBandCount = 7f;         // the painted-plate terrace, not a smooth ramp
+        private const float SkyBandStrength = 0.30f;
+        private const float SkyBandSoftness = 0.22f;
+        private const float SkyDither = 0.0035f;
+
+        // -------------------------------------------------------------------------------------
+        // THE FAR CLOUD BANK (round 2, 2026-07-31, against round1/v3+v4). The critic's two
+        // structural findings about the horizon were: the deck's top edge is a pixel-straight
+        // dead-level line across all 1920 px with a 2-step luminance delta to the sky, and there
+        // is no dark value anchor there, so the brightest zone in the frame sits directly on the
+        // second-brightest and the world reads as continuing forever rather than ENDING.
+        //
+        // The bank answers both, and it is painted into the sky rather than modelled, because
+        // geometry cannot answer it: the deck is a plane BELOW the camera, so its silhouette is a
+        // straight line at eye level no matter how hard the mesh billows (measured — a 7 m swell
+        // at 400 m lifts the surface 1°, and the surface is still below the horizon). A cloud sea
+        // gets its skyline from cloud standing up beyond it, which in a storybook frame is a
+        // painted shape. Wolfwalkers and fable-03 both do exactly this.
+        //
+        // All heights are sin(elevation) — radians to three places at these angles. The gameplay
+        // lens (55° vertical over 1080 px) puts 19.6 px on a degree, so:
+        //   crest mean +0.020  → 1.15° above the horizon, ~22 px
+        //   relief     ±0.032  → ±1.83°, a crest line that wanders through ~72 px
+        //   floor      -0.010  → the bank is gone by 0.6° under the horizon, which from any
+        //                        vantage in the region is past 4 km — i.e. entirely inside the
+        //                        country the deck shader has already resolved to pure sky, so the
+        //                        painted bank and the deck geometry can never contradict.
+        private static readonly Color CloudBankCrestLinear = new Color(1.02f, 0.97f, 0.87f);
+        // The value anchor: luminance ≈ 0.53 linear against the horizon gold's 0.83 and the
+        // haze/deck's 0.85. Dark enough to anchor the horizon, light enough that it still reads as
+        // cloud rather than as a mountain range — that line was found by offline-rendering the v3
+        // vantage and walking the value down until the anchor appeared without the bank turning
+        // into rock.
+        private static readonly Color CloudBankShadeLinear = new Color(0.50f, 0.53f, 0.65f);
+        private const float CloudBankHeight = 0.020f;
+        // ±0.045 sin(elevation) = ±2.6°, and the gameplay lens puts 19.6 px on a degree: the crest
+        // line rises and falls through roughly 100 px. (Verified against an offline port of the
+        // shader — the measured crest wanders 0.4°..3.7° above the horizon.)
+        private const float CloudBankRelief = 0.045f;
+        private const float CloudBankLumpScale = 5f;   // ≈ a cloud head every 11° of compass
+        private const float CloudBankRimWidth = 0.0060f;
+        private const float CloudBankBodyDepth = 0.024f;
+        private const float CloudBankDissolve = 0.034f;
+        private const float CloudBankFloor = -0.012f;
+        private const float CloudBankFade = 0.042f;
+        // The gaps. Without them the bank is a belt round the horizon; with them there are open
+        // stretches where the eye sees clear sky sitting straight on the cloud sea. This window is
+        // narrow because the presence noise it gates on only spans ≈0.29–0.72 in practice; the
+        // round-1-style window of 0.24–0.56 measured out as "never fully closes".
+        private const float CloudBankGapStart = 0.36f;
+        private const float CloudBankGapEnd = 0.46f;
+
+        // -------------------------------------------------------------------------------------
+        // THE VAULT CLOUDS. Designed masses, because round1 had "not one cloud shape" in the whole
+        // sky vault. Each is (bearing°, elevation°, half width°, opacity); the shader draws them
+        // from one fixed six-lobe cumulus alphabet on a flat base, so they are recognisably one
+        // hand's drawing rather than a noise field.
+        //
+        // Placed RELATIVE TO THE SUN, not in absolute bearings. The composition is a composition
+        // about the dawn — the hero mass just off the sun's shoulder, its companion on the far
+        // side, a thin high veil well away from it — so if SunEuler ever moves the whole cloud
+        // arrangement must move with it. Authoring the offsets and deriving the bearings is the
+        // same discipline as the streak axis and the blaze vector: nothing needs hand-syncing.
+        //
+        // ROUND 3 (against round2/v3, v4). The critic's read was "one blurred lozenge instead of
+        // designed clouds", and "nothing in the upper 60% of frame is darker than mid-value, so
+        // the dawn light has no dark anchor". The shape half is fixed in SkyGradient.hlsl (round 2
+        // divided elevation by halfWidth·0.40, which squashed every lobe of the alphabet into a
+        // flat ellipse — see that file). The three answers that live HERE are:
+        //
+        //   * FIVE masses, not four, and sized so the two review frames each hold two of them.
+        //     Round 2's four were placed well but left v3 with a single mass in shot and v4 with a
+        //     single mass in shot, and a sky with one cloud in it is a sky with a smudge in it.
+        //   * A HERO twice the old size (half width 20° against 13°), because the alphabet's
+        //     scallops and its three washes are only legible above a few hundred pixels of screen.
+        //   * A GENUINELY DARK BELLY. VaultCloudShadowLinear's luminance is 0.230 linear ≈ 0.51
+        //     sRGB, against the horizon gold's 0.83 and the far bank's 0.53 — the darkest value the
+        //     sky owns, and the only one under mid. The shader weights it by each mass's own half
+        //     width (thickness reads as darkness), so the hero anchors the frame and the 8° wisps
+        //     stay light without anything being hand-flagged.
+        // -------------------------------------------------------------------------------------
+        private static readonly Color VaultCloudLitLinear = new Color(1.02f, 0.97f, 0.87f);
+        // The middle wash. Down from round 2's (0.62,0.66,0.78): at that value the "shaded" side of
+        // a mass was lighter than the low sky band it was drawn over, so the masses had no dark
+        // side at all — they were a bright shape on a bright ground with a slightly brighter shape
+        // inside them.
+        private static readonly Color VaultCloudShadeLinear = new Color(0.52f, 0.57f, 0.71f);
+        // THE ANCHOR. Cool, not neutral: at dawn a cloud's underside is lit by sky, and the whole
+        // region's grade is warm light on cool shadow (BuildLighting). Grey here would read as
+        // dirt on the plate.
+        private static readonly Color VaultCloudShadowLinear = new Color(0.19f, 0.23f, 0.35f);
+        private const float VaultCloudBase = 0.22f;      // flat base, in half widths below centre
+        // Crisper than round 2's 0.055. On the hero that is 0.030 × 20° = 0.6° ≈ 11 px of edge
+        // ramp, which is a painted edge; 0.055 was 0.7° on a 13° mass and, combined with the
+        // squash, is most of why the capture reads as a smudge rather than a shape.
+        private const float VaultCloudSoftness = 0.030f;
+        private const float VaultCloudLump = 0.090f;
+
+        /// <summary>Compass bearing of the sun disc, Unity's convention (0° = +Z, increasing
+        /// toward +X). At SunEuler 7°/152° this is ≈332°, NNW — see BuildLighting. DERIVED, never
+        /// typed: the vault clouds are placed at offsets from it, so moving the sun moves the whole
+        /// cloud composition with it.</summary>
+        private static float SunBearingDegrees
+        {
+            get
+            {
+                Vector3 sun = SunToward;
+                return Mathf.Repeat(Mathf.Atan2(sun.x, sun.z) * Mathf.Rad2Deg, 360f);
+            }
+        }
+
+        /// <summary>One vault cloud, placed by how far round from the sun it sits.</summary>
+        private static Vector4 VaultCloud(
+            float bearingFromSun, float elevation, float halfWidth, float opacity)
+        {
+            return new Vector4(
+                Mathf.Repeat(SunBearingDegrees + bearingFromSun, 360f), elevation, halfWidth, opacity);
+        }
+
+        // Frozen dawn. THE one sun: BuildLighting's directional light, the sky's blaze and the
+        // cloud deck's bank alignment all read this, because a second hand-typed copy is a drift
+        // waiting to happen (the sky would glow where the sun is not).
+        //
+        // Elevation 7° / azimuth 152° — the reasoning is written out at length in BuildLighting,
+        // which owns this number. In short: light TRAVELS south-south-east, so the disc sits NNW
+        // (compass 332°) and RAKES 62° across the v1 wake frame's due-west axis, low enough that
+        // micro-relief casts.
+        //
+        // EVERY derived vector recomputes from this constant — the sky's blaze and haze depth
+        // (ApplySkyDescription's _SunDirection), the cloud deck's bank alignment (_StreakAxis) and
+        // the lamp itself all read SunToward, so moving the sun moves the whole sky with it and
+        // nothing needs hand-syncing. The two materials it bakes into (TerrainProtoSky.mat,
+        // CloudSea.mat) are rewritten every Generate(), and GauntletCapture regenerates before it
+        // shoots, so a stale .mat on disk can never outlive a capture run.
+        //
+        // MERGE NOTE (2026-07-31, round 2 rake pass): this replaces the round-1 merge's 17°/117°,
+        // which itself replaced 16°/78°. The direction of travel is unchanged in kind — the disc
+        // keeps swinging north and down — so the round-1 sky pass's reasoning still holds; it is
+        // simply applied harder. Two knock-ons a reviewer should expect and not mistake for bugs:
+        // the blaze now sits ~35° further north and much closer to the horizon band, and
+        // GauntletCapture's v1/v2 header comments still quote the round-1 bearings (see the report
+        // for the corrected figures: v1 rakes 62°, v2 is now the near-contre-jour frame at 16°).
+        private static readonly Vector3 SunEuler = new Vector3(7f, 152f, 0f);
+
+        /// <summary>Unit vector pointing TOWARD the sun (a light's forward points the way its
+        /// light travels, so the sun is behind it).</summary>
+        private static Vector3 SunToward => -(Quaternion.Euler(SunEuler) * Vector3.forward);
+
+        /// <summary>Writes the one dawn-sky description onto a material that evaluates
+        /// <c>SkyGradient.hlsl</c>. Both the skybox and the cloud deck do: the deck's far field
+        /// resolves to exactly the sky colour along the same ray, which is the whole reason the
+        /// camera's far-clip cut through the 3 km deck reveals no horizon seam. That trick only
+        /// survives while the two materials carry identical numbers — hence one writer.</summary>
+        private static void ApplySkyDescription(Material target)
+        {
+            Vector3 sun = SunToward;
+            target.SetColor("_HorizonColor", SkyHorizonLinear);
+            target.SetColor("_MidColor", SkyMidLinear);
+            target.SetColor("_ZenithColor", SkyZenithLinear);
+            target.SetColor("_HazeColor", HazeLinear);
+            target.SetColor("_SunGlowColor", SunGlowLinear);
+            target.SetVector("_SunDirection", new Vector4(sun.x, sun.y, sun.z, 0f));
+            target.SetFloat("_MidHeight", SkyMidHeight);
+            target.SetFloat("_HazeDepth", SkyHazeDepth);
+            target.SetFloat("_GlowFalloff", SkyGlowFalloff);
+            target.SetFloat("_GlowBroad", SkyGlowBroad);
+            target.SetFloat("_GlowBroadPower", SkyGlowBroadPower);
+            target.SetFloat("_GlowCore", SkyGlowCore);
+            target.SetFloat("_GlowCorePower", SkyGlowCorePower);
+            target.SetFloat("_BandCount", SkyBandCount);
+            target.SetFloat("_BandStrength", SkyBandStrength);
+            target.SetFloat("_BandSoftness", SkyBandSoftness);
+            target.SetFloat("_HorizonHeight", 0f);
+
+            target.SetColor("_BankCrestColor", CloudBankCrestLinear);
+            target.SetColor("_BankShadeColor", CloudBankShadeLinear);
+            target.SetFloat("_BankHeight", CloudBankHeight);
+            target.SetFloat("_BankRelief", CloudBankRelief);
+            target.SetFloat("_BankLumpScale", CloudBankLumpScale);
+            target.SetFloat("_BankRimWidth", CloudBankRimWidth);
+            target.SetFloat("_BankBodyDepth", CloudBankBodyDepth);
+            target.SetFloat("_BankDissolve", CloudBankDissolve);
+            target.SetFloat("_BankFloor", CloudBankFloor);
+            target.SetFloat("_BankFade", CloudBankFade);
+            target.SetFloat("_BankGapStart", CloudBankGapStart);
+            target.SetFloat("_BankGapEnd", CloudBankGapEnd);
+
+            // The five masses. Every one of these was projected into the review frustums before it
+            // was written down — the sun sits at bearing 332°, v3 looks at 268° and v4 at 63°, and
+            // the gameplay lens is 55° vertical / 85.6° horizontal, i.e. 22.4 px per degree
+            // horizontally and 19.6 vertically at 1920×1080. Screen figures below are for the
+            // frame each mass is FOR.
+            //
+            //  0 — THE HERO, 44° left of the sun (bearing 288°) and 12° up, half width 20°. v3's
+            //      upper right: centre u ≈ +0.47, base at ≈293 px, top out of frame. The largest
+            //      mass, so the shader gives it the full dark belly — that base IS v3's missing
+            //      value anchor, floating over the gold band with the far bank below it.
+            //  1 — its small companion 26° the other side of the sun (358°), low and stopping well
+            //      short of the disc so the blaze core still reads. Serves v2, which looks at 348°.
+            //  2 — a wide thin veil high and 98° off the sun (234°), at a quarter opacity: it
+            //      breaks the empty vault above without competing with the hero. Enters v3's
+            //      top-left corner, which round 2 left as bare gradient.
+            //  3 — the anti-sun mass (bearing 77°), for the frames that look back east across the
+            //      island. v4's upper right: centre u ≈ +0.27, spanning x 855-1660 with its base on
+            //      row ≈208 — 108 px above that frame's horizon (row 316), so the belly sits IN the
+            //      gold band rather than over it. Half width 18°, which is what buys it a belly at
+            //      all: this is v4's anchor and the thickness weight is not generous below 15°.
+            //  4 — a mid-size mass at bearing 36°, filling v4's left sky (centre u ≈ −0.53) with an
+            //      8° gap of clear sky between it and mass 3. An unbroken belt is weather nobody
+            //      believes; the gap is the composition.
+            target.SetVector("_VaultCloud0", VaultCloud(-44f, 12.0f, 20.0f, 0.94f));
+            target.SetVector("_VaultCloud1", VaultCloud(26f, 8.5f, 8.0f, 0.72f));
+            target.SetVector("_VaultCloud2", VaultCloud(-98f, 25.0f, 24.0f, 0.26f));
+            target.SetVector("_VaultCloud3", VaultCloud(105f, 9.5f, 18.0f, 0.82f));
+            target.SetVector("_VaultCloud4", VaultCloud(64f, 6.5f, 13.0f, 0.66f));
+            target.SetColor("_VaultCloudLit", VaultCloudLitLinear);
+            target.SetColor("_VaultCloudShade", VaultCloudShadeLinear);
+            target.SetColor("_VaultCloudShadow", VaultCloudShadowLinear);
+            target.SetFloat("_VaultCloudBase", VaultCloudBase);
+            target.SetFloat("_VaultCloudSoftness", VaultCloudSoftness);
+            target.SetFloat("_VaultCloudLump", VaultCloudLump);
+        }
 
         private static void BuildLighting()
         {
-            // FROZEN DAWN (canon: art-audio.md gives the Cliff "pale dawn gold"; MQ00 opens at
-            // dawn). Sun at 16° elevation aimed nearly down the valley axis so the Fool walks toward
-            // the light: long raking shadows reveal the terraces, slopes separate by value (the
-            // north/south grammar becomes readable), ridges gain rim light. The 2026-07-26 audit
-            // found the old 42° near-midday sun was flattening every read the landform authors.
-            // Director call (same audit): the plateau's gold lives in the LIGHT — the ground stays
-            // green meadow, dawn paints it.
+            // FROZEN DAWN (canon: art-audio.md §Region color scripts gives the Cliff "pale dawn
+            // gold, wind-scoured green"; MQ00 opens at dawn). Director call (2026-07-26 audit): the
+            // plateau's gold lives in the LIGHT — the ground stays green meadow, dawn paints it.
+            // Two decisions live in this one rotation:
+            //
+            // ELEVATION 7°. Round 1 came down from a 42° near-midday sun to 17° and the pixel audit
+            // of round1/v1,v2 still measured NO raking: the meadow sat in a 0.23–0.41 luminance band
+            // (σ 0.06) with no lit-crest-against-shadowed-trough anywhere, and the warm key never
+            // landed on a walkable surface — gold stayed in the sky while the ground read grey-olive.
+            // 17° is still high enough that a metre of relief throws only 3.3 m of shadow, which the
+            // meadow's own gentle grain swallows. At 7° a form throws 8.1× its height, so the relief
+            // that is actually there starts casting: the fine grain on the valley floor (≈0.6 m at a
+            // 5 m wavelength — SampleHeight step 8) puts ±20° of tilt on the walkable surface, and at
+            // this sun that is the difference between N·L ≈ 0.45 (gold) and self-shadow (cool blue).
+            // The meadow stops being a colour and becomes a modelled surface. Everything else in this
+            // block exists to pay for that choice: at 7° flat ground receives only sin(7°) ≈ 0.12 of
+            // the beam, so intensity goes up and the fill comes down to keep the ratio.
+            //
+            // AZIMUTH 152° — light TRAVELS south-south-east, so the sun disc sits NNW (compass 332°),
+            // 62° off the axis of the west-facing wake frame. Round 1's 117° left the disc only 27°
+            // off that axis: still essentially contre-jour, where every surface facing the camera is
+            // lit at the same grazing angle and the frame resolves into silhouettes rather than
+            // modelled form. Swung to a true cross-light the rake does three jobs at once, and the
+            // direction is chosen so the light says what the landform already says (rule 5):
+            //   - the SHALLOW south wall that invites faces north, into the light, and takes the gold;
+            //   - the STEEP north wall that refuses faces south, away, and goes dark and cool beneath
+            //     a rim-lit crest;
+            //   - WEST-facing terrace risers catch N·L = cos(7°)·cos(62°) ≈ 0.47 against treads at
+            //     0.12 — a ~4:1 stripe, which is what finally makes the terraces count as terraces
+            //     from the spawn, and they face the v1 camera so the stripe is read side-on.
+            // The spawn bowl's sheer back wall faces west and so takes light too: the ground that
+            // refuses behind the player reads as a wall rather than a void.
+            //
+            // KNOCK-ON, deliberate: v2-spawn-side (view yaw 348°) was round 1's raking frame at 51°
+            // off the sun; it is now 16° off and becomes the near-contre-jour one — a low blaze with
+            // everything rim-lit, which is the fable-03 windmill-sunburst frame and no loss. v1, the
+            // wake frame, is the one that had to be right.
             var lightGo = new GameObject("Directional Light");
-            lightGo.transform.rotation = Quaternion.Euler(16f, 78f, 0f);
+            // SunEuler, not a literal: the sky's blaze and the cloud deck's banks read the same
+            // constant, so the sun cannot be in two places at once.
+            lightGo.transform.rotation = Quaternion.Euler(SunEuler);
             var light = lightGo.AddComponent<Light>();
             light.type = LightType.Directional;
-            light.color = new Color(1.00f, 0.90f, 0.72f);
-            light.intensity = 1.25f;
+            // Dawn gold, one step warmer than round 1's (1.00, 0.87, 0.68). Authored gamma
+            // (Light.color is gamma-decoded like any inspector colour), so this lands near
+            // (1.00, 0.67, 0.34) LINEAR — 3:1 red to blue. A 7° sun has travelled through far more
+            // atmosphere than a 17° one and is genuinely this orange; more to the point, the audit's
+            // complaint was that lit ground read "hue-97 grey-olive" while gold stayed in the sky,
+            // and a key this warm makes lit meadow resolve to (0.55, 0.48, 0.24) linear — gold-green
+            // — against blue-teal shade. Further than this and the warm white balance and warm
+            // highlights in the grade below double-count it into sodium.
+            light.color = new Color(1.00f, 0.84f, 0.62f);
+            // ROUND 3, 2.90 → 8.00, and this one number is most of the exposure fix.
+            //
+            // Round 2 set 2.90 from an arithmetic that DROPPED THE ALBEDO. Its comment claimed "a
+            // surface square to the beam reaches ~1.07 linear... flat lit meadow lands ~0.55
+            // linear". Both are the light's own value, not the surface's: the shader returns
+            // albedo × (direct + ambient) × shade, and the meadow's blend-weighted albedo is
+            // gamma (0.36, 0.39, 0.24) = LINEAR (0.105, 0.130, 0.046). So flat lit meadow actually
+            // landed at 0.072 linear (a seventh of the claim) and even the pale limestone square
+            // to the beam only reached 0.80. Nothing on the ground could clip, which is exactly
+            // what the round-2 critique measured: no pixel over 0.85, no sparkle anywhere.
+            //
+            // The number is now set by where MID-GREY should land, and mid-grey is the one level
+            // the rest of the chain is built around (the LogC contrast pivot below sits at linear
+            // 0.2249). Flat lit meadow must arrive there:
+            //     intensity = 0.20 / (wrapped 0.325 × albedo_G 0.130 × shade 0.83) ≈ 8.0
+            // Consequences, all measured through the full shader→bloom→vignette→LUT chain:
+            //   - flat LIT meadow 0.197 linear → sRGB 0.50 near, 0.55 at 80 m (target 0.5–0.6);
+            //   - flat CAST-SHADOW meadow 0.025 linear → sRGB 0.17 (target 0.12–0.18);
+            //   - limestone square to the beam 2.68 linear → red clips at 1.0 and blooms. THAT is
+            //     the handful of near-white pixels the frame has never had, and it costs nothing
+            //     elsewhere because character and meadow albedos are half the rock's.
+            // It also fixes the ground-versus-sky complaint directly. The sky and the cloud deck
+            // are UNLIT materials (GradientSky/CloudSea take no main light), so this raises the
+            // ground alone: horizon-to-lit-ground closes from 7.9:1 to 2.7:1. Gold stops being a
+            // thing that only happens in the sky.
+            light.intensity = 8.00f;
             light.shadows = LightShadows.Soft;
+            // NOT 1.0. At this elevation shadow covers most of the frame, and full-strength shadow
+            // over a cool ambient is exactly how "luminous cool shade" becomes mud. The 10% of direct
+            // light left inside shadow keeps shadowed ground reading as coloured, not vacant —
+            // the same instinct as the shader's _ShadowTint/_AmbientFloor pair.
+            light.shadowStrength = 0.9f;
 
             // Trilight ambient. GOTCHA (audit finding 3): RenderSettings colours are gamma-decoded
             // in a Linear project, so these triples are authored gamma-encoded to land at the
             // intended linear values. The old triples were authored as if linear — the ground pole
             // landed at 4.7% linear, a light trap that took every shadowed face to near-black.
-            // Storybook wants luminous shadows: uniformly cool sky/equator, only the ground bounce
-            // warm — that opposition to the warm sun IS the painterly warm-light/cool-shadow split.
+            // Storybook wants luminous shadows: cool sky/equator, only the ground bounce warm — that
+            // opposition to the warm sun IS the painterly warm-light/cool-shadow split.
+            //
+            // Round 1 fixed the trap's DIRECTION (cool sky, warm bounce, chroma over grey) and this
+            // pass keeps all of that. What it changes is the LEVEL, and that is the single biggest
+            // reason nothing in round1/v1,v2 separated. Do the arithmetic on those numbers: the sky
+            // pole at gamma (0.52, 0.64, 0.88) is LINEAR (0.23, 0.37, 0.75), while the key delivered
+            // 1.55 × sin(17°) = 0.45 to flat ground. In blue, the FILL beat the KEY four to one. An
+            // up-facing surface — i.e. the whole meadow, lit and shadowed alike — was therefore an
+            // ambient-driven surface with a little gold on top, which is precisely the measured
+            // result: a 0.23–0.41 band with σ 0.06 and the warm key nowhere on the ground.
+            //
+            // Round 2 quartered the fill so the sun would do the lighting and the sky only the
+            // shade. That direction was right and it stays. ROUND 3 gives back about 45% of it in
+            // linear terms, because the constraint that forced the cut has gone: the audit's
+            // failure was the FILL BEATING THE KEY in blue (0.75 fill against a 0.45 key), and
+            // against an 8.00 lamp flat ground now takes a 0.89 blue key against a 0.42 blue fill.
+            // The key wins in every channel, comfortably, at the level the fill needs to be for
+            // cast shadow to sit at sRGB 0.17 with all three channels alive rather than at the
+            // floor. Shade that is dark AND coloured is a fill job; no grade can invent chroma
+            // that the render never produced.
+            //
+            // The sky pole is also a little WARMER and a little less blue than round 2's, and that
+            // is measured off the bar rather than reasoned from the convention. Sampled across the
+            // darkest quartile of the near ground, fable-01/02/05/07 all put their shade at
+            // R > G > B (R−G between +0.019 and +0.038, B−G between −0.009 and −0.037) — the
+            // painterly "cool shadow" is cool RELATIVE TO THE KEY, not actually blue. Round 2's
+            // fill was blue enough that shaded meadow rendered CYAN — B above R — which is a hue no
+            // frame on the reference board contains. (It never reached the screen: the toe and the
+            // contrast below took it to black first. Lift those off round 2 and the cyan is what
+            // is underneath.) At these values cast-shadow meadow lands at
+            // sRGB (0.151, 0.173, 0.139): B now sits below G exactly as the references do, and it
+            // reads as deep warm olive against gold-green light — the fable-01 read the grade
+            // below is written for, the HUE MOVING WITH THE VALUE.
+            // How far this can go is capped by the meadow, not by the fill: the palette's albedo
+            // is linear (0.105, 0.130, 0.046), so green outruns red by 24% no matter what falls on
+            // it, and R can only pass G if the fill is as warm as the sun — which would spend the
+            // warm-key/cool-fill opposition entirely. Getting the last step to a genuinely
+            // brown-warm shade is a MEADOW PALETTE change (more straw and scuff in _MeadowGreen's
+            // neighbourhood), which belongs to the ground builder, not here.
+            // The ground bounce moves least: it is the only warmth in the fill and it reaches
+            // almost nothing but downward faces and the undersides of grass.
+            //
+            // CORRECTION to the round-2 comment: the terrain shader's _AmbientFloor does NOT
+            // backstop at "(0.10, 0.11, 0.14) linear". It is a shader Color property, so it is
+            // gamma-decoded like everything else here and lands at linear (0.010, 0.012, 0.017) —
+            // an order of magnitude under the trilight ground pole, i.e. inert on every terrain
+            // normal. Nothing below depends on it; it is left alone deliberately (the ground
+            // builder owns the rest of that SetColor block) but the claim should not be repeated.
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.62f, 0.70f, 0.82f);
-            RenderSettings.ambientEquatorColor = new Color(0.60f, 0.62f, 0.66f);
-            RenderSettings.ambientGroundColor = new Color(0.52f, 0.47f, 0.40f);
+            RenderSettings.ambientSkyColor = new Color(0.44f, 0.49f, 0.64f);
+            RenderSettings.ambientEquatorColor = new Color(0.42f, 0.44f, 0.55f);
+            RenderSettings.ambientGroundColor = new Color(0.40f, 0.34f, 0.26f);
 
             // The project's own gradient sky — NOT Skybox/Procedural, whose Rayleigh remap produces
             // an acid-green horizon band at any blue-shifted tint (measured G exceeding the R/B mean
@@ -577,11 +1292,8 @@ namespace Tarrock.Editor
             var sky = new Material(gradient != null ? gradient : Shader.Find("Skybox/Procedural"));
             if (gradient != null)
             {
-                sky.SetColor("_HorizonColor", HorizonLinear);                    // pale dawn gold
-                sky.SetColor("_ZenithColor", new Color(0.34f, 0.44f, 0.60f));    // cool grey-blue
-                sky.SetColor("_GroundColor", new Color(0.44f, 0.41f, 0.35f));    // muted haze below rim
-                sky.SetFloat("_Exponent", 1.25f);
-                sky.SetFloat("_HorizonHeight", 0.0f);
+                ApplySkyDescription(sky);
+                sky.SetFloat("_Dither", SkyDither);
             }
             else
             {
@@ -595,56 +1307,270 @@ namespace Tarrock.Editor
             RenderSettings.skybox = sky;
             RenderSettings.sun = light;
 
-            // Exponential² fog in the sky's horizon colour: aerial perspective from the first metres
-            // (18% at 100 m, ~72% at 250 m) instead of the old linear 150 m dead zone, which left the
-            // whole playable depth with zero atmospheric separation and then hit a mismatched tan
-            // wall. Aerial perspective CREATES the elevation read; it does not flatten it.
+            // Exponential² fog in the CLOUD SEA's colour, not the sky's horizon band: aerial
+            // perspective from the first metres (22% at 100 m, ~79% at 250 m) instead of the old
+            // linear 150 m dead zone. Two changes from the 07-27 pass, both from wave2_knoll:
+            //   - the colour is HazeLinear, so a far ridge fades toward the value of the deck it
+            //     stands in rather than toward a duller tan than the deck — that mismatch is why
+            //     the rim rock stayed a crisp dark shape on a bright plane;
+            //   - the density is nudged up so the far rim (200 m+ across a 256 m region) actually
+            //     dies, which is what sells "island", not "valley".
+            // Aerial perspective CREATES the elevation read; it does not flatten it.
+            //
+            // ROUND 2, the density only (the colour is the sky pass's constant and stays married to
+            // the deck): 0.0050 → 0.0044. The audit's finding was that the distant massifs came out
+            // as uniform lavender slabs — "haze does the depth work that value should". Half of that
+            // is fixed above and in the shadow settings, by giving those massifs a lit side and a
+            // dark side to ramp in the first place; this is the other half. At 0.0050 the mid-far
+            // band was already 43% hazed at 150 m and 63% at 200 m, so a ridge's own light/dark
+            // structure was being compressed into a third of its range before it ever reached the
+            // eye — the haze was arriving before the value did. At 0.0044 that band reads 35% / 54%,
+            // which hands the 120–180 m depths (exactly the range the new 180 m shadow distance now
+            // reaches) back to value, while the last 60 m still dies: 70% at 250 m, so the far rim
+            // goes on dissolving into the deck and the region still reads as an island, not a valley.
+            // Near stays darker and saturated, far lifts and desaturates — a ramp, not a wash.
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
-            RenderSettings.fogDensity = 0.0045f;
-            RenderSettings.fogColor = HorizonLinear.gamma;
+            RenderSettings.fogDensity = 0.0044f;
+            RenderSettings.fogColor = HazeLinear.gamma;
             DynamicGI.UpdateEnvironment();
 
             BuildPostVolume();
         }
 
-        // The grade: without it the image is raw untonemapped shader output — the single loudest
-        // "unfinished" signal the audit found. Neutral tonemapping (ACES desaturates and crushes,
-        // fighting "saturated but never garish"), a gentle warm/cool split in the grade, storybook
-        // vignette. Regenerates deterministically like everything else in this file.
+        /// <summary>
+        /// Adds a volume override to <paramref name="profile"/> AND PERSISTS IT.
+        ///
+        /// THE TRAP (this cost the whole grade once — TerrainProtoPost.asset shipped serialising six
+        /// components as <c>{fileID: 0}</c>): <c>VolumeProfile.Add&lt;T&gt;()</c> only
+        /// <c>CreateInstance</c>s the component and appends it to the profile's list. The instance
+        /// belongs to no asset file, so on save Unity writes a null reference for each one and the
+        /// profile reloads with six empty slots — a volume that grades nothing, silently, while the
+        /// code that authored it reads as if it worked. The component only becomes real when it is
+        /// added to the profile's asset file as a sub-asset, which is what Unity's own
+        /// VolumeProfileFactory does and what this helper exists to make unskippable. Every override
+        /// in <see cref="BuildPostVolume"/> goes through here; never call <c>profile.Add</c> direct.
+        /// </summary>
+        private static T AddPersistedOverride<T>(UnityEngine.Rendering.VolumeProfile profile)
+            where T : UnityEngine.Rendering.VolumeComponent
+        {
+            T component = profile.Add<T>();
+            // Belt and braces: recent URP sets both itself inside Add, older versions do not, and a
+            // sub-asset without HideInHierarchy shows up as loose clutter under the profile.
+            component.name = typeof(T).Name;
+            component.hideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector;
+            AssetDatabase.AddObjectToAsset(component, profile);
+            return component;
+        }
+
+        // The grade — the wake frame's first impression, and until this build it had never actually
+        // run (see AddPersistedOverride: the profile's six overrides were serialised as null, so
+        // every screenshot to date is raw untonemapped shader output. That, not the landform, is
+        // most of what reads as "unfinished" in Assets/Screenshots/wave2_*.png).
+        //
+        // What the grade is FOR (reference board, fable-01/02/04): dawn light that is gold where it
+        // lands and blue-grey where it doesn't, values that separate, colour that stays saturated
+        // but never garish (art-audio.md §Visual pillars). The frame arrives here already warm from
+        // the sun and already cool in the fill; the grade's job is to widen that gap, not to invent
+        // it, and to keep a hand-painted image out of a video-camera look — so no film grain, no
+        // chromatic aberration, no lens dirt. Regenerates deterministically like everything else.
+        //
+        // ROUND 3 — the exposure rebalance. Round 2 got the RAKE right (hard cast-shadow diagonals,
+        // gold on the south wall) and that is kept untouched; what it got wrong was the level, and
+        // three independent overshoots landed on top of each other: a quartered fill, a log
+        // contrast of 22 whose pivot sat four stops above the picture, and a −0.03 additive toe.
+        // Together they took the walkable foreground to LITERAL BLACK — mean luminance 0.0026,
+        // red and green clipped to zero over most of the frame — while nothing anywhere exceeded
+        // 0.85, so there was no sparkle either. Near-to-far read as an inverted 200:1 cliff rather
+        // than a ramp.
+        //
+        // WHERE ROUND 3 LANDS (sRGB display luminance, modelled end-to-end through the terrain
+        // shader → fog → bloom → vignette → the URP LUT chain in the order LutBuilderHdr actually
+        // applies it, then checked against the round-2 captures — the model reproduces round 2's
+        // measured near-ground mean, its channel-clipping signature and its 213:1 near/far cliff,
+        // and predicts its brightest pixel to within 0.005):
+        //     near cast-shadow meadow   0.17   (was 0.003)   all three channels alive
+        //     near lit meadow           0.45   (was 0.126)
+        //     lit meadow at 80 m        0.55   (was 0.38)
+        //     far lit meadow at 200 m   0.72
+        //     limestone square to beam  0.89   red clipping at 1.0, and blooming
+        //     darkest channel in frame  0.008  (was 0.000 across 60–96% of the frame)
+        //     rake, near lit : shade    2.7:1  — the reference board's own ground contrast is
+        //                                        2.4:1 (fable-07) to 4.1:1 (fable-02)
+        //     ramp, far lit : near shade 4.3:1 the right way round
+        // Every number below that changed was derived, not dialled. If a future pass moves the
+        // lamp, the contrast pivot arithmetic in ColorAdjustments has to be re-checked with it:
+        // those two are a pair, and round 2 came apart because they were moved independently.
         private static void BuildPostVolume()
         {
             var profile = ScriptableObject.CreateInstance<UnityEngine.Rendering.VolumeProfile>();
             AssetDatabase.DeleteAsset(PostProfilePath);
             AssetDatabase.CreateAsset(profile, PostProfilePath);
 
-            var tone = profile.Add<UnityEngine.Rendering.Universal.Tonemapping>();
+            // NEUTRAL, not ACES. ACES is the reflex choice and the wrong one here: it desaturates
+            // mids, crushes toe contrast, and skews bright warm light toward white — it would eat
+            // the gold out of the dawn and the green out of the meadow, which are the two colours
+            // the Cliff's colour script actually names. Neutral rolls the highlights off without
+            // arguing with the palette, which is what a hand-painted image wants from a tonemapper.
+            var tone = AddPersistedOverride<UnityEngine.Rendering.Universal.Tonemapping>(profile);
             tone.mode.Override(UnityEngine.Rendering.Universal.TonemappingMode.Neutral);
 
-            var adjust = profile.Add<UnityEngine.Rendering.Universal.ColorAdjustments>();
-            adjust.postExposure.Override(0.15f);
-            adjust.contrast.Override(8f);
-            adjust.saturation.Override(6f);
-            adjust.colorFilter.Override(new Color(1.00f, 0.985f, 0.955f));
+            // EXPOSURE 0. The lamp above carries the level now, and it is the only lever that can:
+            // post exposure multiplies the unlit sky and the unlit cloud deck along with the
+            // ground, so buying the meadow's brightness here would have kept the 7.9:1 sky-over-
+            // ground ratio and simply pushed the far haze (already sRGB 0.72) to white. Neutral is
+            // the correct value for a grade whose render arrives correctly exposed.
+            //
+            // CONTRAST 22 → 14, and this is the second half of the round-2 crush. URP does
+            // contrast in LogC about ACEScc mid-grey, which decodes to LINEAR 0.2249. Round 2 put
+            // the whole walkable frame four to five stops under that pivot, where log contrast is
+            // not an expander but a divider — and worse, LogC's toe is a straight line through
+            // (linear 0, logC 0.0928), so past a certain darkness the pivot map returns a NEGATIVE
+            // logC value and the decode gives negative linear. The clip point is exact:
+            //     linear_min = (0.4136 − 0.32078/c − 0.092819) / 5.301883
+            // At c = 1.22 that is 0.0109 linear. Round 2's shadowed meadow rendered at 0.011–0.016
+            // linear, i.e. straddling it — which is why the measured foreground was not "dark" but
+            // literally zero in red and green. At c = 1.14 the clip point is 0.0074, and the
+            // darkest large surface in frame (the refusing north wall, red 0.0085 linear) clears
+            // it. Nothing the player has to read is legislated out of the picture any more.
+            // The over-0.9 end the audit asked for is the lamp's job, not this one.
+            // Saturation 18 → 16: the shadows/highlights split below now actually fires on the
+            // ground (it never did in round 2 — see its ranges), so chroma arrives from the split
+            // rather than from a global boost that lifts the haze along with everything else.
+            var adjust = AddPersistedOverride<UnityEngine.Rendering.Universal.ColorAdjustments>(profile);
+            adjust.postExposure.Override(0f);
+            adjust.contrast.Override(14f);
+            adjust.saturation.Override(16f);
+            // A film of gold over the whole image — under 5% and below conscious notice, which is
+            // where a colour filter belongs. The dawn's actual warmth is the lamp's job, above.
+            adjust.colorFilter.Override(new Color(1.00f, 0.975f, 0.945f));
 
-            var smh = profile.Add<UnityEngine.Rendering.Universal.ShadowsMidtonesHighlights>();
-            smh.shadows.Override(new Vector4(0.88f, 0.95f, 1.10f, 0f));   // cool shadows
-            smh.highlights.Override(new Vector4(1.06f, 1.02f, 0.94f, 0f)); // warm highlights
+            // The warm-light/cool-shadow separation, and the single most load-bearing override here.
+            // Study fable-01: the shadowed ground is not dark green, it is blue-grey, and the lit
+            // ground is not bright green, it is gold — the hue MOVES with the value. Shadows take a
+            // clear blue lift; highlights take gold and drop blue.
+            //
+            // TWO ROUND-2 BUGS ARE FIXED HERE, and between them they explain why the split never
+            // reached the picture at all.
+            //
+            // (1) THE TRIPLES ARE GAMMA-DECODED. ColorUtils.PrepareShadowsMidtonesHighlights runs
+            //     every component through Mathf.GammaToLinearSpace before it reaches the shader, so
+            //     round 2's shadows (0.82, 0.92, 1.16) arrived as a multiplier of
+            //     (0.638, 0.828, 1.386) — a 36% cut in red, not the ~18% the number reads as, and
+            //     applied at full strength over the whole ground. That is most of why red was the
+            //     first channel to die. The values below are authored through the INVERSE
+            //     (Mathf.LinearToGammaSpace) so the number in the source and the number the shader
+            //     multiplies by finally agree: shadows land on (1.00, 0.96, 1.08) and highlights on
+            //     (1.14, 1.04, 0.88). Do not "tidy" these back to round numbers — round numbers
+            //     here mean an unintended multiplier.
+            //     The shadow tint is also gentler than round 2 read as intending, and deliberately:
+            //     it no longer cuts red at all. A red cut on a green meadow under a cool fill is
+            //     how shade turns cyan, and no frame on the reference board has cyan shade. The
+            //     blue lift stays, so the tint is still cool — it just stops fighting the key. It
+            //     costs the lit side nothing: this bucket ends at luminance 0.10 and lit meadow
+            //     arrives at 0.17, so every lit probe is bit-identical with or without it.
+            //
+            // (2) THE RANGES WERE ABOVE THE PICTURE. shadowsEnd 0.35 / highlightsStart 0.50 are
+            //     luminances in the graded linear image, and round 2's SUNLIT meadow arrived at
+            //     that stage with a luminance of 0.17. Both the lit meadow and the shade were
+            //     therefore inside the SHADOWS bucket: the sunlit ground was being tinted cool and
+            //     the gold half of the split never fired on any walkable surface in the frame. It
+            //     shows in the capture — round2/v1's brightest meadow band measures
+            //     (0.148, 0.172, 0.160), which is not gold, it is grey. With the lamp above, cast
+            //     shadow reaches this stage at 0.020 and lit meadow at 0.17, so the ranges are set
+            //     to straddle THAT: shade sits ~91% in the cool bucket, lit meadow takes about a
+            //     third of the gold and the sunlit south wall takes all of it. highlightsEnd comes
+            //     down from its 1.0 default for the same reason — left there, the smoothstep would
+            //     have handed the meadow 19% of a tint it needs at full strength.
+            var smh = AddPersistedOverride<UnityEngine.Rendering.Universal.ShadowsMidtonesHighlights>(profile);
+            smh.shadows.Override(new Vector4(1.000f, 0.982f, 1.036f, 0f));    // → (1.00, 0.96, 1.08) cool shade
+            smh.highlights.Override(new Vector4(1.061f, 1.018f, 0.945f, 0f)); // → (1.14, 1.04, 0.88) gold light
+            smh.shadowsStart.Override(0f);
+            smh.shadowsEnd.Override(0.10f);
+            smh.highlightsStart.Override(0.10f);
+            smh.highlightsEnd.Override(0.30f);
 
-            var balance = profile.Add<UnityEngine.Rendering.Universal.WhiteBalance>();
+            // THE FLOOR — and in round 2 this was the toe, and the toe is what ate the picture.
+            //
+            // Lift's w is an ADDITIVE offset in linear pre-tonemap space, and the rgb triple is
+            // luminance-normalised around it (ColorUtils.PrepareLiftGammaGain), so round 2's
+            // (0.96, 0.99, 1.06, −0.03) resolved to a constant subtraction of
+            // (−0.0395, −0.0296, −0.0057) from every pixel in the frame. Set that beside what
+            // actually reached it: after the round-2 contrast had finished with the shadowed
+            // meadow it was at 0.004 linear. The toe took away eight times the whole signal. Red
+            // and green went negative and clipped; blue survived only because the "blue-black"
+            // hue tilt made its offset seven times smaller — which is precisely the signature the
+            // critique measured, red and green at literal zero over 60–96% of the frame with blue
+            // still readable. The intent (a storybook page's deepest shade is blue-black, never a
+            // neutral crush) was right; the sign and the magnitude were not.
+            //
+            // ROUND 3 inverts it. w = +0.0025 is a small POSITIVE floor: nothing anywhere in the
+            // frame can now reach zero in every channel, which is the ask — cast shadow keeps its
+            // hue. It is invisible where the picture lives (1% of the lit meadow, 0.3% of the
+            // haze) and decisive where it does not: the refusing north wall's red, which contrast
+            // alone leaves at 0.005, and the crevices and rock undersides, which land at sRGB
+            // 0.01–0.04 — still the darkest thing in frame, still near-black, but ink on paper
+            // rather than a hole in it. The reference board agrees: fable-01/05/07 hold their
+            // fifth-percentile min-channel at 0.047–0.051 and never bottom out across the
+            // walkable ground.
+            // The triple keeps the hue job and nothing else. Pulled in from 3 sRGB points of tilt
+            // to 1.5, it resolves to (−0.0016, +0.0001, +0.0034): red is still the first channel
+            // to leave, so the deepest shade is still blue-black, but the tilt is now a fifth of
+            // the darkest value it acts on instead of eight times it.
+            var floor = AddPersistedOverride<UnityEngine.Rendering.Universal.LiftGammaGain>(profile);
+            floor.lift.Override(new Vector4(0.995f, 1.000f, 1.010f, 0.0025f));
+
+            // Warm dawn white balance — kept modest ON PURPOSE. Temperature is global: it warms the
+            // shade as readily as the light, so a heavy hand here would spend the cool half of the
+            // split the override above just bought. Enough to say "dawn", not enough to say "filter".
+            // Tint a touch toward magenta pulls the meadow's mass off acid green into olive-gold.
+            var balance = AddPersistedOverride<UnityEngine.Rendering.Universal.WhiteBalance>(profile);
             balance.temperature.Override(8f);
-            balance.tint.Override(2f);
+            balance.tint.Override(3f);
 
-            var bloom = profile.Add<UnityEngine.Rendering.Universal.Bloom>();
-            bloom.threshold.Override(1.10f);
-            bloom.intensity.Override(0.35f);
-            bloom.scatter.Override(0.65f);
+            // Bloom for the low sun: threshold just under 1 so it catches the rim-lit crests, the
+            // backlit grass and the horizon band and NOTHING else — bloom on a storybook frame is
+            // the glow around a light source, not a haze over the picture. Wide scatter keeps it
+            // soft-edged (a painted glow, not a lens artefact) and the gold tint means the light
+            // that spills is the same light that fell. HQ filtering left off: this scene has a
+            // Mobile renderer target, and scatter buys the same softness for free.
+            // ROUND 3: threshold 1.05 → 0.90. Round 2 set 1.05 to keep "a great deal of ordinary
+            // lit grass" out of the bloom, but that fear was based on the same dropped-albedo
+            // arithmetic as the lamp: against a 2.90 lamp the brightest thing on the ground was
+            // 0.80 linear, so a 1.05 threshold caught nothing at all outside the sky and the frame
+            // ended up with no sparkle whatsoever. Against the 8.00 lamp the numbers are real, and
+            // 0.90 is chosen from them by margin on both sides:
+            //     limestone square to the beam    2.69 linear   blooms
+            //     the sky's blaze core            1.75 linear   blooms
+            //     the sky's horizon band          0.79 linear   does not — a 14% margin, so the
+            //                                                   glow stays around the light source
+            //                                                   and never becomes a veil over it
+            //     flat lit meadow at 80 m         0.29 linear   does not, by a factor of three
+            // So bloom lands on exactly what it is for — the blaze, sun-square rock, rim-lit
+            // crests and backlit grass — and it is what carries those pixels the last step to
+            // white. Intensity, scatter and tint are unchanged; they were never the problem.
+            var bloom = AddPersistedOverride<UnityEngine.Rendering.Universal.Bloom>(profile);
+            bloom.threshold.Override(0.90f);
+            bloom.intensity.Override(0.45f);
+            bloom.scatter.Override(0.72f);
+            bloom.tint.Override(new Color(1.00f, 0.93f, 0.80f));
 
-            var vignette = profile.Add<UnityEngine.Rendering.Universal.Vignette>();
+            // Storybook vignette: the corners settle and the eye is pushed down the valley, but
+            // soft enough to stay unnoticed. The colour is a deep blue-grey rather than black — a
+            // black vignette punches a hole in an illustration, where a cool one reads as the
+            // page's own edge falling into shade.
+            // ROUND 3 backs 0.24 out to 0.18 and softens 0.45 → 0.50. URP scales these by 3 and 5
+            // respectively, so 0.24/0.45 was multiplying the bottom-centre foreground by 0.82 and
+            // the corners by 0.54 — a second darkening laid over the near ground, which is the one
+            // region of the frame this pass exists to make readable. At 0.18/0.50 the same points
+            // take 0.88 and 0.70: still a settled edge, no longer a tax on the walkable floor.
+            var vignette = AddPersistedOverride<UnityEngine.Rendering.Universal.Vignette>(profile);
             vignette.intensity.Override(0.18f);
-            vignette.smoothness.Override(0.40f);
+            vignette.smoothness.Override(0.50f);
+            vignette.color.Override(new Color(0.05f, 0.06f, 0.10f));
 
             EditorUtility.SetDirty(profile);
+            AssetDatabase.SaveAssets();
 
             var volumeGo = new GameObject("PostVolume");
             var volume = volumeGo.AddComponent<UnityEngine.Rendering.Volume>();
@@ -781,61 +1707,94 @@ namespace Tarrock.Editor
         // derived from the same slope/height logic as the ground shader, so grass grows exactly
         // where the ground reads grassy. (Per-patch culling and distance fade come free; a
         // particle system has neither and pays overdraw per blade — wrong tool for a meadow.)
-        // Bound-state canon: the tufts are MOTIONLESS (Tarrock/GrassTuft carries no sway).
-        private static void BuildGrassDetails(TerrainData terrainData, Terrain terrain)
+        //
+        // MQ00 opens on "high, wind-combed grass under a lightening sky". Round 1 built that as ONE
+        // tuft prototype scattered at near-constant spacing, and the review found what that always
+        // finds: a single silhouette repeated to the horizon, every tuft inside a ten-degree hue
+        // band, even spacing with no clumps and no bare ground, and a floor between the tufts that
+        // read as blank paint. Round 2 answers each of those in a specific place:
+        //
+        //   species    FOUR prototypes, not one (see Species below) — fine fescue, dry straw on the
+        //              exposed ground, broad blue-green sedge in the hollows, and a sparse tall bent
+        //              that breaks the top line. Different blade counts, heights and arcs, so the
+        //              silhouettes differ before any colour is applied.
+        //   colour     each species sits on its own stretch of Tarrock/GrassTuft's cool->green->dry
+        //              ramp, and the ramp itself is driven by the SAME exposure drift the CPU sorts
+        //              the species with (ExposureDrift, mirrored on both sides) — so straw grows on
+        //              the gold ground rather than merely being tinted gold at random.
+        //   clumping   three scales of noise, not two: the broad scour, the ragged edge, and a new
+        //              ~2.4 m TUSSOCK octave with most of its range pushed to the ends, which is
+        //              what turns even scatter into stands of grass with bare ground between them.
+        //   drifts     two WORN paths where the grass is beaten down to near-bare — the way west
+        //              along the valley floor and the spur up to the dead tree. They are FOUND, not
+        //              authored: the generator scans for the floor, so a landform edit moves them.
+        //   turf       the tuft roots are tinted toward the ground shader's own palette, read off
+        //              the terrain material rather than restated here, so a change to the ground
+        //              colour script carries into the grass with no second edit.
+        //   combed     a STATIC lean (the shape the last wind left), stronger on exposed ground than
+        //              in hollows, its direction wandering a few degrees over tens of metres. No
+        //              ambient motion at all: director ruling 2026-07-31, art-audio.md §The
+        //              world-state is the art direction. The meadow's only motion is the
+        //              displacement response to the Fool and Pip (see BuildGrassBenders).
+        //   no cutoff  draw distance pushed to 120 m and the shader squashes tufts into the ground
+        //              from 78 m, so the patch cull never draws a line across the meadow.
+        //
+        // ROUND 3 answers the gauntlet's findings on round2/v3, v6 and v7, which came down to one
+        // sentence: every tuft is an isolated plant standing on naked ground. Four places again:
+        //
+        //   thatch     a FIFTH prototype (SpeciesThatch) that is not a plant but the FLOOR — a
+        //              2-5 cm mat of wide low cards, tinted to the ground builder's own turf
+        //              palette and 36% darker at its root, scattered by its own flat rule so it
+        //              fills the gaps the tuft clumping opens rather than thinning with them. Tuft
+        //              bases are buried in it; there is no longer a place where two neighbouring
+        //              tufts have nothing but the terrain pass between them.
+        //   the fold   the comb was there in round 2 and did not read, because leaning a radially
+        //              symmetric fan sideways leaves a radially symmetric fan. Tarrock/GrassTuft
+        //              now folds each blade by which side of its own tuft it grew on (_CombFold)
+        //              and carries the whole crown downwind (_CombDrift), and the leans themselves
+        //              went up by about half. Still entirely static — a POSE, not a motion.
+        //   earned     bareness now has a cause. The ambient floors are lifted (a hole with no
+        //              reason reads as a bug), and the worn drifts gained a CORE that goes to
+        //              exactly zero for tufts and thatch alike — a trodden path with bare earth in
+        //              it, found from the landform, not painted.
+        //   the ring   the bend at a standing body is held flat across the inner half of its
+        //              radius and falls off only at the rim (_BendCoreShare), so it photographs as
+        //              a laid disc with an edge instead of a dish nobody could find in the frame.
+        private static void BuildGrassDetails(TerrainData terrainData, Terrain terrain, Material ground)
         {
-            Shader tuftShader = Shader.Find("Tarrock/GrassTuft");
+            Shader tuftShader = Shader.Find(TuftShaderName);
             if (tuftShader == null)
             {
                 Debug.LogWarning("[Tarrock] Tarrock/GrassTuft not found; grass details skipped.");
                 return;
             }
 
-            Mesh tuft = BuildTuftMesh();
-            AssetDatabase.DeleteAsset(TuftMeshPath);
-            AssetDatabase.CreateAsset(tuft, TuftMeshPath);
+            // The ground builder owns the turf albedo. Read it back rather than restating it: the
+            // tufts' roots are tinted toward these, and a grass palette hand-copied from the ground
+            // palette is a pair of numbers that will drift.
+            //
+            // ROUND-2 INTEGRATION NOTE: the ground pass renamed its palette (the old _Grass* ramp
+            // became the meadow/turf split), so these read the NEW property names. The fallbacks are
+            // the shared constants declared above BuildTerrainMaterial, which are the same values
+            // the material is written with — so a missed rename degrades to "identical, and loud in
+            // the log" rather than to a wrong colour.
+            Color turfSoil = ReadColour(ground, "_TurfSoil", TurfSoil);
+            Color turfOchre = ReadColour(ground, "_TurfOchre", TurfOchre);
+            Color turfGreen = ReadColour(ground, "_MeadowGreen", MeadowGreen);
+            // The dry tint is the ground's own thatch: straw tufts grow out of thatch, so the two
+            // cannot be different browns.
+            Color turfDry = turfOchre;
+            // Roots sit in soil with the meadow's green just above them — the ground pass paints a
+            // green root note at its dab centres, and this is the tuft side of the same blend.
+            Color turfMid = Color.Lerp(turfSoil, turfGreen, 0.55f);
 
-            var grassMat = AssetDatabase.LoadAssetAtPath<Material>(TuftMaterialPath);
-            if (grassMat == null)
+            var prototypes = new DetailPrototype[Species.Length];
+            for (int s = 0; s < Species.Length; s++)
             {
-                grassMat = new Material(tuftShader);
-                AssetDatabase.CreateAsset(grassMat, TuftMaterialPath);
+                prototypes[s] = BuildTuftPrototype(Species[s], tuftShader, turfMid, turfDry);
             }
-            else
-            {
-                grassMat.shader = tuftShader;
-            }
 
-            grassMat.SetColor("_BaseColor", new Color(0.42f, 0.50f, 0.24f));
-            grassMat.SetFloat("_ShadeWrap", 0.35f);
-            grassMat.SetFloat("_AmbientBoost", 1f);
-            grassMat.enableInstancing = true;
-            EditorUtility.SetDirty(grassMat);
-
-            // Detail prototypes want a PREFAB carrying the mesh + material.
-            var temp = new GameObject("GrassTuft");
-            temp.AddComponent<MeshFilter>().sharedMesh = tuft;
-            temp.AddComponent<MeshRenderer>().sharedMaterial = grassMat;
-            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(temp, TuftPrefabPath);
-            Object.DestroyImmediate(temp);
-
-            var prototype = new DetailPrototype
-            {
-                prototype = prefab,
-                usePrototypeMesh = true,
-                useInstancing = true,
-                renderMode = DetailRenderMode.VertexLit,
-                // Scale factors on the 0.35 m tuft mesh. Ankle-to-shin height against the 1.7 m
-                // Fool — the first pass shipped 0.7-1.4 and the meadow read as waist-high shrubs.
-                minWidth = 0.45f,
-                maxWidth = 0.8f,
-                minHeight = 0.4f,
-                maxHeight = 0.75f,
-                noiseSpread = 0.15f,
-                healthyColor = Color.white,
-                dryColor = Color.white,
-            };
-            terrainData.detailPrototypes = new[] { prototype };
+            terrainData.detailPrototypes = prototypes;
 
             const int DetailRes = 512;
             terrainData.SetDetailResolution(DetailRes, 32);
@@ -845,10 +1804,17 @@ namespace Tarrock.Editor
             // BEFORE SetDetailLayer — both this and SetDetailResolution clear existing layers.
             terrainData.SetDetailScatterMode(DetailScatterMode.InstanceCountMode);
 
-            // Density from the landform: grass on gentle green ground only (steepness under the
-            // shader's rock threshold, above the cloud band, below the bleached tops), thinned by
-            // broad noise so the meadow is patchy rather than a carpet.
-            var density = new int[DetailRes, DetailRes];
+            Vector2[] wayWest = FindValleyDrift(terrainData);
+            Vector2[] wayToTree = FindTreeSpur(wayWest);
+
+            var density = new int[Species.Length][,];
+            for (int s = 0; s < Species.Length; s++)
+            {
+                density[s] = new int[DetailRes, DetailRes];
+            }
+
+            var share = new float[Species.Length];
+
             for (int dz = 0; dz < DetailRes; dz++)
             {
                 float nz = (dz + 0.5f) / DetailRes;
@@ -857,60 +1823,1113 @@ namespace Tarrock.Editor
                     float nx = (dx + 0.5f) / DetailRes;
                     float steep = terrainData.GetSteepness(nx, nz);
                     float h = terrainData.GetInterpolatedHeight(nx, nz);
-                    if (steep > 24f || h < 13f || h > 52f)
+
+                    // SOFT band edges, not hard cuts: the old `steep > 24 || h < 13 || h > 52`
+                    // test drew the grass boundary as a contour line you could trace with a
+                    // finger. Grass now thins out of the rock and out of the bleached tops over
+                    // several metres, which is also how a real hillside runs out of soil.
+                    //
+                    // The centres are the SHARED band constants (declared above
+                    // BuildTerrainMaterial), so the ground shader's turf and this density map fade
+                    // out across the same numbers — which is the whole point of the shared surface.
+                    // Only the feather widths are local, because the shader feathers in its own
+                    // units (_TurfFeatherDeg / _TurfFeatherM).
+                    float slopeFade = 1f - Mathf.SmoothStep(0f, 1f,
+                        Mathf.InverseLerp(GrassBandSteepMaxDeg - 7f, GrassBandSteepMaxDeg + 3f, steep));
+                    float lowFade = Mathf.SmoothStep(0f, 1f,
+                        Mathf.InverseLerp(GrassBandHeightLow - 1f, GrassBandHeightLow + 3f, h));
+                    float highFade = 1f - Mathf.SmoothStep(0f, 1f,
+                        Mathf.InverseLerp(GrassBandHeightHigh - 6f, GrassBandHeightHigh + 2f, h));
+                    float band = slopeFade * lowFade * highFade;
+                    if (band <= 0f)
                     {
                         continue;
                     }
 
                     float wx = nx * TerrainSize;
                     float wz = nz * TerrainSize;
-                    // 0-2 instances per half-metre cell (up to ~8/m²) — the live test showed 2/cell
-                    // reads as a lush meadow; the noise thins it to patches so it breathes.
-                    float patch = Fbm(wx * 0.045f + 5f, wz * 0.045f + 11f); // -1..1
-                    int amount = Mathf.RoundToInt(Mathf.Lerp(0f, 2.2f, Mathf.InverseLerp(-0.15f, 0.75f, patch)));
-                    density[dz, dx] = amount;
+
+                    // THREE scales of patchiness, and the third is the one round 1 was missing.
+                    //
+                    // The broad octave (~35 m features) opens the wind-scoured ground where the
+                    // Cliff has been worked at for three hundred years; the ragged octave (~9.5 m)
+                    // keeps the edges of those bald patches from being round; the TUSSOCK octave
+                    // (~2.4 m) is grass's own habit — it grows in stands, and the gaps between the
+                    // stands are as much of the picture as the stands are. Its remap throws most of
+                    // the field to the ends of the range, so a cell is usually either in a tussock
+                    // or in the bare ground beside one, and rarely at the average.
+                    //
+                    // The InverseLerp windows are set to this Fbm's MEASURED range (about -0.44 to
+                    // +0.39, not ±1 — five octaves of gradient noise never reach their nominal
+                    // bounds), so each term uses its whole 0-1 span.
+                    //
+                    // ROUND-3 FLOORS. Round 2's exponents and floors (1.6 / 0.42 / 0.10) put the
+                    // product's low end near zero over a good deal of the meadow, and that is where
+                    // "isolated plants on naked ground" came from as much as from the missing
+                    // thatch: an AMBIENT hole is not read as sparse grass, it is read as a mistake,
+                    // because nothing in the picture explains it. The floors are lifted so that
+                    // clumping still swings the density by ~3.7x (round 2 swung it by 14x) but the
+                    // bottom of the swing is thin grass rather than none. Bareness is now EARNED —
+                    // it belongs to the worn drifts below, which are the one thing on this plateau
+                    // that has a reason to be bare.
+                    float scour = Mathf.Pow(
+                        Mathf.InverseLerp(-0.30f, 0.34f, Fbm(wx * 0.028f + 5f, wz * 0.028f + 11f)), 1.15f);
+                    float ragged = Mathf.InverseLerp(-0.42f, 0.42f, Fbm(wx * 0.105f + 41f, wz * 0.105f + 7f));
+                    float tussock = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(
+                        0.34f, 0.74f, Mathf.InverseLerp(-0.40f, 0.40f, Fbm(wx * 0.42f + 17f, wz * 0.42f + 29f))));
+
+                    float cover = scour * Mathf.Lerp(0.58f, 1f, ragged) * Mathf.Lerp(0.38f, 1.42f, tussock);
+
+                    // The worn drifts, and the ONE place on the plateau the ground is allowed to be
+                    // bare. `ragged` doubles as the edge wander so the path is not a ruled line.
+                    //
+                    // TWO bands, not one. The outer band thins the grass over a couple of metres
+                    // either side (a desire line is grass beaten thin, not turf removed); the inner
+                    // CORE — a footpath's worth of it, 0.25-0.6 m wide — goes to exactly zero, for
+                    // the tufts AND for the thatch. That last part is what makes it read as trodden
+                    // earth instead of a mown stripe: a path with ground cover still in it is a
+                    // lawn. Round 2 bottomed the drift out at 9% and the review could not tell the
+                    // drifts from the ambient gaps, because there was no place where the meadow
+                    // stopped for a reason you could name.
+                    float driftEdge = Mathf.Lerp(0.55f, 1.35f, ragged);
+                    float toDrift = Mathf.Min(
+                        DistanceToPolyline(wx, wz, wayWest), DistanceToPolyline(wx, wz, wayToTree));
+                    float wear = 1f - Mathf.SmoothStep(0f, 1f,
+                        Mathf.InverseLerp(driftEdge, driftEdge + 1.9f, toDrift));
+                    float coreRadius = driftEdge * 0.45f;
+                    float bare = 1f - Mathf.SmoothStep(0f, 1f,
+                        Mathf.InverseLerp(coreRadius, coreRadius + 0.35f, toDrift));
+                    cover *= Mathf.Lerp(1f, 0.22f, wear) * (1f - bare);
+
+                    // Which SPECIES grow here. The exposure drift is the shader's own field
+                    // (ExposureDrift), so a tuft's species and its tint agree by construction:
+                    // straw stands on the ground that is painted gold, sedge in the ground that is
+                    // painted cool.
+                    float exposure = ExposureDrift(wx, wz);
+                    float strawWeight = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.44f, 0.80f, exposure));
+                    float sedgeWeight = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.54f, 0.16f, exposure));
+                    // Bent is an ACCENT — a couple of tall wisps that break the top line, never a
+                    // ground cover. Gated to the tussock field as well as to exposure so it appears
+                    // in stands rather than as evenly sprinkled spikes.
+                    float bentGate = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.52f, 0.84f, tussock))
+                                     * Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.32f, 0.60f, exposure));
+
+                    // A trampled edge is where the dry stuff gets in: straw fringes the drifts,
+                    // which is what stops them reading as a bald stripe painted on the meadow.
+                    float fringe = wear * (1f - wear) * 4f;
+
+                    share[SpeciesStraw] = (0.62f * strawWeight) + (0.30f * fringe);
+                    share[SpeciesSedge] = 0.62f * sedgeWeight;
+                    share[SpeciesBent] = 0.16f * bentGate;
+                    share[SpeciesFescue] = Mathf.Max(
+                        0.18f, 1f - share[SpeciesStraw] - share[SpeciesSedge] - share[SpeciesBent]);
+
+                    // Instances per half-metre cell. Fractional coverage is DITHERED against a
+                    // per-cell hash rather than rounded: rounding quantises the meadow into visible
+                    // density plateaus, while dithering turns 0.4 into "four cells in ten carry a
+                    // tuft" — thin grass rather than short grass, which is what a wind-scoured
+                    // meadow actually looks like. Each species dithers against its own hash offset,
+                    // or the four layers would land in the same cells and un-clump each other.
+                    //
+                    // Round 2 measured 3.35 tufts/m² over a 60 m patch of the valley floor, with 39%
+                    // of cells thinned to near-bare and the lushest stands near 14/m² — the gap
+                    // between those numbers being the clumping that round 1 (2.8/m², almost no
+                    // spread) had none of.
+                    //
+                    // ROUND 3 moves the FLOOR, not the ceiling. The three raised terms above lift
+                    // the cover product by about 1.55x on average, so this multiplier comes down
+                    // from 4.4 to hold the arithmetic roughly where the eye wants it: mean lands
+                    // near 4.5 tufts/m² (up from 3.35 — the meadow genuinely needed thickening),
+                    // the near-bare 39% is gone, and the peaks are unchanged because they were
+                    // never set here in the first place — Species[s].MaxPerCell clamps them, and
+                    // those are untouched. Thin grass where round 2 had none; the same stands where
+                    // round 2 had stands.
+                    const float MaxTuftsPerCell = 3.8f;
+                    float instances = cover * band * MaxTuftsPerCell;
+
+                    for (int s = 0; s < Species.Length; s++)
+                    {
+                        if (s == SpeciesThatch)
+                        {
+                            // The thatch is the floor, not one of the plants standing on it, so it
+                            // is scattered by its own rule below rather than out of the tuft
+                            // budget's share. Sharing the budget would be self-defeating: every mat
+                            // would be paid for with a tuft, and the gaps the mat exists to fill
+                            // would open again exactly as fast as it filled them.
+                            continue;
+                        }
+
+                        float dither = Hash21(
+                            dx * 0.37f + Species[s].DitherOffset, dz * 0.53f + Species[s].DitherOffset * 1.7f);
+                        density[s][dz, dx] = Mathf.Clamp(
+                            Mathf.FloorToInt(instances * share[s] + dither), 0, Species[s].MaxPerCell);
+                    }
+
+                    // THE THATCH LAYER. Deliberately the FLATTEST field in this loop: it carries the
+                    // slope/height band (thatch does not grow on bare rock either) and the drifts
+                    // (the worn core is bare of everything, which is the whole point of it), and
+                    // almost nothing else. No tussock octave above all — the tussock octave is what
+                    // opens the gaps BETWEEN tufts, and a mat that thinned in the same places would
+                    // leave the bare ground exactly where the tufts had already left it.
+                    //
+                    // The mild `scour` weighting is the one variation kept: scoured ground carries
+                    // less of everything, so the exposed gold patches run slightly thinner mat than
+                    // the sheltered hollows do, which agrees with the tint ramp and the comb.
+                    //
+                    // THE BUDGET, because a full-coverage ground layer is where a frame budget goes
+                    // to die and this number is the whole of it. Cells are 0.5 m (512 detail res
+                    // over a 256 m region), so one mat per cell is 4 per m². thatchCover runs about
+                    // 0.87 through the meadow body, so 1.15 dithers to ~1.0 mats/cell ≈ 4.0/m²:
+                    // roughly 290 triangles per square metre of meadow, against the tuft layer's
+                    // ~85. Everything past 52 m is squashed flat by the shader's fade, so the far
+                    // half of that is vertex cost with no pixels behind it.
+                    //
+                    // Turn THIS number down first if the ground layer ever has to get cheaper — it
+                    // trades coverage for cost linearly and changes nothing else about the look.
+                    const float MaxMatsPerCell = 1.15f;
+                    float thatchCover = band * Mathf.Lerp(1f, 0.78f, scour)
+                                        * Mathf.Lerp(1f, 0.30f, wear) * (1f - bare);
+                    float thatchDither = Hash21(
+                        dx * 0.37f + Species[SpeciesThatch].DitherOffset,
+                        dz * 0.53f + Species[SpeciesThatch].DitherOffset * 1.7f);
+                    density[SpeciesThatch][dz, dx] = Mathf.Clamp(
+                        Mathf.FloorToInt(thatchCover * MaxMatsPerCell + thatchDither),
+                        0,
+                        Species[SpeciesThatch].MaxPerCell);
                 }
             }
 
-            terrainData.SetDetailLayer(0, 0, 0, density);
-            terrain.detailObjectDistance = 90f;
+            for (int s = 0; s < Species.Length; s++)
+            {
+                terrainData.SetDetailLayer(0, 0, s, density[s]);
+            }
+
+            // Pushed from 90 m to 120 m and paired with the shader's 78→114 m height fade: the
+            // fade does the hiding, so the per-patch cull only ever collects tufts that are
+            // already squashed flat. No hard line across the meadow at any distance.
+            terrain.detailObjectDistance = 120f;
             terrain.detailObjectDensity = 1f;
         }
 
-        /// <summary>Three quads crossed at 60°, ~0.35 m, vertex-coloured dark base → light tip,
-        /// tips leaning slightly outward. Solid stylised blades — no texture, no cutout.</summary>
-        private static Mesh BuildTuftMesh()
+        /// <summary>Mesh, material and prefab for one grass species, wrapped in the DetailPrototype
+        /// the terrain scatters it with.</summary>
+        private static DetailPrototype BuildTuftPrototype(
+            TuftSpecies species, Shader tuftShader, Color turfMid, Color turfDry)
         {
-            var verts = new List<Vector3>();
-            var cols = new List<Color>();
-            var tris = new List<int>();
-            var baseCol = new Color(0.55f, 0.62f, 0.42f);
-            var tipCol = new Color(1.15f, 1.18f, 0.85f);
+            Mesh tuft = BuildTuftMesh(species);
+            AssetDatabase.DeleteAsset(species.MeshPath);
+            AssetDatabase.CreateAsset(tuft, species.MeshPath);
 
-            for (int i = 0; i < 3; i++)
+            var material = AssetDatabase.LoadAssetAtPath<Material>(species.MaterialPath);
+            if (material == null)
             {
-                float a = i * Mathf.PI / 3f;
-                var right = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * 0.16f;
-                var lean = new Vector3(Mathf.Sin(a), 0f, -Mathf.Cos(a)) * 0.05f;
-                int s = verts.Count;
-                verts.Add(-right);
-                verts.Add(right);
-                verts.Add(-right * 0.55f + Vector3.up * 0.35f + lean);
-                verts.Add(right * 0.55f + Vector3.up * 0.35f + lean);
-                cols.Add(baseCol);
-                cols.Add(baseCol);
-                cols.Add(tipCol);
-                cols.Add(tipCol);
-                tris.AddRange(new[] { s, s + 2, s + 1, s + 1, s + 2, s + 3 });
+                material = new Material(tuftShader);
+                AssetDatabase.CreateAsset(material, species.MaterialPath);
+            }
+            else
+            {
+                material.shader = tuftShader;
             }
 
-            var mesh = new Mesh { name = "GrassTuft" };
+            // Colour. Three tints on one dryness axis — cool blue-green, mid green, dry gold-straw
+            // — and each species sits on its own stretch of it via DryBias. These MULTIPLY the
+            // mesh's root→tip gradient, so the numbers read high: a tuft's tip lands near the tint
+            // itself and its root about half of it.
+            //
+            // TurfTintWeight pulls the whole triple toward the ground builder's own palette before
+            // it is written. It is 0 for the four upright species (their colours are exactly round
+            // 2's), and high for the thatch, whose entire job is to be the floor's colour with a
+            // silhouette — the same SSOT argument as the root blend below, applied to the tint.
+            material.SetColor("_CoolColor", Color.Lerp(species.Cool, turfMid, species.TurfTintWeight));
+            material.SetColor("_BaseColor", Color.Lerp(species.Green, turfMid, species.TurfTintWeight));
+            material.SetColor("_DryColor", Color.Lerp(species.Dry, turfDry, species.TurfTintWeight));
+            material.SetFloat("_DryBias", species.DryBias);
+            material.SetFloat("_PatchScale", PatchScaleMetres);
+            material.SetFloat("_TuftVariation", species.HueVariation);
+            material.SetFloat("_ValueVariation", species.ValueVariation);
+
+            // Turf blend — the ground builder's palette, passed through rather than restated.
+            material.SetColor("_GroundColor", turfMid);
+            material.SetColor("_GroundDryColor", turfDry);
+            material.SetFloat("_BaseBlend", species.BaseBlend);
+            material.SetFloat("_BaseBlendHeight", species.BaseBlendHeight);
+            // Contact shade at the root. Grass casts no shadows here by design, so nothing else in
+            // the frame will darken a tuft's own base; without this the tufts and the mat they
+            // stand in are lit identically and the mat reads as a second flat colour beside the
+            // ground rather than as a layer with depth in it.
+            material.SetFloat("_RootDarken", species.RootDarken);
+
+            material.SetFloat("_ShadeWrap", 0.55f);
+            material.SetFloat("_AmbientBoost", 1.05f);
+
+            // The wind-combed POSE. _TuftHeight MUST match the mesh BuildTuftMesh emits — the
+            // shader converts its unitless height and lean channels back into metres with it.
+            material.SetFloat("_TuftHeight", species.MeshHeight);
+            material.SetVector("_WindAxis", CombAxis);
+            material.SetFloat("_CombLean", species.CombLean);
+            // Hollows keep more of their stand than scoured ground does. Dropped from round 2's
+            // 0.42 as the leans went up, so the CONTRAST between sheltered and exposed ground grows
+            // with the comb rather than being flattened by it — a meadow combed uniformly hard is
+            // just a meadow leaning, which is the note round 2 got back.
+            material.SetFloat("_CombHollowLean", 0.34f);
+            material.SetFloat("_CombWanderLength", 46f);
+            material.SetFloat("_CombWanderDegrees", 14f);
+            // The fold and the crown drift: the difference between a leant symmetric fan and a
+            // stand of grass the wind has actually been through. See the shader header.
+            material.SetFloat("_CombFold", species.CombFold);
+            material.SetFloat("_CombDrift", species.CombDrift);
+
+            // Unbound wind. Every one of these is multiplied by RegionWind's global, so the meadow
+            // is COMPLETELY still while the Cliff is bound (director ruling 2026-07-31) and gains
+            // motion only when its Arcanum is unbound — which is what art-audio.md asks for.
+            material.SetFloat("_SwayStrength", species.UnboundSway);
+            material.SetFloat("_SwaySpeed", 0.85f);    // ~7 s per breath: a wave, not jitter
+            material.SetFloat("_SwayWavelength", 14f); // crest spacing, so the meadow moves in bands
+            material.SetFloat("_WindResponse", 1f);
+
+            // Displacement response — how far this species gives when the Fool or Pip walks through
+            // it. Tall thin species lie right over; a short broad sedge barely parts. Values above
+            // 1 mean "flat before the falloff runs out", not "further than flat": the shader's arc
+            // clamps a blade's lean to its own length, so no setting here can bury a tip.
+            material.SetFloat("_BendStrength", species.BendStrength);
+            material.SetFloat("_BendHeightRange", 1.8f);
+            // Hold the inner half of the ring fully laid over and spend the falloff on the rim.
+            // Round 2 rolled the falloff all the way from the centre, and the gauntlet review's
+            // finding on v6 was not "the ring is too weak" but "the ring is not in the frame":
+            // a dish with no edge does not survive being photographed. See the shader.
+            material.SetFloat("_BendCoreShare", species.BendCore);
+
+            // Distance handling. Tufts widen with range (thin blades go sub-pixel and shimmer),
+            // then the fade window — which sits INSIDE detailObjectDistance so tufts are already
+            // squashed flat by the time the patch cull collects them. The four upright species
+            // share one window on purpose: four different fade windows would draw three faint lines
+            // across the meadow. The thatch carries its own, and can, because it fades to the
+            // colour it was already imitating.
+            material.SetFloat("_WidenStart", species.WidenStart);
+            material.SetFloat("_WidenEnd", species.WidenEnd);
+            material.SetFloat("_WidenMax", species.WidenMax);
+            material.SetFloat("_FadeStart", species.FadeStart);
+            material.SetFloat("_FadeEnd", species.FadeEnd);
+            material.SetFloat("_FadeMinScale", 0.08f);
+            material.enableInstancing = true;
+            EditorUtility.SetDirty(material);
+
+            // Detail prototypes want a PREFAB carrying the mesh + material.
+            var temp = new GameObject(species.Name);
+            temp.AddComponent<MeshFilter>().sharedMesh = tuft;
+            var tuftRenderer = temp.AddComponent<MeshRenderer>();
+            tuftRenderer.sharedMaterial = material;
+            // Grass casts NO shadows: per-blade shadow maps at ankle height buy almost no picture,
+            // and Tarrock/GrassTuft deliberately ships no ShadowCaster pass — a shadow drawn by any
+            // other pass would carry neither the comb nor the bend and would detach from its blade.
+            tuftRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(temp, species.PrefabPath);
+            Object.DestroyImmediate(temp);
+
+            return new DetailPrototype
+            {
+                prototype = prefab,
+                usePrototypeMesh = true,
+                useInstancing = true,
+                renderMode = DetailRenderMode.VertexLit,
+                minWidth = species.MinWidthScale,
+                maxWidth = species.MaxWidthScale,
+                minHeight = species.MinHeightScale,
+                maxHeight = species.MaxHeightScale,
+                // Height/width noise over a few metres, so neighbouring tufts differ but a whole
+                // hollow can still run short or tall together.
+                noiseSpread = 0.28f,
+                // Tilt with the ground rather than standing plumb on a slope — grass grows out of
+                // the hillside. Never full strength: fully aligned tufts on a steep band look felled.
+                alignToGround = species.AlignToGround,
+                positionJitter = 1f, // break the detail grid; a lattice of tufts reads as astroturf
+                // Lets QualitySettings.terrainDetailDensityScale thin the meadow on the Mobile
+                // quality level without a second authored density map.
+                useDensityScaling = true,
+                healthyColor = Color.white,
+                dryColor = Color.white,
+            };
+        }
+
+        /// <summary>Reads a colour off the ground material, falling back to the value this file
+        /// last knew if the ground shader has renamed the property — a missing turf tint should
+        /// cost a slightly wrong root blend, never an exception mid-generate.</summary>
+        private static Color ReadColour(Material material, string property, Color fallback)
+        {
+            if (material == null || !material.HasProperty(property))
+            {
+                Debug.LogWarning(
+                    $"[Tarrock] Ground material has no '{property}'; grass roots will use the " +
+                    "fallback turf tint and may not match the floor.");
+                return fallback;
+            }
+
+            return material.GetColor(property);
+        }
+
+        /// <summary>
+        /// The exposure/dryness drift, 0 (sheltered hollow) .. 1 (scoured and exposed). MIRRORS
+        /// <c>ExposureDrift</c> in Tarrock/GrassTuft exactly — the shader tints by it and this sorts
+        /// the species by it, and the two agreeing is what makes the gold ground the straw ground.
+        /// If either side changes, change both, and keep <see cref="PatchScaleMetres"/> the value
+        /// the material is given.
+        /// </summary>
+        private static float ExposureDrift(float x, float z)
+        {
+            float px = x * (Mathf.PI * 2f / PatchScaleMetres);
+            float pz = z * (Mathf.PI * 2f / PatchScaleMetres);
+            float drift = Mathf.Sin(px + 1.7f)
+                        + Mathf.Sin(pz * 0.83f - 0.4f)
+                        + Mathf.Sin((px * 0.61f + pz * 0.79f) * 1.37f + 2.9f);
+            return Mathf.Clamp01(0.5f + drift * 0.19f);
+        }
+
+        /// <summary>
+        /// The way west — the worn drift down the valley floor, FOUND rather than authored. Starting
+        /// under the spawn it steps west and, at each step, takes the lowest ground within a short
+        /// search of where the last step landed; the valley floor is by definition the low line, so
+        /// the walk tracks it (and tracks it still if the landform is re-sculpted, which a hand-typed
+        /// polyline would not). The search window is what keeps it in the valley instead of falling
+        /// away down the first broken edge it meets.
+        /// </summary>
+        private static Vector2[] FindValleyDrift(TerrainData terrainData)
+        {
+            const float StepX = 12f;         // fine enough that the chords stay on the meander
+            const float SearchHalfWidth = 16f;
+            const float SearchStep = 0.5f;   // one heightmap sample
+            const float WanderMetres = 2.6f; // a desire line is not a survey line
+
+            var anchors = new List<Vector2>();
+            float z = SpawnHint.z;
+
+            for (float x = SpawnHint.x; x >= PathWestX + 2f; x -= StepX)
+            {
+                float bestZ = z;
+                float bestHeight = float.MaxValue;
+                for (float probe = z - SearchHalfWidth; probe <= z + SearchHalfWidth; probe += SearchStep)
+                {
+                    if (probe < 0f || probe > TerrainSize)
+                    {
+                        continue;
+                    }
+
+                    float height = terrainData.GetInterpolatedHeight(x / TerrainSize, probe / TerrainSize);
+                    if (height < bestHeight)
+                    {
+                        bestHeight = height;
+                        bestZ = probe;
+                    }
+                }
+
+                z = bestZ;
+                // Wander off the exact low line, and toward the SOUTH (−z) side: the valley's south
+                // wall is the shallow one that permits (see SampleHeight step 5), and a worn path
+                // hugs the side people can leave by.
+                anchors.Add(new Vector2(x, z - 1.6f + (WanderMetres * Mathf.Sin(x * 0.061f + 1.9f))));
+            }
+
+            return anchors.ToArray();
+        }
+
+        /// <summary>The spur off the valley drift up to the dead tree's knoll — the second worn path,
+        /// and the one that says somebody used to come up here. Stops at the knoll's foot: the tree
+        /// is a place you walk to, not a place with a road to it.</summary>
+        private static Vector2[] FindTreeSpur(Vector2[] valleyDrift)
+        {
+            if (valleyDrift.Length == 0)
+            {
+                return new Vector2[0];
+            }
+
+            // Leave the valley at whichever anchor is closest to the knoll.
+            Vector2 junction = valleyDrift[0];
+            float best = float.MaxValue;
+            foreach (Vector2 anchor in valleyDrift)
+            {
+                float d = Vector2.Distance(anchor, KnollCentre);
+                if (d < best)
+                {
+                    best = d;
+                    junction = anchor;
+                }
+            }
+
+            var foot = new Vector2(KnollCentre.x, KnollCentre.y + 7f);
+            Vector2 along = foot - junction;
+            var across = new Vector2(-along.y, along.x).normalized;
+
+            const int Steps = 6;
+            var spur = new Vector2[Steps + 1];
+            for (int i = 0; i <= Steps; i++)
+            {
+                float t = i / (float)Steps;
+                // A single low-frequency bow, so the spur curves the way a trodden path curves
+                // rather than running straight at the tree like a survey peg line.
+                spur[i] = junction + (along * t) + (across * (3.4f * Mathf.Sin(t * Mathf.PI)));
+            }
+
+            return spur;
+        }
+
+        /// <summary>Shortest distance in metres from a world XZ point to a polyline.</summary>
+        private static float DistanceToPolyline(float x, float z, Vector2[] polyline)
+        {
+            if (polyline.Length == 0)
+            {
+                return float.MaxValue;
+            }
+
+            var point = new Vector2(x, z);
+            float best = Vector2.Distance(point, polyline[0]);
+            for (int i = 1; i < polyline.Length; i++)
+            {
+                Vector2 a = polyline[i - 1];
+                Vector2 b = polyline[i];
+                Vector2 ab = b - a;
+                float lengthSq = ab.sqrMagnitude;
+                float t = lengthSq > 1e-6f ? Mathf.Clamp01(Vector2.Dot(point - a, ab) / lengthSq) : 0f;
+                best = Mathf.Min(best, Vector2.Distance(point, a + (ab * t)));
+            }
+
+            return best;
+        }
+
+        /// <summary>Thin blades fanned around a common root, each bowing over as it rises: a few
+        /// dozen triangles of hand-painted brush economy, no texture and no cutout. The mesh carries
+        /// the five channels <c>Tarrock/GrassTuft</c> depends on — see that shader's header — of
+        /// which the load-bearing one is COLOR.a, the lean mask. Keeping the mask in the MESH is what
+        /// makes the comb and the bend survive GPU instancing, static batching and per-instance
+        /// scaling alike; the previous foliage sway masked by world height off the object matrix and
+        /// static batching ate it (commit 48712b9).</summary>
+        private static Mesh BuildTuftMesh(TuftSpecies species)
+        {
+            var verts = new List<Vector3>();
+            var normals = new List<Vector3>();
+            var cols = new List<Color>();
+            var uvs = new List<Vector2>();
+            var rootOffsets = new List<Vector2>();
+            var tris = new List<int>();
+
+            // Rows up a blade. The last row is a single vertex — blades taper to a point, which is
+            // the whole difference between "grass" and the field of flat spades we had. Two
+            // authored sets rather than a formula: the four-row numbers are round 2's exactly, and
+            // a "close enough" curve fit through them would quietly restyle four shipped species to
+            // buy a mat layer a row it does not need.
+            float[] rows = species.Rows <= 3 ? MatRows : BladeRows;
+            // Root → tip gradient. Both ends stay INSIDE 0-1 and the per-blade jitter only ever
+            // darkens: Unity stores the vertex-colour stream as UNorm8, so the old mesh's 1.28 tip
+            // was silently clamped to 1.0 and the material tint had to carry all the brightness.
+            // The brightness now lives in the material's tints, where it can be tuned.
+            var baseCol = new Color(0.47f, 0.50f, 0.39f);
+            var tipCol = new Color(1.00f, 0.98f, 0.78f);
+
+            for (int i = 0; i < species.Blades; i++)
+            {
+                // The species seed offsets the hash, so two species with the same blade count would
+                // still fan differently — no species is another one with the tint changed.
+                float r1 = Hash21(i * 1.37f + 0.11f + species.Seed, i * 2.71f + 3.30f + species.Seed);
+                float r2 = Hash21(i * 4.19f + 7.70f + species.Seed, i * 0.83f + 1.90f + species.Seed);
+                float r3 = Hash21(i * 2.53f + 5.10f + species.Seed, i * 3.47f + 9.40f + species.Seed);
+
+                // Fan the blades around the root, jittered so the tuft is not a tidy rosette.
+                float angle = (i + 0.35f * (r1 - 0.5f)) * Mathf.PI * 2f / species.Blades;
+                var outward = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
+                var side = new Vector3(-outward.z, 0f, outward.x);
+
+                float bladeHeight = species.MeshHeight * Mathf.Lerp(species.ShortestBlade, 1f, r2);
+                float rootOffset = Mathf.Lerp(species.RootOffsetMin, species.RootOffsetMax, r3);
+                float halfWidth = Mathf.Lerp(species.HalfWidthMin, species.HalfWidthMax, r1);
+                float splay = Mathf.Lerp(species.SplayMin, species.SplayMax, r3);
+
+                int start = verts.Count;
+                for (int row = 0; row < rows.Length; row++)
+                {
+                    float t = rows[row];
+                    // Arc: rises fast off the ground and flattens toward the tip, so the blade
+                    // bows over under its own weight instead of standing up like a spike. Past
+                    // ~1.57 the curve turns over at the top and the tip NODS, which is the whole
+                    // silhouette of the tall bent species.
+                    float y = bladeHeight * Mathf.Sin(t * species.BladeArc) / Mathf.Sin(species.BladeArc);
+                    Vector3 centre = (outward * (rootOffset + splay * Mathf.Pow(t, 1.6f))) + (Vector3.up * y);
+                    float w = halfWidth * Mathf.Pow(1f - t, 0.55f);
+
+                    Color rgb = Color.Lerp(baseCol, tipCol, Mathf.Pow(t, 0.85f)) * Mathf.Lerp(0.88f, 1f, r2);
+                    // COLOR.a — the lean mask: rigid at the root, full at the tip, and scaled by
+                    // this blade's share of the tuft height so a short blade leans proportionally
+                    // less than its tall neighbour rather than swinging the same distance.
+                    float mask = Mathf.Pow(t, 1.4f) * (bladeHeight / species.MeshHeight);
+                    var colour = new Color(rgb.r, rgb.g, rgb.b, mask);
+
+                    // Normals biased hard toward +Y. A blade's true normal is horizontal, which
+                    // lights a meadow as a field of dark spikes; up-biased normals make the tufts
+                    // shade with the ground they grow out of — the hand-painted read.
+                    var normal = ((Vector3.up * 0.78f) + (outward * 0.22f)).normalized;
+                    // UV.x = this blade's phase seed, UV.y = height above the root as a fraction
+                    // of the species' mesh height (the shader turns it back into metres with
+                    // _TuftHeight, and blends the root into the turf over the bottom of it).
+                    var uv = new Vector2(r1, y / species.MeshHeight);
+
+                    // TIP DROP — taken AFTER the uv, deliberately. uv.y is the shader's height
+                    // channel (root blend, contact shade, distance squash) and must stay the
+                    // blade's own 0..1 arc; the drop is a constant sink applied to the geometry
+                    // only. A mat 0.5 m across sitting on ground that rolls under it would float
+                    // its outer cards clear of the floor on every convex metre of the meadow, and a
+                    // 5 cm-tall layer of thatch hovering 5 cm up is worse than no thatch at all.
+                    // Dipping the outer ends below the root plane makes the failure mode
+                    // "intersects the ground" instead — invisible, because the pass is opaque.
+                    // Zero for every upright species, so nothing round 2 shipped moves.
+                    if (species.TipDrop > 0f)
+                    {
+                        centre.y -= species.TipDrop * Mathf.Pow(t, 1.8f);
+                    }
+
+                    if (row == rows.Length - 1)
+                    {
+                        verts.Add(centre);
+                        normals.Add(normal);
+                        cols.Add(colour);
+                        uvs.Add(uv);
+                        // UV1 — the vertex's object-space XZ offset from the root, which the
+                        // shader uses to widen the tuft with view distance without ever touching
+                        // the instance matrix's translation (batching-proof, see the shader).
+                        rootOffsets.Add(new Vector2(centre.x, centre.z));
+                    }
+                    else
+                    {
+                        Vector3 left = centre - (side * w);
+                        Vector3 right = centre + (side * w);
+                        verts.Add(left);
+                        verts.Add(right);
+                        normals.Add(normal);
+                        normals.Add(normal);
+                        cols.Add(colour);
+                        cols.Add(colour);
+                        uvs.Add(uv);
+                        uvs.Add(uv);
+                        rootOffsets.Add(new Vector2(left.x, left.z));
+                        rootOffsets.Add(new Vector2(right.x, right.z));
+                    }
+                }
+
+                // Two quads up the blade, then the tip triangle.
+                for (int row = 0; row < rows.Length - 2; row++)
+                {
+                    int lower = start + (row * 2);
+                    int upper = lower + 2;
+                    tris.AddRange(new[] { lower, upper, lower + 1, lower + 1, upper, upper + 1 });
+                }
+
+                int lastPair = start + ((rows.Length - 2) * 2);
+                int tip = start + ((rows.Length - 1) * 2);
+                tris.AddRange(new[] { lastPair, tip, lastPair + 1 });
+            }
+
+            var mesh = new Mesh { name = species.Name };
             mesh.SetVertices(verts);
+            mesh.SetNormals(normals); // authored, NOT recalculated — the up-bias is the whole point
             mesh.SetColors(cols);
+            mesh.SetUVs(0, uvs);
+            mesh.SetUVs(1, rootOffsets);
             mesh.SetTriangles(tris, 0);
-            mesh.RecalculateNormals();
             mesh.RecalculateBounds();
             return mesh;
+        }
+
+        /// <summary>
+        /// Puts a <see cref="GrassBender"/> on the Fool's rig and on Pip, which is the meadow's only
+        /// motion while the Cliff is bound: no ambient sway anywhere, but the grass parts around a
+        /// body walking through it and settles back behind (director ruling 2026-07-31, art-audio.md
+        /// §The world-state is the art direction — the stasis is the world's, not the Fool's).
+        /// Runs after the character installers because it needs their roots to exist.
+        /// </summary>
+        private static void BuildGrassBenders()
+        {
+            // Root names owned by the character installers (KayKitCharacterInstaller / PipInstaller).
+            const string PlayerRootName = "PlayerRig";
+            const string PipRootName = "Pip";
+
+            UnityEngine.SceneManagement.Scene scene = EditorSceneManager.GetActiveScene();
+            if (!scene.IsValid())
+            {
+                return;
+            }
+
+            bool changed = false;
+            foreach (GameObject root in scene.GetRootGameObjects())
+            {
+                if (root.name == PlayerRootName)
+                {
+                    // The Fool: a body's width plus a blade's length of reach, pressing at full
+                    // strength, with a wake long enough to still be closing a stride behind him.
+                    //
+                    // 0.72 m, down from round 2's 0.9. Paired with the shader's held core
+                    // (_BendCoreShare) this is a SMALLER ring that reads far harder: 0.9 m spread
+                    // the same press over 1.6x the area and produced the vague thinning the
+                    // gauntlet review could not find in v6 at all. The brief's window is 0.6-0.8 m
+                    // and this sits in it.
+                    AddGrassBender(root, radius: 0.72f, strength: 1f, trailSpacing: 0.42f, settleSeconds: 1.2f);
+                    changed = true;
+                }
+                else if (root.name == PipRootName)
+                {
+                    // Pip is small and light: a tighter ring, a softer press, and a wake that closes
+                    // faster — the dog leaves a line through the grass, not a road.
+                    AddGrassBender(root, radius: 0.42f, strength: 0.7f, trailSpacing: 0.3f, settleSeconds: 0.85f);
+                    changed = true;
+                }
+            }
+
+            if (!changed)
+            {
+                Debug.LogWarning(
+                    $"[Tarrock] Neither '{PlayerRootName}' nor '{PipRootName}' found; the meadow will " +
+                    "have no displacement response (nothing in the scene bends the grass).");
+                return;
+            }
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+        }
+
+        private static void AddGrassBender(
+            GameObject target, float radius, float strength, float trailSpacing, float settleSeconds)
+        {
+            var bender = target.GetComponent<GrassBender>();
+            if (bender == null)
+            {
+                bender = target.AddComponent<GrassBender>();
+            }
+
+            var serialized = new SerializedObject(bender);
+            SetFloatField(serialized, "_radius", radius);
+            SetFloatField(serialized, "_strength", strength);
+            SetFloatField(serialized, "_trailSpacing", trailSpacing);
+            SetFloatField(serialized, "_settleSeconds", settleSeconds);
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void SetFloatField(SerializedObject serialized, string fieldName, float value)
+        {
+            SerializedProperty property = serialized.FindProperty(fieldName);
+            if (property == null)
+            {
+                Debug.LogWarning($"[Tarrock] Field '{fieldName}' not found on {nameof(GrassBender)}.");
+                return;
+            }
+
+            property.floatValue = value;
+        }
+
+        // -- The grass species. FIVE prototypes rather than one: round 1's single tuft was the
+        //    reason the meadow read as one silhouette repeated to the horizon, and round 2's four
+        //    upright tufts were the reason it then read as isolated plants standing on naked
+        //    ground. Indices are named below because the density loop weights them individually.
+        private const int SpeciesFescue = 0;
+        private const int SpeciesStraw = 1;
+        private const int SpeciesSedge = 2;
+        private const int SpeciesBent = 3;
+        // The THATCH — not a fifth kind of grass but the FLOOR the other four stand in. Scattered
+        // by its own rule (see BuildGrassDetails), never out of the tuft budget's share.
+        private const int SpeciesThatch = 4;
+
+        // Blade cross-sections. Four rows for an upright blade that has to taper convincingly over
+        // 20-50 cm; three for a thatch card, which is 5 cm long and gains nothing from a fourth.
+        private static readonly float[] BladeRows = { 0f, 0.42f, 0.75f, 1f };
+        private static readonly float[] MatRows = { 0f, 0.55f, 1f };
+
+        // Wavelength in metres of the exposure drift that decides both the tint ramp and which
+        // species grows where. Shared between ExposureDrift here and the material's _PatchScale —
+        // the shader mirrors this function and the two must agree.
+        private const float PatchScaleMetres = 26f;
+
+        // The direction the last wind combed the meadow. Same prevailing axis as Tarrock/FoliageWind
+        // so cloth and grass, when the region does unbind, lie the same way.
+        private static readonly Vector4 CombAxis = new Vector4(1f, 0.35f, 0f, 0f);
+
+        private static readonly TuftSpecies[] Species =
+        {
+            // Fine fescue — the body of the meadow, and the only species that grows everywhere.
+            // Ankle to mid-shin against the 1.7 m Fool (0.14-0.38 m).
+            new TuftSpecies
+            {
+                Name = "GrassTuft",
+                MeshPath = TuftMeshPath,
+                MaterialPath = TuftMaterialPath,
+                PrefabPath = TuftPrefabPath,
+                Seed = 0f,
+                DitherOffset = 2.5f,
+                MaxPerCell = 3,
+                Blades = 5,
+                Rows = 4,
+                MeshHeight = 0.30f,
+                ShortestBlade = 0.52f,
+                BladeArc = 1.30f,
+                HalfWidthMin = 0.011f,
+                HalfWidthMax = 0.017f,   // 22-34 mm blades, not 320 mm slabs
+                SplayMin = 0.05f,
+                SplayMax = 0.11f,
+                RootOffsetMin = 0.010f,
+                RootOffsetMax = 0.035f,
+                TipDrop = 0f,
+                MinWidthScale = 0.70f,
+                MaxWidthScale = 1.25f,
+                MinHeightScale = 0.45f,
+                MaxHeightScale = 1.25f,
+                AlignToGround = 0.5f,
+                Cool = new Color(0.22f, 0.46f, 0.42f),
+                Green = new Color(0.33f, 0.54f, 0.22f),
+                Dry = new Color(0.80f, 0.69f, 0.35f),
+                TurfTintWeight = 0f,
+                DryBias = 0.50f,
+                HueVariation = 0.55f,
+                ValueVariation = 0.18f,
+                BaseBlend = 0.62f,
+                BaseBlendHeight = 0.50f,
+                RootDarken = 0.86f,      // a touch of its own shadow, so it sits IN the thatch
+                CombLean = 0.52f,        // was 0.34: ~20 deg of lean is a tilt, not a comb
+                CombFold = 0.50f,
+                CombDrift = 0.12f,
+                UnboundSway = 0.34f,
+                BendStrength = 1.35f,
+                BendCore = 0.50f,
+                WidenStart = 18f,
+                WidenEnd = 70f,
+                WidenMax = 2.4f,
+                FadeStart = 78f,
+                FadeEnd = 114f,
+            },
+
+            // Dry straw — few tall stiff stems, barely bowed, on the scoured ground and along the
+            // fringes of the worn drifts. This is the species that carries the colour script's
+            // "pale dawn gold" into the albedo without bleaching the whole meadow (0.24-0.42 m).
+            new TuftSpecies
+            {
+                Name = "GrassTuftStraw",
+                MeshPath = TerrainDataDir + "/GrassTuftStraw.asset",
+                MaterialPath = MaterialDir + "/GrassTuftStraw.mat",
+                PrefabPath = TerrainDataDir + "/GrassTuftStraw.prefab",
+                Seed = 11.3f,
+                DitherOffset = 7.9f,
+                MaxPerCell = 2,
+                Blades = 3,
+                Rows = 4,
+                MeshHeight = 0.38f,
+                ShortestBlade = 0.72f,
+                BladeArc = 0.80f,        // nearly straight: dead stems do not bow, they stand
+                HalfWidthMin = 0.007f,
+                HalfWidthMax = 0.011f,
+                SplayMin = 0.02f,
+                SplayMax = 0.05f,
+                RootOffsetMin = 0.006f,
+                RootOffsetMax = 0.020f,
+                TipDrop = 0f,
+                MinWidthScale = 0.60f,
+                MaxWidthScale = 1.00f,
+                MinHeightScale = 0.62f,
+                MaxHeightScale = 1.10f,
+                AlignToGround = 0.35f,
+                Cool = new Color(0.36f, 0.50f, 0.30f),
+                Green = new Color(0.55f, 0.58f, 0.27f),
+                Dry = new Color(0.86f, 0.72f, 0.33f),
+                TurfTintWeight = 0f,
+                DryBias = 0.78f,
+                HueVariation = 0.40f,
+                ValueVariation = 0.16f,
+                BaseBlend = 0.62f,
+                BaseBlendHeight = 0.50f,
+                RootDarken = 0.86f,
+                CombLean = 0.56f,        // it stands, but three hundred years of wind set the set
+                CombFold = 0.42f,        // only three stems: fold hard and the tuft loses its stand
+                CombDrift = 0.14f,
+                UnboundSway = 0.26f,     // stiff stems move least
+                BendStrength = 1.40f,
+                BendCore = 0.50f,
+                WidenStart = 18f,
+                WidenEnd = 70f,
+                WidenMax = 2.4f,
+                FadeStart = 78f,
+                FadeEnd = 114f,
+            },
+
+            // Blue-green sedge — broad, short, splayed flat, in the hollows and the sheltered
+            // ground. The cool end of the hue spread, and the species that keeps the floor of a
+            // hollow from reading as the same green as its rim (0.13-0.26 m).
+            new TuftSpecies
+            {
+                Name = "GrassTuftSedge",
+                MeshPath = TerrainDataDir + "/GrassTuftSedge.asset",
+                MaterialPath = MaterialDir + "/GrassTuftSedge.mat",
+                PrefabPath = TerrainDataDir + "/GrassTuftSedge.prefab",
+                Seed = 23.7f,
+                DitherOffset = 13.1f,
+                MaxPerCell = 2,
+                Blades = 7,
+                Rows = 4,
+                MeshHeight = 0.22f,
+                ShortestBlade = 0.45f,
+                BladeArc = 1.70f,        // bows hard: broad leaves fold under their own weight
+                HalfWidthMin = 0.016f,
+                HalfWidthMax = 0.026f,
+                SplayMin = 0.11f,
+                SplayMax = 0.19f,
+                RootOffsetMin = 0.014f,
+                RootOffsetMax = 0.040f,
+                TipDrop = 0f,
+                MinWidthScale = 0.85f,
+                MaxWidthScale = 1.40f,
+                MinHeightScale = 0.60f,
+                MaxHeightScale = 1.20f,
+                AlignToGround = 0.7f,
+                Cool = new Color(0.18f, 0.44f, 0.42f),
+                Green = new Color(0.26f, 0.48f, 0.28f),
+                Dry = new Color(0.55f, 0.58f, 0.32f),
+                TurfTintWeight = 0f,
+                DryBias = 0.24f,
+                HueVariation = 0.42f,
+                ValueVariation = 0.14f,
+                BaseBlend = 0.62f,
+                BaseBlendHeight = 0.50f,
+                RootDarken = 0.86f,
+                CombLean = 0.36f,        // low and broad: the wind gets less purchase on it
+                CombFold = 0.62f,        // seven leaves is a rosette, and a rosette folds visibly
+                CombDrift = 0.08f,
+                UnboundSway = 0.18f,
+                BendStrength = 1.05f,    // short and broad: it parts rather than lies down
+                BendCore = 0.50f,
+                WidenStart = 18f,
+                WidenEnd = 70f,
+                WidenMax = 2.4f,
+                FadeStart = 78f,
+                FadeEnd = 114f,
+            },
+
+            // Tall bent — two thin stems arcing right over, sparse and clumped. The accent that
+            // breaks the meadow's top line and catches the dawn on its nodding tips; knee-high on
+            // the Fool (0.36-0.62 m), so it must stay rare or it becomes the meadow.
+            new TuftSpecies
+            {
+                Name = "GrassTuftBent",
+                MeshPath = TerrainDataDir + "/GrassTuftBent.asset",
+                MaterialPath = MaterialDir + "/GrassTuftBent.mat",
+                PrefabPath = TerrainDataDir + "/GrassTuftBent.prefab",
+                Seed = 41.9f,
+                DitherOffset = 19.3f,
+                MaxPerCell = 1,
+                Blades = 2,
+                Rows = 4,
+                MeshHeight = 0.52f,
+                ShortestBlade = 0.80f,
+                BladeArc = 1.90f,        // past the turn: the tips nod back down
+                HalfWidthMin = 0.005f,
+                HalfWidthMax = 0.009f,
+                SplayMin = 0.09f,
+                SplayMax = 0.17f,
+                RootOffsetMin = 0.004f,
+                RootOffsetMax = 0.014f,
+                TipDrop = 0f,
+                MinWidthScale = 0.50f,
+                MaxWidthScale = 0.90f,
+                MinHeightScale = 0.70f,
+                MaxHeightScale = 1.20f,
+                AlignToGround = 0.25f,
+                Cool = new Color(0.32f, 0.52f, 0.42f),
+                Green = new Color(0.46f, 0.58f, 0.28f),
+                Dry = new Color(0.88f, 0.78f, 0.44f),
+                TurfTintWeight = 0f,
+                DryBias = 0.66f,
+                HueVariation = 0.50f,
+                ValueVariation = 0.20f,
+                BaseBlend = 0.62f,
+                BaseBlendHeight = 0.50f,
+                RootDarken = 0.86f,
+                CombLean = 0.68f,        // tall and thin: it lies over furthest
+                CombFold = 0.55f,
+                CombDrift = 0.18f,       // the accent that draws the eye ALONG the comb
+                UnboundSway = 0.46f,
+                BendStrength = 1.60f,    // tall and thin: it goes right over
+                BendCore = 0.50f,
+                WidenStart = 18f,
+                WidenEnd = 70f,
+                WidenMax = 2.4f,
+                FadeStart = 78f,
+                FadeEnd = 114f,
+            },
+
+            // THE THATCH — the meadow's FLOOR, and the round-3 answer to the gauntlet finding that
+            // every tuft in round 2 read as "an isolated plant on naked ground". It was true: four
+            // upright species scattered at 3.35 tufts/m² leave 25-40 cm between neighbours, and in
+            // that gap there was nothing but the terrain pass. No amount of tuft variety fixes
+            // that, because the fault is not in the tufts.
+            //
+            // WHAT IT IS: a 2-5 cm mat of 24 short, wide, low-arcing cards splayed out to about
+            // 20 cm around their root — a scruffy little disc of ground cover, not a plant. It is
+            // tinted 78% of the way to the ground builder's own turf palette and darkened 36% at
+            // the root (RootDarken 0.64), so it is the floor's colour with a silhouette and a
+            // shadow in it. The tufts stop being plants standing ON the ground and become plants
+            // standing IN something.
+            //
+            // COST, because a ground layer is where a frame budget goes to die: 24 cards x 3
+            // triangles = 72 tris, at about 4.0 mats/m² across the meadow band (MaxMatsPerCell in
+            // BuildGrassDetails owns that number and is the dial). It is the only
+            // species with its own distance window (WidenStart 9 / FadeStart 30 / FadeEnd 52),
+            // which is what keeps it a near-field layer instead of a bill paid out to 120 m — and
+            // it can fade early precisely BECAUSE it is the ground's colour: what it dissolves
+            // into is what it was imitating. Widen 2.6 buys mid-range coverage by spreading each
+            // mat about its own root, which costs vertices already paid for rather than instances.
+            new TuftSpecies
+            {
+                Name = "GrassThatch",
+                MeshPath = TerrainDataDir + "/GrassThatch.asset",
+                MaterialPath = MaterialDir + "/GrassThatch.mat",
+                PrefabPath = TerrainDataDir + "/GrassThatch.prefab",
+                Seed = 67.1f,
+                DitherOffset = 29.7f,
+                MaxPerCell = 2,
+                Blades = 24,
+                Rows = 3,                // a 5 cm card gains nothing from a fourth cross-section
+                MeshHeight = 0.052f,
+                ShortestBlade = 0.42f,   // 2-5 cm: the brief's ground-hugging band
+                BladeArc = 1.05f,
+                HalfWidthMin = 0.018f,
+                HalfWidthMax = 0.032f,   // cards, not blades — width is what covers ground
+                SplayMin = 0.05f,
+                SplayMax = 0.13f,
+                RootOffsetMin = 0.015f,
+                RootOffsetMax = 0.085f,  // cards reach 6-21 cm out: a mat, not a tuft
+                // Sized against the splay, not picked: at ~13 cm of typical reach this leaves the
+                // card tip about 3.8 cm up, or 16 degrees off the floor. Flat enough to be thatch,
+                // steep enough to still occlude ground at the grazing angles every gameplay and
+                // gauntlet framing looks at it from — a card lying truly flat covers nothing at all
+                // from a standing eye, which is the trap this layer exists to avoid falling into.
+                TipDrop = 0.014f,
+                MinWidthScale = 0.85f,
+                MaxWidthScale = 1.55f,
+                MinHeightScale = 0.70f,
+                MaxHeightScale = 1.30f,
+                AlignToGround = 0.95f,   // thatch does not stand plumb on a slope; it lies on it
+                Cool = new Color(0.24f, 0.38f, 0.30f),
+                Green = new Color(0.31f, 0.40f, 0.23f),
+                Dry = new Color(0.58f, 0.50f, 0.29f),
+                TurfTintWeight = 0.78f,  // it IS the floor's colour (see the class doc)
+                DryBias = 0.46f,
+                HueVariation = 0.30f,    // it must not out-vary the tufts standing in it
+                ValueVariation = 0.20f,
+                BaseBlend = 0.80f,
+                BaseBlendHeight = 0.92f, // nearly the whole card blends toward the turf
+                RootDarken = 0.64f,      // 36% darker at the root — the brief's 30-40%
+                CombLean = 0.24f,        // a mat combs too, but it has little height to lean with
+                CombFold = 0.55f,
+                CombDrift = 0.06f,
+                UnboundSway = 0.10f,     // still zero while bound; a mat barely stirs when it isn't
+                BendStrength = 0.60f,
+                BendCore = 0.55f,        // the pressed floor of the ring, held a touch wider
+                WidenStart = 9f,
+                WidenEnd = 40f,
+                WidenMax = 2.6f,
+                FadeStart = 30f,
+                FadeEnd = 52f,
+            },
+        };
+
+        /// <summary>One grass species: its assets, the shape of its tuft mesh, how the terrain
+        /// scatters it, and where on Tarrock/GrassTuft's cool→green→dry ramp it sits.</summary>
+        private sealed class TuftSpecies
+        {
+            public string Name;
+            public string MeshPath;
+            public string MaterialPath;
+            public string PrefabPath;
+
+            /// <summary>Offsets the blade hash, so two species never fan the same way.</summary>
+            public float Seed;
+
+            /// <summary>Offsets the density dither, so the four layers do not land in the same
+            /// cells and cancel each other's clumping out.</summary>
+            public float DitherOffset;
+
+            public int MaxPerCell;
+
+            // -- Tuft mesh
+            public int Blades;
+
+            /// <summary>Cross-sections up a blade: 4 for an upright blade, 3 for a thatch card.
+            /// Selects <see cref="BladeRows"/> or <see cref="MatRows"/>.</summary>
+            public int Rows;
+
+            public float MeshHeight;
+            public float ShortestBlade;
+            public float BladeArc;
+            public float HalfWidthMin;
+            public float HalfWidthMax;
+            public float SplayMin;
+            public float SplayMax;
+            public float RootOffsetMin;
+            public float RootOffsetMax;
+
+            /// <summary>Metres the outer end of a blade sinks below its own arc, so a wide flat mat
+            /// buries its rim in rolling ground instead of hovering over it. 0 for upright
+            /// species.</summary>
+            public float TipDrop;
+
+            // -- Terrain scatter
+            public float MinWidthScale;
+            public float MaxWidthScale;
+            public float MinHeightScale;
+            public float MaxHeightScale;
+            public float AlignToGround;
+
+            // -- Material
+            public Color Cool;
+            public Color Green;
+            public Color Dry;
+
+            /// <summary>How far this species' three tints are pulled toward the GROUND builder's
+            /// turf palette before they are written. 0 keeps the authored colour; the thatch runs
+            /// high, because a thatch that is not the floor's own colour is a green rug thrown over
+            /// the floor. The palette is read off the terrain material, never restated — see
+            /// <see cref="ReadColour"/>.</summary>
+            public float TurfTintWeight;
+
+            public float DryBias;
+            public float HueVariation;
+            public float ValueVariation;
+
+            /// <summary>Turf blend at the root: how much of it, and over how much of the blade.
+            /// </summary>
+            public float BaseBlend;
+            public float BaseBlendHeight;
+
+            /// <summary>Albedo multiplier at the very root — contact shade. 1 is off.</summary>
+            public float RootDarken;
+
+            public float CombLean;
+
+            /// <summary>How much harder an upwind blade of this tuft leans than a downwind one —
+            /// the asymmetry that makes a combed stand read as combed. See the shader header.
+            /// </summary>
+            public float CombFold;
+
+            /// <summary>Unfolded downwind shift of the whole crown, as a share of tuft height.
+            /// </summary>
+            public float CombDrift;
+
+            public float UnboundSway;
+            public float BendStrength;
+
+            /// <summary>Share of a bender's radius held fully laid over before the rim falls off.
+            /// </summary>
+            public float BendCore;
+
+            // -- Distance handling. Shared across the four upright species on purpose (four
+            //    different fade windows would draw three faint lines across the meadow); the
+            //    thatch is the deliberate exception, because it is a near-field layer and paying
+            //    for it out to 120 m would be paying for coverage the eye stops asking for at
+            //    about a third of that.
+            public float WidenStart;
+            public float WidenEnd;
+            public float WidenMax;
+            public float FadeStart;
+            public float FadeEnd;
         }
 
         // Suspended motes — "the one particulate allowed while bound: dust/pollen hanging nearly
@@ -939,6 +2958,14 @@ namespace Tarrock.Editor
                 moteMat.shader = dust;
             }
 
+            // THE v8 SQUARE. round1/v8 of the 07-31 gauntlet caught the motes as a plain white
+            // square hanging in the sky beside the dead tree's silhouette. Cause: this material
+            // was created with no sprite, and an unassigned texture property does not sample as
+            // nothing — it samples Unity's built-in white, alpha 1 across the entire billboard, so
+            // every mote drew as its own untextured quad. Tarrock/DustParticle now carries a
+            // procedural soft dot for exactly this case; asking for it means the motes depend on
+            // no texture asset at all and cannot regress into a square if one goes missing again.
+            moteMat.SetFloat("_SoftDot", 1f);
             EditorUtility.SetDirty(moteMat);
 
             var go = new GameObject("SuspendedMotes");
@@ -976,12 +3003,27 @@ namespace Tarrock.Editor
             moteRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
 
+        // -- The cloud deck's surface. 3 km square at y=11; a 128² grid is 23 m per cell, which is
+        //    fine enough for the billow to read as relief rather than facets from every vantage a
+        //    128 m plateau offers, and 16 641 verts keeps it on 16-bit indices.
+        private const float CloudDeckHalfSize = 1500f;
+        private const int CloudDeckGrid = 128;
+        private const float CloudDeckLevel = 11.0f;
+        private const float CloudBillowAmplitude = 7.0f;
+        // The billow ramps in OUTSIDE the terrain. A 256 m square's farthest corner is 181 m from
+        // centre, so holding the deck dead flat to 200 m guarantees no billow can ever push cloud
+        // up through a walkable floor; by 340 m it is at full amplitude and the deck stops being a
+        // plate. (The terrain's own low edges fall to 1.5 m and stay properly submerged.)
+        private const float CloudBillowFlatRadius = 200f;
+        private const float CloudBillowRampRadius = 340f;
+
         // The sea of cloud (world.md §The Cliff — island in cloud, director-blessed 2026-07-26).
-        // A vast plane below every lip: the horizon is cloud-top, the drop is "lost in haze", the
+        // A vast deck below every lip: the horizon is cloud-top, the drop is "lost in haze", the
         // knife-cut tile boundary is hidden below the deck, and the leap has something to fall INTO.
-        // Motionless while bound, per canon. PROTO NOTE: the plane keeps its collider as a walkable
-        // catch so a director who hops an edge isn't stuck falling — the real unscripted-fall
-        // behaviour is the defeat loop (combat.md §Defeat) and wires up with the interaction layer.
+        // Motionless while bound, per canon. PROTO NOTE: the render surface carries NO walkable
+        // collider — a trigger slab beneath it catches a director who hops an edge, standing in for
+        // the real unscripted-fall behaviour (combat.md §Defeat), which wires up with the
+        // interaction layer.
         private static void BuildCloudSea()
         {
             Shader cloudShader = Shader.Find("Tarrock/CloudSea");
@@ -1004,40 +3046,697 @@ namespace Tarrock.Editor
 
             // Every property explicit (same rule as BuildTerrainMaterial — a reused .mat keeps
             // stale serialized values while shader defaults appear to change).
-            material.SetColor("_CloudBright", new Color(0.98f, 0.94f, 0.86f));
-            material.SetColor("_CloudShade", new Color(0.78f, 0.76f, 0.74f));
-            material.SetFloat("_MottleScale", 60f);
-            material.SetFloat("_MottleScale2", 17f);
-            material.SetColor("_HorizonColor", HorizonLinear);
-            material.SetFloat("_HorizonStart", 220f);
-            material.SetFloat("_HorizonEnd", 900f);
+            //
+            // Tops bright and slightly cool of the haze so the near deck reads as luminous cloud;
+            // furrows a COOL lavender-grey, not a grey step down from the tops. Warm light, cool
+            // shadow is the region's grade everywhere else, and a cloud field is where it shows.
+            //
+            // ROUND 3: the furrow value comes DOWN, (0.58,0.62,0.74) → (0.47,0.52,0.66). Round 2's
+            // two colours were 0.66 and 0.92 in luminance — a quarter of a stop apart, which after
+            // the fog and the bloom is the "one value, std 7.5" the critic measured all over again.
+            // 0.51 against 0.94 is a real light-to-shadow split, and the shader now has a real
+            // light to apply it with (see CloudSea.shader §THE DECK IS LIT).
+            material.SetColor("_CloudBright", new Color(1.00f, 0.95f, 0.84f));
+            material.SetColor("_CloudShade", new Color(0.47f, 0.52f, 0.66f));
+            // ROUND 2 RESCALE. The 07-31 numbers were authored for a viewer far above the deck.
+            // The vantage that actually meets the cloud sea is the western rim (round1/v3): eye
+            // 1.6 m over ground at ~15.7 m, deck at 11 — SIX METRES of elevation over it. From
+            // there the deck's apparent depth collapses; more than half the frame's deck lies
+            // inside 100 m and effectively all of it inside 400 m, so a 300 m bank scale put the
+            // whole visible near field inside ONE noise cell and the deck came out as one value
+            // (measured std 7.5). Every scale is roughly halved to land features where the eye
+            // can resolve them.
+            material.SetFloat("_BroadScale", 130f);
+            material.SetFloat("_MidScale", 48f);
+            material.SetFloat("_FineScale", 15f);
+            // A fourth octave, added after the halved scales measured out barely better than
+            // round 1 (deck std 3.5 sRGB levels against round 1's 7.5). The western rim puts the
+            // player six metres above the cloud with the nearest deck ten metres away, and at that
+            // range even a 15 m feature is the whole near field — so the largest part of the frame
+            // was STILL one noise cell. Five metres is the scale of the curdling you see when
+            // cloud is close enough to touch.
+            material.SetFloat("_CurdScale", 5f);
+            material.SetFloat("_MottleContrast", 4.5f);
+            // The painted washes. Hand-painted brush economy is what art-bible.md asks for and
+            // what the reference board shows: a few flat values with soft boundaries, not a
+            // continuous ramp. ROUND 3 takes them from five at 42% to four at 58%: with real light
+            // in the ramp there is something worth terracing, and 42% of five washes over a
+            // near-flat ramp was a rounding error — the boundaries the critic could not find were
+            // never drawn.
+            material.SetFloat("_MottleBands", 4f);
+            material.SetFloat("_MottleBandStrength", 0.58f);
+            material.SetFloat("_MottleBandSoftness", 0.14f);
+            material.SetFloat("_WarpScale", 95f);
+            material.SetFloat("_WarpAmount", 26f);
+            // Banks drawn out along the sun/valley axis (the wind that made them is the wind that
+            // is currently held). Sign is irrelevant to a stretch axis, so the XZ of SunToward
+            // normalised is enough.
+            Vector3 sun = SunToward;
+            Vector2 streak = new Vector2(sun.x, sun.z).normalized;
+            material.SetVector("_StreakAxis", new Vector4(streak.x, streak.y, 0f, 0f));
+            // Less stretch than the 07-31 pass: the octaves it stretches are half the size now,
+            // and 2.6 on a 130 m bank draws the banks out into streaks rather than banks.
+            material.SetFloat("_StreakStretch", 2.2f);
+            material.SetColor("_SunFormColor", SunGlowLinear);
+            // Gold on the TOP WASH only now (round 2 tinted the whole surface by a signed slope,
+            // which is a hue shift and not a light-to-shadow separation), so the strength comes
+            // down to match: it is a highlight, not a grade.
+            material.SetFloat("_SunFormStrength", 1.1f);
+            // The finite-difference step for the relief normal. ~1/9 of the bank scale: small
+            // enough that two taps still straddle one slope rather than two unrelated banks, large
+            // enough that the difference is well clear of the noise's own precision floor.
+            material.SetFloat("_SlopeStep", 14f);
+            // THE VIRTUAL RELIEF. The deck mesh billows ±7 m, but ±7 m at 400 m is a 1° swell —
+            // it can shape a silhouette (it does not: the deck's skyline is painted, see the bank)
+            // and it can never shade anything. So the surface is shaded as though it carried 26 m
+            // of relief over its 130 m banks: a 10-11° flank, which at a 7° sun is exactly the
+            // difference between catching the dawn and not. The mesh's own swell still contributes
+            // through _CrestLift, so silhouette and shading do not contradict.
+            material.SetFloat("_ReliefHeight", 26f);
+            // N·L on those flanks swings about 0.12 ± 0.19 at this sun height, so the ramp has to
+            // be gained and biased onto 0..1 rather than saturated raw — a raw saturate would put
+            // the entire deck in the bottom sixth of the ramp, which is another way of spelling
+            // "one flat value".
+            material.SetFloat("_FormGain", 2.6f);
+            material.SetFloat("_FormBias", 0.18f);
+            // Light 62 / altitude 38. Pure N·L stripes the deck across the billows (the lit flank
+            // of a trough looks like the lit flank of a crest); mixing the height back in keeps the
+            // washes reading as one billowing surface.
+            material.SetFloat("_ReliefWeight", 0.62f);
+            material.SetFloat("_DeckLevel", CloudDeckLevel);
+            material.SetFloat("_CrestRange", CloudBillowAmplitude);
+            material.SetFloat("_CrestLift", 0.14f);
+            material.SetVector("_DeckCentre",
+                new Vector4(TerrainSize * 0.5f, TerrainSize * 0.5f, 0f, 0f));
+            // Octave LOD, re-derived for the halved scales. A feature of length L on a plane seen
+            // from height H at distance d subtends about 1123·L·H/d² px on the gameplay lens; at
+            // H = 6.3 m the 15 m curd is 10.6 px at 100 m and 1.6 px at 260 m, so it has to be
+            // gone by ~220 m or it aliases into shimmer. The 48 m billow reaches the same limit
+            // around 550 m.
+            material.SetFloat("_CurdFadeStart", 30f);
+            material.SetFloat("_CurdFadeEnd", 80f);
+            material.SetFloat("_FineFadeStart", 100f);
+            material.SetFloat("_FineFadeEnd", 220f);
+            material.SetFloat("_MidFadeStart", 250f);
+            material.SetFloat("_MidFadeEnd", 560f);
+            // ROUND 2: the blend was starting at 170 m, which erased the deck's form across most
+            // of the frame before it could be seen. Pushed out to 430 m. The seam argument still
+            // holds and is now tighter than before: fully resolved to sky by 820 m, well inside
+            // the camera's 1 km far clip, so the clip plane's cut through the 3 km deck still
+            // falls in country that is already pure sky.
+            material.SetFloat("_SkyBlendStart", 430f);
+            material.SetFloat("_SkyBlendEnd", 820f);
+            ApplySkyDescription(material);
             EditorUtility.SetDirty(material);
 
-            GameObject deck = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            deck.name = "CloudSea";
-            // Unity's Plane is 10 m; ×300 → a 3 km deck. At y=11: high enough to swallow the sheer
-            // faces quickly (director note 2026-07-27 — the drop must vanish into cloud, not slide
-            // down to it), below the lowest walkable floor (west mouth ≈ 17 m; edges fall to 1.5).
-            deck.transform.position = new Vector3(TerrainSize * 0.5f, 11.0f, TerrainSize * 0.5f);
-            deck.transform.localScale = new Vector3(300f, 1f, 300f);
-            deck.GetComponent<MeshRenderer>().sharedMaterial = material;
+            Mesh deckMesh = BuildCloudDeckMesh();
+            AssetDatabase.DeleteAsset(CloudDeckMeshPath);
+            AssetDatabase.CreateAsset(deckMesh, CloudDeckMeshPath);
+
+            var deck = new GameObject("CloudSea");
+            // A 3 km deck centred on the region. At y=11: high enough to swallow the sheer faces
+            // quickly (director note 2026-07-27 — the drop must vanish into cloud, not slide down
+            // to it), below the lowest walkable floor (west mouth ≈ 17 m; edges fall to 1.5).
+            // 1500 m of half-extent minus the 181 m worst-case offset of a camera on the plateau
+            // still leaves 1319 m, so the deck's own rim is ALWAYS beyond the 1 km far clip and can
+            // never be seen as an edge — the only cut is the clip plane's, which the shader's sky
+            // convergence hides.
+            deck.transform.position = new Vector3(TerrainSize * 0.5f, CloudDeckLevel, TerrainSize * 0.5f);
+            deck.AddComponent<MeshFilter>().sharedMesh = deckMesh;
+            var deckRenderer = deck.AddComponent<MeshRenderer>();
+            deckRenderer.sharedMaterial = material;
+            deckRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            deckRenderer.receiveShadows = false;
             deck.isStatic = true;
 
             // Clouds are an ending, not a floor (director note 2026-07-27 — you must not be able
-            // to walk on the deck). The render surface loses its collider; a trigger slab just
-            // beneath it catches fallen bodies and returns them to the spawn — the defeat-loop
-            // stand-in (see CloudFallCatch).
-            Object.DestroyImmediate(deck.GetComponent<MeshCollider>());
+            // to walk on the deck). The render surface carries no walkable collider; a trigger slab
+            // just beneath the deck's flat inner field catches fallen bodies and returns them to the
+            // spawn — the defeat-loop stand-in (see CloudFallCatch). Same world dimensions as the
+            // 07-27 build; only the transform's scale left (the mesh is authored in metres).
             var catchVolume = deck.AddComponent<BoxCollider>();
             catchVolume.isTrigger = true;
             catchVolume.center = new Vector3(0f, -0.4f, 0f);
-            catchVolume.size = new Vector3(10f, 0.6f, 10f); // local; deck scale ×300 → 3 km slab
+            catchVolume.size = new Vector3(CloudDeckHalfSize * 2f, 0.6f, CloudDeckHalfSize * 2f);
 
             var fallCatch = deck.AddComponent<CloudFallCatch>();
             var serialized = new SerializedObject(fallCatch);
             serialized.FindProperty("_respawnPoint").vector3Value =
                 new Vector3(SpawnHint.x, SpawnHint.y, SpawnHint.z);
             serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            // ...and the heads standing out of it. After the deck, because they are read as rising
+            // FROM it: the deck level and the mesh's flat inner radius are both inputs to where
+            // they sit and how deep they sink.
+            BuildCloudLobes();
+        }
+
+        /// <summary>The deck's surface: a 3 km grid, dead flat across the whole terrain footprint
+        /// and gently billowed beyond it. A perfectly flat deck is the single loudest reason the
+        /// 07-27 build read as a glossy plate under the region rather than weather — the eye reads
+        /// a ruler-straight far field as a floor. Two low octaves of the same gradient noise the
+        /// landform uses (value noise folds on every lattice edge — 07-26 audit) give the far field
+        /// a slow swell; ±7 m at 400 m is about a degree of arc, which is a large fraction of the
+        /// few degrees of deck the gameplay camera ever sees.</summary>
+        private static Mesh BuildCloudDeckMesh()
+        {
+            const int side = CloudDeckGrid + 1;
+            float step = (CloudDeckHalfSize * 2f) / CloudDeckGrid;
+
+            var verts = new Vector3[side * side];
+            // The shader shades from world position, so these UVs exist only so that marking the
+            // deck static never produces a mesh Unity refuses to unwrap.
+            var uvs = new Vector2[side * side];
+            for (int z = 0; z < side; z++)
+            {
+                float wz = -CloudDeckHalfSize + z * step;
+                for (int x = 0; x < side; x++)
+                {
+                    float wx = -CloudDeckHalfSize + x * step;
+                    float radius = Mathf.Sqrt(wx * wx + wz * wz);
+                    float ramp = Mathf.SmoothStep(0f, 1f,
+                        Mathf.InverseLerp(CloudBillowFlatRadius, CloudBillowRampRadius, radius));
+                    // Zero-mean, so the deck's average height stays exactly at the deck level and
+                    // the catch slab beneath it keeps meaning what it says.
+                    float swell =
+                        GradNoise(wx / 430f, wz / 430f) * 0.68f +
+                        GradNoise(wx / 155f + 13.7f, wz / 155f + 41.3f) * 0.32f;
+                    verts[z * side + x] = new Vector3(wx, swell * CloudBillowAmplitude * ramp, wz);
+                    uvs[z * side + x] = new Vector2(x / (float)CloudDeckGrid, z / (float)CloudDeckGrid);
+                }
+            }
+
+            var tris = new int[CloudDeckGrid * CloudDeckGrid * 6];
+            int t = 0;
+            for (int z = 0; z < CloudDeckGrid; z++)
+            {
+                for (int x = 0; x < CloudDeckGrid; x++)
+                {
+                    int v0 = z * side + x;
+                    int v1 = v0 + 1;
+                    int v2 = v0 + side;
+                    int v3 = v2 + 1;
+                    tris[t++] = v0; tris[t++] = v2; tris[t++] = v1;
+                    tris[t++] = v1; tris[t++] = v2; tris[t++] = v3;
+                }
+            }
+
+            var mesh = new Mesh { name = "CloudSeaDeck" };
+            mesh.SetVertices(verts);
+            mesh.SetUVs(0, uvs);
+            mesh.SetTriangles(tris, 0);
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            return mesh;
+        }
+
+        // -------------------------------------------------------------------------------------
+        // THE CLOUD LOBES (round 3, 2026-07-31, against gauntlet/round2/v3 and v4)
+        //
+        // THE FINDING this answers, in the critic's words: the deck's "top edge never OCCLUDES
+        // anything so it reads as background wallpaper, not a sea the island sits in", and in v4
+        // "the deck floats above the ridges with a cream gap — it reads at infinity".
+        //
+        // Neither is a shading problem, and two rounds of shading the deck have now proved it. A
+        // horizontal plane BELOW the camera has its horizon at eye level and covers nothing that
+        // stands on it; the painted far bank (SkyGradient.hlsl) is at infinity by construction and
+        // covers nothing either. The only thing that can put cloud in front of a ridge is cloud
+        // with depth. So: real geometry, cumulus heads standing 10-24 m proud of the deck plane,
+        // close in around the island where the fog has not yet eaten them, writing depth like
+        // anything else. Tarrock/CloudLobe shades them — three flat washes off the one sun, gold
+        // on the bearing-332 flank, cool blue-grey opposite, a darker belly beneath.
+        //
+        // WHY THEY SIT WHERE THEY SIT. Every anchor below was PROJECTED into its frame before it
+        // was written down — camera, deck level, mass height and the 55°/85.6° gameplay lens, at
+        // 1920×1080 — and the rows quoted are the output of that arithmetic, not an impression:
+        //
+        //   v3 — camera (25, 17.3, 138) at bearing 268°, 6.3 m above the deck. Horizon on row 449;
+        //        the painted far bank's crest wanders rows 381-442 (its own 0.4°-3.7° measurement,
+        //        see §THE FAR CLOUD BANK). The near row is A, B, C, D — four heads at four sizes
+        //        and four ranges, crowns on rows 400, 327, 430 and 392. THREE of them cross that
+        //        crest band, which is the whole point: cloud in front of the distant islands is
+        //        the only sentence in the frame that says "and this is a sea".
+        //   v4 — camera (155, 53.6, 61) at bearing 63°, pitched 12.2° down. Horizon on row 316,
+        //        bank crest rows 245-308, and rows ~308-490 were the flat cream gap the critic
+        //        named. E, F and G stand at 161-232 m with crowns on rows 424, 458 and 437 and
+        //        waterlines on rows 589, 537 and 509 — INSIDE that gap, in front of the far deck
+        //        and in front of the mid-distance ridges' feet.
+        //
+        // WHAT KEEPS THEM HONEST. Nothing is placed inside the terrain footprint (0-256 m in both
+        // axes); the scatter's inner radius clears the footprint's farthest corner outright. Every
+        // mass hangs at least (sink + 0.391) × radius BELOW the deck, which for the smallest head
+        // the scatter can roll (18 m) is 9.2 m against a worst-case billow of 7 m — so no head can
+        // ever be caught floating with a lit gap under it. Nothing casts a shadow: the sun is 7°
+        // up, so a 200 m cloud would throw a 1.6 km bar across the island. Nothing moves: the
+        // region is BOUND (art-audio.md §The world-state is the art direction).
+        // -------------------------------------------------------------------------------------
+        private const int CloudLobeVariants = 4;
+        private const int CloudLobeMeridians = 48;
+        private const int CloudLobeParallels = 26;
+        // The mass's centre sits this fraction of its radius BELOW the deck, so the deck plane cuts
+        // it and it reads as cloud RISING OUT of the sea rather than as a ball resting on it.
+        // Cutting a little under the widest section (rather than at it, or above it) is what gives
+        // a head the slight overhang a cumulus has over its own base. Measured heights of the four
+        // masses after normalisation are 0.660, 0.942, 0.661 and 0.675, so a mass stands
+        // (top − 0.12) × radius proud: 54% of its radius for the low banks and 82% for the tower.
+        private const float CloudLobeSink = 0.12f;
+        // The scatter that fills the rest of the compass. 260 m clears the terrain's farthest
+        // corner (181 m from centre) with room to spare, so the nearest scattered mass is still
+        // ~157 m from the most exposed camera and cannot loom; 620 m is where the shader's sky
+        // convergence has taken over anyway.
+        private const float CloudLobeScatterInner = 260f;
+        private const float CloudLobeScatterOuter = 620f;
+        private const int CloudLobeScatterCount = 44;
+        // 18 m is a floor, not a taste call. The shallowest of the four masses reaches 0.391 of its
+        // radius below its own centre, so it hangs (0.12 + 0.391) × radius under the deck, and the
+        // deck's own billow can drop 7 m beyond 340 m: below ~14 m radius a scattered head could be
+        // caught floating over a trough with its dark underside showing. 18 m leaves 2.2 m of
+        // margin against the worst case the mesh can produce.
+        private const float CloudLobeScatterMinRadius = 18f;
+        private const float CloudLobeScatterSizeRange = 13f;
+
+        /// <summary>One art-directed cumulus head standing out of the cloud sea: where it is, how
+        /// big, and which of the four masses.</summary>
+        private readonly struct CloudLobeAnchor
+        {
+            public CloudLobeAnchor(float x, float z, float radius, int variant)
+            {
+                X = x;
+                Z = z;
+                Radius = radius;
+                Variant = variant;
+            }
+
+            public float X { get; }
+
+            public float Z { get; }
+
+            /// <summary>Metres, and it is the mass's true half-extent: the mesh is normalised so
+            /// the farthest vertex sits at exactly 1.</summary>
+            public float Radius { get; }
+
+            public int Variant { get; }
+        }
+
+        // The composition anchors, in the order the frames need them. Coordinates were chosen by
+        // back-projecting the wanted screen position through each vantage's frustum onto the deck.
+        private static readonly CloudLobeAnchor[] CloudLobeAnchors =
+        {
+            // -- v3's near row, west of the island's broken edge, in the four sizes that make it a
+            //    row and not a fence. A: the broad bank at 210 m, u +0.15, crown row 400 — inside
+            //    the far bank's crest band, so it cuts that band's base across 364 px of frame.
+            //    C: the small far head at 300 m, u −0.19, crown row 430 — the one that is clearly
+            //    BEHIND A and B, which is where the row's depth comes from. D: the answering mass
+            //    at u +0.68 so the right of frame is not left to the vault alone.
+            new CloudLobeAnchor(-184f, 160f, 30f, 0),
+            new CloudLobeAnchor(-268f, 76f, 22f, 2),
+            new CloudLobeAnchor(-200f, 268f, 25f, 1),
+
+            // -- B, and it is the one that does the work. 131 m out on bearing 243° from v3, and a
+            //    TOWER (mass 1, the tallest of the four) rather than a bank: crown on row 327 —
+            //    54 px clear of the far bank's highest crest — and waterline on row 500. It stands
+            //    across the left-hand island silhouettes' base from x 209 to x 711. Near cloud in
+            //    front of far land is the only sentence in the frame that says "sea".
+            new CloudLobeAnchor(-91f, 79f, 26f, 1),
+
+            // -- v4's row, east and north-east of the island, standing in the cream gap. E is the
+            //    big tower filling the col at u +0.23 (crown row 424, waterline 589) from 161 m,
+            //    which is nearer than the mid-distance ridge behind it — so it occludes that
+            //    ridge's foot rather than peering over its shoulder. F answers low on the left at
+            //    u −0.51 (crown row 458). G crops the right edge at u +0.81 (crown row 437).
+            new CloudLobeAnchor(310f, 102f, 32f, 1),
+            new CloudLobeAnchor(278f, 219f, 28f, 3),
+            new CloudLobeAnchor(382f, 21f, 30f, 0),
+
+            // -- H: south-west of the island, behind the knoll. Not for v3 or v4 — it is what v8's
+            //    backlit dead tree gets to be silhouetted against once the eye follows the ridge
+            //    down, and what v1's left edge sees past the south wall.
+            new CloudLobeAnchor(60f, -120f, 36f, 2),
+        };
+
+        /// <summary>The cumulus heads standing out of the deck. Real geometry, because occlusion is
+        /// the finding and only geometry occludes — see the section header above.</summary>
+        private static void BuildCloudLobes()
+        {
+            Shader lobeShader = Shader.Find(CloudLobeShaderName);
+            if (lobeShader == null)
+            {
+                Debug.LogWarning(
+                    $"[Tarrock] {CloudLobeShaderName} not found; the cloud lobes are skipped and the " +
+                    "deck reverts to an unoccluded plane.");
+                return;
+            }
+
+            var meshes = new Mesh[CloudLobeVariants];
+            for (int variant = 0; variant < CloudLobeVariants; variant++)
+            {
+                Mesh mesh = BuildCloudLobeMesh(variant);
+                string path = string.Format(CloudLobeMeshPathFormat, variant);
+                AssetDatabase.DeleteAsset(path);
+                AssetDatabase.CreateAsset(mesh, path);
+                meshes[variant] = mesh;
+            }
+
+            Material material = BuildCloudLobeMaterial(lobeShader);
+            var root = new GameObject("CloudLobes");
+
+            foreach (CloudLobeAnchor anchor in CloudLobeAnchors)
+            {
+                PlaceCloudLobe(root.transform, meshes, material, anchor.X, anchor.Z, anchor.Radius,
+                    anchor.Variant, Hash21(anchor.X * 0.19f, anchor.Z * 0.53f));
+            }
+
+            int scattered = 0;
+            for (int i = 0; i < CloudLobeScatterCount; i++)
+            {
+                // Bearings walk the compass in equal steps with a jittered offset, rather than
+                // coming off a hash: a hashed bearing clumps, and a clumped ring round an island
+                // reads as three cloud banks and five holes.
+                float bearing = (i + 0.5f) * (360f / CloudLobeScatterCount)
+                                + (Hash21(i + 3.17f, 11.9f) - 0.5f) * 5.6f;
+                float radiusRoll = Hash21(i + 41.3f, 7.7f);
+                float sizeRoll = Hash21(i + 88.9f, 23.1f);
+                float keepRoll = Hash21(i + 12.7f, 61.5f);
+                float spinRoll = Hash21(i + 55.1f, 34.9f);
+                float variantRoll = Hash21(i + 70.3f, 5.2f);
+
+                // Two rings' worth of range, biased inward (the squared roll), because the row that
+                // matters is the near one and the far ones are mostly aerial perspective by the
+                // time the shader has finished with them.
+                float ring = Mathf.Lerp(CloudLobeScatterInner, CloudLobeScatterOuter,
+                    radiusRoll * radiusRoll);
+                float x = TerrainSize * 0.5f + ring * Mathf.Sin(bearing * Mathf.Deg2Rad);
+                float z = TerrainSize * 0.5f + ring * Mathf.Cos(bearing * Mathf.Deg2Rad);
+
+                // Squared roll again: most heads are small and a few are big. A flat size
+                // distribution is the tell of a scatter tool, in cloud exactly as in stone.
+                float radius = CloudLobeScatterMinRadius
+                               + CloudLobeScatterSizeRange * sizeRoll * sizeRoll;
+                if (keepRoll > 0.68f || CloudLobeCrowdsAnchor(x, z, radius))
+                {
+                    continue;   // gaps are composition; an unbroken ring is a belt
+                }
+
+                int variant = Mathf.Clamp(
+                    Mathf.FloorToInt(variantRoll * CloudLobeVariants), 0, CloudLobeVariants - 1);
+                PlaceCloudLobe(root.transform, meshes, material, x, z, radius, variant, spinRoll);
+                scattered++;
+            }
+
+            Debug.Log(
+                $"[Tarrock] Cloud lobes: {CloudLobeAnchors.Length} art-directed + {scattered} scattered.");
+        }
+
+        /// <summary>An anchor is a composition; a scattered head must not crowd one or hide it.
+        /// </summary>
+        private static bool CloudLobeCrowdsAnchor(float x, float z, float radius)
+        {
+            var point = new Vector2(x, z);
+            foreach (CloudLobeAnchor anchor in CloudLobeAnchors)
+            {
+                if (Vector2.Distance(point, new Vector2(anchor.X, anchor.Z)) < anchor.Radius + radius + 20f)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static Material BuildCloudLobeMaterial(Shader lobeShader)
+        {
+            var material = AssetDatabase.LoadAssetAtPath<Material>(CloudLobeMaterialPath);
+            if (material == null)
+            {
+                material = new Material(lobeShader);
+                AssetDatabase.CreateAsset(material, CloudLobeMaterialPath);
+            }
+            else
+            {
+                material.shader = lobeShader;
+            }
+
+            // Every property explicit (same rule as the deck and the terrain — a reused .mat keeps
+            // stale serialized values while shader defaults appear to change).
+            //
+            // The three washes, and the value ladder they sit on is deliberate. Lit crown = the far
+            // bank's crest EXACTLY (a near cloud head and a far one are the same weather in the
+            // same light; any difference reads as two art passes). Shade at luminance 0.475 —
+            // BELOW the far bank's shaded body (0.53) and below the deck's own furrows (0.51),
+            // which is both correct aerial perspective and the reason the near row reads as near.
+            // Belly below that again. A vertical cloud face turned from a 7° sun receives almost
+            // nothing, while a near-horizontal deck furrow still catches it at a graze: the ladder
+            // is physics as much as composition.
+            material.SetColor("_LobeLit", CloudBankCrestLinear);
+            material.SetColor("_LobeShade", new Color(0.42f, 0.47f, 0.62f));
+            material.SetColor("_LobeUnder", new Color(0.30f, 0.35f, 0.48f));
+            // Three washes at 85%: nearly hard edges between them, which is the storybook read.
+            // The sky's own terrace is gentler (30%) because a sky IS a gradient and a cloud is
+            // not.
+            material.SetFloat("_LobeBands", 3f);
+            material.SetFloat("_LobeBandStrength", 0.85f);
+            material.SetFloat("_LobeBandSoftness", 0.10f);
+            // The sun is 7° up, so N·L on a rounded head runs about −1..+1 with the terminator
+            // nearly vertical: gain near 1 and a bias that puts the terminator a little sunward of
+            // the geometric one, because cloud scatters light round its own limb.
+            material.SetFloat("_LobeFormGain", 1.15f);
+            material.SetFloat("_LobeFormBias", 0.42f);
+            material.SetFloat("_LobeUnderDepth", 0.62f);
+            material.SetFloat("_LobeRim", 0.9f);
+            material.SetFloat("_LobeRimPower", 4f);
+            // The same convergence numbers as the deck, so the near row and the sea it stands in
+            // recede together instead of separating into two layers.
+            material.SetFloat("_SkyBlendStart", 430f);
+            material.SetFloat("_SkyBlendEnd", 820f);
+            ApplySkyDescription(material);
+            material.enableInstancing = true;
+            EditorUtility.SetDirty(material);
+            return material;
+        }
+
+        private static void PlaceCloudLobe(
+            Transform parent, Mesh[] meshes, Material material,
+            float x, float z, float radius, int variant, float spinRoll)
+        {
+            var go = new GameObject($"CloudLobe_{x:F0}_{z:F0}");
+            go.transform.SetParent(parent, worldPositionStays: false);
+            go.transform.position = new Vector3(x, CloudDeckLevel - radius * CloudLobeSink, z);
+            // Yaw only. A cumulus has an up; rolling one puts its flat base in the air.
+            go.transform.rotation = Quaternion.Euler(0f, spinRoll * 360f, 0f);
+            go.transform.localScale = Vector3.one * radius;
+
+            go.AddComponent<MeshFilter>().sharedMesh = meshes[variant];
+            var renderer = go.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = material;
+            // A 7° sun turns a 30 m cloud into a 250 m bar of shadow laid across whatever is
+            // downlight of it — which from these positions is the island. Cloud shadow on the
+            // plateau is a real effect and a real decision, and it is not this pass's to make.
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            // Nor does the island's shadow fall on the cloud: the deck does not receive either, and
+            // a shadowed cumulus at 150 m would put a hard-edged terrain silhouette on the sea.
+            renderer.receiveShadows = false;
+            // NOT marked static: static batching merges the meshes and defeats the instancing the
+            // material asks for, and forty-odd merged 1 250-vertex masses would be baked into the
+            // scene file for no gain.
+            go.isStatic = false;
+        }
+
+        /// <summary>One cumulus mass, as a closed blob mesh of unit radius.
+        ///
+        /// A metaball field, not a union of spheres: overlapping spheres leave a hard intersection
+        /// crease exactly where two lobes meet, and a crease shades as a seam. Summing Wyvill
+        /// kernels and finding the isosurface gives ONE watertight surface with continuous normals,
+        /// so the boundary between two lobes reads as the soft valley a real cumulus has there. The
+        /// surface is found by marching each vertex direction out from the centre and taking the
+        /// LAST crossing, which needs the cluster to be star-shaped about its centre — every lobe
+        /// below overlaps the centre by design, so it is.</summary>
+        private static Mesh BuildCloudLobeMesh(int variant)
+        {
+            // The four masses. Each is a handful of lobes in unit space (offset, radius, weight);
+            // like the vault's alphabet they are drawn by one hand, varied by arrangement rather
+            // than by noise. 0 is the broad low bank, 1 the two-headed tower, 2 the long drawn-out
+            // one (the wind that made it is the wind that is currently held), 3 the compact head.
+            Vector4[] lobes = CloudLobeShape(variant);
+
+            const int meridians = CloudLobeMeridians;
+            const int parallels = CloudLobeParallels;
+            var verts = new Vector3[(meridians + 1) * (parallels + 1)];
+            var uvs = new Vector2[(meridians + 1) * (parallels + 1)];
+
+            float maxExtent = 0f;
+            for (int p = 0; p <= parallels; p++)
+            {
+                // Polar angle from +Y. The poles are degenerate rings, which is fine on a blob —
+                // the top pole is inside the crown and the bottom is under the deck.
+                float polar = Mathf.PI * p / parallels;
+                float sinP = Mathf.Sin(polar);
+                float cosP = Mathf.Cos(polar);
+
+                for (int m = 0; m <= meridians; m++)
+                {
+                    float azimuth = 2f * Mathf.PI * m / meridians;
+                    var dir = new Vector3(
+                        sinP * Mathf.Sin(azimuth), cosP, sinP * Mathf.Cos(azimuth));
+
+                    Vector3 v = dir * CloudLobeSurface(lobes, dir);
+                    int index = p * (meridians + 1) + m;
+                    verts[index] = v;
+                    uvs[index] = new Vector2(m / (float)meridians, p / (float)parallels);
+                    maxExtent = Mathf.Max(maxExtent, v.magnitude);
+                }
+            }
+
+            // Normalise so "radius" at the call site means what it says: the mass's true half
+            // extent in metres, which is what every screen projection in the anchor table assumed.
+            if (maxExtent > 0.0001f)
+            {
+                float inverse = 1f / maxExtent;
+                for (int i = 0; i < verts.Length; i++)
+                {
+                    verts[i] *= inverse;
+                }
+            }
+
+            var tris = new int[meridians * parallels * 6];
+            int t = 0;
+            for (int p = 0; p < parallels; p++)
+            {
+                for (int m = 0; m < meridians; m++)
+                {
+                    // Wound so the surface faces OUT. Checked against the deck mesh, which is known
+                    // to face up: there a quad is (v0, v0+row, v0+1) and cross(b−a, c−a) comes out
+                    // +Y, so the same handedness here means the parallel step has to come SECOND.
+                    // Get this backwards and RecalculateNormals inverts every normal, the lighting
+                    // reads inside-out and backface culling eats the mass.
+                    int v0 = p * (meridians + 1) + m;
+                    int v1 = v0 + 1;
+                    int v2 = v0 + meridians + 1;
+                    int v3 = v2 + 1;
+                    tris[t++] = v0; tris[t++] = v2; tris[t++] = v1;
+                    tris[t++] = v1; tris[t++] = v2; tris[t++] = v3;
+                }
+            }
+
+            var mesh = new Mesh { name = $"CloudLobeMass{variant}" };
+            mesh.SetVertices(verts);
+            mesh.SetUVs(0, uvs);
+            mesh.SetTriangles(tris, 0);
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            return mesh;
+        }
+
+        /// <summary>The four cumulus arrangements, as (offset x, y, z, radius) with the weight
+        /// folded into the radius. Every lobe overlaps the origin so the mass stays star-shaped
+        /// about it — see BuildCloudLobeMesh.</summary>
+        private static Vector4[] CloudLobeShape(int variant)
+        {
+            switch (variant)
+            {
+                case 1:
+                    // The two-headed tower: one crown up and forward, a lower shoulder behind it.
+                    return new[]
+                    {
+                        new Vector4(0f, 0f, 0f, 0.62f),
+                        new Vector4(0.16f, 0.42f, -0.10f, 0.46f),
+                        new Vector4(-0.34f, 0.14f, 0.18f, 0.44f),
+                        new Vector4(0.38f, -0.06f, 0.22f, 0.40f),
+                        new Vector4(-0.10f, -0.18f, -0.36f, 0.42f),
+                    };
+                case 2:
+                    // Drawn out along its own x: the wind that made this one is the wind the region
+                    // is currently holding, and the deck's noise is stretched on the same axis.
+                    return new[]
+                    {
+                        new Vector4(0f, 0f, 0f, 0.58f),
+                        new Vector4(0.52f, 0.04f, 0.06f, 0.44f),
+                        new Vector4(-0.50f, -0.02f, -0.08f, 0.42f),
+                        new Vector4(0.14f, 0.30f, 0.10f, 0.38f),
+                        new Vector4(-0.22f, 0.18f, 0.20f, 0.34f),
+                    };
+                case 3:
+                    // The compact head: nearly one lobe, with three small ones breaking its rim.
+                    return new[]
+                    {
+                        new Vector4(0f, 0.04f, 0f, 0.72f),
+                        new Vector4(0.34f, 0.20f, 0.14f, 0.36f),
+                        new Vector4(-0.30f, 0.06f, -0.22f, 0.34f),
+                        new Vector4(0.06f, -0.24f, 0.34f, 0.32f),
+                    };
+                default:
+                    // The broad low bank: wide, only modestly tall, the workhorse of the near row.
+                    return new[]
+                    {
+                        new Vector4(0f, 0f, 0f, 0.60f),
+                        new Vector4(0.44f, 0.10f, 0.12f, 0.46f),
+                        new Vector4(-0.42f, 0.06f, -0.14f, 0.44f),
+                        new Vector4(0.10f, 0.26f, -0.30f, 0.40f),
+                        new Vector4(-0.16f, 0.16f, 0.36f, 0.38f),
+                        new Vector4(0.26f, -0.14f, 0.30f, 0.34f),
+                    };
+            }
+        }
+
+        /// <summary>Distance from the cluster centre to the metaball isosurface along
+        /// <paramref name="dir"/>. Coarse march to find the LAST crossing (the outermost surface,
+        /// so an inner lobe's shell can never be mistaken for the silhouette), then bisection.
+        /// </summary>
+        private static float CloudLobeSurface(Vector4[] lobes, Vector3 dir)
+        {
+            const float threshold = 0.42f;
+            const int marchSteps = 40;
+            const int refineSteps = 12;
+            const float reach = 2.0f;
+
+            float lastInside = 0f;
+            for (int i = 1; i <= marchSteps; i++)
+            {
+                float t = reach * i / marchSteps;
+                if (CloudLobeField(lobes, dir * t) >= threshold)
+                {
+                    lastInside = t;
+                }
+            }
+
+            // Everything past lastInside is outside; the crossing is between it and the next step.
+            float firstOutside = Mathf.Min(reach, lastInside + reach / marchSteps);
+
+            for (int i = 0; i < refineSteps; i++)
+            {
+                float mid = (lastInside + firstOutside) * 0.5f;
+                if (CloudLobeField(lobes, dir * mid) >= threshold)
+                {
+                    lastInside = mid;
+                }
+                else
+                {
+                    firstOutside = mid;
+                }
+            }
+
+            return (lastInside + firstOutside) * 0.5f;
+        }
+
+        /// <summary>Wyvill's (1 − t²)³ kernel, summed. Finite support, so a lobe influences only
+        /// its own neighbourhood, and C2 at the boundary, so the blend between two lobes has no
+        /// crease in it to shade as a seam.</summary>
+        private static float CloudLobeField(Vector4[] lobes, Vector3 p)
+        {
+            float sum = 0f;
+            foreach (Vector4 lobe in lobes)
+            {
+                float radius = Mathf.Max(lobe.w, 0.01f);
+                float t = (p - new Vector3(lobe.x, lobe.y, lobe.z)).magnitude / radius;
+                if (t >= 1f)
+                {
+                    continue;
+                }
+
+                float k = 1f - t * t;
+                sum += k * k * k;
+            }
+
+            return sum;
         }
 
         private static void BuildRegionWind()
@@ -1045,8 +3744,1032 @@ namespace Tarrock.Editor
             // The Cliff is BOUND at the start of the game, so wind rests at 0 and the region holds its
             // breath (art-audio.md §The world-state is the art direction). The director scrub on
             // RegionWind is how you feel the unbound state without firing a flag.
+            // NO EXCEPTIONS, and the meadow is not one (director ruling 2026-07-31, reversing the
+            // round-1 sway baseline): at wind 0 the grass does not move at all. "Wind-combed" is the
+            // static SHAPE the last wind left, which Tarrock/GrassTuft poses with _CombLean. What
+            // the bound world still does is yield to TOUCH — see BuildGrassBenders.
             var windGo = new GameObject("RegionWind");
             windGo.AddComponent<RegionWind>();
+        }
+
+        // -------------------------------------------------------------------------------------
+        // Rock outcrops (round-2 composition pass, near-lens rework in round 3)
+        //
+        // THE FINDING this answers (round-1 critique of gauntlet/round1/v1, v8): there is no
+        // foreground layer — the bottom third of the frame is smooth empty ground, and the darkest,
+        // highest-detail mass sits in the MIDDLE distance. Every reference plate does the opposite:
+        // fable-01 crops dark rock into the frame's edges a few metres from the lens, fable-06 puts
+        // the two nearest masses hard against both sides. Something dark and near is what gives the
+        // frame a foreground to read the rest against.
+        //
+        // ROUND 3, on the same finding re-measured against gauntlet/round2/v1, v8: it is still true.
+        // Round 2 built the family and put the anchors at the right screen POSITION and the wrong
+        // DISTANCE — 8.5 m to v1's lens, 12.0 m to v8's — so the dark layer reads as midground, not
+        // as foreground. The three changes are set out beside RockVariants below.
+        //
+        // THREE POPULATIONS, ONE FAMILY. Most stones are SCATTERED by rule — deterministic, derived
+        // from the landform itself, so the region keeps its logic if the sculpt moves: stone lies in
+        // the thin turf everywhere, breaks out where the ground breaks (21-47 degrees), rings the
+        // island's rim, strews the valley's banks, and gathers on the spawn bowl's floor. A few of
+        // those stand rather than sit (variants 4-5), where the ground already breaks. And a short
+        // list of ANCHORS is placed by hand, exactly like the dead tree, because composition is not
+        // a rule: those are the stones that crop v1's edges, fill v8's bottom-left corner, crown the
+        // knoll beside the tree and lean off the knoll's notch. Each anchor was projected into the
+        // vantage frustums before it was written down (see the table).
+        //
+        // The scatter never buries a camera or occludes a subject. Re-measured over all eight
+        // vantages after the round-3 change: no stone over 0.9 m tall lands within 2.6 m of any
+        // camera, nothing stands on a camera's sight line to its subject at a height that could
+        // reach it, and the nearest stone to the spawn mark is 4.0 m away and waist-high.
+        // -------------------------------------------------------------------------------------
+        // ROUND 3 — THE NEAR-LENS LAYER. The critic's measurement on round2/v1 and v8 was that the
+        // darkest mass in the frame still sits ~30 m out (measured here: the nearest stone to v1's
+        // lens was 8.5 m and to v8's 12.0 m), while every reference plate puts something within a
+        // couple of metres of the lens, cropped by a frame edge. Three things changed:
+        //
+        //  1. DENSITY. The lattice pitch drops 5 m → 3 m and a baseline "scoured pan" chance now
+        //     applies to ordinary gentle ground, so the plateau HAS a near layer everywhere rather
+        //     than only at slope breaks. This is not decoration: the Cliff is wind-scoured (see
+        //     art-audio.md §Region colour scripts, "wind-scoured green"), and wind-scoured turf is
+        //     thin turf with the bedrock showing through it. The stone lying in the grass is the
+        //     island's bones. Measured over 120 random standing points on walkable ground, the mean
+        //     distance to the nearest stone falls from 12.2 m (round 2, 103 stones) to 4.7 m
+        //     (round 3, ~560). That one number IS the near-lens layer; everything else is framing.
+        //
+        //  2. SIZE-AWARE CLEARANCES. Round 2 kept EVERY stone 5.5 m off the travelled line, which
+        //     is why nothing could ever be near the lens — the lens looks down the travelled line.
+        //     A stone's berth now scales with the stone (1.4 + 1.35 × scale), so a 3 m boulder
+        //     keeps more room than it used to and ankle-high rubble may lie in the grass where the
+        //     Fool walks over it. That threshold is the same one that decides colliders in
+        //     PlaceRock: if it is too small to collide with, it is too small to need a corridor.
+        //
+        //  3. A STANDING FAMILY. Variants 4 and 5 are tall and thin — a leaning finger and a
+        //     tilted slab — because a boulder cannot break a frame's bottom edge from 3 m when the
+        //     camera is looking UP (v8's frame bottom sits 3.9° ABOVE the horizontal; nothing under
+        //     2 m tall is even in that picture). They are also the only shape that can carry the
+        //     lit edge: see BeddingDipBearing.
+        private const int RockVariants = 6;
+        private const int StandingFirstVariant = 4;   // variants 4-5 stand; 0-3 sit
+        private const float RockCell = 3f;   // scatter lattice pitch, metres
+
+        // THE CLIFF'S BEDDING. Every stone in the family leans the same way, by the same law: the
+        // strata dip toward bearing 152° and their broken faces therefore look up-sun, toward the
+        // dawn disc at bearing 332° (BuildLighting's SunEuler is 7°/152°; every sky vector in this
+        // file derives from it). This is one line of geology doing three jobs at once:
+        //   - it is TRUE — a bedded island has one dip, not a per-prop random tilt;
+        //   - it ties the whole rock family into one formation instead of scattered props; and
+        //   - it is what makes a near mass READ. At a 7° sun a horizontal top plane takes
+        //     sin 7° = 0.12 of the key light and stays as dark as the ground it sits on. Tip a
+        //     stone's up-sun face 14° back and that face takes cos 7° ≈ 0.99 — eight times the
+        //     light — while its top cap falls into shadow. The hard bright-to-dark line where they
+        //     meet is the lit top edge the round-2 critique asked for, and it is exactly the
+        //     confident edge art-bible.md wants: two flat values and one clean boundary.
+        // Standing stones lean further (they are the slabs the scarp shed, stood on their ends),
+        // and their broad face is yawed to front the disc rather than spun at random.
+        private const float BeddingDipBearing = 152f;
+        private const float BeddingDipDegrees = 14f;
+        private const float StandingDipDegrees = 24f;
+        private const float SunwardBearing = 332f;
+
+        /// <summary>One art-directed stone: where, how big, which of the four meshes.</summary>
+        private readonly struct RockAnchor
+        {
+            public RockAnchor(float x, float z, float scale, int variant)
+            {
+                X = x;
+                Z = z;
+                Scale = scale;
+                Variant = variant;
+            }
+
+            public float X { get; }
+
+            public float Z { get; }
+
+            public float Scale { get; }
+
+            public int Variant { get; }
+        }
+
+        // The composition anchors, in the order the frames need them. Coordinates were chosen by
+        // back-projecting the wanted screen position through each vantage's frustum onto the ground
+        // — and, in round 3, by re-solving that projection for the DISTANCE as well, which is the
+        // thing round 2 got wrong. Every one of these was also checked against all eight cameras:
+        // no anchor is closer than 3 m to any of them, and none lies on any camera's sight line to
+        // its subject.
+        private static readonly RockAnchor[] RockAnchors =
+        {
+            // The bowl stones, north side. ROUND 3 RE-SITED THESE. Round 2 put them at 8.5-15 m and
+            // at screen u +1.05..+1.77 — which is to say two of the three were entirely OUTSIDE the
+            // frame and the third was a chip on the horizon. Re-solved for distance as well as for
+            // column, they now stack at 7.1 / 7.5 / 10.7 m and read as three overlapping steps down
+            // v1's right edge, the nearest cropping it (u +0.86..+1.31) and rising from below the
+            // frame to a sixth above centre. Overlap is the whole point: one mass in front of
+            // another is the only thing in a frame that states depth without any atmosphere at all.
+            new RockAnchor(214.4f, 96.1f, 2.2f, 0),
+            new RockAnchor(213.4f, 95.5f, 1.9f, 3),
+            new RockAnchor(210.3f, 96.6f, 2.9f, 1),
+
+            // ...and the south side, deliberately NOT a mirror. The near one is the closest thing to
+            // v1's lens at 3.6 m — it shows only its top (v −1.42 to −0.63, so its base is below the
+            // frame edge, which is what "cropped" means) across u −1.34..−0.78. Behind it three more
+            // answer at 9.3, 13.4 and 14.5 m. Four distances on one side and three on the other, all
+            // seven of them different: the frame is held, not fenced.
+            // The near one is also v2's near layer, cropping that frame's right edge from 3.2 m.
+            new RockAnchor(217.0f, 88.3f, 1.5f, 2),
+            new RockAnchor(211.6f, 86.0f, 2.4f, 1),
+            new RockAnchor(206.5f, 84.3f, 2.6f, 1),
+            new RockAnchor(209.0f, 82.6f, 1.5f, 3),
+
+            // The south-wall outcrop. From v8 this group reads as the midground step at 15-21 m,
+            // and on v1's left at 35 m as the layer beyond that. Unchanged from round 2 — with the
+            // pair below now in front of it, it finally has something to be BEHIND.
+            new RockAnchor(190.4f, 68.2f, 3.2f, 0),
+            new RockAnchor(188.2f, 66.4f, 2.4f, 1),
+            new RockAnchor(192.6f, 70.0f, 1.8f, 2),
+
+            // v8's NEAR LAYER: a leaning finger at 2.6 m and the plate it broke off at 3.9 m, on the
+            // valley floor's south side. This vantage looks UP at the knoll — its frame bottom sits
+            // 3.9° ABOVE the horizontal — which is why round 2's nearest stone (12.0 m) read as
+            // midground and why these must be STANDING stones and not boulders: at 3 m, nothing
+            // under 1.9 m tall is in this picture at all. Together they fill the bottom-left corner
+            // across u −1.38..−0.26 from below the frame edge up to v −0.51, and they stop 0.26
+            // short of the dead tree's screen column with 0.5 of clear sky under its crown.
+            new RockAnchor(199.0f, 81.6f, 2.4f, 4),
+            new RockAnchor(198.2f, 80.6f, 2.9f, 5),
+
+            // The knoll's crown tor, beside the dead tree — unchanged from round 2.
+            new RockAnchor(158.4f, 64.8f, 2.6f, 1),
+            new RockAnchor(156.2f, 65.6f, 1.9f, 2),
+            new RockAnchor(152.0f, 63.5f, 1.8f, 0),
+
+            // THE NOTCH HORN: the leaning counter-element of the skyline event cut in
+            // ApplyLandformEvents. Three slabs standing on the horn beyond the notch, tops at
+            // v −0.21..−0.24 against open sky — ≈0.17 above the notch floor and 0.07 clear of the
+            // horn's own crest, so the shoulder reads summit → cut → three dark leaning verticals →
+            // falls away. They stand where the ground is under 15°; the 51° scarp west of them is
+            // left bare, because a slab does not perch.
+            new RockAnchor(148.0f, 73.0f, 3.2f, 4),
+            new RockAnchor(147.0f, 74.2f, 2.6f, 5),
+            new RockAnchor(149.0f, 71.9f, 2.2f, 4),
+        };
+
+        private static void BuildRockOutcrops(TerrainData terrainData, Material terrainMaterial)
+        {
+            Shader rockShader = Shader.Find(RockShaderName);
+            if (rockShader == null)
+            {
+                Debug.LogWarning($"[Tarrock] {RockShaderName} not found; rock outcrops skipped.");
+                return;
+            }
+
+            var meshes = new Mesh[RockVariants];
+            for (int variant = 0; variant < RockVariants; variant++)
+            {
+                Mesh mesh = BuildRockMesh(variant);
+                string path = string.Format(RockMeshPathFormat, variant);
+                AssetDatabase.DeleteAsset(path);
+                AssetDatabase.CreateAsset(mesh, path);
+                meshes[variant] = mesh;
+            }
+
+            Material rock = BuildRockMaterial(rockShader, terrainMaterial);
+            var root = new GameObject("RockOutcrops");
+
+            foreach (RockAnchor anchor in RockAnchors)
+            {
+                PlaceRock(root.transform, meshes, rock, terrainData,
+                    anchor.X, anchor.Z, anchor.Scale, anchor.Variant,
+                    Hash21(anchor.X * 0.37f, anchor.Z * 0.71f));
+            }
+
+            int scattered = 0;
+            int cells = Mathf.FloorToInt(TerrainSize / RockCell);
+            for (int gz = 0; gz < cells; gz++)
+            {
+                for (int gx = 0; gx < cells; gx++)
+                {
+                    float jitterX = Hash21(gx + 0.37f, gz + 9.11f);
+                    float jitterZ = Hash21(gx + 53.70f, gz + 2.29f);
+                    float pick = Hash21(gx + 88.10f, gz + 41.30f);
+                    float sizeRoll = Hash21(gx + 12.90f, gz + 67.50f);
+                    float spinRoll = Hash21(gx + 71.30f, gz + 23.90f);
+                    float variantRoll = Hash21(gx + 31.70f, gz + 95.10f);
+                    float standRoll = Hash21(gx + 64.50f, gz + 7.70f);
+
+                    float x = (gx + 0.15f + 0.70f * jitterX) * RockCell;
+                    float z = (gz + 0.15f + 0.70f * jitterZ) * RockCell;
+
+                    // SIZE IS DECIDED BEFORE ACCEPTANCE, because in round 3 the clearances depend on
+                    // it (see AcceptsRock): a boulder needs a corridor, rubble does not, and you
+                    // cannot apply that rule to a stone whose size you have not rolled yet.
+                    //
+                    // Power-2.2 roll: most stones are small, a few are big — a flat size distribution
+                    // reads as gravel of one grade, which is the tell of a scatter tool. Size, spin,
+                    // shape and stance come off FOUR independent hashes; sharing one would tie every
+                    // big stone to the same mesh at the same angle.
+                    float standSteep = terrainData.GetSteepness(x / TerrainSize, z / TerrainSize);
+                    bool standing = standRoll > 0.88f && standSteep > 16f && standSteep < 44f;
+                    float scale = standing
+                        ? 1.6f + 1.4f * sizeRoll
+                        : 0.40f + 2.9f * Mathf.Pow(sizeRoll, 2.2f);
+                    if (!AcceptsRock(terrainData, x, z, pick, scale))
+                    {
+                        continue;
+                    }
+
+                    // Standing stones only ever come from the standing family, and only ever stand
+                    // where the ground already breaks — a menhir in the middle of a flat meadow is
+                    // a monument, and this region has not earned one.
+                    int variant = standing
+                        ? StandingFirstVariant + (variantRoll > 0.5f ? 1 : 0)
+                        : Mathf.Clamp(
+                            Mathf.FloorToInt(variantRoll * StandingFirstVariant), 0, StandingFirstVariant - 1);
+                    PlaceRock(root.transform, meshes, rock, terrainData, x, z, scale, variant, spinRoll);
+                    scattered++;
+                }
+            }
+
+            Debug.Log(
+                $"[Tarrock] Rock outcrops: {RockAnchors.Length} art-directed + {scattered} scattered.");
+        }
+
+        private static bool AcceptsRock(TerrainData terrainData, float x, float z, float pick, float scale)
+        {
+            // A margin, so no stone straddles the tile boundary the cloud deck is hiding.
+            if (x < 8f || x > TerrainSize - 8f || z < 8f || z > TerrainSize - 8f)
+            {
+                return false;
+            }
+
+            float height = terrainData.GetInterpolatedHeight(x / TerrainSize, z / TerrainSize);
+            float steep = terrainData.GetSteepness(x / TerrainSize, z / TerrainSize);
+
+            // Below 13.5 m is the drop into cloud and above 56 m is nothing this region has; past
+            // 52 degrees a boulder would hang on the face rather than sit on it.
+            if (height < 13.5f || height > 56f || steep > 52f)
+            {
+                return false;
+            }
+
+            // The travelled line stays clear — but by an amount that SCALES WITH THE STONE. Round 2
+            // held every stone, from a 0.75 m cobble to a 3.25 m boulder, 5.5 m off the centreline,
+            // and that single number is most of why the opening frame had no foreground: the lens
+            // looks down the travelled line, so a blanket corridor is a blanket ban on near-lens
+            // masses. A boulder now keeps MORE berth than it used to and ankle-high rubble may lie
+            // in the grass, which is where rubble lies. The crossover is the same 1 m that decides
+            // colliders in PlaceRock: too small to collide with is too small to route around.
+            float offset = Mathf.Abs(z - CentreZ(x));
+            if (offset < 1.4f + 1.35f * scale)
+            {
+                return false;
+            }
+
+            var point = new Vector2(x, z);
+            var spawnXz = new Vector2(SpawnHint.x, SpawnHint.z);
+            float fromSpawn = Vector2.Distance(point, spawnXz);
+            if (fromSpawn < 1.2f + 1.0f * scale)
+            {
+                return false;   // the Fool wakes on grass, not on a stone
+            }
+
+            if (Vector2.Distance(point, KnollCentre) < 2.6f)
+            {
+                return false;   // the dead tree's own ground
+            }
+
+            foreach (RockAnchor anchor in RockAnchors)
+            {
+                // Scaled with the anchor too: an anchor is a composition and the scatter must not
+                // silt up around it, but a 1.5 m anchor does not need the same moat as a 3.2 m one.
+                if (Vector2.Distance(point, new Vector2(anchor.X, anchor.Z)) < 3.5f + anchor.Scale)
+                {
+                    return false;
+                }
+            }
+
+            // Five zones, in ascending priority.
+            //
+            // THE PAN is the round-3 addition and the one that makes the near layer exist at all:
+            // ordinary ground, anywhere, carries stone. On a wind-scoured plateau the turf is thin
+            // and the bedrock is right underneath it, so plates and low brows show through the
+            // grass everywhere — which is both true and the only rule that can put something dark
+            // within a few metres of a camera standing in the open. The other four are where stone
+            // GATHERS: bedrock surfaces at slope breaks, the island's broken edge shows its bones,
+            // the valley's banks are strewn (the same band the tussocks dress, so the two
+            // populations edge the path together instead of arguing about where it is), and the
+            // spawn bowl's floor collects what its steep rim sheds — densest in the apron at the
+            // foot of that rim, which is the arc the opening frame looks across.
+            float chance = 0.10f;
+            if (steep > 21f && steep < 47f)
+            {
+                chance = Mathf.Max(chance, 0.16f);
+            }
+
+            float inboard = RimInboard(x, z);
+            if (inboard > 5f && inboard < 24f)
+            {
+                chance = Mathf.Max(chance, 0.13f);
+            }
+
+            float halfWidth = HalfWidth(x);
+            if (offset > halfWidth - 3f && offset < halfWidth + 12f)
+            {
+                chance = Mathf.Max(chance, 0.22f);
+            }
+
+            if (fromSpawn > 3f && fromSpawn < 30f)
+            {
+                chance = Mathf.Max(chance, 0.26f);
+            }
+
+            if (fromSpawn > 15f && fromSpawn < 28f)
+            {
+                chance = Mathf.Max(chance, 0.36f);
+            }
+
+            return pick <= chance;
+        }
+
+        /// <summary>Metres inboard of the nearest broken edge (negative once past the lip). The edge
+        /// lines are the ones SampleHeight step 7 uses.</summary>
+        private static float RimInboard(float x, float z)
+        {
+            float edgeN = 209f + 7f * Mathf.Sin(x * 0.043f) + 3f * Mathf.Sin(x * 0.11f);
+            float edgeS = 22f + 7f * Mathf.Sin(x * 0.037f + 1.3f) + 3f * Mathf.Sin(x * 0.09f + 0.5f);
+            float edgeE = 246f + 7f * Mathf.Sin(z * 0.041f + 2.2f) + 3f * Mathf.Sin(z * 0.10f + 1.1f);
+            float edgeW = 12f + 7f * Mathf.Sin(z * 0.045f + 0.7f) + 3f * Mathf.Sin(z * 0.12f + 2.4f);
+            return Mathf.Min(Mathf.Min(edgeN - z, z - edgeS), Mathf.Min(edgeE - x, x - edgeW));
+        }
+
+        /// <summary>
+        /// The direction a bedded stone's own "up" points: vertical tipped <paramref name="dip"/>
+        /// degrees toward <see cref="BeddingDipBearing"/>. Leaning DOWN-sun is deliberate and is the
+        /// whole trick — it swings the stone's broken up-sun face back toward the 7° disc (that face
+        /// goes from taking cos 83° to taking cos 7° of the key light) while the top cap rolls into
+        /// shadow, so the stone gains the hard lit edge a near mass needs to read against the sky.
+        /// Leaning the other way would light the cap a little and the face not at all.
+        /// </summary>
+        private static Vector3 BeddingUp(float dip)
+        {
+            float dipRadians = dip * Mathf.Deg2Rad;
+            float bearingRadians = BeddingDipBearing * Mathf.Deg2Rad;
+            float lean = Mathf.Sin(dipRadians);
+            return new Vector3(
+                Mathf.Sin(bearingRadians) * lean,
+                Mathf.Cos(dipRadians),
+                Mathf.Cos(bearingRadians) * lean).normalized;
+        }
+
+        private static void PlaceRock(
+            Transform parent, Mesh[] meshes, Material material, TerrainData terrainData,
+            float x, float z, float scale, int variant, float roll)
+        {
+            float nx = x / TerrainSize;
+            float nz = z / TerrainSize;
+            float ground = terrainData.GetInterpolatedHeight(nx, nz);
+            float steep = terrainData.GetSteepness(nx, nz);
+            Vector3 normal = terrainData.GetInterpolatedNormal(nx, nz);
+
+            bool standing = variant >= StandingFirstVariant;
+
+            // Sunk, and sunk MORE on steep ground: a stone that merely touches the surface reads as
+            // dropped, and on a slope it reads as rolling. Bedrock is buried. A standing stone is
+            // set deeper still, because a slab on its end that is not footed falls over.
+            float sink = (0.16f + 0.34f * Mathf.Clamp01(steep / 60f)) * scale;
+            if (standing)
+            {
+                sink += 0.14f * scale;
+            }
+
+            var go = new GameObject("Rock");
+            go.transform.SetParent(parent, worldPositionStays: false);
+            go.transform.position = new Vector3(x, ground - sink, z);
+
+            // REST is PART of the way toward the ground normal: fully aligned reads as decal, fully
+            // upright reads as furniture. 55% is the angle at which a slab looks like it was left
+            // there by the hill rather than placed on it. Then the whole thing is leaned again
+            // toward the region's bedding (see BeddingDipBearing), which is what turns the up-sun
+            // face into the lit edge — hard, and hardest for the standing family, which is bedding
+            // stood on end and therefore takes the dip almost entirely.
+            Vector3 rest = Vector3.Slerp(Vector3.up, normal, 0.55f).normalized;
+            Vector3 bedded = Vector3.Slerp(
+                rest, BeddingUp(standing ? StandingDipDegrees : BeddingDipDegrees),
+                standing ? 0.85f : 0.5f).normalized;
+            Quaternion tilt = Quaternion.FromToRotation(Vector3.up, bedded);
+
+            // Yaw: sitting stones spin freely, standing stones do NOT. A slab's broad face is the
+            // face the dawn has to find, so it is turned to front the disc (±22° of hash wander, so
+            // a row of them is a bedding plane and not a parade), and the mesh is built with its
+            // broad faces on local ±Z for exactly this.
+            float yaw = standing
+                ? SunwardBearing + (roll - 0.5f) * 44f
+                : roll * 360f;
+            go.transform.rotation = tilt * Quaternion.Euler(0f, yaw, 0f);
+
+            // Non-uniform in plan, so many instances of six meshes never read as many copies. The
+            // standing family is squashed HARD on one axis on purpose: a slab is a plate, and a
+            // finger is a column, and neither survives being drawn as a lumpy cylinder.
+            float squashX = 0.82f + 0.42f * Hash21(x * 0.13f, z * 0.29f);
+            float squashZ = 0.82f + 0.42f * Hash21(x * 0.41f + 5f, z * 0.17f + 3f);
+            if (standing)
+            {
+                squashX *= variant == StandingFirstVariant ? 0.62f : 1.15f;
+                squashZ *= variant == StandingFirstVariant ? 0.55f : 0.34f;
+            }
+
+            go.transform.localScale = new Vector3(scale * squashX, scale, scale * squashZ);
+
+            Mesh mesh = meshes[Mathf.Clamp(variant, 0, meshes.Length - 1)];
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var renderer = go.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = material;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+
+            // Only stones the Fool could not step over get a collider: a metre-high boulder is a
+            // wall, ankle-high rubble is scenery and colliding with it only snags movement.
+            if (scale >= 1.0f)
+            {
+                var box = go.AddComponent<BoxCollider>();
+                box.center = mesh.bounds.center;
+                box.size = mesh.bounds.size;
+            }
+
+            go.isStatic = true;
+        }
+
+        private static Material BuildRockMaterial(Shader rockShader, Material terrainMaterial)
+        {
+            var material = AssetDatabase.LoadAssetAtPath<Material>(RockMaterialPath);
+            if (material == null)
+            {
+                material = new Material(rockShader);
+                AssetDatabase.CreateAsset(material, RockMaterialPath);
+            }
+            else
+            {
+                material.shader = rockShader;
+            }
+
+            // The palette is READ off the ground, never restated: a boulder must be made of the same
+            // stone the hillside is shaded with (BuildTerrainMaterial owns those colours), and
+            // copying the numbers here is how a prop ends up a different rock from its own cliff.
+            // The fallbacks exist only so a renamed terrain property degrades to "close enough and
+            // loud in the log" instead of to Unity's silent Color.clear, i.e. black rocks.
+            //
+            // ROUND-2 INTEGRATION NOTE: the ground pass split its stone into alternating warm and
+            // cool BEDS with sage lichen (_RockWarm / _RockCool / _RockLichen) where it used to have
+            // one _RockColor and one _MossColor. Tarrock/RockPainterly still lights a boulder with a
+            // single stone colour plus a moss, so the mapping is warm bed → stone, lichen → moss.
+            // The cool bed is deliberately NOT read: a boulder sitting on a hillside is a lump of
+            // the sunny bed that fell off it, and mixing both here would grey the prop out of the
+            // cliff it came from. The fallbacks are the ground pass's own numbers.
+            material.SetColor("_RockColor", PaletteColour(terrainMaterial, "_RockWarm", new Color(0.56f, 0.51f, 0.42f)));
+            material.SetColor("_CliffColor", PaletteColour(terrainMaterial, "_CliffColor", new Color(0.30f, 0.31f, 0.35f)));
+            material.SetColor("_MossColor", PaletteColour(terrainMaterial, "_RockLichen", new Color(0.35f, 0.40f, 0.26f)));
+            material.SetColor("_ShadowTint", PaletteColour(terrainMaterial, "_ShadowTint", new Color(0.80f, 0.88f, 1.06f)));
+            material.SetColor("_AmbientFloor", PaletteColour(terrainMaterial, "_AmbientFloor", new Color(0.10f, 0.11f, 0.14f)));
+
+            // Every remaining property explicit (same rule as the other materials — a reused .mat
+            // keeps stale serialised values while the shader's defaults appear to change). These are
+            // the ROCK's own numbers: finer mottle than the ground's (a boulder is read at 2 m, not
+            // at 40), a finer bed, and a harder posterise so near stones hold a few flat values and
+            // stay legible as a dark shape.
+            material.SetFloat("_MossAmount", 0.42f);
+            material.SetFloat("_MossStart", 0.28f);
+            material.SetFloat("_RockVariation", 1.5f);
+            material.SetFloat("_RockContrast", 1.8f);
+            material.SetFloat("_RockDetailAmount", 0.13f);
+            material.SetFloat("_FormationTint", 0.55f);
+
+            // BEDDING (round 3) — the same construct as the ground's, an order finer because a
+            // boulder is a metre tall and wants three or four beds, not one. Round 2 drew
+            // posterise(sin(bedding * pi)) here, i.e. a wide soft sinusoid lerping the whole albedo
+            // between two stone colours, which is why the round-2 boulders read as stacks of pale
+            // tonal slabs. A bed is a thin parting between two masses of one colour.
+            //
+            // _BeddingWarp 0.09 m against a 0.34 m bed is 26%, and the shader caps it at 30%: the
+            // same ratio discipline as the ground, for the same reason (see BuildTerrainMaterial).
+            material.SetFloat("_BeddingSpacing", 0.34f);
+            material.SetVector("_BeddingDip", new Vector4(0.070f, 0f, -0.050f, 0f));
+            material.SetFloat("_BeddingWarp", 0.09f);
+            material.SetFloat("_BeddingLineWidth", 0.10f);
+            material.SetFloat("_BeddingWidthJitter", 0.60f);
+            material.SetFloat("_BeddingDarken", 0.30f);
+            material.SetFloat("_BeddingLip", 0.18f);
+            material.SetFloat("_BedValueJitter", 0.10f);
+            material.SetFloat("_BedFormRate", 0.30f);
+            // Measured on 1 - |N.y| rather than on slope degrees, because a boulder has a flat TOP
+            // and a flat underside and a horizontal bed blobs across both. Same physics as the
+            // ground's slope gate.
+            material.SetFloat("_BeddingFaceStart", 0.18f);
+            material.SetFloat("_BeddingFaceEnd", 0.46f);
+
+            // CAVITY — the hollows, as their own term. Scaled to the block (0.55 m) rather than to
+            // the hillside, so it reads as pitting in the stone and not as the ground's shading
+            // arriving on a prop.
+            material.SetFloat("_CavityScale", 0.55f);
+            material.SetFloat("_CavityContrast", 4.5f);
+            material.SetFloat("_CavityDarken", 0.30f);
+
+            material.SetFloat("_BrushSteps", 4f);
+            material.SetFloat("_BrushSoftness", 0.32f);
+            material.SetFloat("_ShadeWrap", 0.22f);
+            material.SetFloat("_AmbientBoost", 1f);
+            material.enableInstancing = true;
+
+            // OPAQUE, pinned — same reasoning as BuildTerrainMaterial.
+            material.renderQueue = -1;
+            material.SetOverrideTag("RenderType", "Opaque");
+            EditorUtility.SetDirty(material);
+            return material;
+        }
+
+        /// <summary>Reads one colour off the ground's material so the rock family cannot drift from
+        /// the palette that owns it, warning (rather than silently going black) if it is gone.</summary>
+        private static Color PaletteColour(Material source, string property, Color fallback)
+        {
+            if (source != null && source.HasProperty(property))
+            {
+                return source.GetColor(property);
+            }
+
+            Debug.LogWarning(
+                $"[Tarrock] Terrain material has no '{property}'; rock outcrops fell back to their " +
+                "own copy of the Cliff palette. Re-sync BuildRockMaterial with BuildTerrainMaterial.");
+            return fallback;
+        }
+
+        /// <summary>
+        /// One faceted stone, 1 m tall and about 0.9 m across at scale 1: five rings of a 6-8 sided
+        /// prism with a hash-jittered radius per ring and per side, leaned off vertical, capped top
+        /// and bottom, and emitted with HARD facets (every quad carries its own vertices and its own
+        /// normal). Hard facets are the point — a smooth-shaded blob is the "undesigned dome"
+        /// problem at prop scale, and the reference boards' rock is always a few flat planes with a
+        /// clean edge between them (art-bible.md, confident edges).
+        /// </summary>
+        private static Mesh BuildRockMesh(int variant)
+        {
+            // The RADIUS profile is what makes a boulder a boulder and a slab a slab; the ring
+            // HEIGHTS differ only for the standing family, which needs its mass low and its taper
+            // late so it reads as something stood up rather than something grown. The bottom ring
+            // sits below the origin so the stone can be sunk without ever showing its open base.
+            float[] ringHeight = RockRingHeights(variant);
+            float[] ringRadius = RockProfile(variant);
+            int sides = RockSides(variant);
+            float leanX = (Hash21(variant * 3.7f, 1.9f) - 0.5f) * 0.22f;
+            float leanZ = (Hash21(variant * 5.1f, 7.3f) - 0.5f) * 0.22f;
+
+            var verts = new List<Vector3>();
+            var cols = new List<Color>();
+            var tris = new List<int>();
+
+            Vector3 RingPoint(int ring, int side)
+            {
+                float angle = side * Mathf.PI * 2f / sides;
+                float jitter = 0.80f + 0.42f * Hash21(side + variant * 13.7f, ring + variant * 7.3f);
+                float r = ringRadius[ring] * jitter * 0.46f;
+                float t = Mathf.Clamp01(ringHeight[ring]);
+                var lean = new Vector3(leanX, 0f, leanZ) * (t * t);
+                return new Vector3(Mathf.Cos(angle) * r, ringHeight[ring], Mathf.Sin(angle) * r) + lean;
+            }
+
+            // Value per facet, darkening toward the buried base: the contact shadow is painted into
+            // the mesh rather than left to an AO the pipeline does not run at this scale.
+            Color FacetColour(int ring, int side, float centreHeight)
+            {
+                float v = 0.86f + 0.26f * Hash21(side * 3.1f + ring * 7.7f, variant * 5.3f + 2.1f);
+                float bury = Mathf.Lerp(0.52f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(centreHeight)));
+                float c = v * bury;
+                return new Color(c, c, c, 1f);
+            }
+
+            void AddQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color colour)
+            {
+                int s = verts.Count;
+                verts.Add(a);
+                verts.Add(b);
+                verts.Add(c);
+                verts.Add(d);
+                for (int i = 0; i < 4; i++)
+                {
+                    cols.Add(colour);
+                }
+
+                tris.AddRange(new[] { s, s + 2, s + 1, s, s + 3, s + 2 });
+            }
+
+            for (int ring = 0; ring < ringHeight.Length - 1; ring++)
+            {
+                for (int side = 0; side < sides; side++)
+                {
+                    int next = (side + 1) % sides;
+                    Vector3 a = RingPoint(ring, side);
+                    Vector3 b = RingPoint(ring, next);
+                    Vector3 c = RingPoint(ring + 1, next);
+                    Vector3 d = RingPoint(ring + 1, side);
+                    float mid = (ringHeight[ring] + ringHeight[ring + 1]) * 0.5f;
+                    AddQuad(a, b, c, d, FacetColour(ring, side, mid));
+                }
+            }
+
+            // Caps: a fan to a centre vertex, so the silhouette gets a top plane to catch the dawn
+            // light and the shadow caster has a closed hull.
+            void AddCap(int ring, bool upward)
+            {
+                var centre = Vector3.zero;
+                for (int side = 0; side < sides; side++)
+                {
+                    centre += RingPoint(ring, side);
+                }
+
+                centre /= sides;
+                centre.y = ringHeight[ring] + (upward ? 0.06f : -0.04f);
+                Color colour = FacetColour(ring + 11, 3, upward ? 1f : 0f);
+                for (int side = 0; side < sides; side++)
+                {
+                    int next = (side + 1) % sides;
+                    Vector3 a = RingPoint(ring, side);
+                    Vector3 b = RingPoint(ring, next);
+                    int s = verts.Count;
+                    // Winding: Unity's front face is clockwise seen from the front, so a triangle
+                    // (v0,v1,v2) faces Cross(v1-v0, v2-v0). Rings run anticlockwise in XZ, which
+                    // makes (centre, b, a) face UP and (centre, a, b) face DOWN.
+                    verts.Add(centre);
+                    verts.Add(upward ? b : a);
+                    verts.Add(upward ? a : b);
+                    cols.Add(colour);
+                    cols.Add(colour);
+                    cols.Add(colour);
+                    tris.AddRange(new[] { s, s + 1, s + 2 });
+                }
+            }
+
+            AddCap(ringHeight.Length - 1, upward: true);
+            AddCap(0, upward: false);
+
+            var mesh = new Mesh { name = $"RockOutcrop{variant}" };
+            mesh.SetVertices(verts);
+            mesh.SetColors(cols);
+            mesh.SetTriangles(tris, 0);
+            mesh.RecalculateNormals();   // per-facet, because no vertex is shared between quads
+            mesh.RecalculateBounds();
+            return mesh;
+        }
+
+        /// <summary>Radius per ring for each stone in the family: a squat boulder, a tapering slab,
+        /// a low brow, a small shard — and, standing, a leaning finger and a tilted plate.
+        /// Hand-authored — six drawings, not six dice rolls.</summary>
+        private static float[] RockProfile(int variant)
+        {
+            switch (variant)
+            {
+                case 0: return new[] { 0.92f, 1.00f, 0.94f, 0.70f, 0.30f };   // boulder
+                case 1: return new[] { 0.86f, 0.82f, 0.70f, 0.54f, 0.34f };   // outcrop slab
+                case 2: return new[] { 1.00f, 0.98f, 0.74f, 0.40f, 0.14f };   // low brow
+                case 3: return new[] { 0.72f, 0.64f, 0.50f, 0.32f, 0.12f };   // shard
+                case 4: return new[] { 0.40f, 0.44f, 0.40f, 0.31f, 0.15f };   // leaning finger
+                default: return new[] { 0.86f, 0.94f, 0.90f, 0.76f, 0.46f };  // tilted plate
+            }
+        }
+
+        /// <summary>Ring heights per variant. The sitting family shares one set; a standing stone
+        /// carries its bulk in the lower half and keeps its taper for the last ring, so the shape
+        /// against the sky is a shoulder and a broken tip rather than a cone.</summary>
+        private static float[] RockRingHeights(int variant)
+        {
+            if (variant < StandingFirstVariant)
+            {
+                return new[] { -0.08f, 0.20f, 0.48f, 0.76f, 1.00f };
+            }
+
+            return new[] { -0.14f, 0.26f, 0.58f, 0.84f, 1.00f };
+        }
+
+        /// <summary>Side count per variant. Fewer sides on the standing family on purpose: a slab is
+        /// four big planes with a clean edge between them (art-bible.md, confident edges), and a
+        /// near-lens mass that is going to be read as a silhouette wants the fewest facets that
+        /// still describe it.</summary>
+        private static int RockSides(int variant)
+        {
+            switch (variant)
+            {
+                case 4: return 5;   // leaning finger
+                case 5: return 4;   // tilted plate
+                default: return 6 + (variant % 3);
+            }
+        }
+
+        // -------------------------------------------------------------------------------------
+        // Tussock clumps (round-2 composition pass)
+        //
+        // THE FINDING this answers: the midground has no texture — between the near ground and the
+        // far ridge there is nothing at all for the eye to hold, so the frame reads as two flat
+        // fields. In fable-01 and kena-03 the path is EDGED: coarse, drier, taller grass banks the
+        // travelled line and the base of every rock, and that fringe is what tells you where the
+        // path is without a path texture.
+        //
+        // These are NOT more meadow. The meadow (BuildGrassDetails) is a 0.30 m terrain detail at
+        // 8 tufts per square metre; a tussock is a knee-high (0.57-0.93 m) clump placed one at a
+        // time where the valley floor meets its banks. They share Tarrock/GrassTuft — the same
+        // combing, the same bound-state baseline sway, so the two populations move as one meadow —
+        // but carry their own drier material, so the banks read gold against the green floor at
+        // dawn. They are deliberately NOT marked static: static batching hands the shader an
+        // identity matrix, and Tarrock/GrassTuft reads its per-instance vertical scale off that
+        // matrix, so batching would comb a 0.93 m clump as if it were 0.60 m.
+        // -------------------------------------------------------------------------------------
+        private const int TussockVariants = 3;
+        private const float TussockCell = 4f;
+        private const float TussockHeight = 0.75f;
+        private const int TussockBlades = 9;
+
+        private static void BuildTussocks(TerrainData terrainData)
+        {
+            Shader tuftShader = Shader.Find(TuftShaderName);
+            if (tuftShader == null)
+            {
+                Debug.LogWarning($"[Tarrock] {TuftShaderName} not found; tussocks skipped.");
+                return;
+            }
+
+            var meshes = new Mesh[TussockVariants];
+            for (int variant = 0; variant < TussockVariants; variant++)
+            {
+                Mesh mesh = BuildTussockMesh(variant);
+                string path = string.Format(TussockMeshPathFormat, variant);
+                AssetDatabase.DeleteAsset(path);
+                AssetDatabase.CreateAsset(mesh, path);
+                meshes[variant] = mesh;
+            }
+
+            var material = AssetDatabase.LoadAssetAtPath<Material>(TussockMaterialPath);
+            if (material == null)
+            {
+                material = new Material(tuftShader);
+                AssetDatabase.CreateAsset(material, TussockMaterialPath);
+            }
+            else
+            {
+                material.shader = tuftShader;
+            }
+
+            // Drier and duller than the meadow's tint: a bank tussock is the grass the wind got to.
+            material.SetColor("_BaseColor", new Color(0.40f, 0.42f, 0.24f));
+            material.SetColor("_DryColor", new Color(0.68f, 0.58f, 0.31f));
+            material.SetFloat("_DryBias", 0.55f);
+            material.SetFloat("_PatchScale", 18f);
+            material.SetFloat("_TuftVariation", 0.5f);
+            material.SetFloat("_ValueVariation", 0.16f);
+            material.SetFloat("_ShadeWrap", 0.50f);
+            material.SetFloat("_AmbientBoost", 1f);
+            // MUST match BuildTussockMesh's height: the shader turns its unitless height and sway
+            // channels back into metres with this number.
+            material.SetFloat("_TuftHeight", TussockHeight);
+            // The comb must AGREE with the meadow's (BuildGrassDetails writes the same four numbers):
+            // banks combed on a different axis or at a different wavelength from the field they edge
+            // is the one mistake that would make these read as separate props rather than as the
+            // coarse edge of one meadow. Only the amplitudes differ, and only downward — a tussock
+            // is woody, so it leans less and breathes less than the grass it grows out of.
+            material.SetVector("_WindAxis", new Vector4(1f, 0.35f, 0f, 0f));
+            // TBD (round 3, meadow pass): the meadow's leans went up by about half to answer the
+            // gauntlet's "no coherent comb" finding — fescue 0.34 -> 0.52. This stayed at 0.24, so
+            // the gap between bank and field widened from "the tussock leans a little less" to
+            // "the tussock leans half as much". That may still be right (a woody clump genuinely
+            // resists), but it is the tussock owner's call to make against a capture, not the
+            // meadow pass's to make in passing. If it reads as two different winds, 0.34 keeps the
+            // old proportion.
+            material.SetFloat("_CombLean", 0.24f);
+            material.SetFloat("_SwayStrength", 0.11f);
+            material.SetFloat("_SwaySpeed", 0.85f);
+            material.SetFloat("_SwayWavelength", 14f);
+            material.SetFloat("_WindResponse", 2.5f);
+            material.SetFloat("_WidenStart", 22f);
+            material.SetFloat("_WidenEnd", 70f);
+            material.SetFloat("_WidenMax", 1.6f);
+            material.SetFloat("_FadeStart", 90f);
+            material.SetFloat("_FadeEnd", 130f);
+            material.SetFloat("_FadeMinScale", 0.10f);
+
+            // ROUND-2 INTEGRATION: the meadow pass added ten properties to Tarrock/GrassTuft after
+            // this builder was written, and leaving them at the shader defaults would break this
+            // file's own rule (every property explicit — a reused .mat keeps stale values while the
+            // shader's defaults appear to change) AND, worse, would let a tussock disagree with the
+            // meadow it edges on the two things a viewer actually reads: how it meets the ground,
+            // and how it yields to the Fool.
+            //
+            // Roots blend to the SAME turf palette the meadow's tufts use — read off the ground
+            // material there, and the shared constants here, which are the values that material is
+            // written with. Comb wander is IDENTICAL to the meadow's (same axis, same wavelength,
+            // same swing): banks wandering on a different field from the field they edge is exactly
+            // the mistake the comment above exists to prevent. Only amplitudes differ, downward.
+            material.SetColor("_CoolColor", new Color(0.26f, 0.42f, 0.36f));
+            material.SetColor("_GroundColor", Color.Lerp(TurfSoil, MeadowGreen, 0.55f));
+            material.SetColor("_GroundDryColor", TurfOchre);
+            material.SetFloat("_BaseBlend", 0.62f);
+            material.SetFloat("_BaseBlendHeight", 0.5f);
+            material.SetFloat("_CombWanderLength", 46f);
+            material.SetFloat("_CombWanderDegrees", 14f);
+
+            // ROUND-3 INTEGRATION, for the same reason and by the same rule as the round-2 note
+            // above: Tarrock/GrassTuft gained four properties (root contact shade, the comb fold and
+            // crown drift, and the bend's held core) and lowered the meadow's hollow lean, and a
+            // bank left on the shader defaults would comb on a different curve and take a different
+            // shape under the Fool's feet than the meadow it edges — the one mistake this builder
+            // has been guarding against since it was written.
+            //
+            // The hollow lean and the bend core are COPIED, not chosen: they are the shape of the
+            // field and the shape of the ring, and those must not change at a bank's edge. The fold
+            // and the drift are the tussock's own, and both are low — a woody clump of short stiff
+            // blades folds and travels less than a stand of fescue, which is the same "amplitudes
+            // differ, and only downward" rule the comb amplitudes already follow.
+            material.SetFloat("_CombHollowLean", 0.34f);
+            material.SetFloat("_CombFold", 0.35f);
+            material.SetFloat("_CombDrift", 0.05f);
+            material.SetFloat("_RootDarken", 0.86f);
+            // A tussock is woody and its blades are short and stiff, so it parts less than fescue
+            // does — but it MUST part, or the one motion a bound world is allowed stops at the edge
+            // of the meadow and the banks read as painted-on props (art-audio.md §The world-state is
+            // the art direction, "A bound world still yields to touch").
+            material.SetFloat("_BendStrength", 0.90f);
+            material.SetFloat("_BendHeightRange", 1.8f);
+            material.SetFloat("_BendCoreShare", 0.50f);
+            material.enableInstancing = true;
+            EditorUtility.SetDirty(material);
+
+            var root = new GameObject("Tussocks");
+            int placed = 0;
+            int cells = Mathf.FloorToInt(TerrainSize / TussockCell);
+            for (int gz = 0; gz < cells; gz++)
+            {
+                for (int gx = 0; gx < cells; gx++)
+                {
+                    float jitterX = Hash21(gx + 5.13f, gz + 31.7f);
+                    float jitterZ = Hash21(gx + 27.90f, gz + 6.41f);
+                    float pick = Hash21(gx + 60.30f, gz + 15.70f);
+                    float sizeRoll = Hash21(gx + 44.10f, gz + 82.30f);
+                    float spinRoll = Hash21(gx + 18.70f, gz + 51.90f);
+                    float variantRoll = Hash21(gx + 73.10f, gz + 36.50f);
+
+                    float x = (gx + 0.12f + 0.76f * jitterX) * TussockCell;
+                    float z = (gz + 0.12f + 0.76f * jitterZ) * TussockCell;
+                    if (!AcceptsTussock(terrainData, x, z, pick))
+                    {
+                        continue;
+                    }
+
+                    float ground = terrainData.GetInterpolatedHeight(x / TerrainSize, z / TerrainSize);
+                    var go = new GameObject("Tussock");
+                    go.transform.SetParent(root.transform, worldPositionStays: false);
+                    // Set a little low so the blades' roots are in the ground, not on it.
+                    go.transform.position = new Vector3(x, ground - 0.04f, z);
+                    go.transform.rotation = Quaternion.Euler(0f, spinRoll * 360f, 0f);
+                    // The mesh's tallest blade reaches 0.8 x TussockHeight once its droop is
+                    // applied, so this range puts a clump between 0.57 and 0.93 m: knee-high, two
+                    // to three times the meadow tuft, which is the whole point of it.
+                    go.transform.localScale = Vector3.one * (0.95f + 0.60f * sizeRoll);
+                    int variant = Mathf.Clamp(Mathf.FloorToInt(variantRoll * TussockVariants), 0, TussockVariants - 1);
+                    go.AddComponent<MeshFilter>().sharedMesh = meshes[variant];
+                    var renderer = go.AddComponent<MeshRenderer>();
+                    renderer.sharedMaterial = material;
+                    // No shadow: Tarrock/GrassTuft ships no ShadowCaster pass (see BuildGrassDetails),
+                    // and a clump this size casts nothing the frame would miss.
+                    renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    placed++;
+                }
+            }
+
+            Debug.Log($"[Tarrock] Tussock clumps placed: {placed}.");
+        }
+
+        private static bool AcceptsTussock(TerrainData terrainData, float x, float z, float pick)
+        {
+            if (x < 8f || x > TerrainSize - 8f || z < 8f || z > TerrainSize - 8f)
+            {
+                return false;
+            }
+
+            float height = terrainData.GetInterpolatedHeight(x / TerrainSize, z / TerrainSize);
+            float steep = terrainData.GetSteepness(x / TerrainSize, z / TerrainSize);
+            if (height < 14f || height > 54f || steep > 36f)
+            {
+                return false;
+            }
+
+            var point = new Vector2(x, z);
+            if (Vector2.Distance(point, new Vector2(SpawnHint.x, SpawnHint.z)) < 2.6f)
+            {
+                return false;   // the Fool starts standing, not waist-deep
+            }
+
+            // The BANK: the strip where the valley floor gives way to its walls, either side. This
+            // is the line the reference plates always dress, because it is the line the eye follows.
+            // ROUND 3 widened it (1 m inboard, 3 m outboard) and lifted the odds a little, so the
+            // bank reads as a THICKNESS the eye can follow rather than a dotted line — and so it
+            // agrees with the rock scatter, whose new bank zone dresses the same band. One band,
+            // two populations, same edge.
+            float offset = Mathf.Abs(z - CentreZ(x));
+            float halfWidth = HalfWidth(x);
+            float chance = 0f;
+            if (offset > halfWidth - 5f && offset < halfWidth + 17f)
+            {
+                chance = 0.44f;
+            }
+
+            // ...and the spawn bowl, where the near fringe of the opening frame is made. This is the
+            // other half of the near-lens answer: the bottom third of v1 is ground within 3-10 m of
+            // the lens, and where there is no rock to crop it, a coarse dark fringe is what the
+            // reference plates put there. The 2.6 m hole around the spawn mark stays — the Fool
+            // starts standing, not waist-deep.
+            float fromSpawn = Vector2.Distance(point, new Vector2(SpawnHint.x, SpawnHint.z));
+            if (fromSpawn > 2.6f && fromSpawn < 34f && steep < 30f)
+            {
+                chance = Mathf.Max(chance, 0.34f);
+            }
+
+            return pick <= chance;
+        }
+
+        /// <summary>
+        /// One coarse clump, <see cref="TussockHeight"/> tall: nine blades fanned from a small root
+        /// disc, each arcing outward and drooping, three segments apiece. Carries the four channels
+        /// <c>Tarrock/GrassTuft</c> depends on — see that shader's header — so a clump combs, sways
+        /// and fades exactly as the meadow around it does.
+        /// </summary>
+        private static Mesh BuildTussockMesh(int variant)
+        {
+            var verts = new List<Vector3>();
+            var normals = new List<Vector3>();
+            var cols = new List<Color>();
+            var uvs = new List<Vector2>();
+            var rootOffsets = new List<Vector2>();
+            var tris = new List<int>();
+
+            var baseCol = new Color(0.34f, 0.36f, 0.22f);
+            var tipCol = new Color(1.05f, 0.98f, 0.66f);
+            const int Segments = 3;
+
+            for (int blade = 0; blade < TussockBlades; blade++)
+            {
+                float spread = Hash21(blade + variant * 11.3f, 2.7f);
+                float lengthRoll = Hash21(blade + variant * 4.9f, 8.1f);
+                float widthRoll = Hash21(blade + variant * 6.7f, 13.3f);
+                float valueRoll = Hash21(blade + variant * 9.1f, 21.7f);
+
+                float angle = (blade + 0.42f * spread) * Mathf.PI * 2f / TussockBlades;
+                var outward = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
+                Vector3 side = Vector3.Cross(outward, Vector3.up).normalized;
+
+                float bladeHeight = TussockHeight * (0.56f + 0.44f * lengthRoll);
+                float reach = bladeHeight * (0.26f + 0.34f * spread);
+                float halfWidth = 0.028f * (0.7f + 0.6f * widthRoll);
+                float rootRadius = 0.035f + 0.05f * spread;
+                float value = 0.88f + 0.24f * valueRoll;
+
+                int strip = verts.Count;
+                for (int seg = 0; seg <= Segments; seg++)
+                {
+                    float t = seg / (float)Segments;
+                    // Droop: the tip falls back a little, so a clump arcs instead of spiking.
+                    float lift = bladeHeight * (t - 0.20f * t * t);
+                    Vector3 centre = (outward * (rootRadius + reach * t * t)) + (Vector3.up * lift);
+                    float w = halfWidth * (1f - 0.78f * t);
+
+                    // NORMAL biased hard to +Y (the shader's requirement): a blade's true normal is
+                    // horizontal, which lights a bank as a row of dark spikes.
+                    Vector3 normal = Vector3.Lerp(Vector3.up, outward, 0.22f).normalized;
+                    Color colour = Color.Lerp(baseCol, tipCol, t) * value;
+                    colour.a = lift / TussockHeight;   // sway mask, in shares of the mesh height
+
+                    Vector3 left = centre - (side * w);
+                    Vector3 right = centre + (side * w);
+                    verts.Add(left);
+                    verts.Add(right);
+                    normals.Add(normal);
+                    normals.Add(normal);
+                    cols.Add(colour);
+                    cols.Add(colour);
+                    uvs.Add(new Vector2(spread, lift / TussockHeight));
+                    uvs.Add(new Vector2(spread, lift / TussockHeight));
+                    rootOffsets.Add(new Vector2(left.x, left.z));
+                    rootOffsets.Add(new Vector2(right.x, right.z));
+                }
+
+                for (int seg = 0; seg < Segments; seg++)
+                {
+                    int a = strip + (seg * 2);
+                    tris.AddRange(new[] { a, a + 2, a + 1, a + 1, a + 2, a + 3 });
+                }
+            }
+
+            var mesh = new Mesh { name = $"TussockClump{variant}" };
+            mesh.SetVertices(verts);
+            mesh.SetNormals(normals);
+            mesh.SetColors(cols);
+            mesh.SetUVs(0, uvs);
+            mesh.SetUVs(1, rootOffsets);
+            mesh.SetTriangles(tris, 0);
+            mesh.RecalculateBounds();
+            return mesh;
         }
 
         private static void EnsureDirectory(string path)

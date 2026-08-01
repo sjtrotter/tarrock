@@ -2,21 +2,149 @@ Shader "Tarrock/GrassTuft"
 {
     // Instanced grass-tuft shader for Unity Terrain DETAIL meshes (the built-in grass system —
     // per-patch culling, painted/programmatic density, GPU instancing; the right tool for meadow
-    // grass where a particle system would pay unmanaged overdraw). The tuft mesh carries vertex
-    // colour (dark base → light tip); this shader tints it and lights it with the same wrapped
-    // lambert + SH house style as Tarrock/TerrainPainterly, so blades sit in the ground's light.
+    // grass where a particle system would pay unmanaged overdraw). The tuft meshes are built by
+    // TerrainRegionGenerator.BuildTuftMesh — one per SPECIES, four of them — and every one carries
+    // the same five channels this shader depends on:
     //
-    // Deliberately WINDLESS for now: the Cliff is bound and holds its breath (art-audio.md §The
-    // world-state is the art direction) — motionless grass IS the canon state. When an unbound
-    // region needs waving grass, add the FoliageWind-style sway keyed to _TarrockWindStrength.
+    //   POSITION   blades fanned around the tuft centre, each arcing over
+    //   NORMAL     biased hard toward +Y (a blade's true normal is horizontal, which lights a
+    //              meadow as a field of dark spikes; up-biased normals make the tufts shade with
+    //              the ground they grow out of — the hand-painted read, art-bible.md §Materials)
+    //   COLOR.rgb  dark base -> pale tip gradient, with a small per-blade value jitter
+    //   COLOR.a    LEAN MASK: 0 at every blade's base, rising to 1 at the tallest blade's tip,
+    //              already scaled by that blade's share of the tuft height
+    //   TEXCOORD0  x = per-blade seed (0..1), y = height above the tuft base as a fraction of the
+    //              prototype mesh height (_TuftHeight)
+    //   TEXCOORD1  the vertex's object-space XZ offset from the tuft root, so the tuft can be
+    //              widened with view distance without reading the object matrix's translation
+    //
+    // WHY THE MASK LIVES IN THE MESH: the previous foliage sway (Tarrock/FoliageWind) masks by
+    // world height above unity_ObjectToWorld's translation, which STATIC BATCHING silently
+    // destroys — batching bakes vertices into world space and hands every renderer an identity
+    // matrix, so the mask blew up and the sway vanished (fixed once already, commit 48712b9).
+    // Here the mask and the height are VERTEX ATTRIBUTES: they are correct under GPU instancing,
+    // under static batching, and under any object scale. The only things read from the instance
+    // matrix are (a) the vertical scale, and (b) the tuft's world origin used to seed colour
+    // variation — both of which degrade to "uniform but harmless" rather than to breakage.
+    //
+    // MOTION / CANON (director ruling 2026-07-31, art-audio.md §The world-state is the art
+    // direction). Three separate things, and keeping them separate is the whole design:
+    //
+    //   1. COMB — a STATIC lean along _WindAxis. "Wind-combed" is a SHAPE, not a movement: it is
+    //      the pose the last wind left in a meadow that has not moved since. It is applied in
+    //      world space regardless of the random Y rotation Unity gives each detail instance, which
+    //      is what makes a meadow read combed instead of randomly bristled. The lean is stronger on
+    //      exposed, scoured ground and gentler in the hollows, and its direction wanders a few
+    //      degrees over tens of metres so the field is combed rather than sheared.
+    //
+    //      ROUND-3 FIX — THE FOLD. Round 2 leaned every blade of a tuft by the same amount, and the
+    //      gauntlet review found the meadow still read as "symmetric radial fans": translating a
+    //      radially symmetric star sideways leaves a radially symmetric star. A real combed stand is
+    //      ASYMMETRIC — the upwind side of a tuft is folded over its own crown and the downwind side
+    //      is drawn out — so _CombFold scales each blade's lean by where that blade sits relative to
+    //      the axis (upwind blades lean HARDER, over the crown; downwind blades lean less because
+    //      they are already lying out that way), and _CombDrift shifts the whole crown downwind on
+    //      top of it. The blade's own direction comes from TEXCOORD1 rotated into world space, so
+    //      the fold is measured against the instance's actual orientation — it survives the random
+    //      Y rotation the terrain gives every detail, which an object-space azimuth bias baked into
+    //      the mesh would not (it would be rotated to a different bearing per instance and average
+    //      out to nothing across the field).
+    //   2. AMBIENT SWAY — gated ENTIRELY on _TarrockWindStrength. At the bound value (0) there is
+    //      no motion at rest whatsoever; the meadow holds its breath with everything else. The
+    //      round-1 build carried a small always-on sway baseline; the director removed it. Sway is
+    //      now what the region GAINS when its Arcanum is unbound, which is what the canon says.
+    //   3. DISPLACEMENT RESPONSE — the bound world still yields to TOUCH. Tarrock.Regions.
+    //      GrassBender (on the Fool's rig and on Pip) publishes bend centres into the
+    //      _TarrockBender* globals; the grass pushes radially away from each and settles back as
+    //      the bender's wake fades. The stasis is the world's, not the Fool's.
+    //
+    //      ROUND-3 FIX — THE RING HAS TO READ IN A STILL. Round 2's falloff was a smoothstep from
+    //      the centre outward: mathematically a dish, optically a vague thinning that the gauntlet
+    //      review could not find in the frame at all. _BendCoreShare holds the inner share of the
+    //      radius fully laid over and spends the whole falloff on the outer rim instead, which is a
+    //      flattened DISC with an edge — the shape a body standing in grass actually leaves, and
+    //      the shape a still photograph can show. Roots stay anchored either way: the lean is
+    //      scaled by COLOR.a, which is 0 at every blade's base.
+    //
+    // THE THATCH. A fifth prototype (TerrainRegionGenerator's SpeciesThatch) shares this shader: a
+    // 2-5 cm mat of near-horizontal cards, tinted to the ground shader's own turf palette and
+    // darkened at the root by _RootDarken. It is not decoration — round 2's meadow was tufts
+    // standing as isolated plants on naked terrain, because between two neighbouring tufts there
+    // was nothing but the ground pass. The mat is what buries their bases. It needs no special
+    // casing here; it is a species whose blades are short, wide and splayed nearly flat.
     //
     // MUST support instancing: Terrain renders mesh details via GPU instancing (useInstancing on
     // the DetailPrototype); a shader without it renders nothing or falls back per-object.
     Properties
     {
-        _BaseColor ("Tint", Color) = (1, 1, 1, 1)
-        _ShadeWrap ("Shade Wrap", Range(0,1)) = 0.35
-        _AmbientBoost ("Ambient Boost", Range(0,2)) = 1.0
+        [Header(Colour)]
+        // Three tints on ONE dryness axis, not two: hollows run cool blue-green, the meadow body
+        // runs mid green, scoured ground runs dry gold-straw. The round-1 build lerped green->gold
+        // only and the whole meadow measured inside a 10-degree hue band (62-72 deg) — one note,
+        // played everywhere. The cool end is what turns that band into a chord.
+        _CoolColor ("Hollow Blue-Green Tint", Color) = (0.22, 0.46, 0.42, 1)
+        _BaseColor ("Green Tint", Color) = (0.33, 0.54, 0.22, 1)
+        _DryColor ("Dry Gold-Straw Tint", Color) = (0.82, 0.70, 0.34, 1)
+        _DryBias ("Dry Bias", Range(0, 1)) = 0.5
+        _PatchScale ("Dry Patch Scale (m)", Float) = 26
+        _TuftVariation ("Tuft Hue Variation", Range(0, 1)) = 0.55
+        _ValueVariation ("Tuft Value Variation", Range(0, 0.5)) = 0.18
+
+        [Header(Turf blend)]
+        // The ground builder owns the turf albedo; the generator passes its palette in here so the
+        // tuft's ROOTS can be tinted toward the ground they grow out of. Without this the tufts sit
+        // on the floor like stickers and the gap between them reads as blank painted ground.
+        _GroundColor ("Turf Colour", Color) = (0.30, 0.36, 0.22, 1)
+        _GroundDryColor ("Turf Dry Colour", Color) = (0.55, 0.47, 0.28, 1)
+        _BaseBlend ("Base Blend To Turf", Range(0, 1)) = 0.6
+        _BaseBlendHeight ("Base Blend Height (share of tuft)", Range(0.05, 1)) = 0.5
+        // Contact shade. A blade lit the same at its root as at its tip is a sticker; real ground
+        // cover is in its own shadow down there. 1 = off (round-2 behaviour exactly), and the
+        // thatch runs it hardest because the thatch IS the layer everything else sits in.
+        _RootDarken ("Root Darken (multiplier at the root)", Range(0.3, 1)) = 1.0
+
+        [Header(Lighting)]
+        _ShadeWrap ("Shade Wrap", Range(0, 1)) = 0.55
+        _AmbientBoost ("Ambient Boost", Range(0, 2)) = 1.0
+
+        [Header(Wind combed pose)]
+        _TuftHeight ("Tuft Mesh Height (m)", Float) = 0.3
+        _WindAxis ("Comb Axis (XZ)", Vector) = (1, 0.35, 0, 0)
+        _CombLean ("Comb Lean (share of height)", Range(0, 1)) = 0.34
+        _CombHollowLean ("Comb Lean In Hollows (share of full)", Range(0, 1)) = 0.42
+        _CombWanderLength ("Comb Wander Length (m)", Float) = 46
+        _CombWanderDegrees ("Comb Wander (deg)", Range(0, 45)) = 14
+        // The asymmetry. Fold scales a blade's lean by which side of the tuft it grew on (upwind
+        // blades fold over the crown); drift shifts the whole crown downwind regardless. 0 on both
+        // reproduces round 2's symmetric translation.
+        _CombFold ("Comb Fold (upwind blades over the crown)", Range(0, 1)) = 0.5
+        _CombDrift ("Comb Crown Drift (share of height)", Range(0, 0.6)) = 0.12
+
+        [Header(Unbound wind)]
+        // Zero-at-bound by construction: every term below is multiplied by _TarrockWindStrength.
+        _SwayStrength ("Unbound Sway (share of height)", Range(0, 1)) = 0.34
+        _SwaySpeed ("Sway Speed (rad per s)", Float) = 0.85
+        _SwayWavelength ("Sway Wave Length (m)", Float) = 14
+        _WindResponse ("Unbound Wind Response", Range(0, 4)) = 1.0
+
+        [Header(Displacement response)]
+        // Above 1 the blade simply reaches flat before the falloff does, which is what makes the
+        // middle of a bend ring a laid patch rather than a dimple. It cannot go further: the arc
+        // clamps it (see ShapeTuft), so there is no value here that pushes a tip through the ground.
+        _BendStrength ("Bend Strength (share of height)", Range(0, 3)) = 1.15
+        _BendHeightRange ("Bend Height Range (m)", Float) = 1.8
+        // Share of the bend radius held fully laid over before the rim falloff starts. 0 restores
+        // round 2's centre-to-rim smoothstep; anything above it turns the dish into a disc with an
+        // edge you can see in a still frame.
+        _BendCoreShare ("Bend Core (share of radius held flat)", Range(0, 0.9)) = 0.5
+
+        [Header(Distance handling)]
+        _WidenStart ("Widen Start (m)", Float) = 18
+        _WidenEnd ("Widen End (m)", Float) = 70
+        _WidenMax ("Widen Max", Range(1, 4)) = 2.4
+        _FadeStart ("Fade Start (m)", Float) = 78
+        _FadeEnd ("Fade End (m)", Float) = 114
+        _FadeMinScale ("Fade Min Height", Range(0, 1)) = 0.08
     }
 
     SubShader
@@ -28,7 +156,314 @@ Shader "Tarrock/GrassTuft"
             "Queue" = "Geometry"
         }
         LOD 100
-        Cull Off // crossed quads read from both sides
+        Cull Off // blades are single-sided strips and read from both sides
+
+        // Shared across every pass so the UnityPerMaterial layout and the displacement are defined
+        // once — the SRP Batcher requires an identical per-material CBUFFER in all passes, and the
+        // depth vertex MUST use the SAME displacement as the forward vertex or the depth prepass
+        // (PC_RPAsset requires a depth texture; PC_Renderer's SSAO samples it) disagrees with what
+        // is drawn.
+        HLSLINCLUDE
+        #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+        // MUST match Tarrock.Regions.GrassBender.MaxSlots. The loop is unrolled over the whole
+        // array and empty slots carry a zero radius, so a shorter C# array would leave stale
+        // benders live and a longer one would be silently truncated.
+        #define TARROCK_MAX_BENDERS 8
+
+        CBUFFER_START(UnityPerMaterial)
+            float4 _CoolColor;
+            float4 _BaseColor;
+            float4 _DryColor;
+            float _DryBias;
+            float _PatchScale;
+            float _TuftVariation;
+            float _ValueVariation;
+            float4 _GroundColor;
+            float4 _GroundDryColor;
+            float _BaseBlend;
+            float _BaseBlendHeight;
+            float _RootDarken;
+            float _ShadeWrap;
+            float _AmbientBoost;
+            float _TuftHeight;
+            float4 _WindAxis;
+            float _CombLean;
+            float _CombHollowLean;
+            float _CombWanderLength;
+            float _CombWanderDegrees;
+            float _CombFold;
+            float _CombDrift;
+            float _SwayStrength;
+            float _SwaySpeed;
+            float _SwayWavelength;
+            float _WindResponse;
+            float _BendStrength;
+            float _BendHeightRange;
+            float _BendCoreShare;
+            float _WidenStart;
+            float _WidenEnd;
+            float _WidenMax;
+            float _FadeStart;
+            float _FadeEnd;
+            float _FadeMinScale;
+        CBUFFER_END
+
+        // GLOBALS — deliberately OUTSIDE UnityPerMaterial so Shader.SetGlobal* reaches them and one
+        // write sweeps every grass material at once. A global inside the per-material CBUFFER would
+        // neither receive the value nor be SRP-Batcher-legal.
+        //
+        //   _TarrockWindStrength   0 while the region is bound, rising when it unbinds
+        //                          (Tarrock.Regions.RegionWind)
+        //   _TarrockBenderData     xyz = bend centre in world space, w = radius in metres
+        //   _TarrockBenderPower    x   = strength 0..1; a wake point decays this to 0 as the grass
+        //                          stands back up. Kept as float4 rather than a float array so the
+        //                          upload is one SetGlobalVectorArray with no per-platform
+        //                          scalar-array padding to reason about.
+        //   _TarrockBenderBounds   xyz = centre, w = radius of a sphere enclosing every live
+        //                          bender, so the whole loop can be rejected with one test. w = 0
+        //                          means "nobody is touching the grass" and rejects everywhere.
+        float _TarrockWindStrength;
+        float4 _TarrockBenderData[TARROCK_MAX_BENDERS];
+        float4 _TarrockBenderPower[TARROCK_MAX_BENDERS];
+        float4 _TarrockBenderBounds;
+
+        struct Attributes
+        {
+            float4 positionOS : POSITION;
+            float3 normalOS : NORMAL;
+            float4 color : COLOR;
+            float2 uv : TEXCOORD0;
+            float2 rootOffsetOS : TEXCOORD1;
+            UNITY_VERTEX_INPUT_INSTANCE_ID
+        };
+
+        struct ShapedTuft
+        {
+            float3 positionWS;
+            float3 normalWS;
+            float3 albedo;
+        };
+
+        // Cheap deterministic hash of a world XZ position — used only for per-tuft scatter, so a
+        // little banding on exotic hardware is invisible. World coordinates stay inside the 256 m
+        // tile, well within the range where sin-hashing is stable.
+        float HashXZ(float2 p, float2 k)
+        {
+            return frac(sin(dot(p, k)) * 43758.5453);
+        }
+
+        // The broad dryness/exposure drift, 0 (hollow, sheltered, cool) .. 1 (scoured, exposed,
+        // dry). Three non-harmonic sines — cheaper than a texture fetch and with no wrap seam.
+        // _PatchScale is the drift's WAVELENGTH in metres, hence the 2*pi: the three sines land at
+        // roughly 26 m, 31 m and 19 m, which is the scale a scoured hillside actually goes gold at.
+        // ONE field drives colour AND comb strength on purpose — a meadow's gold patches are its
+        // exposed patches, so the same ground that goes dry is the ground the wind lies flattest.
+        float ExposureDrift(float2 positionXZ)
+        {
+            float2 p = positionXZ * (6.2831853 / max(_PatchScale, 0.5));
+            float drift = sin(p.x + 1.7)
+                        + sin(p.y * 0.83 - 0.4)
+                        + sin((p.x * 0.61 + p.y * 0.79) * 1.37 + 2.9);
+            return saturate(0.5 + drift * 0.19);
+        }
+
+        // Total sideways push at one vertex, in metres, from every live bender. Radial and outward:
+        // grass is shoved AWAY from the body, never toward it, so the ring around a standing figure
+        // opens rather than closing on him.
+        float2 BenderPush(float3 positionWS)
+        {
+            // One test rejects the whole meadow when nobody is near it (and always, when nobody is
+            // bending at all — the bounds radius is exactly 0 then, which is the sentinel and why
+            // the inflation below is conditional rather than added unconditionally).
+            //
+            // The sphere the CPU sends covers the benders' RADII; the height gate below reaches a
+            // further _BendHeightRange vertically, so the test has to be inflated by it or the
+            // early-out would clip the push to zero part-way down a slope and leave a hard rim.
+            float reach = _TarrockBenderBounds.w > 0.0 ? _TarrockBenderBounds.w + _BendHeightRange : 0.0;
+            float3 toField = positionWS - _TarrockBenderBounds.xyz;
+            if (dot(toField, toField) > reach * reach)
+            {
+                return float2(0.0, 0.0);
+            }
+
+            float2 push = float2(0.0, 0.0);
+
+            [unroll]
+            for (int i = 0; i < TARROCK_MAX_BENDERS; i++)
+            {
+                float4 bender = _TarrockBenderData[i];
+                float power = _TarrockBenderPower[i].x;
+
+                float2 delta = positionWS.xz - bender.xz;
+                float spread = length(delta);
+
+                // Radial profile: the inner _BendCoreShare of the radius is held at FULL press and
+                // the whole smooth falloff is spent on the rim outside it. Round 2 ran the
+                // smoothstep from the centre (which is this with a core share of 0, and is exactly
+                // what the identity 1 - smoothstep(t) == smoothstep(1 - t) says); the result was a
+                // gentle dish that the gauntlet review could not locate in the frame. A laid patch
+                // with an EDGE is what a still can show, and it is also the truer shape: a body
+                // does not press grass proportionally harder as it approaches its own centre — it
+                // stands on it, and the grass at the rim is what is merely leaned on.
+                // (The 0.95 cap is not cosmetic: smoothstep's own edges must not meet, or the rim
+                // divides by zero.)
+                float t = spread / max(bender.w, 0.01);
+                float radial = 1.0 - smoothstep(min(saturate(_BendCoreShare), 0.95), 1.0, t);
+
+                // Height gate: a bender on the clifftop must not press the meadow seven metres
+                // below it. Grass is ankle-high, so the band only has to cover a body's own stride.
+                float vertical = 1.0 - saturate(abs(positionWS.y - bender.y) / max(_BendHeightRange, 0.1));
+
+                push += (delta / max(spread, 1e-4)) * (radial * vertical * power);
+            }
+
+            // More than one bender overlapping should deepen the dish, not launch the blade — cap
+            // the combined push at one full bend.
+            float magnitude = length(push);
+            return magnitude > 1.0 ? push / magnitude : push;
+        }
+
+        // The whole per-vertex job: pose, comb, sway, bend, distance-squash and tint one vertex.
+        ShapedTuft ShapeTuft(Attributes input)
+        {
+            ShapedTuft o = (ShapedTuft)0;
+
+            float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
+            o.normalWS = TransformObjectToWorldNormal(input.normalOS);
+
+            // Vertical scale of THIS instance (Unity randomises detail height between the
+            // prototype's min/max), taken from the Y column of the instance matrix. Under static
+            // batching this reads 1, which simply means "prototype size" — bounded, never broken.
+            float scaleY = length(float3(unity_ObjectToWorld._m01, unity_ObjectToWorld._m11, unity_ObjectToWorld._m21));
+            float tuftHeight = _TuftHeight * max(scaleY, 1e-3);
+            float heightAboveBase = input.uv.y * tuftHeight;
+
+            // colour.a is the mesh-baked lean mask; multiplying by tuftHeight turns the unitless
+            // mask into "how many metres of blade are above this vertex's anchor".
+            float leanMetres = input.color.a * tuftHeight;
+
+            float viewDistance = length(positionWS - GetCameraPositionWS());
+
+            // Blades are ~3 cm wide, which is right underfoot and sub-pixel by 30 m — thin enough
+            // to shimmer and to let the meadow dissolve into speckle at mid range. Widen the tuft
+            // about its own root with distance so coverage holds and the far meadow resolves into
+            // soft ground cover instead of noise. The offset comes from TEXCOORD1 (object space),
+            // not from the matrix translation, so this is correct under batching too.
+            float widen = lerp(1.0, _WidenMax,
+                smoothstep(_WidenStart, max(_WidenEnd, _WidenStart + 1.0), viewDistance));
+            float3 rootOffsetWS = mul((float3x3)unity_ObjectToWorld, float3(input.rootOffsetOS.x, 0.0, input.rootOffsetOS.y));
+            positionWS.xz += rootOffsetWS.xz * (widen - 1.0);
+
+            float exposure = ExposureDrift(positionWS.xz);
+
+            // -- 1. The comb: a STATIC lean, the shape the last wind left.
+            // The axis WANDERS by a few degrees over tens of metres. A single constant direction
+            // across a whole region is a shear, not a wind: real combed ground curves around the
+            // landform, and the eye reads the curvature as air having moved through.
+            float2 axis = normalize(_WindAxis.xy + float2(1e-5, 0.0));
+            float wander = sin(dot(positionWS.xz, float2(0.71, 0.70)) * (6.2831853 / max(_CombWanderLength, 1.0)))
+                         * radians(_CombWanderDegrees);
+            float wanderSin, wanderCos;
+            sincos(wander, wanderSin, wanderCos);
+            axis = float2(axis.x * wanderCos - axis.y * wanderSin, axis.x * wanderSin + axis.y * wanderCos);
+
+            // Exposed ground was scoured flatter than sheltered ground: the hollows keep more of
+            // their stand. Same field as the dry tint, so gold ground and flattened ground agree.
+            float combField = lerp(_CombHollowLean, 1.0, exposure);
+
+            // THE FOLD (see the header). Which side of its own tuft did this blade grow on? The
+            // answer is TEXCOORD1 — the blade's XZ offset from the root — rotated into world space,
+            // which is the one direction available here that carries the instance's random Y
+            // rotation. dot() against the comb axis is +1 for a blade already lying downwind and -1
+            // for one pointing into the wind; the upwind blade is the one that gets folded back
+            // over the crown, so the lean is scaled UP on the negative side.
+            //
+            // Without this, comb is a rigid translation of a radially symmetric fan and the fan
+            // stays symmetric — the exact finding round 2 came back with.
+            float rootReach = length(rootOffsetWS.xz);
+            float alongAxis = rootReach > 1e-4 ? dot(rootOffsetWS.xz / rootReach, axis) : 0.0;
+            float fold = 1.0 - (_CombFold * alongAxis);
+
+            // The crown drift is NOT folded: it is the whole tuft carried downwind, which is what
+            // stops a folded tuft from merely being a lopsided star centred on its own root.
+            float comb = (_CombLean * fold + _CombDrift) * combField;
+
+            // -- 2. Ambient sway: zero while bound, by construction.
+            float windAmount = saturate(_TarrockWindStrength) * _WindResponse;
+            float sway = 0.0;
+            if (windAmount > 1e-4)
+            {
+                // A travelling wave: the phase is read from the vertex's WORLD position, so the
+                // same crest visits neighbouring tufts a moment apart and the meadow moves in bands
+                // instead of pulsing in lockstep. World position is batching- and instancing-proof.
+                float travel = dot(positionWS.xz, axis) / max(_SwayWavelength, 0.5);
+                float time = _Time.y * _SwaySpeed;
+                float phase = input.uv.x * 6.2831853;
+                float wave = sin(time - travel + phase * 0.30)
+                           + 0.22 * sin(time * 2.17 - travel * 1.63 + phase);
+                sway = wave * 0.82 * _SwayStrength * windAmount;
+            }
+
+            // -- 3. Displacement response: the world yields to touch even while it is bound.
+            float2 bend = BenderPush(positionWS) * _BendStrength;
+
+            // EXACT pendulum arc, not the small-angle approximation. A blade is a rigid length
+            // pivoting at its anchor: lean it sideways by s and the vertical shortens to
+            // sqrt(L^2 - s^2), so the tip travels a circle and a fully leant blade lies flat on the
+            // ground and no further. The round-1 build used the s^2/2L approximation, which is fine
+            // for the ~0.3 comb it carried but sends a tip UNDERGROUND once the displacement
+            // response can lay a blade right over — s is clamped to L here for the same reason: a
+            // leaning blade is not a stretched one.
+            float2 offset = (axis * ((comb + sway) * leanMetres)) + (bend * leanMetres);
+            float leanLength = max(leanMetres, 1e-4);
+            float sideways = min(length(offset), leanLength);
+            positionWS.xz += (offset / max(length(offset), 1e-4)) * sideways;
+            positionWS.y -= leanLength - sqrt(max((leanLength * leanLength) - (sideways * sideways), 0.0));
+
+            // Distance fade — squash tufts INTO the ground over the last stretch of the detail
+            // draw distance instead of letting Unity's per-patch cull draw a hard line across the
+            // meadow. Height-squash (not alpha) because the pass is opaque, and it doubles as an
+            // overdraw/aliasing win at range. Keep _FadeEnd under Terrain.detailObjectDistance so
+            // the tufts are already flat by the time the patch is culled.
+            float fade = 1.0 - smoothstep(_FadeStart, max(_FadeEnd, _FadeStart + 1.0), viewDistance);
+            positionWS.y -= heightAboveBase * (1.0 - lerp(_FadeMinScale, 1.0, fade));
+
+            // -- Tint. Fine variation comes from the instance origin, so it is genuinely per tuft.
+            float2 pivotXZ = float2(unity_ObjectToWorld._m03, unity_ObjectToWorld._m23);
+            float hueHash = HashXZ(pivotXZ, float2(12.9898, 78.233));
+            float valueHash = HashXZ(pivotXZ, float2(39.3468, 11.1359));
+
+            float dryness = saturate(_DryBias + (exposure - 0.5) * 1.4 + (hueHash - 0.5) * _TuftVariation);
+            // Two-sided ramp about the middle: cool blue-green in the hollows, green through the
+            // body of the meadow, gold-straw where the wind has scoured it.
+            float3 tint = dryness < 0.5
+                ? lerp(_CoolColor.rgb, _BaseColor.rgb, saturate(dryness * 2.0))
+                : lerp(_BaseColor.rgb, _DryColor.rgb, saturate((dryness - 0.5) * 2.0));
+            tint *= 1.0 + (valueHash - 0.5) * 2.0 * _ValueVariation;
+
+            float3 albedo = input.color.rgb * tint;
+
+            // Roots dissolve into the turf. The ground's own dryness is read from the SAME drift,
+            // so a tuft standing on gold ground has a gold root and a tuft in a green hollow has a
+            // green one — the tufts grow out of the floor instead of being stuck onto it.
+            float3 turf = lerp(_GroundColor.rgb, _GroundDryColor.rgb, exposure);
+            float rootWeight = 1.0 - smoothstep(0.0, max(_BaseBlendHeight, 0.05), input.uv.y);
+            albedo = lerp(albedo, turf, rootWeight * _BaseBlend);
+
+            // Contact shade — the base of ground cover sits in its own shadow. Baked into albedo
+            // rather than lit for it: this grass has no shadow-caster pass on purpose (see below),
+            // so nothing else in the frame is going to darken a tuft's own root for us, and a mat
+            // of thatch lit evenly from root to tip is a sheet of paper. This is also what makes
+            // the thatch read as a layer WITH depth that the tufts stand in, rather than a second
+            // flat colour laid beside the ground pass.
+            albedo *= lerp(1.0, saturate(_RootDarken), rootWeight);
+
+            o.positionWS = positionWS;
+            o.albedo = albedo;
+            return o;
+        }
+        ENDHLSL
 
         Pass
         {
@@ -44,30 +479,15 @@ Shader "Tarrock/GrassTuft"
             #pragma multi_compile _ _SHADOWS_SOFT
             #pragma multi_compile_fog
 
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
-
-            CBUFFER_START(UnityPerMaterial)
-                float4 _BaseColor;
-                float _ShadeWrap;
-                float _AmbientBoost;
-            CBUFFER_END
-
-            struct Attributes
-            {
-                float4 positionOS : POSITION;
-                float3 normalOS : NORMAL;
-                float4 color : COLOR;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
-            };
 
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
                 float3 positionWS : TEXCOORD0;
                 float3 normalWS : TEXCOORD1;
-                float4 color : COLOR;
-                float fogCoord : TEXCOORD2;
+                float3 albedo : TEXCOORD2;
+                float fogCoord : TEXCOORD3;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -77,21 +497,23 @@ Shader "Tarrock/GrassTuft"
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
 
-                VertexPositionInputs positions = GetVertexPositionInputs(input.positionOS.xyz);
-                output.positionCS = positions.positionCS;
-                output.positionWS = positions.positionWS;
-                output.normalWS = TransformObjectToWorldNormal(input.normalOS);
-                output.color = input.color;
-                output.fogCoord = ComputeFogFactor(positions.positionCS.z);
+                ShapedTuft tuft = ShapeTuft(input);
+                output.positionCS = TransformWorldToHClip(tuft.positionWS);
+                output.positionWS = tuft.positionWS;
+                output.normalWS = tuft.normalWS;
+                output.albedo = tuft.albedo;
+                output.fogCoord = ComputeFogFactor(output.positionCS.z);
                 return output;
             }
 
-            half4 Frag(Varyings input, half facing : VFACE) : SV_Target
+            half4 Frag(Varyings input) : SV_Target
             {
                 UNITY_SETUP_INSTANCE_ID(input);
 
-                float3 normalWS = normalize(input.normalWS) * (facing > 0 ? 1.0 : -1.0);
-                float3 albedo = input.color.rgb * _BaseColor.rgb;
+                // NO VFACE flip: the mesh normals are deliberately biased toward +Y, so they are
+                // valid from both sides. Flipping them for backfaces would put half the meadow in
+                // shadow at any given camera angle — exactly the dark, spiky read we removed.
+                float3 normalWS = normalize(input.normalWS);
 
                 float4 shadowCoord = TransformWorldToShadowCoord(input.positionWS);
                 Light mainLight = GetMainLight(shadowCoord);
@@ -101,13 +523,58 @@ Shader "Tarrock/GrassTuft"
                 float3 direct = mainLight.color * (wrapped * mainLight.shadowAttenuation);
                 float3 ambient = SampleSH(normalWS) * _AmbientBoost;
 
-                float3 color = albedo * (direct + ambient);
+                float3 color = input.albedo * (direct + ambient);
                 color = MixFog(color, input.fogCoord);
                 return half4(color, 1.0);
             }
             ENDHLSL
         }
+
+        // Depth only — the SAME displacement as the forward vertex, so the depth prepass that
+        // PC_RPAsset requires (and PC_Renderer's SSAO samples) agrees with the posed geometry.
+        // Deliberately NO ShadowCaster pass, and the Fallback is Off: ankle-height grass casting
+        // per-blade shadows is a cost with almost no picture in it, and a fallback-supplied
+        // ShadowCaster would carry neither the comb nor the bend and would detach every shadow
+        // from its blade.
+        Pass
+        {
+            Name "DepthOnly"
+            Tags { "LightMode" = "DepthOnly" }
+
+            ZWrite On
+            ColorMask R
+
+            HLSLPROGRAM
+            #pragma vertex DepthVert
+            #pragma fragment DepthFrag
+            #pragma target 3.0
+            #pragma multi_compile_instancing
+
+            struct DepthVaryings
+            {
+                float4 positionCS : SV_POSITION;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+            };
+
+            DepthVaryings DepthVert(Attributes input)
+            {
+                DepthVaryings output = (DepthVaryings)0;
+                UNITY_SETUP_INSTANCE_ID(input);
+                UNITY_TRANSFER_INSTANCE_ID(input, output);
+
+                ShapedTuft tuft = ShapeTuft(input);
+                output.positionCS = TransformWorldToHClip(tuft.positionWS);
+                return output;
+            }
+
+            half4 DepthFrag(DepthVaryings input) : SV_Target
+            {
+                UNITY_SETUP_INSTANCE_ID(input);
+                return 0;
+            }
+            ENDHLSL
+        }
     }
 
-    FallBack "Universal Render Pipeline/Unlit"
+    FallBack Off
 }
