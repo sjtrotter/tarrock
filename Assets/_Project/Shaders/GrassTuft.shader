@@ -143,6 +143,41 @@ Shader "Tarrock/GrassTuft"
         _ShadeFill ("Shade Fill (dawn sky dome)", Color) = (0.42, 0.52, 0.72, 1)
         _ShadeFillStrength ("Shade Fill Strength", Range(0, 2)) = 1.0
 
+        // THE SUN BLEACH (round 6) — WHITE IN THE LIGHT, COLOUR IN THE SHADOWS.
+        //
+        // This is the storybook law art-audio.md's colour script is written in, and until this
+        // round nothing in the meadow implemented it. Every frame on the reference board runs
+        // saturation DOWN as luma goes UP (top-luma-decile saturation 0.16-0.34 against 0.44-0.53
+        // in the mid deciles). Round 5's meadow ran it the other way: top-decile saturation 0.43
+        // and RISING from decile 6 upward, because chroma here is a property of the albedo alone
+        // and the albedo does not know how much light is on it.
+        //
+        // WHY IT HAS TO LIVE ON THE SURFACE. The grade cannot do it: ShadowsMidtonesHighlights is
+        // a per-channel MULTIPLIER, so its highlight bucket can tint the bright end but can never
+        // pull chroma out of it, and ColorAdjustments.saturation is global — it moves the shade
+        // and the light together. A painter does this at the brush: the lit face of a thing is
+        // painted toward the light's own near-white, and the colour is saved for the shadow.
+        //
+        // WHAT IT DOES. As the beam reaches a fragment, its albedo is drawn toward its OWN
+        // luminance times a near-colourless cream. Luminance is preserved by construction (the
+        // tint is normalised by its own luma in Frag), so this is a chroma move only and it costs
+        // no exposure. It is gated on lightReach, so the shaded meadow keeps every bit of the
+        // chroma the shade fill above is there to reveal.
+        //
+        // THE ARITHMETIC that makes it the headline fix. The straw species' dry pole is linear
+        // (0.538, 0.571, 0.263), R/B 2.04. At bleach 0.50 it becomes (0.551, 0.554, 0.388),
+        // R/B 1.42. Multiplied by the lamp (linear R/B 1.75) and the grade's highlight bucket,
+        // the lit meadow's blue arrives well clear of the point where the global saturation
+        // multiply drives it NEGATIVE and URP's max(0) clamps it to a hard zero — which is
+        // exactly what produced round 5's median blue of 0 at saturation 1.000 over 75.9% of the
+        // lit meadow. See TerrainRegionGenerator.Lighting.cs for the full chain.
+        _SunBleach ("Sun Bleach (chroma removed at full beam)", Range(0, 1)) = 0.5
+        _BleachStart ("Sun Bleach Start (light reach)", Range(0, 1)) = 0.28
+        // A near-colourless cream, NOT white: the light is a dawn light and the bleach should read
+        // as sunlight sitting on the blade, not as a grey wash. Normalised to luminance 1 in Frag,
+        // so the numbers here are a HUE, not a level — changing them cannot change the exposure.
+        _BleachTint ("Sun Bleach Tint (normalised to luma 1)", Color) = (0.98, 0.96, 0.94, 1)
+
         // Sky occlusion down the blade. The fill above would be a flat wash on its own, and a flat
         // wash is the round-3 failure with the lights turned up. The sky is ABOVE the mat, so a
         // card lying on the floor sees a sliver of it and a tip standing clear sees all of it —
@@ -293,6 +328,9 @@ Shader "Tarrock/GrassTuft"
             float _AmbientBoost;
             float4 _ShadeFill;
             float _ShadeFillStrength;
+            float _SunBleach;
+            float _BleachStart;
+            float4 _BleachTint;
             float _SkyOcclusionRoot;
             float _TuftHeight;
             float4 _WindAxis;
@@ -747,7 +785,24 @@ Shader "Tarrock/GrassTuft"
                 // 0.485-0.931) and relative contrast holds at 1.69x lit (references 1.39-3.24).
                 float3 ambient = (SampleSH(normalWS) * _AmbientBoost + fill) * input.positionWS.w;
 
-                float3 color = input.albedo * (direct + ambient);
+                // THE SUN BLEACH (round 6) — see the property block. White in the light, colour in
+                // the shadows: the albedo is drawn toward its own luminance times a near-colourless
+                // cream in proportion to how much of the beam actually lands here, so saturation
+                // falls as luma rises instead of climbing with it.
+                //
+                // The tint is normalised by its OWN luminance, which makes this a pure chroma move:
+                // at bleach 1.0 the fragment's luminance is unchanged to within the tint's rounding,
+                // so the meadow's exposure — the thing three rounds of lamp arithmetic solved for —
+                // is untouched no matter what this is set to.
+                float3 bleachTint = _BleachTint.rgb
+                    / max(dot(_BleachTint.rgb, float3(0.2126, 0.7152, 0.0722)), 1e-4);
+                float bleach = _SunBleach * smoothstep(_BleachStart, 1.0, lightReach);
+                float3 albedoLit = lerp(
+                    input.albedo,
+                    dot(input.albedo, float3(0.2126, 0.7152, 0.0722)) * bleachTint,
+                    bleach);
+
+                float3 color = albedoLit * (direct + ambient);
                 color = MixFog(color, input.fogCoord);
                 return half4(color, 1.0);
             }

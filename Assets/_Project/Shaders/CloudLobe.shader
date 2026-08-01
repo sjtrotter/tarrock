@@ -358,11 +358,30 @@ Shader "Tarrock/CloudLobe"
                 // their rims — the same 1 : 0.45 proportion the vault's silhouette scallop uses.
                 // -------------------------------------------------------------------------------
                 float azi = atan2(normalWS.x, normalWS.z);
+                // ROUND 6 — THE TOOTH SCALE VARIES, the same correction the vault masses take (see
+                // SkyGradient.hlsl §TarrockVaultCloud). A fixed high octave draws one tooth size
+                // along every wash boundary on every mass, which reads as a filter rather than as a
+                // hand; a slow selector stretches it and lightens it as it gets finer.
+                float toothSel = TarrockGradNoise01(float2(azi * 1.1, lobeY * 1.7 + 2.3));
+                float toothFreq = 5.6 + 8.0 * toothSel;
+                float toothWeight = 0.34 + 0.36 * (1.0 - toothSel);
                 float crumple =
                       TarrockGradNoise(float2(azi * 3.4, lobeY * 5.2 + 11.0))
-                    + TarrockGradNoise(float2(azi * 8.1 + 4.0, lobeY * 12.4 + 3.0)) * 0.52
+                    + TarrockGradNoise(float2(azi * toothFreq + 4.0, lobeY * toothFreq * 1.53 + 3.0))
+                        * toothWeight
                     + TarrockGradNoise(float2(azi * 19.0 + 9.0, lobeY * 29.0 + 7.0)) * 0.26;
-                form = saturate(form + crumple * _LobeCrumple);
+                // ...and its TAILS ARE CAPPED before it moves the terrace. ROUND 6, and this is the
+                // dark-speck fix. `form` saturates at 1.0 over a lit crown, and with three washes
+                // the top boundary sits 1/6 below that, so any crumple minimum past −0.55 punches
+                // an isolated island of the body wash into the middle of the crown — the 8–15 px
+                // specks the round-5 critics found on v3 and v4. The soft saturation (the same
+                // x·rsqrt form the cloud bank uses on its crest) leaves the field's working range
+                // almost untouched — one standard deviation, 0.26, is preserved to 89% — while
+                // bounding it at ±0.50, so `capped * 0.30` can never exceed 0.15 of the 0.1667 it
+                // would need. The crown cannot be punctured, by arithmetic rather than by luck,
+                // and the boundaries still wander exactly as much as they did.
+                float capped = 0.50 * crumple * rsqrt(0.25 + crumple * crumple);
+                form = saturate(form + capped * _LobeCrumple);
 
                 // ...and then terraced, HARD. Round 4 spent 0.22 of softness over four washes,
                 // which puts a band edge across ~13 px of a 300 px mass: a 20-point step over 13 px
@@ -383,6 +402,26 @@ Shader "Tarrock/CloudLobe"
                     ? lerp(_LobeShade.rgb, _LobeMid.rgb, saturate(form / max(_LobeMidPoint, 0.01)))
                     : lerp(_LobeMid.rgb, _LobeLit.rgb,
                            saturate((form - _LobeMidPoint) / max(1.0 - _LobeMidPoint, 0.01)));
+
+                // ROUND 6 — THE PAPER TOOTH, the same brush the vault masses now carry and for the
+                // same finding: "the bands are dead plateaus, 97.8% of the lit crown sits at
+                // gradient < 1; references run 0.8–50%". The reference (animation-04's cloud bank)
+                // keeps 26% of its pixels under gradient 1 even after an 0.8 px blur, so the
+                // structure is real, fine, and survives to 2–3 px — gouache on toothed paper.
+                // It multiplies the wash's OWN colour rather than moving the ramp parameter, so it
+                // varies value inside a band and never invents a boundary (a form-space version was
+                // built first and came out as blue-on-cream confetti). The hue tilt makes a loaded
+                // stroke warmer and a dry one cooler, which is the same warm-light/cool-shade law
+                // the washes obey. Two octaves, each faded out analytically as it nears its own
+                // Nyquist so a 60 m mass close in gets the tooth and an 18 m nub at 400 m drops it
+                // rather than aliasing — the azimuth footprint is clamped because atan2's branch
+                // cut makes fwidth() meaningless on the one seam meridian.
+                float foot = min(fwidth(azi), 0.05) + fwidth(lobeY);
+                float brush = TarrockGradNoise(float2(azi * 34.0 + 3.7, lobeY * 52.0 + 3.7))
+                                  * saturate(1.0 - foot * 44.0)
+                            + TarrockGradNoise(float2(azi * 78.0 + 21.3, lobeY * 120.0 + 21.3))
+                                  * 0.6 * saturate(1.0 - foot * 100.0);
+                color = max(color * (1.0 + brush * 0.30 * float3(1.22, 1.02, 0.80)), 0.0);
 
                 // -------------------------------------------------------------------------------
                 // THE BASE, PAINTED. A cumulus base is dark because there is a great depth of cloud

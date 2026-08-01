@@ -69,8 +69,8 @@ Material:
     - _VaultCloud3: {r: 77, g: 13.5, b: 21, a: 0.88}
     - _VaultCloud4: {r: 36, g: 4.5, b: 11, a: 0.62}
     - _VaultCloudLit: {r: 1.02, g: 0.97, b: 0.87, a: 1}
-    - _VaultCloudShade: {r: 0.52, g: 0.57, b: 0.71, a: 1}
-    - _VaultCloudShadow: {r: 0.19, g: 0.23, b: 0.35, a: 1}
+    - _VaultCloudShade: {r: 0.48, g: 0.56, b: 0.74, a: 1}
+    - _VaultCloudShadow: {r: 0.16, g: 0.225, b: 0.425, a: 1}
     - _ZenithColor: {r: 0.2, g: 0.32, b: 0.54, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

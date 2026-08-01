@@ -10,6 +10,13 @@ namespace Tarrock.Editor
     public static partial class TerrainRegionGenerator
     {
 
+        // THE FAR PLANE'S COOL (round 6). LINEAR, like every colour in the atmosphere description
+        // this pulls against — Sky.cs's HazeLinear owns the warm end and this file only ever
+        // blends toward this one, never restates it. See the fog block in BuildLighting for the
+        // measurement off the reference board and for why the share is deliberately small.
+        private static readonly Color FarCoolLinear = new Color(0.72f, 0.80f, 0.92f);
+        private const float FarCoolShare = 0.20f;
+
         private static void BuildLighting()
         {
             // FROZEN DAWN (canon: art-audio.md §Region color scripts gives the Cliff "pale dawn
@@ -89,7 +96,35 @@ namespace Tarrock.Editor
             // and a key this warm makes lit meadow resolve to (0.55, 0.48, 0.24) linear — gold-green
             // — against blue-teal shade. Further than this and the warm white balance and warm
             // highlights in the grade below double-count it into sodium.
-            light.color = new Color(1.00f, 0.84f, 0.62f);
+            //
+            // ROUND 6 PULLS IT BACK TO (1.00, 0.91, 0.78) — linear (1.00, 0.807, 0.571), R/B 1.75
+            // instead of 2.92 — and this is a canon fix, not a taste call. The comment above ends
+            // with its own warning ("further than this and the warm white balance and warm
+            // highlights double-count it into sodium") and round 5 crossed that line: the measured
+            // lit meadow came back with a median BLUE OF 0 and saturation 1.000 over 75.9% of its
+            // pixels, and the whole frame's hue circmean sat at 33.9° (orange) against the colour
+            // script's "pale dawn gold, wind-scoured green" and round 4's 42.8°.
+            //
+            // THE MULTIPLICATION IS THE PROBLEM, and it is why no single stage looked guilty. Blue
+            // is divided FOUR TIMES on its way to the frame: by the albedo (round 5's straw dry
+            // pole, linear R/B 7.99), by this lamp (2.92), by the blade's own gold vertex tip
+            // (1.28) and by the grade's gold highlight bucket (1.30) — a compound R/B of 38.8. The
+            // round-5 critic measured 26x on the grass floor and only 1.3-2.3x from the grade, and
+            // was right about both: the grade was never where the crush lived.
+            //
+            // WHAT KILLS THE CHANNEL is what happens next. ColorAdjustments.saturation is
+            // c = luma + s·(c − luma), and URP clamps the result with max(0). At an R/B that
+            // large, blue sits so far below the pixel's own luminance that s = 1.16 drives it
+            // NEGATIVE and the clamp writes a hard zero — not a dark blue, zero. That is the
+            // 75.9%, and it is why the same pixels also measure saturation exactly 1.000.
+            //
+            // Luminance is held constant so nothing downstream moves: the lamp's linear luminance
+            // was 0.719 × 6.71 = 4.826 and is now 0.831 × 5.80 = 4.821, a 0.1% difference. Every
+            // exposure number in the block below therefore still holds. The dawn is still gold —
+            // the gold is now in the LIGHT and in the grade's warm white point, which is where the
+            // director's 2026-07-26 call put it, instead of being pre-mixed into the albedo as
+            // well and then multiplied by itself.
+            light.color = new Color(1.00f, 0.91f, 0.78f);
             // ROUND 3, 2.90 → 8.00, and this one number is most of the exposure fix.
             //
             // Round 2 set 2.90 from an arithmetic that DROPPED THE ALBEDO. Its comment claimed "a
@@ -131,7 +166,11 @@ namespace Tarrock.Editor
             //     near lit : near shade     2.74:1 — the board is 2.4:1 to 4.1:1
             // What changes is not the values but HOW MUCH OF THE FRAME IS AT THEM: v1's lit ground
             // goes 22% → 43%, v2's 0% → 14%.
-            light.intensity = 6.71f;
+            // ROUND 6: 6.71 → 5.80, and this is NOT an exposure change — it is the compensation for
+            // the lamp's hue move above, solved to hold the linear luminance the derivation in this
+            // comment block landed on (4.826 → 4.821, 0.1%). Every "flat LIT meadow 0.497" style
+            // number above is still the number this rig produces.
+            light.intensity = 5.80f;
             light.shadows = LightShadows.Soft;
             // NOT 1.0. At this elevation shadow covers most of the frame, and full-strength shadow
             // over a cool ambient is exactly how "luminous cool shade" becomes mud. The 10% of direct
@@ -209,12 +248,28 @@ namespace Tarrock.Editor
             // A bonus, and it removes the one place round 3 was flirting with the LogC clip: the
             // refusing north wall's red, the darkest large surface in any frame, goes from sRGB
             // 0.0015 (a hair off zero) to 0.0075.
-            // R > G in the shade is still out of reach here and still belongs to the ground builder:
-            // the meadow albedo is linear (0.105, 0.130, 0.047), so green outruns red by 24% whatever
-            // falls on it, and only a straw-warmer _MeadowGreen neighbourhood can close that.
+            // ROUND 6 WITHDRAWS THE "R > G IN THE SHADE" ASK that stood here. It read: the meadow
+            // albedo is linear (0.105, 0.130, 0.047), green outruns red by 24%, and only a
+            // straw-warmer _MeadowGreen can close that. Round 5 acted on it, and the result was
+            // the gold drift — the meadow's whole colour family walked to orange (hue circmean
+            // 42.8° → 33.9°, green-band saturated pixels 6.09% → 0.70%) chasing a warmth that was
+            // never the shade's job to carry. The board does not support the ask either: it was
+            // derived from the darkest quartile of frames whose deepest ink is bounce off sunlit
+            // GROUND, and the Cliff's meadow is grass standing in its own sky-lit shade, which is
+            // cool on every plate. What the shade needed was CHROMA, not red, and it now gets it
+            // from the grade's shadow bucket and Tarrock/GrassTuft's _ShadeFill.
             // The equator and ground poles are deliberately untouched.
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.49f, 0.485f, 0.565f);
+            // ROUND 6: (0.49, 0.485, 0.565) → (0.47, 0.50, 0.58). The sky pole is the fill on every
+            // up-facing surface in the frame — which is every square metre of meadow — and it was
+            // the one ambient term with RED ABOVE GREEN. A dawn sky dome seen from under it is not
+            // red-biased, and letting it be one meant even the meadow's shaded fill was pushing the
+            // frame's hue toward orange. It is very nearly a hue-only move: linear luminance goes
+            // 0.2071 → 0.2143, +3.5% on the AMBIENT term, which is about 7% of a lit fragment's
+            // irradiance at this rig — so lit ground moves +0.25% and shade +3.5%, both under a
+            // sRGB level. The distinction the round-5 comment below insists on (hue without level)
+            // therefore holds to the precision it was arguing at.
+            RenderSettings.ambientSkyColor = new Color(0.47f, 0.50f, 0.58f);
             RenderSettings.ambientEquatorColor = new Color(0.42f, 0.44f, 0.55f);
             RenderSettings.ambientGroundColor = new Color(0.40f, 0.34f, 0.26f);
 
@@ -313,10 +368,34 @@ namespace Tarrock.Editor
             // composition anchors is a cloud-pass job with a capture in front of it, not a fog-pass
             // side effect. If round 5's v3/v4 read flat, pulling A and D in by the factor that
             // restores their round-4 transmittance (×0.746) is the first thing to try.
+            //
+            // ROUND 6 — THE FAR PLANE GETS A COOL. The round-5 critique's fourth finding: the fog
+            // is warm-only, so it buys distance without buying cool, and every board frame buys
+            // both. MEASURED, near band (bottom 15% of rows) against far band (rows 38-50%):
+            //     fable-06  sat 0.281 → 0.169   R/B 1.32 → 1.12   (far / near R/B = 0.85)
+            //     fable-08  sat 0.313 → 0.238   R/B 1.27 → 1.13   (0.88)
+            //     fable-01  sat 0.488 → 0.440   R/B 1.77 → 1.87   (1.05, and it is a forest
+            //                                                      interior looking INTO the sun)
+            //     ghibli-04 sat 0.321 → 0.364   R/B 0.83 → 0.92   (already cool everywhere)
+            // The relationship, not the literal colour: the far plane loses 0.05-0.11 saturation
+            // and its red-over-blue falls to about 0.87 of the near ground's.
+            //
+            // Round 5's fog rendered its far plane at sRGB R/B 1.319. With the round-6 grade and a
+            // 20% pull toward FarCoolLinear it lands at 1.160, against the board's far-band
+            // 1.12-1.13, and the whole move costs 1.4% of the fog colour's linear luminance —
+            // small enough that the cloud-deck contract below is not visibly broken.
+            //
+            // WHY ONLY 20%, AND THE CROSS-OWNERSHIP NOTE. HazeLinear is the CLOUD SEA's colour and
+            // it is shared on purpose: a far ridge dies INTO the deck instead of silhouetting
+            // against it only while the fog and the deck carry the same number (see
+            // TerrainRegionGenerator.Sky.cs, which owns HazeLinear). This pull is deliberately kept
+            // small enough to stay inside that tolerance rather than being taken further and
+            // breaking it. If a future round wants the far plane properly cool, HazeLinear and the
+            // deck must move WITH it, and that is a change to Sky.cs, not to this file.
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
             RenderSettings.fogDensity = 0.0059f;
-            RenderSettings.fogColor = HazeLinear.gamma;
+            RenderSettings.fogColor = Color.Lerp(HazeLinear, FarCoolLinear, FarCoolShare).gamma;
             DynamicGI.UpdateEnvironment();
 
             BuildPostVolume();
@@ -424,10 +503,31 @@ namespace Tarrock.Editor
             var adjust = AddPersistedOverride<UnityEngine.Rendering.Universal.ColorAdjustments>(profile);
             adjust.postExposure.Override(0f);
             adjust.contrast.Override(14f);
-            adjust.saturation.Override(16f);
-            // A film of gold over the whole image — under 5% and below conscious notice, which is
-            // where a colour filter belongs. The dawn's actual warmth is the lamp's job, above.
-            adjust.colorFilter.Override(new Color(1.00f, 0.975f, 0.945f));
+            // SATURATION 16 → 6, AND THIS IS THE STAGE THAT ACTUALLY WROTE THE ZEROS.
+            //
+            // URP applies it as c = luma + s·(c − luma) and then clamps with max(0). It is a
+            // multiplier on the DISTANCE from luminance, so on a pixel whose blue already sits far
+            // below its own luma it does not darken blue, it drives blue NEGATIVE and the clamp
+            // writes a hard zero — which is why round 5's lit meadow measured median blue 0 AND
+            // saturation exactly 1.000 over 75.9% of its pixels. The threshold is exact: blue
+            // survives the multiply only while B > luma·(s − 1)/s, i.e. 13.8% of the pixel's own
+            // luminance at s = 1.16 and 5.7% at s = 1.06.
+            //
+            // The inputs are fixed upstream (lamp hue, albedo family, the blade's tip, the sun
+            // bleach in Tarrock/GrassTuft), so the meadow no longer arrives anywhere near that
+            // threshold. But 16 was also doing something the reference board never does: it is a
+            // GLOBAL boost, applied equally to the shade and to the light, and the board's frames
+            // run their saturation DOWN as luma goes UP. Chroma now comes from where it comes from
+            // in a painting — the shadow bucket below, the cool ambient, and the surfaces' own
+            // colour — and the highlight end is allowed to go pale.
+            adjust.saturation.Override(6f);
+            // ROUND 6: the filter loses its blue cut. At (1.00, 0.975, 0.945) this was a fifth
+            // warm multiply stacked on a chain that already had four, and it acted on the WHOLE
+            // image including the shade, which is the one place the frame has left to be cool.
+            // (0.998, 1.000, 0.970) is the same idea at a third of the strength and with green no
+            // longer pulled under red — the meadow's family is green and the filter should not be
+            // quietly voting against it. The dawn's warmth is the lamp's job, above.
+            adjust.colorFilter.Override(new Color(0.998f, 1.000f, 0.970f));
 
             // The warm-light/cool-shadow separation, and the single most load-bearing override here.
             // Study fable-01: the shadowed ground is not dark green, it is blue-grey, and the lit
@@ -467,8 +567,25 @@ namespace Tarrock.Editor
             //     down from its 1.0 default for the same reason — left there, the smoothstep would
             //     have handed the meadow 19% of a tint it needs at full strength.
             var smh = AddPersistedOverride<UnityEngine.Rendering.Universal.ShadowsMidtonesHighlights>(profile);
-            smh.shadows.Override(new Vector4(1.000f, 0.982f, 1.036f, 0f));    // → (1.00, 0.96, 1.08) cool shade
-            smh.highlights.Override(new Vector4(1.061f, 1.018f, 0.945f, 0f)); // → (1.14, 1.04, 0.88) gold light
+            // ROUND 6 — WHITE IN THE LIGHT, COLOUR IN THE SHADOWS, and round 5 had this exactly
+            // inverted. Its highlight bucket resolved to (1.14, 1.04, 0.88): it CUT BLUE by 12% on
+            // the brightest surfaces in the frame, which is the third multiply in the chain that
+            // ended at a hard zero, and it means the sky beside the sun rendered as a saturated
+            // (227, 200, 148) where every plate on the board takes that region to a near-colourless
+            // cream. Measured on the board: top-luma-decile saturation runs 0.08-0.34 and falls
+            // monotonically from the mid deciles; round 5's frame ran 0.43 and RISING from decile 6.
+            //
+            // A per-channel multiplier cannot desaturate, so the two ends split the job: the
+            // highlight bucket stops adding chroma and simply carries a whisper of the dawn's
+            // warmth (resolved (1.051, 1.030, 1.009) — every channel at or above 1, blue no longer
+            // cut), and the SHADE takes the chroma the picture used to buy globally (resolved
+            // (0.935, 0.982, 1.152) — a real cool, up from 1.08 in blue and now with a red cut,
+            // which round 3 was right to fear on a green meadow under a cool fill and which is
+            // safe now that the meadow's albedo is no longer starved of blue).
+            // The actual desaturation of the lit end is done at the surface, where a painter does
+            // it — see _SunBleach in Tarrock/GrassTuft.
+            smh.shadows.Override(new Vector4(0.971f, 0.992f, 1.064f, 0f));    // → (0.94, 0.98, 1.15) cool shade
+            smh.highlights.Override(new Vector4(1.022f, 1.013f, 1.004f, 0f)); // → (1.05, 1.03, 1.01) pale light
             smh.shadowsStart.Override(0f);
             smh.shadowsEnd.Override(0.10f);
             smh.highlightsStart.Override(0.10f);
@@ -546,8 +663,20 @@ namespace Tarrock.Editor
             // split the override above just bought. Enough to say "dawn", not enough to say "filter".
             // Tint a touch toward magenta pulls the meadow's mass off acid green into olive-gold.
             var balance = AddPersistedOverride<UnityEngine.Rendering.Universal.WhiteBalance>(profile);
-            balance.temperature.Override(8f);
-            balance.tint.Override(3f);
+            // ROUND 6. Temperature 8 → 5 for the same reason the colour filter came down: it was
+            // one of five warm multiplies and it is the one that warms the SHADE hardest.
+            //
+            // TINT +3 → −2, and this reverses a round-5 decision by name. The comment above says
+            // the magenta "pulls the meadow's mass off acid green into olive-gold" — that is a
+            // description of the gold drift the round-5 critique then measured: green-band
+            // saturated pixels 6.09% → 0.70%, blue-band 14.55% → 0.07%, hue circmean 42.8° → 33.9°.
+            // The Cliff's colour script says wind-scoured GREEN; a global magenta is a standing
+            // vote against it. Modelled through the whole chain, this one number is worth about
+            // 2.5° of frame hue circmean and 2 percentage points of green-band pixels — small, but
+            // it is the difference between a meadow whose family is green and one whose family is
+            // gold, and it costs the dawn nothing that the lamp is not already paying for.
+            balance.temperature.Override(5f);
+            balance.tint.Override(-2f);
 
             // Bloom for the low sun: threshold just under 1 so it catches the rim-lit crests, the
             // backlit grass and the horizon band and NOTHING else — bloom on a storybook frame is

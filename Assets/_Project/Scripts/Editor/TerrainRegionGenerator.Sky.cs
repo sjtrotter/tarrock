@@ -16,9 +16,27 @@ namespace Tarrock.Editor
         // The dawn atmosphere. ONE description, consumed by three places that must agree or the
         // island-in-cloud read breaks: the skybox, the exponential fog, and the cloud deck's fade.
         //
-        // All LINEAR — material colours are consumed raw. The fog colour is DERIVED via .gamma
-        // because RenderSettings colours are gamma-decoded, so the same float triple means two
-        // different colours in the two places; hand-copying the numbers is how they drift.
+        // THE COLOUR CONVENTION, corrected in round 6 — the old wording here said "all LINEAR,
+        // material colours are consumed raw" and that was never true. This project renders in
+        // LINEAR colour space (ProjectSettings m_ActiveColorSpace: 1), where Material.SetColor on a
+        // plain (non-[Gamma]) Color property gamma-DECODES what it is handed. So every triple below
+        // is authored sRGB and arrives at the shader as its linear decode:
+        //     zenith   authored (0.20, 0.32, 0.54)  →  shader (0.033, 0.078, 0.258) linear
+        //     haze     authored (0.90, 0.85, 0.74)  →  shader (0.787, 0.694, 0.513) linear
+        // The values are NOT re-solved in this pass, because they are what round 5 was tuned on and
+        // what round 5 measured: an offline port of SkyGradient.hlsl plus the full URP grade chain,
+        // evaluated with exactly this decode, reproduces round5/v3's clean sky to an RMS of 1.27
+        // sRGB levels and its hero cloud's darkest-quintile R−B to 0.1 of a level. Only the naming
+        // was wrong; the render is what it says it is. The "…Linear" suffixes are kept ONLY because
+        // TerrainRegionGenerator.Lighting.cs (a different builder's file) references HazeLinear by
+        // name; renaming them belongs in the same change as that reference.
+        //
+        // ONE PLACE STILL DISAGREES, and it is a real mismatch rather than a naming one — flagged
+        // here rather than fixed because the write lives in Lighting.cs: RenderSettings.fogColor is
+        // written as (…).gamma, which Unity then gamma-decodes, so the FOG lands on HazeLinear read
+        // as LINEAR (0.90, 0.85, 0.74) while the sky's own haze lands on its sRGB decode
+        // (0.787, 0.694, 0.513). The two are meant to be the one value that far ridges die into;
+        // they are 20 sRGB levels and a hue apart (fog R−B +0.074 sRGB against haze's +0.16).
         //
         // WHY THESE NUMBERS (2026-07-31 look pass, against Assets/Screenshots/wave2_*). Measured
         // off wave2_knoll: the whole visible sky moved eight sRGB levels from frame top to horizon
@@ -157,11 +175,33 @@ namespace Tarrock.Editor
         // a mass was lighter than the low sky band it was drawn over, so the masses had no dark
         // side at all — they were a bright shape on a bright ground with a slightly brighter shape
         // inside them.
-        private static readonly Color VaultCloudShadeLinear = new Color(0.52f, 0.57f, 0.71f);
+        //
+        // ROUND 6 pulls it to (0.48, 0.56, 0.74) — cooler and a touch darker. It is a small move and
+        // it is the SECOND half of the cloud-shadow fix; the first half is in SkyGradient.hlsl
+        // §THE WASH IS AIR, which stopped the additive dawn wash from being laid over the masses.
+        // With that wash gone the shaded washes are finally free to be the colour they are painted,
+        // so this is where the blue-slate the round-5 critique asked for actually gets authored.
+        private static readonly Color VaultCloudShadeLinear = new Color(0.48f, 0.56f, 0.74f);
         // THE ANCHOR. Cool, not neutral: at dawn a cloud's underside is lit by sky, and the whole
         // region's grade is warm light on cool shadow (BuildLighting). Grey here would read as
         // dirt on the plate.
-        private static readonly Color VaultCloudShadowLinear = new Color(0.19f, 0.23f, 0.35f);
+        //
+        // ROUND 6, (0.19, 0.23, 0.35) → (0.16, 0.225, 0.425). BLUE-SLATE AT SOURCE, which is the
+        // reference solution the round-5 critique named: animation-04's cloud bank swings from
+        // R−B −59 in its shadow tiers to +8 in its lit quintile, a 67-point hue journey with the
+        // LIGHT nearly neutral and the SHADOW carrying all the chroma — the storybook law (white in
+        // the light, colour in the shadows) drawn exactly. Round 5's authored colour was already
+        // cool; what it lacked was a render that let it stay cool (see the wash note above).
+        // Solved against the two targets rather than dialled, through an offline port of this
+        // shader plus the full URP grade chain, and CHECKED UNDER BOTH GRADES because the grade
+        // moved under this pass (v3 hero, darkest quintile R−B / hue slope d(R−B)/dL):
+        //     round 5 as shipped        +49.7   +0.128
+        //     round 6, round-6 grade    −22.7   +0.538
+        //     round 6, round-5 grade    −19.0   +0.714
+        // Not pushed to the plate's −59: this is a dawn cumulus 44° off a 12° sun, and past about
+        // −40 the shaded flank stops reading as cloud and starts reading as a bruise (rendered and
+        // looked at, not assumed).
+        private static readonly Color VaultCloudShadowLinear = new Color(0.16f, 0.225f, 0.425f);
         private const float VaultCloudBase = 0.22f;      // flat base, in half widths below centre
         // Crisper than round 2's 0.055. On the hero that is 0.030 × 20° = 0.6° ≈ 11 px of edge
         // ramp, which is a painted edge; 0.055 was 0.7° on a 13° mass and, combined with the

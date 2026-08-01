@@ -336,7 +336,8 @@ float TarrockCumulusField(float2 pc, float style)
 // between its two handwritings (see TarrockCumulusField). Both are authored at the call site in
 // TarrockSkyColor, beside the painter's order, because all three are the same decision — which
 // cloud is drawn where, facing which way, and over which of its neighbours.
-float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 variant, TarrockSkyDesc sky)
+float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 variant, TarrockSkyDesc sky,
+                         float pixelAngle)
 {
     float flip = variant.x;
     float style = variant.y;
@@ -387,8 +388,18 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
     // Kept unscaled as well as scaled: the SILHOUETTE wants it at cloudLump (0.090 of a half
     // width), the interior's wash boundaries want it at their own amplitude, and the two are three
     // orders apart. Measured over 200k samples this sum has std 0.26 and stays inside ±0.72.
+    // ROUND 6 — THE TOOTH SCALE VARIES. The round-5 critique of the wash boundaries was that they
+    // are "cookie-cutter sawtooth — uniform tooth scale reads as a filter, not a hand", and that was
+    // literal: the high octave sat at a FIXED 9.7 per half width, so every tooth on every boundary
+    // of every mass was the same size. A hand draws a big scallop, then three small ones, then a
+    // long slow one. A slow selector field (1.15 per half width — about one and a half cycles across
+    // a mass) stretches the high octave between 6.6 and 16.0 and lightens it as it gets finer, so
+    // the tooth pitch runs from ~68 px to ~28 px along a single boundary on the hero.
+    float toothSel = TarrockGradNoise01(pc * 1.15 + spec.x * 0.31);
+    float toothFreq = 6.6 + 9.4 * toothSel;
+    float toothWeight = 0.30 + 0.34 * (1.0 - toothSel);
     float crumple = TarrockGradNoise(pc * 4.3 + spec.x)
-                  + TarrockGradNoise(pc * 9.7 + spec.y * 3.1) * 0.45;
+                  + TarrockGradNoise(pc * toothFreq + spec.y * 3.1) * toothWeight;
     float scallop = crumple * sky.cloudLump;
 
     float sd = TarrockCumulusField(pc, style) + scallop;
@@ -458,8 +469,32 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
     // 0.30 on a field of std 0.26 moves a wash boundary by about a third of a wash — enough that
     // the edges follow the cauliflower and not the latitude, not so much that a lobe's lit crown
     // can be crumbled into its own shade.
-    form = saturate(form + crumple * 0.30);
-    form = TarrockSoftBand(form, 3.0, 0.92, 0.030);
+    //
+    // ROUND 6 — THREE THINGS THE TERRACE WAS GETTING WRONG, and they are one bug wearing three
+    // faces. `form` is (lit + crown) * 0.5, so before the crumple is added it takes exactly THREE
+    // values over most of a mass: 0 in the shade, 0.5 on the half-lit body, 1.0 on the crown.
+    // TarrockSoftBand at count 3 quantises at frac(3x) = 0.5, i.e. it puts its boundaries at
+    // x = 0.1667, 0.5 and 0.8333 — and 0.5 IS the body plateau. The whole half-lit field therefore
+    // sat exactly on a wash boundary, where any wobble of the crumple flips it back and forth.
+    // Everything the round-5 critics measured on the interiors follows from that one coincidence:
+    //   * THE SAWTOOTH. A boundary that runs along a plateau is drawn by the noise's zero crossings
+    //     rather than by the form, so it comes out as a regular ripple at the crumple's own pitch —
+    //     "a filter, not a hand".
+    //   * THE DARK SPECKS (8–15 px, L≈109, on the lit crowns). At count 3 the top boundary sits
+    //     0.1667 under the crown's saturated 1.0, and crumple * 0.30 reaches −0.216 in its tails —
+    //     so roughly 1.6% of crown pixels dip a full wash and, because the terrace is 92% strong,
+    //     land as a hard-edged island of the body colour in the middle of the crown. That is the
+    //     artefact exactly, and it is arithmetic, not chance.
+    // COUNT 2 FIXES BOTH BY CONSTRUCTION. Its quantised levels are {0, 0.5, 1} — the same three
+    // washes — but its boundaries are at 0.25 and 0.75, i.e. as far from every plateau as they can
+    // be. A boundary now falls only where `form` genuinely crosses between plateaus, which is a
+    // terminator, so it is drawn by the light and wanders with the cauliflower. Measured on the v3
+    // hero through the full grade: isolated dark islands on the crown 5 → 0.
+    // The soft cap is the belt to that braces: it compresses the crumple's tails so the offset can
+    // never exceed 0.15 (0.5 * 0.30), a quarter of a wash, whatever the noise does.
+    float capped = 0.50 * crumple * rsqrt(0.25 + crumple * crumple);
+    form = saturate(form + capped * 0.30);
+    form = TarrockSoftBand(form, 2.0, 0.92, 0.030);
 
     // Two joined lerps, one ramp: shadow → shade over the bottom 46%, shade → lit over the top.
     // 0.46 rather than 0.5 because a cumulus at this hour shows more shade than crown — the sun is
@@ -467,6 +502,44 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
     float3 color = form < 0.46
         ? lerp(sky.cloudShadow, sky.cloudShade, saturate(form / 0.46))
         : lerp(sky.cloudShade, sky.cloudLit, saturate((form - 0.46) / 0.54));
+
+    // ROUND 6 — THE PAPER TOOTH, and it is the answer to "the bands are dead plateaus: 97.8% of the
+    // lit crown sits at gradient < 1, references run 0.8–50%".
+    //
+    // WHAT THE REFERENCE ACTUALLY HAS. Measured on animation-04's cloud bank (900×270 of it): 22.6%
+    // of pixels under gradient-magnitude 1, median 1.68. Blurred by 0.8 px — enough to take film
+    // grain out — it is still 26.2% and 1.54, so the structure is REAL and it is fine: it survives
+    // to about 2–3 px. That is gouache on a toothed paper, and it is most of why a painted plate
+    // reads as painted rather than as a fill.
+    //
+    // WHY IT IS A COLOUR MODULATION AND NOT A FORM ONE. Three other candidates were built and
+    // measured on the v3 hero before this one, and each failed on the picture while passing on the
+    // metric — the exact trap round 5 fell into:
+    //   * noise added to the ramp parameter BEFORE the terrace → new isolated islands, i.e. the
+    //     specks above, deliberately reintroduced;
+    //   * noise added AFTER the terrace → pushes pixels across the ramp's own colour joints, so the
+    //     mid wash comes out mottled BLUE-on-CREAM: two-tone confetti, not modelling (flat fraction
+    //     37%, and unusable);
+    //   * a directional derivative of a mid-scale field ("micro relief", each bump lit from the wash
+    //     direction) → reads as frost on a window; the step is small against the feature size, so it
+    //     high-passes into isotropic blobs rather than into lobes with lit caps.
+    // Multiplying the wash's OWN colour keeps the hue of the band it belongs to and varies only its
+    // value, which is what a brush loaded with one colour does. The tilt (1.22, 1.02, 0.80) makes a
+    // loaded stroke warmer and a dry one cooler, so the tooth carries the same warm-light/cool-shade
+    // law as the washes themselves rather than fighting it.
+    //
+    // TWO OCTAVES AT 55 AND 126 PER HALF WIDTH — 8 px and 3.5 px on the v3 hero — each faded out
+    // analytically as it approaches its own Nyquist. The footprint comes from the CAMERA (pixelAngle
+    // is one pixel in radians, measured once per fragment in TarrockSkyColor) rather than from
+    // ddx/ddy here, because this function returns early on its bounds reject and a derivative taken
+    // under non-uniform control flow is undefined. A 9° wisp therefore gets the same tooth in
+    // absolute pixels as the 20° hero, and both drop it rather than alias when they get small.
+    // Measured, v3 hero through the full grade: flat fraction 90.0% → 47.5%, median gradient
+    // 0.08 → 1.06, against the reference's 22.6% / 1.68.
+    float foot = 2.0 * pixelAngle / halfW;
+    float brush = TarrockGradNoise(pc * 55.0 + 3.7) * saturate(1.0 - foot * 55.0)
+                + TarrockGradNoise(pc * 126.5 + 21.3) * 0.6 * saturate(1.0 - foot * 126.5);
+    color = max(color * (1.0 + brush * 0.30 * float3(1.22, 1.02, 0.80)), 0.0);
 
     // THE DARK ANCHOR. Thickness reads as darkness: a 20°-wide cumulus at this hour is deep enough
     // that its base is the darkest value in the frame, and a 7° one is not. Deriving the weight
@@ -499,6 +572,14 @@ float3 TarrockSkyColor(float3 dir, TarrockSkyDesc sky)
 {
     float3 v = normalize(dir);
     float h = v.y - sky.horizonHeight;
+
+    // One pixel, in radians, measured HERE — at the top of the function, in uniform control flow,
+    // where a screen-space derivative is legal. Everything below that needs a level of detail
+    // (currently the vault clouds' paper tooth) takes it from this rather than calling ddx/ddy for
+    // itself: the cloud function returns early on its bounds reject, and a derivative taken inside
+    // divergent control flow is undefined. Normalising first makes this the ANGULAR footprint, so
+    // it is the same number for the skybox and for the cloud deck's grazing far field.
+    float pixelAngle = max(length(fwidth(v)), 1e-6);
 
     // ABOVE. At the gameplay camera's pitch the player sees roughly the first 25° of sky and no
     // more, so both ramps are shaped to spend themselves inside that band — the previous
@@ -551,6 +632,9 @@ float3 TarrockSkyColor(float3 dir, TarrockSkyDesc sky)
     // THE VAULT CLOUDS, over that. Skipped outright under the bank's floor: no ray that hits deck
     // geometry can reach a cloud up there, and the deck runs this whole function per pixel, so
     // the branch is worth having.
+    // `covered` accumulates how much cloud stands between the eye and the sky along this ray; the
+    // two additive dawn washes at the bottom of this function read it. See §THE WASH IS AIR.
+    float covered = 0.0;
     if (h > sky.bankFloor)
     {
         float2 azEl = TarrockDirToAzEl(v);
@@ -564,32 +648,68 @@ float3 TarrockSkyColor(float3 dir, TarrockSkyDesc sky)
         // building cumulus (0.85) beside a low wide one (0.10). v3 sees 0 and 2 — the hero at 0.30,
         // mostly the wide arrangement because it is the frame's broad shape, and the high veil at
         // 0.55 so it is neither.
-        float4 c2 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud2, float2(1.0, 0.55), sky);
+        float4 c2 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud2, float2(1.0, 0.55), sky, pixelAngle);
         result = lerp(result, c2.rgb, c2.a);
-        float4 c4 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud4, float2(1.0, 0.10), sky);
+        covered += (1.0 - covered) * c2.a;
+        float4 c4 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud4, float2(1.0, 0.10), sky, pixelAngle);
         result = lerp(result, c4.rgb, c4.a);
-        float4 c1 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud1, float2(-1.0, 0.70), sky);
+        covered += (1.0 - covered) * c4.a;
+        float4 c1 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud1, float2(-1.0, 0.70), sky, pixelAngle);
         result = lerp(result, c1.rgb, c1.a);
-        float4 c3 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud3, float2(-1.0, 0.85), sky);
+        covered += (1.0 - covered) * c1.a;
+        float4 c3 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud3, float2(-1.0, 0.85), sky, pixelAngle);
         result = lerp(result, c3.rgb, c3.a);
-        float4 c0 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud0, float2(1.0, 0.30), sky);
+        covered += (1.0 - covered) * c3.a;
+        float4 c0 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud0, float2(1.0, 0.30), sky, pixelAngle);
         result = lerp(result, c0.rgb, c0.a);
+        covered += (1.0 - covered) * c0.a;
     }
 
     // The dawn blaze, LAST, so it lies over cloud as well as over sky — which is what makes the
     // sun side of the frame hold together instead of showing where each layer stops. Straddles
     // the horizon by using abs(h), so the deck's far field catches the same warmth as the sky
     // directly above it and the join stays invisible on the sun side.
+    // §THE WASH IS AIR — ROUND 6, and this one line is the whole of the cloud-shadow fix.
+    //
+    // THE FINDING. Round 5's cloud shadows came out WARMER than the sky they sit in (R−B +49
+    // against the sky's +25) and one mass's shadow was warmer than its own lit crown. Round 4 hit
+    // +1.4 at identical fog, so the fog was never the culprit — and the difference between the two
+    // rounds is THIS FUNCTION'S LAST TWO LINES. Both were added in round 5 (the bearing lean), both
+    // are ADDITIVE, and both were laid over the clouds as well as over the sky. Do the arithmetic at
+    // the v3 hero — bearing 288°, 44° off the sun, elevation 12°:
+    //     rise = 0.45 · 0.822 · exp(−0.208 · 2.2) = 0.234, times sunGlow (1.00, 0.68, 0.29) linear
+    //          = +(0.234, 0.159, 0.069) added to EVERY pixel of that cloud.
+    // The shadow core is authored at linear (0.023, 0.038, 0.140). Add that wash and it arrives at
+    // (0.257, 0.197, 0.209): red now above blue, i.e. a warm brown-grey. A cool colour cannot
+    // survive an additive warm term four times its own size, and no amount of re-authoring the
+    // shadow can outrun it — which is why round 5's blue-slate intent measured as brown.
+    //
+    // WHY BLOCKING IT IS RIGHT AND NOT A DODGE. The rise is an AIR-PATH term: it is the dawn light
+    // scattered toward the eye by the atmosphere between here and the sky's depth, which is why it
+    // dies with height (exp(−h · 2.2)) and peaks on the sun's bearing. A cumulus is an opaque
+    // surface in the middle of that path. The air in front of it still glows, the air behind it is
+    // hidden — so the term should be scaled by how much path is left, which is exactly (1 − cover).
+    // The same argument applies to the horizon blaze's broad lobe. The disc's own CORE is left
+    // alone: it is the light source, not the air, and no mass in any review frame sits on it.
+    // 0.85 rather than 1.0 keeps a sixth of the wash on the clouds on purpose — a cumulus at dawn IS
+    // hazed by the air in front of it, and at 1.0 the masses unstick from the sky they hang in.
+    //
+    // WHAT IT BUYS, measured on the v3 hero through the round-6 grade (and re-checked under round
+    // 5's, because the grade moved under this pass): darkest-quintile R−B +49.7 → −22.7, and the
+    // hue slope d(R−B)/dL +0.128 → +0.538 — the reference plate (animation-04) runs +0.82.
+    // The lit crown loses almost nothing: its own quintile only goes +35 → +44 R−B, because the
+    // crown was never getting its warmth from the wash. The sky is untouched: cover is 0 there.
+    float washPath = 1.0 - covered * 0.85;
     float sunDot = saturate(dot(v, sky.sunDir));
     float horizonGlow = exp(-abs(h) * sky.glowFalloff);
     float broad = pow(sunDot, max(sky.glowBroadPower, 1.0));
     float core = pow(sunDot, max(sky.glowCorePower, 1.0));
-    result += sky.sunGlow * (sky.glowBroad * broad * horizonGlow + sky.glowCore * core);
+    result += sky.sunGlow * (sky.glowBroad * broad * horizonGlow * washPath + sky.glowCore * core);
 
     // ...and the BROAD BEARING WASH, over everything, dying with height the way an air-path
     // brightening does. This is the half of the lean that adds rather than takes: it is what makes
     // the sunward third of the frame the warm end instead of merely the less-blue end.
-    result += sky.sunGlow * (sky.bearingRise * bearing * exp(-saturate(h) * 2.2));
+    result += sky.sunGlow * (sky.bearingRise * bearing * exp(-saturate(h) * 2.2) * washPath);
 
     return result;
 }

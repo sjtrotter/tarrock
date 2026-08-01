@@ -105,6 +105,21 @@ Shader "Tarrock/RockPainterly"
 
         [Header(Lighting)]
         _ShadeWrap ("Shade Wrap", Range(0, 1)) = 0.25
+
+        // -- THE SUN BLEACH (round 6) -----------------------------------------------------------
+        // "White in the light, colour in the shadows" is canon, and a multiply-only shader runs it
+        // BACKWARDS: albedo x light makes the brightest fragment the most saturated one. The same
+        // mechanism Builder PALETTE put on GrassTuft.shader is copied here verbatim so ground and
+        // grass bleach identically — the albedo is drawn toward its own luminance times a
+        // near-colourless cream in proportion to how much of the beam actually lands on it.
+        //
+        // The tint is normalised by its OWN luminance in the fragment, which makes this a PURE
+        // CHROMA move: at bleach 1.0 the fragment's luminance is unchanged to within the tint's
+        // rounding, so none of the lamp/exposure arithmetic and none of round 6's amplitude
+        // arithmetic (which is measured on luma) is disturbed by it at any setting.
+        _SunBleach ("Sun Bleach (chroma removed at full beam)", Range(0, 1)) = 0.5
+        _BleachStart ("Sun Bleach Start (light reach)", Range(0, 1)) = 0.28
+        _BleachTint ("Sun Bleach Tint (normalised to luma 1)", Color) = (0.98, 0.96, 0.94, 1)
         _AmbientBoost ("Ambient Boost", Range(0, 2)) = 1.0
         _ShadowTint ("Shadow Tint (cool)", Color) = (0.80, 0.88, 1.06, 1)
         _AmbientFloor ("Ambient Floor", Color) = (0.10, 0.11, 0.14, 1)
@@ -160,6 +175,9 @@ Shader "Tarrock/RockPainterly"
             float _BrushSoftness;
             float _ShadeWrap;
             float _AmbientBoost;
+            float _SunBleach;
+            float _BleachStart;
+            float4 _BleachTint;
             float4 _ShadowTint;
             float4 _AmbientFloor;
         CBUFFER_END
@@ -168,11 +186,25 @@ Shader "Tarrock/RockPainterly"
         // rather than shared through an .hlsl on purpose: these functions are the region's paint
         // recipe and the two shaders must agree, but a rock is not a terrain and the include would
         // drag the terrain's splat plumbing with it. If the ground's recipe changes, change it here.
+        // ROUND 6, MEASURED FAULT (identical to TerrainPainterly's — the two recipes must agree).
+        // The old form was handed LATTICE INDICES, and at a 2 cm band the index at the Cliff's own
+        // world coordinates is ~10000; 10000 * 456.21 = 4.6e6, where float32's ULP is 0.5 and
+        // frac() can land on two values. Counted in float32 over 400 consecutive cells, the old
+        // form produced 8-55 distinct hash values; a hash that has collapsed along one axis draws
+        // STRIPES. The small-multiplier construction (the one TkHash22 has always used) keeps the
+        // product near 1750 and re-measures at 357-392 of 400.
         float TkHash21(float2 p)
         {
-            p = frac(p * float2(123.34, 456.21));
-            p += dot(p, p + 45.32);
-            return frac(p.x * p.y);
+            float3 p3 = frac(float3(p.x, p.y, p.x) * float3(0.1031, 0.1030, 0.0973));
+            p3 += dot(p3, p3.yzx + 33.33);
+            return frac((p3.x + p3.y) * p3.z);
+        }
+
+        float TkHash31(float3 p)
+        {
+            float3 p3 = frac(p * float3(0.1031, 0.1030, 0.0973));
+            p3 += dot(p3, p3.yzx + 33.33);
+            return frac((p3.x + p3.y) * p3.z);
         }
 
         float2 TkHash22(float2 p)
@@ -192,6 +224,29 @@ Shader "Tarrock/RockPainterly"
             float c = TkHash21(i + float2(0.0, 1.0));
             float d = TkHash21(i + float2(1.0, 1.0));
             return lerp(lerp(a, b, u.x), lerp(c, d, u.x), u.y);
+        }
+
+        // 3-D value noise (round 6). Eight hashes a tap against a triplanar's twelve, and it has no
+        // projection and therefore no frame that can rotate with the surface normal. See the
+        // TkMarkSpace note below for why that is the whole of the contour-lock fix.
+        float TkValueNoise3(float3 p)
+        {
+            float3 i = floor(p);
+            float3 f = p - i;
+            float3 u = f * f * (3.0 - 2.0 * f);
+            float a000 = TkHash31(i + float3(0, 0, 0));
+            float a100 = TkHash31(i + float3(1, 0, 0));
+            float a010 = TkHash31(i + float3(0, 1, 0));
+            float a110 = TkHash31(i + float3(1, 1, 0));
+            float a001 = TkHash31(i + float3(0, 0, 1));
+            float a101 = TkHash31(i + float3(1, 0, 1));
+            float a011 = TkHash31(i + float3(0, 1, 1));
+            float a111 = TkHash31(i + float3(1, 1, 1));
+            float c00 = lerp(a000, a100, u.x);
+            float c10 = lerp(a010, a110, u.x);
+            float c01 = lerp(a001, a101, u.x);
+            float c11 = lerp(a011, a111, u.x);
+            return lerp(lerp(c00, c10, u.y), lerp(c01, c11, u.y), u.z);
         }
 
         float TkFbm(float2 p)
@@ -284,13 +339,70 @@ Shader "Tarrock/RockPainterly"
             return tot > 1e-4 ? sum / tot : 0.5;
         }
 
-        float TkTriplanarDetail(float3 worldPos, float3 normal, float baseM, float pixelM)
+        // -- ROUND 6: THE FRAME IS THE CONTOUR LOCK ----------------------------------------------
+        // Two constructs here oriented the marks off the surface normal: this triplanar (whose three
+        // weights rotate the effective projection with the landform) and, far worse,
+        // `faceUV = float2(dot(positionWS.xz, strike), positionWS.y)` in the fragment, where
+        // `strike` IS the contour direction. dot(P.xz, strike) is only an arclength coordinate on a
+        // plane; on a curved face
+        //
+        //     d(faceUV.x)/ds = 1 - kappa * (P . n)
+        //
+        // and at this region's world coordinates (P . n) is 150-250 m against curvature radii of
+        // 10-60 m, so the second term is 3-18x the first, sets the sign, and passes through zero on
+        // some faces — where the marks become infinitely elongated ALONG the contour. That is the
+        // wood grain, and it is why replacing the noise in round 5 changed nothing. The full
+        // derivation and the measured derivative table live in Tarrock/TerrainPainterly.
+        //
+        // Replaced by frameless world-space 3-D lookups. Anisotropy is kept but WORLD-LOCKED: the
+        // horizontal components are divided by kMarkAniso so every mark is stretched along world
+        // horizontal by the same constant everywhere. A constant direction cannot trace a contour.
+        static const float kMarkAniso = 2.0;
+
+        float3 TkMarkSpace(float3 worldPos)
         {
-            float3 blend = pow(abs(normal), 4.0);
-            blend /= max(blend.x + blend.y + blend.z, 1e-4);
-            return TkDetailFbm(worldPos.zy, baseM, pixelM) * blend.x
-                 + TkDetailFbm(worldPos.xz, baseM, pixelM) * blend.y
-                 + TkDetailFbm(worldPos.xy, baseM, pixelM) * blend.z;
+            return float3(worldPos.x / kMarkAniso, worldPos.y, worldPos.z / kMarkAniso);
+        }
+
+        // CROSS-FILE DEBT: the four mark-amount properties are written by
+        // TerrainRegionGenerator.Ground.cs, owned by another builder this round, so a shader default
+        // cannot reach the render. The round-6 amplitude target needs ~1.5-1.9x round 5's values, so
+        // the gain sits here and the property keeps its round-5 meaning:
+        //   _RockGrainAmount 0.40 x1.65 -> 0.66   _RockFleckFine   0.58 x1.48 -> 0.86
+        //   _RockFleckMid    0.46 x1.78 -> 0.82   _RockFleckCoarse 0.34 x1.88 -> 0.64
+        // Fold these into Ground.cs and set them to 1.0 as soon as the two files can move together.
+        static const float kRockGrainGain  = 1.65;
+        static const float kRockFineGain   = 1.48;
+        static const float kRockMidGain    = 1.78;
+        static const float kRockCoarseGain = 1.88;
+
+        float TkMarkAmount(float property, float gain)
+        {
+            return min(property * gain, 0.90);
+        }
+
+        float TkDetailFbm3(float3 p, float baseM, float pixelM)
+        {
+            float lam = max(baseM, 1e-4);
+            float3 q = p / lam;
+
+            float w = TkOctaveWeight(lam, pixelM);
+            float sum = TkValueNoise3(q) * w;
+            float tot = w;
+
+            q = float3(TkTurn(q.xy * 2.71 + 17.3, kTurn1), q.z * 2.71 + 11.9); lam /= 2.71;
+            w = TkOctaveWeight(lam, pixelM) * 0.80;
+            sum += TkValueNoise3(q) * w; tot += w;
+
+            q = float3(TkTurn(q.xy * 2.71 + 17.3, kTurn2), q.z * 2.71 + 11.9); lam /= 2.71;
+            w = TkOctaveWeight(lam, pixelM) * 0.64;
+            sum += TkValueNoise3(q) * w; tot += w;
+
+            q = float3(TkTurn(q.xy * 2.71 + 17.3, kTurn3), q.z * 2.71 + 11.9); lam /= 2.71;
+            w = TkOctaveWeight(lam, pixelM) * 0.512;
+            sum += TkValueNoise3(q) * w; tot += w;
+
+            return tot > 1e-4 ? sum / tot : 0.5;
         }
 
         // Sparse marks. Returns .x = a MEAN-PRESERVING multiplier, .y = the raw mark. A smooth
@@ -305,6 +417,20 @@ Shader "Tarrock/RockPainterly"
             if (w <= 0.002) return float2(1.0, 0.0);
             float a = TkValueNoise(p / max(lamA, 1e-4));
             float b = TkValueNoise(p / max(lamB, 1e-4) + 11.3);
+            float mark = smoothstep(thr.x, thr.y, a)
+                       * smoothstep(thr.x - 0.06, thr.y - 0.06, b) * w;
+            return float2((1.0 - mark * amount) / max(1.0 - coverage * amount * w, 0.05), mark);
+        }
+
+        // The frameless twin (round 6). Same construct, 3-D world-space lookups, caller supplies an
+        // already-anisotropy-scaled position so the mark family has ONE fixed shape on every face.
+        float2 TkFleckBand3(float3 p, float lamA, float lamB, float2 thr,
+                            float coverage, float amount, float pixelM)
+        {
+            float w = TkOctaveWeight(lamA, pixelM);
+            if (w <= 0.002) return float2(1.0, 0.0);
+            float a = TkValueNoise3(p / max(lamA, 1e-4));
+            float b = TkValueNoise3(p / max(lamB, 1e-4) + 11.3);
             float mark = smoothstep(thr.x, thr.y, a)
                        * smoothstep(thr.x - 0.06, thr.y - 0.06, b) * w;
             return float2((1.0 - mark * amount) / max(1.0 - coverage * amount * w, 0.05), mark);
@@ -513,23 +639,28 @@ Shader "Tarrock/RockPainterly"
                 // Nothing here fades on distance; the octaves and the mark bands each carry their
                 // own weight against the pixel, so a stone keeps its surface for as long as its
                 // surface is resolvable.
-                float stoneDetail = TkTriplanarDetail(positionWS, normalWS,
-                    _DetailBaseScale, pixelM);
-                albedo *= 1.0 + (stoneDetail - 0.5) * 2.0 * _RockGrainAmount;
+                // ROUND 6: NO FRAME. The triplanar and the `strike` face frame that used to be
+                // here were both functions of the surface normal — see the TkMarkSpace header for
+                // the derivation and the measured numbers. World-space 3-D lookups instead, which
+                // also cost less: four 3-D taps (32 hashes) where the triplanar was twelve 2-D taps
+                // (48), and six 3-D taps for the mark bands where the face frame took six 2-D.
+                float3 markPos = TkMarkSpace(positionWS);
+                float stoneDetail = TkDetailFbm3(markPos, _DetailBaseScale, pixelM);
+                albedo *= 1.0 + (stoneDetail - 0.5) * 2.0
+                    * TkMarkAmount(_RockGrainAmount, kRockGrainGain);
 
-                // The mark bands stay on the FACE'S own frame — x along the strike, y world height
-                // — because weathering on a stone runs along its faces, and because three triplanar
-                // mark fields would be nine taps for a term two can carry. Grit at 2 cm, weathering
-                // at 9 cm, damp patches at 60 cm; coverages measured over a 40 m population sample
-                // of the shipped fields, which is what the mean-preserving divisor needs.
-                float2 strike = normalize(float2(-normalWS.z, normalWS.x) + 1e-4);
-                float2 faceUV = float2(dot(positionWS.xz, strike), positionWS.y);
-                float2 stoneFine = TkFleckBand(faceUV, 0.022, 0.038, float2(0.48, 0.78),
-                    0.1166, _RockFleckFine, pixelM);
-                float2 stoneMid = TkFleckBand(faceUV + 61.7, 0.090, 0.150, float2(0.52, 0.80),
-                    0.0878, _RockFleckMid, pixelM);
-                float2 stoneWide = TkFleckBand(faceUV + 193.1, 0.600, 0.990, float2(0.54, 0.82),
-                    0.0688, _RockFleckCoarse, pixelM);
+                // THE LADDER IS RE-PITCHED (round 6, finding 4), on the same reasoning as the
+                // terrain's: round 5's finest rung fell under kDetailPxLo at the distances these
+                // frames actually contain, so one rung of three was doing measurable work. A stone
+                // is smaller and closer than a cliff, so its ladder sits one step below the
+                // terrain's: 4 / 12 / 40 cm against the terrain's 6 / 16.5 / 56. Coverages
+                // re-measured for the new wavelengths and thresholds.
+                float2 stoneFine = TkFleckBand3(markPos, 0.040, 0.066, float2(0.46, 0.76),
+                    0.140, TkMarkAmount(_RockFleckFine, kRockFineGain), pixelM);
+                float2 stoneMid = TkFleckBand3(markPos + 61.7, 0.120, 0.198, float2(0.50, 0.79),
+                    0.106, TkMarkAmount(_RockFleckMid, kRockMidGain), pixelM);
+                float2 stoneWide = TkFleckBand3(markPos + 193.1, 0.400, 0.660, float2(0.52, 0.81),
+                    0.086, TkMarkAmount(_RockFleckCoarse, kRockCoarseGain), pixelM);
                 albedo *= stoneFine.x * stoneMid.x * stoneWide.x;
 
                 // -- Moss on ledges: only where the face turns upward AND the hollows say damp, so
@@ -555,6 +686,17 @@ Shader "Tarrock/RockPainterly"
                 float3 direct = mainLight.color * lit;
                 float3 ambient = max(SampleSH(normalWS) * _AmbientBoost, _AmbientFloor.rgb);
                 float3 shade = lerp(_ShadowTint.rgb, float3(1.0, 1.0, 1.0), saturate(lit));
+
+
+                // THE SUN BLEACH (round 6) — see the property block. Pure chroma: the tint is
+                // divided by its own luminance, so this cannot move the exposure or the measured
+                // amplitude, only the saturation of the lit end.
+                float3 bleachTint = _BleachTint.rgb
+                    / max(dot(_BleachTint.rgb, float3(0.2126, 0.7152, 0.0722)), 1e-4);
+                float bleach = _SunBleach * smoothstep(_BleachStart, 1.0, lit);
+                albedo = lerp(albedo,
+                    dot(albedo, float3(0.2126, 0.7152, 0.0722)) * bleachTint,
+                    bleach);
 
                 float3 color = albedo * (direct + ambient) * shade;
                 color = MixFog(color, input.fogCoord);

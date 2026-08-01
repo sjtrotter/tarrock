@@ -35,10 +35,24 @@ namespace Tarrock.Editor
         // BuildGrassDetails reads TurfSoil back off the material to tint the tuft base, so this
         // change moves the tuft roots to green in the same stroke — which is the point. One fact,
         // one place.
-        internal static readonly Color TurfSoil = new Color(0.17f, 0.20f, 0.13f);   // damp root shadow
-        internal static readonly Color TurfBlade = new Color(0.25f, 0.33f, 0.19f);  // living blade mat
-        internal static readonly Color TurfOchre = new Color(0.50f, 0.42f, 0.23f);  // dry ochre scour
-        internal static readonly Color MeadowGreen = new Color(0.28f, 0.36f, 0.20f); // wind-scoured
+        // ROUND-6 — THE BLUE FLOOR. These four are read back by BuildGrassDetails and passed into
+        // every tuft material, so they set the blue channel of the largest population of pixels in
+        // the frame. Round 5's ochre was linear (0.212, 0.144, 0.041): R/B 5.2 before a single
+        // photon touched it, and blue at 4% of the surface. A surface whose blue starts at 0.041
+        // cannot survive a lamp at linear R/B 2.92 and a grade that then boosts saturation 16% —
+        // the blue goes NEGATIVE in the LUT and URP's max(0) clamps it to a hard zero. That is
+        // where round 5's "median blue 0, saturation 1.000 over 75.9% of the lit meadow" came from.
+        //
+        // The ochre is now a dry BUFF (linear 0.229, 0.187, 0.100 — R/B 2.3) rather than an
+        // orange, and every triple carries a real blue. Nothing here has moved in hue family:
+        // "wind-scoured green" is still green mat worn through to a dry patch. What changed is
+        // that the dry patch is now the colour of dry grass instead of the colour of the light
+        // that happens to be falling on it. The gold belongs to the lamp — see
+        // TerrainRegionGenerator.Lighting.cs.
+        internal static readonly Color TurfSoil = new Color(0.17f, 0.20f, 0.15f);   // damp root shadow
+        internal static readonly Color TurfBlade = new Color(0.25f, 0.34f, 0.23f);  // living blade mat
+        internal static readonly Color TurfOchre = new Color(0.52f, 0.48f, 0.36f);  // dry buff scour
+        internal static readonly Color MeadowGreen = new Color(0.29f, 0.38f, 0.26f); // wind-scoured
 
         // The band tufts live in. BOTH sides feather it now (round-2 integration): the ground
         // shader fades its turf across _TurfFeatherDeg/_TurfFeatherM either side of these numbers,
@@ -100,9 +114,18 @@ namespace Tarrock.Editor
             // The four meadow hues are the round-2 answer to the gauntlet finding that the ground
             // measured monochrome (one hue at two brightnesses) where fable-05/08 carry a real hue
             // swing. See the shader header for the full finding list.
+            // ROUND 6 restores the second half of that director call, which round 5 lost: the gold
+            // lives in the LIGHT, so the albedo's warm notes must be DRY GRASS and WARM STONE and
+            // not a gold of their own. Round 5's straw was linear (0.397, 0.297, 0.078) — R/B 5.1,
+            // an orange, and the same colour the lamp was already painting on top of it. It is now
+            // (0.397, 0.342, 0.164), R/B 2.4: still the warmest note on the floor, still clearly
+            // straw beside the green, and no longer competing with the dawn for the same job.
+            // The scuff loses its orange for the same reason. _MeadowCool is untouched — it was
+            // the only member of this chord round 5 did not warm, and it is what keeps the hollows
+            // reading cool.
             material.SetColor("_MeadowGreen", MeadowGreen);
-            material.SetColor("_MeadowStraw", new Color(0.66f, 0.58f, 0.31f));
-            material.SetColor("_MeadowScuff", new Color(0.42f, 0.32f, 0.21f));
+            material.SetColor("_MeadowStraw", new Color(0.66f, 0.62f, 0.44f));
+            material.SetColor("_MeadowScuff", new Color(0.43f, 0.36f, 0.28f));
             material.SetColor("_MeadowCool", new Color(0.27f, 0.35f, 0.36f));
             material.SetFloat("_MeadowMacroScale", 38f);
             material.SetFloat("_MeadowHueScale", 21f);
@@ -301,8 +324,13 @@ namespace Tarrock.Editor
             // house look anyway (Visual pillar 1).
             material.SetFloat("_ShadeWrap", 0.40f);
             material.SetFloat("_AmbientBoost", 1f);
-            material.SetColor("_ShadowTint", new Color(0.80f, 0.88f, 1.06f));
-            material.SetColor("_AmbientFloor", new Color(0.10f, 0.11f, 0.14f));
+            // ROUND 6 — COLOUR IN THE SHADOWS, the other half of the law the sun bleach implements
+            // on the grass side. This tint is the terrain's only chroma-versus-value lever, and the
+            // shade is where the meadow's blue is allowed to live: 1.06 → 1.11 in blue, 0.80 → 0.78
+            // in red. It cannot touch the lit read — `lerp(_ShadowTint, 1, lit)` resolves to 1 on
+            // ground the beam reaches.
+            material.SetColor("_ShadowTint", new Color(0.78f, 0.88f, 1.11f));
+            material.SetColor("_AmbientFloor", new Color(0.10f, 0.11f, 0.15f));
             // THE PENUMBRA, in metres of half-width on the ground (round 5; the derivation is in
             // TerrainPainterly's Frag lighting block). 1.0 m is the middle of the 0.45-1.8 m band a
             // 0.53° sun throws through forms standing 10-40 m from what they shade, once the 12°
@@ -378,8 +406,8 @@ namespace Tarrock.Editor
                     bedding.a));
             material.SetColor("_CliffColor", PaletteColour(terrainMaterial, "_CliffColor", new Color(0.30f, 0.31f, 0.35f)));
             material.SetColor("_MossColor", PaletteColour(terrainMaterial, "_RockLichen", new Color(0.35f, 0.40f, 0.26f)));
-            material.SetColor("_ShadowTint", PaletteColour(terrainMaterial, "_ShadowTint", new Color(0.80f, 0.88f, 1.06f)));
-            material.SetColor("_AmbientFloor", PaletteColour(terrainMaterial, "_AmbientFloor", new Color(0.10f, 0.11f, 0.14f)));
+            material.SetColor("_ShadowTint", PaletteColour(terrainMaterial, "_ShadowTint", new Color(0.78f, 0.88f, 1.11f)));
+            material.SetColor("_AmbientFloor", PaletteColour(terrainMaterial, "_AmbientFloor", new Color(0.10f, 0.11f, 0.15f)));
 
             // Every remaining property explicit (same rule as the other materials — a reused .mat
             // keeps stale serialised values while the shader's defaults appear to change). These are

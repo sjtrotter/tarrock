@@ -279,12 +279,28 @@ namespace Tarrock.Editor
         //     a boulder the turf has climbed to its shoulder (HALF-BURIED, wide at the base and low).
         //     Those three are the sitting family's 4, 5 and 6; 9 is a leaning monolith reserved for
         //     the anchors. The dip also stopped being one number — see BeddingDipJitter.
-        private const int RockVariants = 10;
-        private const int StandingFirstVariant = 7;   // variants 7-9 stand; 0-6 sit
+        //  5. ROUND 6 — TWO MASSES THAT ARE NOT PROPS. The round-5 critique landed hardest on the
+        //     two stones that frame v8, and on a fault the whole family shares. Variants 10 and 11
+        //     answer them; see RockValue, RockAzimuthJitter and RockRingJog for the three mesh
+        //     changes that go with them.
+        private const int RockVariants = 12;
+        private const int StandingFirstVariant = 7;   // variants 7-11 stand; 0-6 sit
         /// <summary>Variant 9 is ANCHOR-ONLY. It is the leaning monolith, and a monolith is a
         /// composition decision — the scatter may never sprinkle one, or the region acquires
         /// monuments it has not earned (the same rule the standing family already lives under).</summary>
         private const int AnchorOnlyVariant = 9;
+
+        /// <summary>THE NEAR MASS (round 6). Anchor-only. A strike-jointed wall: the slab a bedded
+        /// island sheds along the joint set at right angles to its dip, stood on its edge at the
+        /// lens. See the anchor comment for why the orientation — not the pigment — is what makes
+        /// it dark, and <see cref="RockValue"/> for the pigment that gives the margin.</summary>
+        private const int NearMassVariant = 10;
+
+        /// <summary>THE BROKEN JAMB (round 6). Anchor-only. The same stone v8 already had on its
+        /// right edge, rebuilt with a silhouette a hillside could have made: eight rings instead of
+        /// five, so no single straight segment can own more than a seventh of its height.</summary>
+        private const int BrokenJambVariant = 11;
+
         private const float RockCell = 3f;   // scatter lattice pitch, metres
 
         // THE CLIFF'S BEDDING. Every stone in the family leans the same way, by the same law: the
@@ -322,15 +338,78 @@ namespace Tarrock.Editor
         /// untouched — while the top cap's own shading moves enough to break the copy-paste.</summary>
         private const float BeddingDipJitter = 5f;
 
-        /// <summary>One art-directed stone: where, how big, which of the four meshes.</summary>
+        // -- THE THREE MESH CHANGES OF ROUND 6, all of them answers to measurements ---------------
+        //
+        // (a) AZIMUTH JITTER. Every ring in this family was a REGULAR polygon: side k sat at exactly
+        //     k·360/n.
+        //     A CORRECTION TO THE FIRST DRAFT OF THIS NOTE, because it was wrong and the measurement
+        //     is worth keeping: the obvious reading is that variants 8 and 9 are four-sided, so they
+        //     carry four exact 90° corners in plan, and that this is where "right-angle corners read
+        //     as masonry" comes from. Measured, it is not. PlaceRock's non-uniform squash gets there
+        //     first — the monolith's plan turns measure 42/142/48/128° and the tilted plate's
+        //     34/146/29/151°, and across the four biggest stones in round 5 exactly ONE corner sits
+        //     within 12° of a right angle. The masonry read is the BOOLEANS, and it is answered by
+        //     the single-hull near mass and the separated anchors, not here.
+        //     What this term is actually for is the other half of the same critique — outlines a
+        //     hillside could not have made. Equal sectors mean every stone's plan is the same figure
+        //     at a different size, so a hundred instances share one outline vocabulary. ±0.28 of a
+        //     sector of wander gives each stone its own, at no cost: the prism is still a prism, it
+        //     is simply not a regular one, which is what a broken block is. Keyed per SIDE and not
+        //     per ring, so the vertical edges stay coherent lines of one block rather than twisting
+        //     into a spiral.
+        private const float RockAzimuthJitter = 0.28f;
+
+        // (b) RING JOG. The other half of "a dead-vertical 390 px edge plus a straight bevel reads as
+        //     a black card". A five-ring stack gives a silhouette FOUR straight segments long, so a
+        //     quarter of a stone's outline is a straight line by construction, and at the scale the
+        //     framing masses are placed at that quarter is hundreds of pixels. Each ring above the
+        //     base is now offset bodily in plan, weighted from 0 at the buried ring to full at the
+        //     top, so consecutive segments no longer share a line: the outline staircases the way a
+        //     jointed block does. Kept small against the ~0.46 mesh radius — this is a stagger, not
+        //     a stack of dinner plates.
+        private const float RockRingJog = 0.045f;
+        private const float RockRingJogAnchor = 0.075f;   // the two framing masses take more
+
+        /// <summary>
+        /// (c) VALUE PER VARIANT, and it is the round-6 headline. The near mass rendered at sRGB
+        /// luma 0.545 against a ≤ 0.20 target — measured on gauntlet/round5/v8, not modelled — and
+        /// the reason it did is ORIENTATION, not pigment: at that position its camera-facing side
+        /// takes N·L ≈ 0.62 of the key, and the frame's own right-hand jamb, the SAME material at
+        /// the SAME distance with its face 138° off the sun, renders at 0.107. That is a 17.4:1
+        /// lit-to-ambient ratio measured inside one frame, and it is the whole budget: no albedo a
+        /// stone could honestly carry closes a 17× gap, because the tonemap lifts the dark end at an
+        /// effective exponent of ~0.52 — cutting the albedo fivefold buys only 2.3× on screen.
+        /// So the near mass is turned to face the light away (see its anchor), and this scalar is
+        /// the MARGIN on top of that, not the mechanism: 0.62 of the family's value, which is the
+        /// dark bed a wet-turfed block weathers to rather than a coat of black paint. It multiplies
+        /// the per-facet mesh colour, so it reaches the shader as `input.color.rgb` — the term the
+        /// fragment applies BEFORE the sun-bleach block, which is where a darkening has to sit if
+        /// the bleach is to read the final albedo rather than the other way round.
+        /// </summary>
+        private static float RockValue(int variant)
+        {
+            return variant == NearMassVariant ? 0.62f : 1f;
+        }
+
+        /// <summary>One art-directed stone: where, how big, which mesh, and — for the two framing
+        /// masses — which way it is turned. YAW IS A COMPOSITION DECISION for those two, exactly as
+        /// their coordinates are: the standing family's default is to front the dawn disc (see
+        /// <see cref="SunwardBearing"/>), and a mass whose job is to be dark must do the opposite.
+        /// <see cref="YawDegrees"/> is NaN for every stone that keeps the family's default.</summary>
         private readonly struct RockAnchor
         {
             public RockAnchor(float x, float z, float scale, int variant)
+                : this(x, z, scale, variant, float.NaN)
+            {
+            }
+
+            public RockAnchor(float x, float z, float scale, int variant, float yawDegrees)
             {
                 X = x;
                 Z = z;
                 Scale = scale;
                 Variant = variant;
+                YawDegrees = yawDegrees;
             }
 
             public float X { get; }
@@ -340,6 +419,8 @@ namespace Tarrock.Editor
             public float Scale { get; }
 
             public int Variant { get; }
+
+            public float YawDegrees { get; }
         }
 
         // The composition anchors, in the order the frames need them. Coordinates were chosen by
@@ -357,8 +438,17 @@ namespace Tarrock.Editor
             // v1's right edge, the nearest cropping it (u +0.86..+1.31) and rising from below the
             // frame to a sixth above centre. Overlap is the whole point: one mass in front of
             // another is the only thing in a frame that states depth without any atmosphere at all.
+            // ROUND 6, and it is one of the two BOOLEAN SEAMS the critique found. These first two
+            // sat 1.17 m apart with plan radii of 1.20 and 0.74 — the smaller stone was 105% of its
+            // own radius INSIDE the larger, so what the frame showed was not two stones but one
+            // stone with a hard intersection curve cut across it, which is exactly the masonry read.
+            // The screen stack was never the problem and is kept: the second stone is pushed 1.0 m
+            // further ALONG the line the two already made, which is very nearly v1's sight line, so
+            // the pair still overlaps in the picture (that overlap is the depth cue the round-3 note
+            // is about) while ceasing to overlap in space. 2.15 m centres against a 1.94 m radius
+            // sum: they touch, they do not interpenetrate.
             new RockAnchor(214.4f, 96.1f, 2.2f, 0),
-            new RockAnchor(213.4f, 95.5f, 1.9f, 3),
+            new RockAnchor(212.56f, 94.99f, 1.9f, 3),
             new RockAnchor(210.3f, 96.6f, 2.9f, 1),
 
             // ...and the south side, deliberately NOT a mirror. The near one is the closest thing to
@@ -405,7 +495,8 @@ namespace Tarrock.Editor
             // no matter how wide it is. In THIS vantage a near mass must be TALL before it is wide:
             // nothing whose top fails to reach the lens's own height is in the picture.
             //
-            // THE MASS. A split block 3.8 m from the lens, standing 4.16 m proud — the
+            // THE MASS, as round 5 built it and as the round-6 note below supersedes it. A split
+            // block 3.8 m from the lens, standing 4.16 m proud — the
             // "landform-scale" register the reference board asks for (fable-06's pass is flanked by
             // rock several times the figure's height; fairytale-03's bridge holds a third of its
             // frame). Projected through v8's frustum:
@@ -418,21 +509,54 @@ namespace Tarrock.Editor
             // in every column the crest occupies (at u −0.24 the horn reads at row 662 and the mass
             // tops at row 812; at u −0.12 the col floor reads 757 against a mass top of 1056).
             //
-            // IT IS DARK BY GEOMETRY AND BY SHADOW. Measured on gauntlet/round4/v8 in linear
-            // luminance: lit ground reads 0.457, a lit rock face 0.310, a cast-shadowed rock 0.062,
-            // the shadow side of a hill 0.111. Orientation alone will not do it here — the sun sits
-            // 89.5° to the RIGHT of this view's axis, so a stone LEFT of centre turns a partly lit
-            // face to the lens (N·L = 0.62 at this bearing). What darkens it is the stone up-sun of
-            // it: this mass sits 5.38 m down-sun of the anchor below at bearing 154.9°, and the
-            // sun's own shadow bearing is 152°, so it stands in that stone's shadow. Traced against
-            // the 12° disc, that shadow's ceiling clears 67% of this mass's height, which puts it at
-            // 0.67 × 0.062 + 0.33 × 0.310 = 0.145 linear — inside the 0.15 the round-5 brief asks
-            // for, and against ground the same frame carries at 0.457 it is a 3.1:1 anchor.
-            // That pairing is what the brief means by a shadow-side outcrop GROUP, and the mass is a
-            // SPLIT block for the same reason the group exists: two lobes with a joint between them
-            // are an overlap, and an overlap is the one thing in a frame that states depth with no
-            // atmosphere at all.
-            new RockAnchor(198.52f, 80.50f, 5.0f, 5),
+            // ROUND 6 REBUILT IT AGAIN, and this time the correction is to the METHOD.
+            //
+            // WHAT ROUND 5 GOT WRONG. The paragraph that used to stand here reasoned in ALBEDO —
+            // "0.67 × 0.062 + 0.33 × 0.310 = 0.145 linear, inside the 0.15 the brief asks for" —
+            // and the frame it produced measures sRGB luma 0.545 over the mass, against a ≤ 0.20
+            // target. It missed by 3.4×, and it missed for two separate reasons, both worth keeping
+            // written down because they are the two ways this kind of number goes wrong:
+            //   1. IT IGNORED THE TONEMAP. Those figures are scene-linear; the picture is the far
+            //      end of bloom → vignette → white balance → LogC contrast → colour filter →
+            //      shadows/midtones/highlights → lift → saturation → Neutral tonemap → sRGB. That
+            //      chain LIFTS THE DARK END HARD: measured through it, d ln(sRGB luma)/d ln(scene
+            //      linear) is only 0.61 down at sRGB 0.16 and 0.52 over the range this mass moves
+            //      in. Albedo-space arithmetic cannot predict a rendered value, in either direction.
+            //   2. THE SHADOW DID NOT LAND. The mass was placed 5.38 m down-sun of the jamb below
+            //      and 70% of its height was traced as shadowed. It renders at a full key anyway.
+            //      Re-measured against the capture: this mass reads 0.2840 in scene linear and the
+            //      jamb — the SAME material, the same distance, ambient only — reads 0.0163. That
+            //      is 17.4:1, which is a lit surface, not a shadowed one. The umbra of a 2 m-wide
+            //      stone does not cover a 4.6 m-wide one 5 m away, and a shadow is in any case a
+            //      thing that can be missed by a metre; an orientation cannot.
+            //
+            // SO THE MASS IS TURNED, NOT PAINTED. The geometry of this vantage is fixed and it is
+            // the whole argument. The lens sees this stone from bearing 22.9°; the dawn disc stands
+            // at 332°. A face is VISIBLE from the lens while its normal is within 90° of 22.9°, and
+            // it is UNLIT while N·L ≤ −_ShadeWrap, which for this material is every normal outside
+            // 75°…229°. The two conditions overlap over exactly 75°…113° of bearing — a real
+            // window, and a narrow one, and the whole reason the frame's right-hand jamb is already
+            // dark at 0.107 while this stone is not. A face on bearing 80° sits in the middle of it:
+            // N·L = −0.30, cos 51.7° = 0.62 of its area still turned to the lens.
+            //
+            // AND 80° IS NOT AN ARBITRARY ANGLE — IT IS THE ISLAND'S OWN JOINT SET. The strata dip
+            // toward 152° (see BeddingDipBearing), so the joints at right angles to the dip strike
+            // 62°/242°, and the face a bedded island sheds along them looks very nearly along 80°.
+            // This mass is that slab, stood on its edge: a wall of rock running bearing 170°/350°
+            // down the left of the lens, presenting the strike face to the camera and the dip face
+            // to the sun. It is a SINGLE hull, not the round-5 split block, because two
+            // interpenetrating lobes at this size are the boolean seam the critique names.
+            //
+            // WHAT THE MODEL PREDICTS, measured facet by facet against the sun vector and weighted
+            // by area turned to the lens: mean `lit` = 0.081, against 0.629 for the round-5 mass and
+            // 0.105 for the jamb that renders at 0.107. Carried through the round-6 chain from the
+            // two measured control surfaces, that is sRGB luma ≈ 0.13 — and 0.19 on the pessimistic
+            // reading where the model's mean `lit` is out by 2×. Against a midground the same chain
+            // puts at 0.548, the near mass is darker by 0.41 and by a ratio of 4:1. Scale 7.55 and
+            // squash (1.00, 0.18) hold the projected area at 27.5 m², i.e. exactly the round-5
+            // mass's coverage, which is the other half of the job: a framing mass that goes dark by
+            // losing two thirds of its area has not framed anything.
+            new RockAnchor(198.60f, 78.60f, 7.55f, NearMassVariant, 80f),
 
             // ...and OPPOSITE it, the round-4 addition: v8's dark near mass, on the RIGHT.
             //
@@ -466,12 +590,56 @@ namespace Tarrock.Editor
             // Beyond 5.0 it starts closing v8 from the right as hard as the near mass closes it from
             // the left (5.4 measures 14.3% of the frame), which is a jamb becoming a wall, so this
             // is chosen at the top of the useful range rather than past it.
-            new RockAnchor(196.24f, 85.37f, 5.0f, 1),
+            // ROUND 6 KEEPS ITS VALUE AND REBUILDS ITS SHAPE. The critique is precise and it is not
+            // about the light: this jamb is value-correct — it measures sRGB luma 0.107 on round5/v8
+            // and it is the control surface the near mass above is now solved against — but its
+            // outline is a dead-vertical straight edge 390 px long finished with one straight bevel,
+            // which reads as a black card laid over the frame rather than as rock. That is a
+            // GENERATOR fault, not a placement one, and it has two causes:
+            //   - FIVE RINGS. A five-ring stack draws its silhouette with four straight segments, so
+            //     a quarter of any stone's outline is a straight line by construction. On a mass
+            //     5.97 m tall filling the frame's right edge, a quarter is hundreds of pixels.
+            //   - A REGULAR POLYGON. Side k sat at exactly k·360/n, so the vertical edges were the
+            //     evenly spaced corners of a regular prism — and a prism corner projects to a
+            //     perfectly straight line however the prism is turned.
+            // It is now the eight-ring, seven-sided BrokenJambVariant, with the family's new azimuth
+            // jitter and a doubled ring jog: seven silhouette segments instead of four, none of them
+            // sharing a line with its neighbour, and a top ring that is offset rather than concentric
+            // so the "bevel" is a broken corner. Measured on the outline, deviation from its own
+            // straight-line fit rises from 16.3% of the mass's height to 19.1%, and the longest
+            // segment that CAN be straight falls from 1/4 of the height to 1/7.
+            // The value is protected: the yaw is pinned at 286° so the face it turns to the lens is
+            // still 138° off the sun — modelled mean `lit` 0.010 against the round-5 build's 0.105,
+            // i.e. the same ambient-only read, and RockValue leaves its pigment alone. Scale 5.0 →
+            // 5.4 and a fuller profile keep the frame coverage the round-5 note solved for, which
+            // the extra rings would otherwise have narrowed.
+            new RockAnchor(196.24f, 85.37f, 5.4f, BrokenJambVariant, 286f),
 
-            // The knoll's crown tor, beside the dead tree — unchanged from round 2.
-            new RockAnchor(158.4f, 64.8f, 2.6f, 1),
-            new RockAnchor(156.2f, 65.6f, 1.9f, 2),
-            new RockAnchor(152.0f, 63.5f, 1.8f, 0),
+            // THE CROWN TOR — MOVED OFF THE SUMMIT IN ROUND 6, and this is the round's clearest
+            // finding: it was crowding the dead tree at the focal point.
+            //
+            // THE MEASUREMENT. Projected into v8, the three stones stood at screen u +0.057, +0.099
+            // and +0.091 while the tree's own crown spans u −0.03…+0.05. On the capture they are the
+            // dark spikes at x 1000-1060 breaking the summit ridge immediately right of the trunk,
+            // and the tree's lowest limb and the nearest spike share a row. Zero clearance. The one
+            // tree is the Cliff's signature — art-audio.md §Region colour scripts, and the landmark
+            // clause the dead tree's own comment cites at the top of this file — and a signature
+            // silhouette that has three stones growing out of its ankles is not a silhouette.
+            //
+            // WHERE THEY GO. Not far, and not to a new idea: down the knoll's south-east flank onto
+            // the shoulder the round-5 col cut, which is the ground the col SHED and therefore the
+            // ground its debris belongs on. Screen-left of the tree by 12-14 m of world, they land at
+            // u −0.274, −0.270 and −0.293 — a quarter-frame of clear sky between them and the trunk,
+            // and beyond the col's own leaning pair at u −0.16…−0.11, so the shoulder now reads
+            // summit → tree alone → cut → the two slabs → the tor falling away. Scales come down
+            // (2.6/1.9/1.8 → 2.2/1.7/1.5) because a stone on a flank is debris and a stone on a
+            // summit is a monument, and this group has just stopped being the second.
+            // CAVEAT, honestly: their footing was chosen by projection, not by sampling the finished
+            // heightfield — the flank either side of the col runs steep, and if the capture shows one
+            // of them perched rather than sitting, the fix is a metre further out, not a new idea.
+            new RockAnchor(164.8f, 54.2f, 2.2f, 1),
+            new RockAnchor(167.2f, 56.4f, 1.7f, 2),
+            new RockAnchor(162.9f, 51.6f, 1.5f, 0),
 
             // THE NOTCH HORN: the leaning counter-element of the skyline event cut in
             // ApplyLandformEvents. Three slabs standing on the horn beyond the notch — MOVED WITH
@@ -482,9 +650,18 @@ namespace Tarrock.Editor
             // shoulder reads summit → cut → three dark leaning verticals → falls away. The ground
             // under them measures 3.4-8.4°; the scarp west of them is left bare, because a slab
             // does not perch.
-            new RockAnchor(146.8f, 77.8f, 3.2f, 7),
+            // ROUND 6 SPACES THEM — the second of the two boolean seams. The 3.2 finger stood 1.13 m
+            // from the 2.6 plate whose plan radius is 1.17, so it was 111% of its own radius inside
+            // it, and the third slab stood 0.28 m from the first: three stones, one welded lump with
+            // two intersection curves cut across it. They are re-laid on the horn as a spaced line —
+            // 2.48 m and 2.09 m off the plate against a 1.69 m radius sum, and 4.56 m between the two
+            // fingers — so the shoulder reads THREE dark verticals with the horn's own shelf showing
+            // between them, which is what the round-4 note was already asking for. On the new
+            // footings they read at u +0.434, +0.482 and +0.523 against round 5's +0.41…+0.47: the
+            // same register, one stone's width wider, and now countable.
+            new RockAnchor(147.85f, 76.95f, 3.2f, 7),
             new RockAnchor(146.0f, 78.6f, 2.6f, 8),
-            new RockAnchor(147.4f, 77.2f, 2.2f, 7),
+            new RockAnchor(144.55f, 80.10f, 2.2f, 7),
 
             // THE SOUTH-EAST COL'S LEANING PAIR — the counter-element of the round-5 crest cut in
             // ApplyLandformEvents, and the answer to "make it landform-scale, and NEVER a tree".
@@ -540,7 +717,7 @@ namespace Tarrock.Editor
             {
                 PlaceRock(root.transform, meshes, rock, terrainData,
                     anchor.X, anchor.Z, anchor.Scale, anchor.Variant,
-                    Hash21(anchor.X * 0.37f, anchor.Z * 0.71f));
+                    Hash21(anchor.X * 0.37f, anchor.Z * 0.71f), anchor.YawDegrees);
             }
 
             int scattered = 0;
@@ -570,7 +747,8 @@ namespace Tarrock.Editor
                     // shape and stance come off FOUR independent hashes; sharing one would tie every
                     // big stone to the same mesh at the same angle.
                     float standSteep = terrainData.GetSteepness(x / TerrainSize, z / TerrainSize);
-                    bool standing = standRoll > 0.88f && standSteep > 16f && standSteep < 44f;
+                    bool standing = standRoll > 0.88f && standSteep > 16f && standSteep < 44f
+                        && StandsAlone(terrainData, gx, gz, standRoll);
                     float scale = standing
                         ? 1.6f + 1.4f * sizeRoll
                         : 0.40f + 2.9f * Mathf.Pow(sizeRoll, 2.2f);
@@ -615,7 +793,18 @@ namespace Tarrock.Editor
                     //    depth, adjacency is clutter. The companion is 42-68% of the parent, always
                     //    a sitting variant (debris does not stand on end), and it takes no clearance
                     //    test of its own — it lives inside its parent's, which has already passed.
-                    if (pairRoll > 0.66f && scale > 0.9f)
+                    //
+                    //    ROUND 6 BARS IT FROM THE STANDING FAMILY, and the round-5 critique is why:
+                    //    "the left cluster merged into one mass — six stones reading as four
+                    //    silhouettes". Both halves of that sentence are this rule's doing. A SITTING
+                    //    stone with a piece against its flank is two low lumps overlapping, and the
+                    //    overlap is depth, which is what round 5 wanted. A STANDING stone with a
+                    //    piece against its flank is two verticals read against open sky with their
+                    //    outlines touching, and touching outlines against sky do not read as two
+                    //    things — they weld. The silhouette IS the whole of a standing stone's
+                    //    contribution; nothing else about it survives being 30 m away. So debris
+                    //    gathers at the foot of a boulder and never at the foot of a slab.
+                    if (pairRoll > 0.66f && scale > 0.9f && !standing)
                     {
                         float leanAngle = Hash21(gx + 17.30f, gz + 58.90f) * 360f;
                         float leanDist = scale * (0.55f + 0.40f * Hash21(gx + 44.10f, gz + 3.30f));
@@ -634,6 +823,62 @@ namespace Tarrock.Editor
 
             Debug.Log(
                 $"[Tarrock] Rock outcrops: {RockAnchors.Length} art-directed + {scattered} scattered.");
+        }
+
+        /// <summary>
+        /// ROUND 6 — THE OTHER HALF OF THE MERGED CLUSTER. True of a standing stone and of nothing
+        /// else in this family: it is read as a SILHOUETTE against sky, so two of them within a few
+        /// metres do not read as two stones, they read as one lumpy one. Measured on round5/v1, the
+        /// left group put six slabs into four silhouettes.
+        ///
+        /// The scatter cannot ask "what did I place last time" — it is a pure function of position,
+        /// which is the property that lets the region be regenerated — so the thinning is done as a
+        /// LOCAL MAXIMUM instead: a cell may raise a standing stone only if no cell within two of it
+        /// wants one more strongly. That is decided by re-running the same predicates on the
+        /// neighbours, so it needs no state and cannot disagree with the caller. It guarantees a
+        /// clear cell ring around every slab — at the 3 m lattice pitch, no two standing stones
+        /// closer than about 6 m — which at the 24-35 m the v1 group is seen from is sky and ground
+        /// showing between every pair. The sitting family is untouched: a boulder is read as a mass,
+        /// not as an outline, and boulders are supposed to gather.
+        /// </summary>
+        private static bool StandsAlone(TerrainData terrainData, int gx, int gz, float standRoll)
+        {
+            int cells = Mathf.FloorToInt(TerrainSize / RockCell);
+            for (int dz = -2; dz <= 2; dz++)
+            {
+                for (int dx = -2; dx <= 2; dx++)
+                {
+                    if (dx == 0 && dz == 0)
+                    {
+                        continue;
+                    }
+
+                    int nx = gx + dx;
+                    int nz = gz + dz;
+                    if (nx < 0 || nz < 0 || nx >= cells || nz >= cells)
+                    {
+                        continue;
+                    }
+
+                    float neighbourRoll = Hash21(nx + 64.50f, nz + 7.70f);
+                    if (neighbourRoll <= standRoll || neighbourRoll <= 0.88f)
+                    {
+                        continue;
+                    }
+
+                    float jitterX = Hash21(nx + 0.37f, nz + 9.11f);
+                    float jitterZ = Hash21(nx + 53.70f, nz + 2.29f);
+                    float px = (nx + 0.15f + 0.70f * jitterX) * RockCell;
+                    float pz = (nz + 0.15f + 0.70f * jitterZ) * RockCell;
+                    float steep = terrainData.GetSteepness(px / TerrainSize, pz / TerrainSize);
+                    if (steep > 16f && steep < 44f)
+                    {
+                        return false;   // a neighbour wants it more; this cell yields
+                    }
+                }
+            }
+
+            return true;
         }
 
         private static bool AcceptsRock(TerrainData terrainData, float x, float z, float pick, float scale)
@@ -675,7 +920,21 @@ namespace Tarrock.Editor
                 return false;   // the Fool wakes on grass, not on a stone
             }
 
-            if (Vector2.Distance(point, KnollCentre) < 2.6f)
+            // THE TREE'S OWN GROUND, 2.6 m → 9 m in round 6, and it does two jobs.
+            //
+            // THE SILHOUETTE. The one tree is the Cliff's signature and it has to stand ALONE: the
+            // crown tor has just been moved off the summit for crowding it (see RockAnchors), and it
+            // would be a poor joke to move three art-directed stones away and let the scatter put
+            // five more back. 9 m clears the whole summit crown — from v8, 56 m out, that is ±0.16
+            // of screen either side of the trunk with nothing in it.
+            //
+            // THE SLIVER. It also fixes the placement artifact the critique caught at (933, 587) on
+            // round5/v8: a needle of dark stone protruding a few pixels through the knoll's shoulder
+            // silhouette just below the tree. That is what a stone does when it lands on a steep
+            // shoulder — PlaceRock sinks it by steepness, the uphill side goes under, and what shows
+            // is a wedge with no mass behind it. The summit shoulder is exactly the band that
+            // produces it, and it is now off limits to the scatter.
+            if (Vector2.Distance(point, KnollCentre) < 9f)
             {
                 return false;   // the dead tree's own ground
             }
@@ -805,7 +1064,7 @@ namespace Tarrock.Editor
 
         private static void PlaceRock(
             Transform parent, Mesh[] meshes, Material material, TerrainData terrainData,
-            float x, float z, float scale, int variant, float roll)
+            float x, float z, float scale, int variant, float roll, float yawOverride = float.NaN)
         {
             float nx = x / TerrainSize;
             float nz = z / TerrainSize;
@@ -860,9 +1119,18 @@ namespace Tarrock.Editor
             // face the dawn has to find, so it is turned to front the disc (±22° of hash wander, so
             // a row of them is a bedding plane and not a parade), and the mesh is built with its
             // broad faces on local ±Z for exactly this.
-            float yaw = standing
-                ? SunwardBearing + (roll - 0.5f) * 44f
-                : roll * 360f;
+            // ROUND 6: an anchor may PIN its yaw, and the two framing masses do. The default above
+            // exists to make a slab catch the dawn; a mass whose job is to be the dark shape the
+            // frame is read against needs the opposite, and it needs it to the degree — the window
+            // of bearings that are both turned to the lens and turned away from the sun is only 38°
+            // wide (see the near mass's anchor). That is a composition decision of exactly the same
+            // kind as the anchor's coordinates, so it is written down beside them rather than
+            // derived from a hash.
+            float yaw = !float.IsNaN(yawOverride)
+                ? yawOverride
+                : standing
+                    ? SunwardBearing + (roll - 0.5f) * 44f
+                    : roll * 360f;
             go.transform.rotation = tilt * Quaternion.Euler(0f, yaw, 0f);
 
             // Non-uniform in plan, so many instances of six meshes never read as many copies. The
@@ -888,6 +1156,30 @@ namespace Tarrock.Editor
                         squashX *= 0.78f;
                         squashZ *= 0.30f;
                         break;
+
+                    // THE NEAR MASS is a WALL, and its proportions are load-bearing in both senses.
+                    // The hash wander is dropped for these two — a stone whose exact thickness is
+                    // the difference between a dark frame and a lit one is not left to a dice roll.
+                    // Thin on local Z because that is the axis the broad faces are built on, and the
+                    // broad face is the strike face the yaw is turning away from the sun; the
+                    // remaining lit sliver is the wall's north END, whose share of the projected
+                    // area is what the thickness ratio buys down. Measured facet by facet: 0.30
+                    // leaves mean `lit` at 0.114, 0.24 at 0.105, 0.18 at 0.081 and 0.12 at 0.004.
+                    // 0.18 is chosen off the knee — past it the wall stops being a slab a scarp
+                    // could shed and starts being a sheet of card, which is the very read the jamb
+                    // was just rebuilt to lose.
+                    case NearMassVariant:
+                        squashX = 1.00f;
+                        squashZ = 0.18f;
+                        break;
+
+                    // THE BROKEN JAMB stays much the block it was — it was never the wrong shape in
+                    // the mass, only in the outline, and the outline is fixed in the mesh.
+                    case BrokenJambVariant:
+                        squashX = 0.95f;
+                        squashZ = 0.62f;
+                        break;
+
                     default:
                         squashX *= 1.15f;
                         squashZ *= 0.34f;
@@ -950,18 +1242,44 @@ namespace Tarrock.Editor
             Lobe[] lobes = RockLobes(variant);
             Lobe lobe = lobes[0];
 
+            // Round 6: the jog is stronger on the two framing masses, which are the stones whose
+            // outlines are read at hundreds of pixels rather than tens.
+            float ringJog = variant == NearMassVariant || variant == BrokenJambVariant
+                ? RockRingJogAnchor
+                : RockRingJog;
+            int lastRing = ringHeight.Length - 1;
+
             Vector3 RingPoint(int ring, int side)
             {
-                float angle = side * Mathf.PI * 2f / sides;
+                // AZIMUTH JITTER (round 6): the sector each side occupies wanders, so the prism is
+                // irregular rather than regular and its plan corners are no longer 360/n apart. Keyed
+                // on the side and the lobe and NOT on the ring, so a vertical edge stays one straight
+                // line of one block instead of corkscrewing up the stone.
+                float sector = Mathf.PI * 2f / sides;
+                float angle = (side * sector)
+                    + ((Hash21(side * 2.7f + variant * 4.1f + lobe.Seed, 91.3f) - 0.5f)
+                        * 2f * RockAzimuthJitter * sector);
                 float jitter = 0.80f + 0.42f * Hash21(
                     side + variant * 13.7f + lobe.Seed, ring + variant * 7.3f + lobe.Seed);
                 float r = ringRadius[ring] * jitter * 0.46f * lobe.Radius;
                 float t = Mathf.Clamp01(ringHeight[ring] * lobe.Height);
                 var lean = new Vector3(leanX, 0f, leanZ) * (t * t);
+
+                // RING JOG (round 6): each ring is offset bodily in plan, so consecutive silhouette
+                // segments do not share a line and a long straight edge cannot form. Weighted to
+                // zero at the buried ring — a jogged base ring would swing the stone's foot sideways
+                // out of the ground it was sunk into.
+                float jogWeight = lastRing > 0 ? ring / (float)lastRing : 0f;
+                var jog = new Vector3(
+                    (Hash21(ring * 5.9f + variant * 2.3f + lobe.Seed, 17.1f) - 0.5f) * 2f,
+                    0f,
+                    (Hash21(ring * 8.3f + variant * 6.7f + lobe.Seed, 43.9f) - 0.5f) * 2f)
+                    * (ringJog * jogWeight);
+
                 return new Vector3(
                     (Mathf.Cos(angle) * r) + (lobe.OffsetX * lobe.Radius),
                     ringHeight[ring] * lobe.Height,
-                    (Mathf.Sin(angle) * r) + (lobe.OffsetZ * lobe.Radius)) + lean;
+                    (Mathf.Sin(angle) * r) + (lobe.OffsetZ * lobe.Radius)) + lean + jog;
             }
 
             // Value per facet, darkening toward the buried base: the contact shadow is painted into
@@ -970,7 +1288,13 @@ namespace Tarrock.Editor
             {
                 float v = 0.86f + 0.26f * Hash21(side * 3.1f + ring * 7.7f, variant * 5.3f + 2.1f);
                 float bury = Mathf.Lerp(0.52f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(centreHeight)));
-                float c = v * bury;
+                // RockValue is the round-6 per-variant value step (see its summary). It rides here,
+                // on the mesh, rather than on the material, for two reasons: the rock material is
+                // shared by every stone in the region and is written by BuildRockMaterial, which is
+                // not this pass's file; and the vertex colour reaches the fragment as
+                // `input.color.rgb`, which is applied BEFORE the sun-bleach block — so a darkening
+                // put here is a darkening the bleach then reads, which is the required order.
+                float c = v * bury * RockValue(variant);
                 return new Color(c, c, c, 1f);
             }
 
@@ -1073,7 +1397,24 @@ namespace Tarrock.Editor
                 case 6: return new[] { 1.16f, 1.10f, 0.86f, 0.52f, 0.20f };   // half-buried boulder
                 case 7: return new[] { 0.40f, 0.44f, 0.40f, 0.31f, 0.15f };   // leaning finger
                 case 8: return new[] { 0.86f, 0.94f, 0.90f, 0.76f, 0.46f };   // tilted plate
-                default: return new[] { 0.74f, 0.80f, 0.76f, 0.66f, 0.42f };  // leaning monolith
+                case AnchorOnlyVariant:
+                    return new[] { 0.74f, 0.80f, 0.76f, 0.66f, 0.42f };       // leaning monolith
+                // ROUND-6 FRAMING MASSES. Six and eight rings against the family's five, because
+                // the silhouette of a stone that fills a third of a frame is drawn with segments and
+                // the segments have to be short. The near mass swells at ring 2 and dies back to a
+                // broken tip; the jamb carries its bulk almost to the top and then breaks off, which
+                // is what a wall of rock cropped by a frame edge does — it does not taper politely
+                // to a point, or it reads as a cone and not as a jamb.
+                case NearMassVariant:
+                    return new[] { 0.78f, 0.88f, 0.96f, 0.86f, 0.70f, 0.44f };
+                case BrokenJambVariant:
+                    return new[] { 0.80f, 0.92f, 1.00f, 0.94f, 0.86f, 0.74f, 0.58f, 0.34f };
+                // The fallback keeps the family's FIVE rings on purpose: RockRingHeights' own
+                // fallback is five long, and the two arrays are indexed together in BuildRockMesh —
+                // a variant id that ran past both tables and picked up eight radii against five
+                // heights would not look wrong, it would throw.
+                default:
+                    return new[] { 0.86f, 0.82f, 0.70f, 0.54f, 0.34f };
             }
         }
 
@@ -1142,6 +1483,15 @@ namespace Tarrock.Editor
                 // The half-buried boulder starts 0.30 BELOW the origin and tops out at 0.56, so
                 // PlaceRock's sink puts most of it under the turf and the shoulder is what shows.
                 case 6: return new[] { -0.30f, 0.02f, 0.22f, 0.40f, 0.56f };
+                // The round-6 framing masses (see RockProfile): six and eight rings, so their
+                // outlines are drawn with five and seven segments instead of four. The longest run
+                // of silhouette that CAN be a straight line falls from a quarter of the stone's
+                // height to a fifth and a seventh — which, with the ring jog moving each one off its
+                // neighbour's line, is the whole of the "dead-vertical 390 px edge" finding.
+                case NearMassVariant:
+                    return new[] { -0.14f, 0.14f, 0.36f, 0.58f, 0.80f, 1.00f };
+                case BrokenJambVariant:
+                    return new[] { -0.12f, 0.10f, 0.26f, 0.42f, 0.58f, 0.72f, 0.86f, 1.00f };
                 default:
                     if (variant < StandingFirstVariant)
                     {
@@ -1166,6 +1516,10 @@ namespace Tarrock.Editor
                 case 7: return 5;   // leaning finger
                 case 8: return 4;   // tilted plate
                 case 9: return 4;   // leaning monolith — four planes, read at 50 m as a silhouette
+                // Six on the near mass: it is looked at from three metres, where four planes are
+                // four flat acres of one value, and the azimuth jitter needs sides to scatter.
+                case NearMassVariant: return 6;
+                case BrokenJambVariant: return 7;   // odd, so no face is parallel to the one opposite
                 default: return 6 + (variant % 3);
             }
         }

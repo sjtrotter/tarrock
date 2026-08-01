@@ -358,6 +358,21 @@ Shader "Tarrock/TerrainPainterly"
         // along its own bearing, which is a metre-scale edge that no shadowmap filter in URP can
         // produce at this map resolution.
         _ShadowPenumbra ("Shadow Penumbra (m on the ground)", Range(0,3)) = 1.0
+
+        // -- THE SUN BLEACH (round 6) -----------------------------------------------------------
+        // "White in the light, colour in the shadows" is canon, and a multiply-only shader runs it
+        // BACKWARDS: albedo x light makes the brightest fragment the most saturated one. The same
+        // mechanism Builder PALETTE put on GrassTuft.shader is copied here verbatim so ground and
+        // grass bleach identically — the albedo is drawn toward its own luminance times a
+        // near-colourless cream in proportion to how much of the beam actually lands on it.
+        //
+        // The tint is normalised by its OWN luminance in the fragment, which makes this a PURE
+        // CHROMA move: at bleach 1.0 the fragment's luminance is unchanged to within the tint's
+        // rounding, so none of the lamp/exposure arithmetic and none of round 6's amplitude
+        // arithmetic (which is measured on luma) is disturbed by it at any setting.
+        _SunBleach ("Sun Bleach (chroma removed at full beam)", Range(0, 1)) = 0.5
+        _BleachStart ("Sun Bleach Start (light reach)", Range(0, 1)) = 0.28
+        _BleachTint ("Sun Bleach Tint (normalised to luma 1)", Color) = (0.98, 0.96, 0.94, 1)
     }
 
     SubShader
@@ -467,6 +482,9 @@ Shader "Tarrock/TerrainPainterly"
             float4 _ShadowTint;
             float4 _AmbientFloor;
             float _ShadowPenumbra;
+            float _SunBleach;
+            float _BleachStart;
+            float4 _BleachTint;
         CBUFFER_END
 
         // The penumbra tap ring (see the Frag lighting block). Unit offsets in the light's own frame:
@@ -476,22 +494,75 @@ Shader "Tarrock/TerrainPainterly"
         // the shading normal here has already been perturbed by the relief term and is no longer a
         // safe place to read the lamp's angle from.
         static const float kPenumbraAcross = 0.21;
+
+        // -- ROUND 6: WHAT WAS ACTUALLY WRONG WITH THE RING -------------------------------------
+        // The round-5 critique's hypothesis was that the taps land inside one shadow texel. THAT IS
+        // NOT TRUE, and the arithmetic is worth writing down so nobody re-tests it. The near cascade
+        // is 2048 texels over ~18 m = 8.8 mm a texel (this file's own round-5 note). The offsets are
+        // in WORLD METRES and go straight into TransformWorldToShadowCoord, so:
+        //
+        //     offset 1.00 m along the bearing = 114 texels
+        //     offset 0.50 m along the bearing =  57 texels
+        //     offset 0.71 x 0.21 = 0.149 m across = 17 texels
+        //
+        // The taps are 17 to 114 texels apart. They were sampling completely different parts of the
+        // map. The fault is the RING'S SHAPE, not its scale:
+        //
+        //   * FIVE OF THE NINE TAPS (the centre plus the four pure-along taps) sat at EXACTLY ZERO
+        //     across-offset. A kernel that is 56 per cent delta function does almost nothing to an
+        //     edge no matter how wide the remaining 44 per cent reaches.
+        //   * The remaining four spanned +-0.149 m across the bearing — and a 12 deg sun's shadows
+        //     are long and thin, so their DOMINANT edges (the long sides) run ALONG the bearing.
+        //     The ellipse's long axis was parallel to the very edges it was built to soften; all it
+        //     could soften was the short leading and trailing ends.
+        //
+        // Rebuilt as a proper elliptical ring: eight taps, none at zero across-offset, none
+        // duplicating another's across-offset, and the across-coverage sampled evenly at
+        // +-1.00, +-0.66 and +-0.33 of the half-width. The along-axis still carries the rake
+        // stretch (kPenumbraAcross = sin 12 deg), so the physics is unchanged — the sun's 0.53 deg
+        // across the beam, that band raked out by 1/sin(12 deg) along it. Only the SAMPLING changed.
         static const float2 kPenumbraTaps[8] =
         {
-            float2( 1.00,  0.00), float2(-1.00,  0.00),
-            float2( 0.50,  0.00), float2(-0.50,  0.00),
-            float2( 0.71,  0.71), float2(-0.71, -0.71),
-            float2( 0.71, -0.71), float2(-0.71,  0.71)
+            float2( 0.92,  0.33), float2(-0.92, -0.33),
+            float2( 0.38, -1.00), float2(-0.38,  1.00),
+            float2( 0.71, -0.66), float2(-0.71,  0.66),
+            float2( 0.15,  0.98), float2(-0.15, -0.98)
         };
 
         // -- Hashes -----------------------------------------------------------------------------
         // Hash-based so the surface is deterministic in world space: the same metre of ground gets
         // the same mottling every run, and re-generating a region cannot reshuffle its look.
+        // ROUND-6, MEASURED FAULT. The old form was `frac(p * float2(123.34, 456.21))`, and it was
+        // handed LATTICE INDICES, not world metres: TkValueNoise floors its argument first, so at a
+        // 3 cm band the index at the Cliff's own world coordinates (x,z ≈ 150-215 m) is ~6700, and
+        // 6700 * 456.21 = 3.06e6. float32 has 24 bits of mantissa, so the ULP at 3e6 is 0.25 and
+        // frac() of it can only land on four values. A numpy transcription in float32 counted the
+        // DISTINCT hash values over 400 consecutive cells:
+        //
+        //     band            world 60 m   world 200 m   world 512 m
+        //     rock fine 3 cm       55            16            8       (of 400 possible)
+        //     meadow fine 4.5 cm  106            32            8
+        //
+        // Every fine field in this shader was therefore drawing a short repeating ramp, not noise —
+        // and a hash that has collapsed along one axis draws STRIPES, which is half of what the
+        // round-5 critique measured as directional grain. The multiplier is the whole bug: keep the
+        // product small and the mantissa survives. This is the same small-multiplier construction
+        // TkHash22 below has always used (0.1031 / 0.1030 / 0.0973), so the two are now consistent.
+        // Re-measured with the form below: 357-392 distinct values of 400 at every world coordinate.
         float TkHash21(float2 p)
         {
-            p = frac(p * float2(123.34, 456.21));
-            p += dot(p, p + 45.32);
-            return frac(p.x * p.y);
+            float3 p3 = frac(float3(p.x, p.y, p.x) * float3(0.1031, 0.1030, 0.0973));
+            p3 += dot(p3, p3.yzx + 33.33);
+            return frac((p3.x + p3.y) * p3.z);
+        }
+
+        // 3-D companion, same construction. It exists so the mark fields below can live in WORLD
+        // SPACE with no projection and no frame at all — see the round-6 note on TkFleckBand3.
+        float TkHash31(float3 p)
+        {
+            float3 p3 = frac(p * float3(0.1031, 0.1030, 0.0973));
+            p3 += dot(p3, p3.yzx + 33.33);
+            return frac((p3.x + p3.y) * p3.z);
         }
 
         // Two-channel hash for the jittered-cell fields: .xy is the cell's jitter offset, and it
@@ -516,6 +587,32 @@ Shader "Tarrock/TerrainPainterly"
             float c = TkHash21(i + float2(0.0, 1.0));
             float d = TkHash21(i + float2(1.0, 1.0));
             return lerp(lerp(a, b, u.x), lerp(c, d, u.x), u.y);
+        }
+
+        // -- 3-D value noise (round 6) ------------------------------------------------------------
+        // Eight hashes a tap against the 2-D version's four, and it REPLACES a triplanar, which is
+        // three 2-D taps (twelve hashes) — so the stone stack gets cheaper, not dearer, at the same
+        // time as it gets correct. What it buys is that a 3-D field has NO PROJECTION and therefore
+        // NO FRAME: nothing about it can rotate with the surface normal, so nothing about it can
+        // lock to a contour. See the round-6 header note on the strike frame.
+        float TkValueNoise3(float3 p)
+        {
+            float3 i = floor(p);
+            float3 f = p - i;
+            float3 u = f * f * (3.0 - 2.0 * f);
+            float a000 = TkHash31(i + float3(0, 0, 0));
+            float a100 = TkHash31(i + float3(1, 0, 0));
+            float a010 = TkHash31(i + float3(0, 1, 0));
+            float a110 = TkHash31(i + float3(1, 1, 0));
+            float a001 = TkHash31(i + float3(0, 0, 1));
+            float a101 = TkHash31(i + float3(1, 0, 1));
+            float a011 = TkHash31(i + float3(0, 1, 1));
+            float a111 = TkHash31(i + float3(1, 1, 1));
+            float c00 = lerp(a000, a100, u.x);
+            float c10 = lerp(a010, a110, u.x);
+            float c01 = lerp(a001, a101, u.x);
+            float c11 = lerp(a011, a111, u.x);
+            return lerp(lerp(c00, c10, u.y), lerp(c01, c11, u.y), u.z);
         }
 
         // Both fbm variants are RENORMALISED to a full 0..1 range with a 0.5 mean, so a threshold
@@ -714,16 +811,110 @@ Shader "Tarrock/TerrainPainterly"
             return tot > 1e-4 ? sum / tot : 0.5;
         }
 
-        // Triplanar, for the same reason TkTriplanarCavityPair is: a planar projection smears to
-        // stripes on anything near-vertical, and near-vertical rock is exactly the surface this
-        // construct was written for.
-        float TkTriplanarDetail(float3 worldPos, float3 normal, float baseM, float pixelM)
+        // -- ROUND 6: THE FRAME, WHICH IS THE WHOLE OF THE CONTOUR LOCK ---------------------------
+        //
+        // Round 5 replaced the stone branch's noise wholesale and the chevron / wood-grain artifact
+        // SURVIVED IT, because the noise was never what was oriented. Two constructs oriented it:
+        //
+        //   1. the triplanar blend below, whose three weights are a function of the surface normal,
+        //      so the field's effective projection ROTATES with the landform; and, far worse,
+        //   2. `faceUV = float2(dot(gp3.xz, strike), gp3.y)` in the stone branch, where `strike` is
+        //      the horizontal direction lying in the surface — i.e. THE CONTOUR DIRECTION ITSELF.
+        //
+        // (2) is not a stylistic slip, it is an arithmetic one, and it can be written down exactly.
+        // dot(P.xz, strike) is only an arclength coordinate if the surface is a plane. Step a
+        // distance ds along the surface horizontally and
+        //
+        //     d(faceUV.x)/ds = 1 - kappa * (P . n)
+        //
+        // where kappa is the face's horizontal curvature and (P . n) is the world position resolved
+        // on the normal. The Cliff sits at world x,z ≈ 150-215 m, so (P . n) is 150-250 m, while a
+        // wall's curvature radius is 10-60 m — the second term is 3 to 18 times the first and it
+        // SETS THE SIGN. Evaluated over a family of walls at the region's own coordinates the
+        // derivative runs -17.8, -15.0, -8.6, -7.2, -3.6, -2.4 ... and passes through zero on any
+        // face where kappa*(P.n) = 1. Where it is large the marks are crushed; where it crosses zero
+        // they are infinitely elongated ALONG THE CONTOUR. That is the wood grain, that is why it is
+        // immune to changing the noise, and that is why it got worse as the region moved away from
+        // the world origin.
+        //
+        // The fix is to have no frame. TkDetailFbm3 and TkFleckBand3 take a WORLD-SPACE 3-D
+        // position: no projection, no normal, no strike, nothing that can rotate. They cost eight
+        // hashes a tap where the triplanar cost twelve, so the stone stack is cheaper afterwards.
+        //
+        // ANISOTROPY IS KEPT, BUT WORLD-LOCKED. Painterly rock is not isotropic mush and the
+        // reference plates are not either (measured structure-tensor coherence 0.27-0.55 on my
+        // implementation over fable-01/03/06/07 and kena-01). The 3-D lookup divides its HORIZONTAL
+        // components by kMarkAniso, which stretches every mark along world horizontal — the bedding
+        // direction, weathering runs along a bed — by a CONSTANT that is the same on every face in
+        // the region. A constant direction cannot trace a contour: on a curving nose the marks stay
+        // horizontal while the contour turns, which is exactly what the reference plates show.
+        // Modelled at the v8 wall's footprint: coherence 0.14 at aniso 1.0, 0.55 at 2.2, 0.47 at 2.0.
+        static const float kMarkAniso = 2.0;
+
+        float3 TkMarkSpace(float3 worldPos)
         {
-            float3 blend = pow(abs(normal), 4.0);
-            blend /= max(blend.x + blend.y + blend.z, 1e-4);
-            return TkDetailFbm(worldPos.zy, baseM, pixelM) * blend.x
-                 + TkDetailFbm(worldPos.xz, baseM, pixelM) * blend.y
-                 + TkDetailFbm(worldPos.xy, baseM, pixelM) * blend.z;
+            return float3(worldPos.x / kMarkAniso, worldPos.y, worldPos.z / kMarkAniso);
+        }
+
+        // -- MARK CONTRAST GAINS, AND WHY THEY ARE HERE AND NOT IN THE GENERATOR ------------------
+        // CROSS-FILE DEBT, STATED PLAINLY. The eight `_*FleckAmount` / `_*DetailAmount` properties
+        // are WRITTEN by TerrainRegionGenerator.Ground.cs, which is owned by another builder this
+        // round, so a shader default cannot reach the render — the generator's round-5 values win.
+        // The round-6 amplitude target needs roughly 1.5-1.9x those, so the gain lives here and the
+        // property keeps its round-5 meaning. The mapping is:
+        //
+        //     generator value      x gain     effective
+        //     _RockGrainAmount      0.40  x1.65   0.66
+        //     _RockFleckFine        0.58  x1.48   0.86
+        //     _RockFleckMid         0.46  x1.78   0.82
+        //     _RockFleckCoarse      0.34  x1.88   0.64
+        //     _MeadowDetailAmount   0.52  x1.19   0.62
+        //     _MeadowFleckFine      0.72  x1.11   0.80
+        //     _MeadowFleckMid       0.58  x1.24   0.72
+        //     _MeadowFleckCoarse    0.48  x1.25   0.60
+        //
+        // THIS IS TEMPORARY AND SHOULD NOT SURVIVE THE ROUND: the moment the shader and the
+        // generator can be changed together, move these numbers into Ground.cs and set every gain
+        // to 1.0. A gain that is silently folded in is exactly the kind of thing that makes the
+        // next round's arithmetic wrong.
+        static const float kRockGrainGain   = 1.65;
+        static const float kRockFineGain    = 1.48;
+        static const float kRockMidGain     = 1.78;
+        static const float kRockCoarseGain  = 1.88;
+        static const float kMeadowDetailGain = 1.19;
+        static const float kMeadowFineGain  = 1.11;
+        static const float kMeadowMidGain   = 1.24;
+        static const float kMeadowCoarseGain = 1.25;
+
+        // Clamped, because a mark amount above 1 makes (1 - mark*amount) negative at the centre of
+        // a mark and paints a black hole. 0.90 is the properties' own Range maximum.
+        float TkMarkAmount(float property, float gain)
+        {
+            return min(property * gain, 0.90);
+        }
+
+        float TkDetailFbm3(float3 p, float baseM, float pixelM)
+        {
+            float lam = max(baseM, 1e-4);
+            float3 q = p / lam;
+
+            float w = TkOctaveWeight(lam, pixelM);
+            float sum = TkValueNoise3(q) * w;
+            float tot = w;
+
+            q = float3(TkTurn(q.xy * 2.71 + 17.3, kTurn1), q.z * 2.71 + 11.9); lam /= 2.71;
+            w = TkOctaveWeight(lam, pixelM) * 0.80;
+            sum += TkValueNoise3(q) * w; tot += w;
+
+            q = float3(TkTurn(q.xy * 2.71 + 17.3, kTurn2), q.z * 2.71 + 11.9); lam /= 2.71;
+            w = TkOctaveWeight(lam, pixelM) * 0.64;
+            sum += TkValueNoise3(q) * w; tot += w;
+
+            q = float3(TkTurn(q.xy * 2.71 + 17.3, kTurn3), q.z * 2.71 + 11.9); lam /= 2.71;
+            w = TkOctaveWeight(lam, pixelM) * 0.512;
+            sum += TkValueNoise3(q) * w; tot += w;
+
+            return tot > 1e-4 ? sum / tot : 0.5;
         }
 
         // Two decorrelated fields, ANDed. The AND is the whole construct: each field alone crosses
@@ -759,6 +950,23 @@ Shader "Tarrock/TerrainPainterly"
             if (w <= 0.002) return float2(1.0, 0.0);
             float a = TkValueNoise(p / max(lamA, 1e-4));
             float b = TkValueNoise(p / max(lamB, 1e-4) + 11.3);
+            float mark = smoothstep(thr.x, thr.y, a)
+                       * smoothstep(thr.x - 0.06, thr.y - 0.06, b) * w;
+            return float2((1.0 - mark * amount) / max(1.0 - coverage * amount * w, 0.05), mark);
+        }
+
+        // The frameless twin (round 6). Identical construct, 3-D lookups, world space, and the
+        // caller passes an already-anisotropy-scaled position (TkMarkSpace) so the mark family has
+        // ONE fixed shape everywhere in the region. The coverages are re-measured for the new
+        // wavelengths and thresholds over the same 40 m population sample.
+        float2 TkFleckBand3(float3 p, float lamA, float lamB, float2 thr,
+                            float coverage, float amount, float pixelM)
+        {
+            float w = TkOctaveWeight(lamA, pixelM);
+            UNITY_BRANCH
+            if (w <= 0.002) return float2(1.0, 0.0);
+            float a = TkValueNoise3(p / max(lamA, 1e-4));
+            float b = TkValueNoise3(p / max(lamB, 1e-4) + 11.3);
             float mark = smoothstep(thr.x, thr.y, a)
                        * smoothstep(thr.x - 0.06, thr.y - 0.06, b) * w;
             return float2((1.0 - mark * amount) / max(1.0 - coverage * amount * w, 0.05), mark);
@@ -930,6 +1138,28 @@ Shader "Tarrock/TerrainPainterly"
                 // camDist fade knows about. Round 4 faded detail on camDist alone, which is why a
                 // near-vertical face raking away from the camera lost its surface at the same
                 // metre as flat ground facing it.
+                //
+                // ROUND 6 — READ THIS BEFORE QUOTING A NUMBER OFF THIS QUANTITY. max() is the MAJOR
+                // axis of an anisotropic footprint, and on RAKED ground the major axis is not
+                // alpha*d, it is alpha*d^2/h. At the v6 camera (h = 1.65 m, 45 deg over 1080 px):
+                //
+                //     distance      minor        major (= pixelM)      ratio
+                //        5 m       3.8 mm            11.6 mm            3.0
+                //       12 m       9.2 mm            66.9 mm            7.3
+                //       40 m      30.7 mm           743.8 mm           24.2
+                //      100 m      76.7 mm          4648.9 mm           60.6
+                //
+                // Round 5's detail-stack model quoted its amplitudes at pixelM = alpha*d — the
+                // FACE-ON footprint — and so claimed 11.5 per cent at 40 m where the real footprint
+                // is 24x larger and every octave is switched off. That is the whole of why a
+                // complete rewrite of the meadow branch moved the measurement 11.89 -> 11.66.
+                //
+                // max() STAYS, and it is not the bug. min() would keep marks that are undersampled
+                // by up to 24x along the major axis, which is aliasing, not detail: a band is fully
+                // drawn at lambda/pixelM >= kDetailPxHi = 3.2, so a footprint of hi/k admits marks
+                // down to lambda = 3.2*hi/k, and Nyquist needs lambda >= 2*hi — safe only for
+                // k <= 1.6. The gate is right; the LADDER was wrong, and both ladders below have
+                // been re-pitched to wavelengths that survive at the distances these frames contain.
                 float pixelM = max(max(length(dpdx), length(dpdy)), 1e-5);
 
                 // -- Cavity + relief, shared by both layers and by the shading normal --------------
@@ -1137,20 +1367,28 @@ Shader "Tarrock/TerrainPainterly"
                     // brushmarks where brushmarks are legible — the 6 m dab and the 16 m clump
                     // above, both untouched — and gets a non-folding field underneath them.
                     float detail = TkDetailFbm(gp, _MeadowDetailScale, pixelM);
-                    ground *= 1.0 + (detail - 0.5) * 2.0 * _MeadowDetailAmount;
+                    ground *= 1.0 + (detail - 0.5) * 2.0
+                        * TkMarkAmount(_MeadowDetailAmount, kMeadowDetailGain);
 
-                    // Three mark bands an order apart, so the ground has speckle at every distance
-                    // the camera can stand at: blade litter underfoot, tussock shade at a few
-                    // metres, stands of drier growth on the hillsides. The wavelength pairs and
-                    // thresholds are model constants and should move together if they move at all
-                    // — they set the COVERAGE (measured 0.137 / 0.103 / 0.083 over a 40 m sample),
-                    // and coverage is what the whole amplitude argument rests on.
-                    float2 fleckFine = TkFleckBand(gp, 0.045, 0.075, float2(0.46, 0.76),
-                        0.1371, _MeadowFleckFine, pixelM);
-                    float2 fleckMid = TkFleckBand(gp + 53.1, 0.170, 0.280, float2(0.50, 0.79),
-                        0.1028, _MeadowFleckMid, pixelM);
-                    float2 fleckWide = TkFleckBand(gp + 217.7, 0.900, 1.500, float2(0.52, 0.81),
-                        0.0834, _MeadowFleckCoarse, pixelM);
+                    // THE LADDER IS RE-PITCHED (round 6, finding 3 — see the pixelM note above
+                    // for the proof that round 5's rungs were switched off in the frames that were
+                    // measured). Ground is seen RAKED, and the footprint that decides whether a
+                    // mark is drawable grows as alpha*d^2/h, not alpha*d. Rungs at 4.5 / 17 / 90 cm
+                    // are all off by 30-45 m; the meadow then has nothing between the 90 cm rung and
+                    // the 6 m dab, which is exactly the band the middle distance is made of.
+                    //
+                    // Moved to 5 / 32 / 210 cm the ladder covers, at the v6 camera height:
+                    //   5 cm   0-8 m      32 cm   0-14 m      210 cm   0-45 m      6 m dab  to 75 m
+                    // Modelled albedo relative amplitude, shipped -> re-pitched, against distance:
+                    //   12 m 14.7 -> 21.6     20 m 20.8 -> 23.9     30 m 21.9 -> 28.9
+                    //   45 m  0.0 -> 4.6      (45 m was six exact no-ops before this change)
+                    // Coverages re-measured for the new wavelengths over the same 40 m sample.
+                    float2 fleckFine = TkFleckBand(gp, 0.050, 0.083, float2(0.46, 0.76),
+                        0.137, TkMarkAmount(_MeadowFleckFine, kMeadowFineGain), pixelM);
+                    float2 fleckMid = TkFleckBand(gp + 53.1, 0.320, 0.530, float2(0.50, 0.79),
+                        0.103, TkMarkAmount(_MeadowFleckMid, kMeadowMidGain), pixelM);
+                    float2 fleckWide = TkFleckBand(gp + 217.7, 2.100, 3.470, float2(0.52, 0.81),
+                        0.083, TkMarkAmount(_MeadowFleckCoarse, kMeadowCoarseGain), pixelM);
                     ground *= fleckFine.x * fleckMid.x * fleckWide.x;
 
                     // The finest band also carries HUE, kept from round 4: dry strands and grit
@@ -1295,30 +1533,34 @@ Shader "Tarrock/TerrainPainterly"
                     // wall, and modelled alone it measured an anisotropy of 17.2 against a
                     // reference band of 1.6-5.7.
                     //
-                    // TRIPLANAR here, where the meadow's is planar, and the asymmetry is the point:
-                    // meadow only exists on near-flat ground, but this term exists FOR near-vertical
-                    // rock, and a planar projection smears to vertical stripes on exactly that
-                    // surface. Twelve taps is the honest price of the one place in the frame the
-                    // round-4 critique called the biggest gap.
-                    //
-                    // The three mark bands stay on the FACE'S own frame — x along the face's strike
-                    // (the horizontal direction lying in the surface), y world height. Cheap, and
-                    // right: paint and weathering on a rock face run ALONG the face. The frame
-                    // degenerates on an up-facing pixel where normalWS.xz vanishes; the epsilon
-                    // keeps it defined, and such pixels have almost no rockT to spend anyway.
-                    float rockDetail = TkTriplanarDetail(gp3, normalWS, _DetailBaseScale, pixelM);
-                    stone *= 1.0 + (rockDetail - 0.5) * 2.0 * _RockGrainAmount;
+                    // ROUND 6: NO FRAME AT ALL. Both the triplanar that was here and the
+                    // `dot(gp3.xz, strike)` face frame below it were functions of the surface
+                    // normal, which is the terrain gradient, which is the contour. The derivation
+                    // and the measured numbers are in the TkDetailFbm3 header; the short version is
+                    // that d(faceUV.x)/ds = 1 - kappa*(P.n), which at this region's world
+                    // coordinates runs -2 to -18 and passes through zero, so the mark bands were
+                    // being sampled at a rate set by the LANDFORM and elongated along its contours.
+                    // These four lookups are 3-D and world-space. They also cost less: four 3-D taps
+                    // (32 hashes) where the triplanar was twelve 2-D taps (48).
+                    float3 markPos = TkMarkSpace(gp3);
+                    float rockDetail = TkDetailFbm3(markPos, _DetailBaseScale, pixelM);
+                    stone *= 1.0 + (rockDetail - 0.5) * 2.0
+                        * TkMarkAmount(_RockGrainAmount, kRockGrainGain);
 
-                    float2 strike = normalize(float2(-normalWS.z, normalWS.x) + 1e-4);
-                    float2 faceUV = float2(dot(gp3.xz, strike), gp3.y);
-                    // Grit and lichen at 3 cm, weathering at 12 cm, damp patches at 85 cm.
-                    // Coverages measured over a 40 m population sample: 0.117 / 0.088 / 0.069.
-                    float2 rockFine = TkFleckBand(faceUV, 0.030, 0.052, float2(0.48, 0.78),
-                        0.1166, _RockFleckFine, pixelM);
-                    float2 rockMid = TkFleckBand(faceUV + 61.7, 0.115, 0.190, float2(0.52, 0.80),
-                        0.0878, _RockFleckMid, pixelM);
-                    float2 rockWide = TkFleckBand(faceUV + 193.1, 0.850, 1.400, float2(0.54, 0.82),
-                        0.0688, _RockFleckCoarse, pixelM);
+                    // THE LADDER IS RE-PITCHED (round 6, finding 4). Round 5's rungs were 3 / 11.5 /
+                    // 85 cm, and at the v8 wall's measured footprint (1.7 cm a pixel) the 3 cm rung
+                    // sits at 1.76 pixels — under kDetailPxLo, so it draws at weight 0.06 — while
+                    // the 85 cm rung is 50 pixels across, which a high-pass reads as flat field, not
+                    // as texture. Exactly ONE rung of three was doing measurable work. Moved to
+                    // 6 / 16.5 / 56 cm the wall gets three: 3.5, 9.7 and 33 pixels. Modelled albedo
+                    // relative amplitude at that footprint goes 15.0 -> 25.5 per cent.
+                    // Coverages re-measured for the new wavelengths and thresholds.
+                    float2 rockFine = TkFleckBand3(markPos, 0.060, 0.100, float2(0.46, 0.76),
+                        0.140, TkMarkAmount(_RockFleckFine, kRockFineGain), pixelM);
+                    float2 rockMid = TkFleckBand3(markPos + 61.7, 0.165, 0.272, float2(0.50, 0.79),
+                        0.106, TkMarkAmount(_RockFleckMid, kRockMidGain), pixelM);
+                    float2 rockWide = TkFleckBand3(markPos + 193.1, 0.560, 0.925, float2(0.52, 0.81),
+                        0.086, TkMarkAmount(_RockFleckCoarse, kRockCoarseGain), pixelM);
                     stone *= rockFine.x * rockMid.x * rockWide.x;
 
                     // MOSS, NOT GRIME (the region's standing rule). The damp bands take the lichen
@@ -1394,6 +1636,17 @@ Shader "Tarrock/TerrainPainterly"
                 float3 direct = mainLight.color * lit;
                 float3 ambient = max(SampleSH(shadingNormalWS) * _AmbientBoost, _AmbientFloor.rgb);
                 float3 shade = lerp(_ShadowTint.rgb, float3(1.0, 1.0, 1.0), saturate(lit));
+
+
+                // THE SUN BLEACH (round 6) — see the property block. Pure chroma: the tint is
+                // divided by its own luminance, so this cannot move the exposure or the measured
+                // amplitude, only the saturation of the lit end.
+                float3 bleachTint = _BleachTint.rgb
+                    / max(dot(_BleachTint.rgb, float3(0.2126, 0.7152, 0.0722)), 1e-4);
+                float bleach = _SunBleach * smoothstep(_BleachStart, 1.0, lit);
+                albedo = lerp(albedo,
+                    dot(albedo, float3(0.2126, 0.7152, 0.0722)) * bleachTint,
+                    bleach);
 
                 float3 color = albedo * (direct + ambient) * shade;
                 color = MixFog(color, input.fogCoord);
