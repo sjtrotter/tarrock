@@ -64,11 +64,27 @@ namespace Tarrock.Regions
         private static int _lastWriteFrame = -1;
         private static bool _globalsWritten;
 
+        // ROUND 5 — WHY THIS IS STILL 0.72 WHEN THE RING WAS ASKED TO GET TIGHTER.
+        //
+        // The gauntlet's round-4 finding is that the ring reads 1.5-1.8x shoulder width and wants to
+        // be nearer 1.2x, and that is right: it measured 1.86x. But the number that sets the width
+        // of the CLEARING is not this radius, it is Tarrock/GrassTuft's _BendCoreShare — the share
+        // of the radius held fully laid over before the rim falls off. At round 4's 0.58 the held
+        // floor was 0.418 m in radius, 0.835 m across against a 0.45 m shoulder; at round 5's 0.375
+        // it is 0.270 m, 0.540 m across, exactly 1.20x shoulder. The tightening happens there.
+        //
+        // Moving THIS number instead would have cost the round its own evidence. GauntletCapture's
+        // StandInBendRadius is a const 0.72 f, that file is not ours to edit, and the game's ring
+        // and the photographed ring must be one ring — a capture of a 0.54 m bend proving a 0.72 m
+        // bend correct is not proof of anything. Tightening via the core share moves the picture
+        // without desyncing the evidence, which is why it is the lever round 5 pulls.
         [Header("Bend")]
         [Tooltip("Metres from the body at which the grass is untouched. Roughly the body's own " +
                  "footprint plus the length of a blade it can lean on. Tarrock/GrassTuft holds " +
                  "the inner share of this fully laid over and spends the falloff on the rim, so a " +
-                 "SMALLER radius reads as a stronger ring, not a weaker one.")]
+                 "SMALLER radius reads as a stronger ring, not a weaker one — but the width of the " +
+                 "clearing is set by that shader's _BendCoreShare, not by this. Must stay in step " +
+                 "with GauntletCapture.StandInBendRadius.")]
         [SerializeField] private float _radius = 0.72f;
 
         [Tooltip("How hard this body pushes, 0-1. Scales the shader's own bend strength, so this " +

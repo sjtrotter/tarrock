@@ -49,6 +49,11 @@ Shader "Tarrock/GradientSky"
         _BandSoftness ("Band softness", Range(0.02, 0.5)) = 0.22
 
         _HorizonHeight ("Horizon height", Range(-0.2, 0.2)) = 0.0
+        // ROUND 5 — THE SUN'S BEARING. See SkyGradient.hlsl §THE BEARING: round 4's sky was a
+        // pure function of elevation and v8's column medians came out an exact mirror.
+        _BearingRise ("Sky - lean toward the sun", Range(0, 2)) = 0.45
+        _BearingPower ("Sky - lean tightness", Range(0.2, 6)) = 1.3
+        _BearingTilt ("Sky - anti-sun ramp steepening", Range(0, 6)) = 3.2
         _Dither ("Dither (kills 8-bit ramp banding)", Range(0, 0.02)) = 0.0035
 
         // The far cloud bank — the cloud sea's skyline, and the frame's value anchor.
@@ -117,6 +122,9 @@ Shader "Tarrock/GradientSky"
             float _BandStrength;
             float _BandSoftness;
             float _HorizonHeight;
+            float _BearingRise;
+            float _BearingPower;
+            float _BearingTilt;
             float _Dither;
             float4 _BankCrestColor;
             float4 _BankShadeColor;

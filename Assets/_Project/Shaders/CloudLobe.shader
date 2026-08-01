@@ -72,12 +72,22 @@ Shader "Tarrock/CloudLobe"
     // softness, which is the sky's own brush, not a stencil.
     Properties
     {
-        _LobeLit ("Lobe - sunlit crown", Color) = (1.06, 1.00, 0.88, 1)
-        _LobeShade ("Lobe - cool shade", Color) = (0.44, 0.50, 0.66, 1)
-        _LobeUnder ("Lobe - belly", Color) = (0.22, 0.27, 0.41, 1)
-        _LobeBands ("Lobe - painted washes", Range(2, 8)) = 4
-        _LobeBandStrength ("Lobe - wash strength", Range(0, 1)) = 0.55
-        _LobeBandSoftness ("Lobe - wash softness", Range(0.02, 0.5)) = 0.22
+        // ROUND 5: THREE named washes, not two plus a belly. See the fragment's §THE THREE-BAND
+        // RAMP — _LobeShade is now the SHADOW CORE at the bottom of the ramp and _LobeMid is the
+        // body between it and the crown. Authored in the same convention as every other colour in
+        // this project: Material.SetColor treats a plain Color property as sRGB and converts it to
+        // linear on upload, so these numbers are sRGB however the generator's constants are named.
+        _LobeLit ("Lobe - sunlit crown", Color) = (1.10, 1.01, 0.84, 1)
+        _LobeMid ("Lobe - body", Color) = (0.57, 0.60, 0.70, 1)
+        _LobeShade ("Lobe - shadow core", Color) = (0.22, 0.27, 0.43, 1)
+        _LobeUnder ("Lobe - belly", Color) = (0.13, 0.18, 0.33, 1)
+        _LobeMidPoint ("Lobe - shadow/body split", Range(0.2, 0.8)) = 0.46
+        // How far the mass's own cauliflower crumples the ramp parameter before it is terraced.
+        // 0.30 on a three-octave field of std 0.26 moves a wash boundary about a third of a wash.
+        _LobeCrumple ("Lobe - wash crumple", Range(0, 0.8)) = 0.30
+        _LobeBands ("Lobe - painted washes", Range(2, 8)) = 3
+        _LobeBandStrength ("Lobe - wash strength", Range(0, 1)) = 0.92
+        _LobeBandSoftness ("Lobe - wash softness", Range(0.005, 0.5)) = 0.030
         _LobeFormGain ("Lobe - light gain", Range(0.2, 4)) = 1.45
         _LobeFormBias ("Lobe - light bias", Range(-1, 1)) = -0.12
         // How wide the terminator wraps round the limb. 0 is a hard N·L edge (a stone); 1 puts the
@@ -124,6 +134,9 @@ Shader "Tarrock/CloudLobe"
         _BandStrength ("Sky - band strength", Range(0, 1)) = 0.30
         _BandSoftness ("Sky - band softness", Range(0.02, 0.5)) = 0.22
         _HorizonHeight ("Sky - horizon height", Range(-0.2, 0.2)) = 0.0
+        _BearingRise ("Sky - lean toward the sun", Range(0, 2)) = 0.45
+        _BearingPower ("Sky - lean tightness", Range(0.2, 6)) = 1.3
+        _BearingTilt ("Sky - anti-sun ramp steepening", Range(0, 6)) = 3.2
         _BankCrestColor ("Sky - bank lit crest", Color) = (1.02, 0.97, 0.87, 1)
         _BankShadeColor ("Sky - bank shaded body", Color) = (0.50, 0.53, 0.65, 1)
         _BankHeight ("Sky - bank mean crest height", Range(-0.05, 0.15)) = 0.020
@@ -178,8 +191,11 @@ Shader "Tarrock/CloudLobe"
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _LobeLit;
+                float4 _LobeMid;
                 float4 _LobeShade;
                 float4 _LobeUnder;
+                float _LobeMidPoint;
+                float _LobeCrumple;
                 float _LobeBands;
                 float _LobeBandStrength;
                 float _LobeBandSoftness;
@@ -214,6 +230,9 @@ Shader "Tarrock/CloudLobe"
                 float _BandStrength;
                 float _BandSoftness;
                 float _HorizonHeight;
+                float _BearingRise;
+                float _BearingPower;
+                float _BearingTilt;
                 float4 _BankCrestColor;
                 float4 _BankShadeColor;
                 float _BankHeight;
@@ -316,11 +335,54 @@ Shader "Tarrock/CloudLobe"
 
                 float form = saturate(lerp(skyT, wrapped, saturate(_LobeSunWeight))
                                       * _LobeFormGain + _LobeFormBias);
-                // ...and then terraced. Four washes at 0.55 over 0.22 of softness — the sky's own
-                // brush, not round 3's 3-at-0.85-over-0.10 stencil. The boundaries are still
-                // legible (they are what makes it a painting) and they no longer cut facets.
+
+                // -------------------------------------------------------------------------------
+                // ROUND 5 — THE CRUMPLE, and it is the reason round 4's terrace measured as nothing
+                // at all. Modelled through the URP LUT chain over a 615×300 mass, round 4's lobe
+                // came out with interior gradient median 0.12 and 0.00% of its pixels above
+                // gradient-magnitude 8; the reference cumulus (ghibli totoro's two banks) run 1.66
+                // and 4.6-5.2%. A terrace laid on a SMOOTH form does not draw edges — it draws
+                // clean latitude contours whose steps are spread over tens of pixels, and on a
+                // wrapped-light sphere those contours are so nearly parallel to the silhouette that
+                // they vanish into it.
+                //
+                // Three octaves of the mass's own cauliflower over (azimuth of the world normal ×
+                // the vertex's own object-space height), added to the ramp PARAMETER before
+                // terracing. Both coordinates belong to the SURFACE, not to the screen, so the
+                // boundaries are nailed to the lobe and read as painted form; a screen-space
+                // posterize would swim across it as the camera moved. The azimuth is taken from the
+                // world normal rather than the object one — the fragment has no object normal, and
+                // the yaw each mass is spun by (PlaceCloudLobe) then gives instances of the same
+                // mesh different crumple, which is a variation this row wants anyway.
+                // 1 : 0.52 : 0.26 over frequencies 3.4 / 8.1 / 19 is one lobe, its sub-lobes and
+                // their rims — the same 1 : 0.45 proportion the vault's silhouette scallop uses.
+                // -------------------------------------------------------------------------------
+                float azi = atan2(normalWS.x, normalWS.z);
+                float crumple =
+                      TarrockGradNoise(float2(azi * 3.4, lobeY * 5.2 + 11.0))
+                    + TarrockGradNoise(float2(azi * 8.1 + 4.0, lobeY * 12.4 + 3.0)) * 0.52
+                    + TarrockGradNoise(float2(azi * 19.0 + 9.0, lobeY * 29.0 + 7.0)) * 0.26;
+                form = saturate(form + crumple * _LobeCrumple);
+
+                // ...and then terraced, HARD. Round 4 spent 0.22 of softness over four washes,
+                // which puts a band edge across ~13 px of a 300 px mass: a 20-point step over 13 px
+                // is |grad| 1.5 and the measurement found exactly that. Three washes at 0.92 over
+                // 0.030 spend the same step over ~3 px, which is |grad| 8 — the reference figure.
+                // It is not the round-3 bevel coming back: that was a raw N·L terraced at 0.85,
+                // whose iso-contours under a 12° sun are near-vertical great circles. This is a
+                // wrapped-plus-sky form with a crumpled parameter, so the edges wander.
                 form = TarrockSoftBand(form, _LobeBands, _LobeBandStrength, _LobeBandSoftness);
-                float3 color = lerp(_LobeShade.rgb, _LobeLit.rgb, form);
+
+                // THE THREE-BAND RAMP. Round 4 lerped shade → lit and left _LobeUnder reachable
+                // only through the belly term, which is scaled by the mass's own radius — so the
+                // small masses had no dark end whatever and the big ones only found it below the
+                // waterline. Three named colours on one ramp: the shadow core owns the bottom 46%,
+                // and every unlit flank of every lobe lands in it. Modelled at anchor B (100 m,
+                // fog 0.0059) this takes crown-to-base from 44.3 sRGB points to 70.7.
+                float3 color = form < _LobeMidPoint
+                    ? lerp(_LobeShade.rgb, _LobeMid.rgb, saturate(form / max(_LobeMidPoint, 0.01)))
+                    : lerp(_LobeMid.rgb, _LobeLit.rgb,
+                           saturate((form - _LobeMidPoint) / max(1.0 - _LobeMidPoint, 0.01)));
 
                 // -------------------------------------------------------------------------------
                 // THE BASE, PAINTED. A cumulus base is dark because there is a great depth of cloud

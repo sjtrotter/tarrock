@@ -97,8 +97,18 @@ Shader "Tarrock/TerrainPainterly"
     //      layers at a non-harmonic ratio.
     //   h. THE SLIVER TRIANGLES. "The rock face at 2 m is hard-faceted sliver triangles with no
     //      surface detail." Two faults: the shading-normal relief was sized for near-flat meadow
-    //      triangles (_RockNormalBoost), and the stone branch had nothing at all below a metre
-    //      (_RockDabScale).
+    //      triangles (_RockNormalBoost), and the stone branch had nothing at all below a metre.
+    //      Round 4 answered the second with a 0.62 m face dab, which round 5 measured as still
+    //      310 pixels across at the distance the complaint was made from — see the detail stack.
+
+    // ROUND 5 amends the economy rule stated below, and the amendment is load-bearing. "Marks with
+    // EDGES" is right about what reads as paint and wrong about what it costs: a Worley field is a
+    // min() over nine cells, so it CREASES along every cell wall, and stacked at three scales those
+    // creases measured as a directional anisotropy of 17.2 against a reference-plate band of
+    // 1.6-5.7 — the wood-grain read over the whole of round-4's v5. Edges are still how a surface
+    // reads as painted; they are now bought with SPARSE MARK FIELDS (TkFleckBand), which have real
+    // edges at low coverage and no crease network, and the Worley dabs are kept only at the scales
+    // where an individual mark is legible as a mark (the 6 m meadow dab, the 16 m clump).
     //
     // The economy rule underneath all of it: fbm is smooth everywhere by construction, so an fbm
     // surface can only ever be airbrush. Painted-dab economy needs marks with EDGES — hence the
@@ -130,7 +140,6 @@ Shader "Tarrock/TerrainPainterly"
         _MeadowMacroScale ("Meadow Macro Scale (m)", Float) = 38.0
         _MeadowHueScale ("Meadow Hue Field Scale (m)", Float) = 21.0
         _MeadowDabScale ("Meadow Dab Scale (m)", Float) = 6.0
-        _MeadowFineScale ("Meadow Fine Dab Scale (m)", Float) = 0.95
         _MeadowGrainScale ("Meadow Grain Scale (m)", Float) = 0.34
         _MeadowDabWarp ("Meadow Dab Warp", Range(0,1.5)) = 0.55
         _MeadowDabEdge ("Meadow Dab Edge Darken", Range(0,0.4)) = 0.10
@@ -143,11 +152,9 @@ Shader "Tarrock/TerrainPainterly"
         // applies per cell — see that function.
         _MeadowDabAniso ("Meadow Dab Aspect Spread", Range(0,0.9)) = 0.55
         _MeadowDabSize ("Meadow Dab Size Spread", Range(0,0.9)) = 0.45
-        _MeadowFineWarp ("Meadow Fine Dab Lattice Warp", Range(0,1)) = 0.45
         _MeadowStrawAmount ("Meadow Straw Amount", Range(0,2)) = 0.85
         _MeadowScuffAmount ("Meadow Scuff Amount", Range(0,2)) = 0.55
         _MeadowCoolAmount ("Meadow Cool Amount", Range(0,2)) = 0.70
-        _MeadowFineTone ("Meadow Fine Dab Tone", Range(0,0.5)) = 0.16
         _MeadowFineStraw ("Meadow Fine Straw Flecks", Range(0,1)) = 0.28
         _MeadowGrain ("Meadow Micro Grain", Range(0,0.4)) = 0.13
         _DetailFadeStart ("Detail Fade Start (m)", Float) = 10.0
@@ -216,9 +223,6 @@ Shader "Tarrock/TerrainPainterly"
         //     three a triplanar would cost — and it is the right frame anyway: paint on a rock face
         //     runs along the face, not through it.
         //   * THE FACETS. See _RockNormalBoost under Shading normal.
-        _RockDabScale ("Rock Dab Scale (m)", Float) = 0.62
-        _RockDabTone ("Rock Dab Tone", Range(0,0.5)) = 0.20
-        _RockDabEdge ("Rock Dab Edge Darken", Range(0,0.4)) = 0.14
 
         [Header(Bedding)]
         // GRAVITY-ALIGNED. Sediment is laid down flat, so the band coordinate is world Y with only a
@@ -267,6 +271,39 @@ Shader "Tarrock/TerrainPainterly"
         // FILLED region where the fine relief sits below the broad form, not a band around a field's
         // midpoint. A filled region is a blob; a band around a midpoint is a contour line. Round 2
         // used the second and got worms.
+        // -- The detail stack (round 5) ----------------------------------------------------------
+        // See TkDetailFbm / TkFleckBand in the HLSL block for the derivation. Every number here was
+        // solved in a numpy transcription of this shader measured against the round-4 captures and
+        // the reference plates with one metric, and is quoted as (modelled -> predicted in the
+        // capture, the round-4 residue added in quadrature).
+        //
+        // Base scale is the COARSEST octave; the finest is base/2.71^3, so 0.60 m gives a finest
+        // octave of 3.0 cm and 0.95 m gives 4.8 cm — the 2-4 cm band the round-4 critique asked
+        // for on the ground, and the band the reference plates carry their speckle in.
+        _DetailBaseScale ("Detail - rock base scale (m)", Float) = 0.60
+        _MeadowDetailScale ("Detail - meadow base scale (m)", Float) = 0.95
+
+        // ROCK. Modelled at 2.0 mm/px (v5's own geometry): 2.61/5.92/10.82/15.19 percent relative
+        // amplitude at high-pass sigma 2/4/8/16 px, 54 luma levels, anisotropy 1.81.
+        // Round 4 measured 1.26/1.78/2.47/3.36, 20 levels, anisotropy 12.73.
+        // Predicted in capture at the 2-4 cm scale: ~11.0%, against the critique's 10-16% band.
+        _RockGrainAmount ("Detail - rock continuous amount", Range(0, 0.8)) = 0.40
+        _RockFleckFine ("Detail - rock fleck 3 cm (grit)", Range(0, 0.9)) = 0.58
+        _RockFleckMid ("Detail - rock fleck 12 cm (weathering)", Range(0, 0.9)) = 0.46
+        _RockFleckCoarse ("Detail - rock fleck 85 cm (patches)", Range(0, 0.9)) = 0.34
+
+        // MEADOW. Pushed harder than rock on purpose: near turf measured 9.47% against a
+        // reference band of 17.8-36.7 (fable-08 17.76, fable-01 28.81, fable-07 36.69), and the
+        // round-4 critique's note is that the CADENCE is already right and only the amplitude is
+        // missing. Modelled at 5.0 mm/px: 6.30/12.19/18.44/22.96, 53 levels, anisotropy 1.61.
+        // Predicted in capture ~21%, i.e. the lower third of the reference band. Deliberately not
+        // further: past about 0.6 continuous amount the model's marks stop being separable and the
+        // ground reads as static rather than as paint, and that is a judgement no metric settles.
+        _MeadowDetailAmount ("Detail - meadow continuous amount", Range(0, 0.8)) = 0.52
+        _MeadowFleckFine ("Detail - meadow fleck 4.5 cm (litter)", Range(0, 0.9)) = 0.72
+        _MeadowFleckMid ("Detail - meadow fleck 17 cm (tussock)", Range(0, 0.9)) = 0.58
+        _MeadowFleckCoarse ("Detail - meadow fleck 90 cm (stands)", Range(0, 0.9)) = 0.48
+
         _CavityScale ("Cavity Scale (m)", Float) = 3.4
         _CavityContrast ("Cavity Contrast", Range(0.5,10)) = 4.5
         _CavityDarken ("Cavity Darken - stone", Range(0,1)) = 0.34
@@ -316,6 +353,11 @@ Shader "Tarrock/TerrainPainterly"
         // Authored shade, not emergent: shade cools toward the tint, ambient never reaches black.
         _ShadowTint ("Shadow Tint (cool)", Color) = (0.80, 0.88, 1.06, 1)
         _AmbientFloor ("Ambient Floor", Color) = (0.10, 0.11, 0.14, 1)
+        // ROUND-5: THE PENUMBRA, in metres of half-width on the ground. See the Frag lighting block —
+        // the sun has an angular diameter and a 12° sun stretches the resulting soft band by ~4.8×
+        // along its own bearing, which is a metre-scale edge that no shadowmap filter in URP can
+        // produce at this map resolution.
+        _ShadowPenumbra ("Shadow Penumbra (m on the ground)", Range(0,3)) = 1.0
     }
 
     SubShader
@@ -344,17 +386,14 @@ Shader "Tarrock/TerrainPainterly"
             float _MeadowMacroScale;
             float _MeadowHueScale;
             float _MeadowDabScale;
-            float _MeadowFineScale;
             float _MeadowGrainScale;
             float _MeadowDabWarp;
             float _MeadowDabEdge;
             float _MeadowDabAniso;
             float _MeadowDabSize;
-            float _MeadowFineWarp;
             float _MeadowStrawAmount;
             float _MeadowScuffAmount;
             float _MeadowCoolAmount;
-            float _MeadowFineTone;
             float _MeadowFineStraw;
             float _MeadowGrain;
             float _DetailFadeStart;
@@ -384,9 +423,6 @@ Shader "Tarrock/TerrainPainterly"
             float _RockMottleScale;
             float _RockBedTint;
             float _RockLichenAmount;
-            float _RockDabScale;
-            float _RockDabTone;
-            float _RockDabEdge;
             float _BeddingSpacing;
             float4 _BeddingDip;
             float _BeddingWarp;
@@ -399,6 +435,16 @@ Shader "Tarrock/TerrainPainterly"
             float _BedFormRate;
             float _BeddingSlopeStart;
             float _BeddingSlopeEnd;
+            float _DetailBaseScale;
+            float _MeadowDetailScale;
+            float _RockGrainAmount;
+            float _RockFleckFine;
+            float _RockFleckMid;
+            float _RockFleckCoarse;
+            float _MeadowDetailAmount;
+            float _MeadowFleckFine;
+            float _MeadowFleckMid;
+            float _MeadowFleckCoarse;
             float _CavityScale;
             float _CavityContrast;
             float _CavityDarken;
@@ -420,7 +466,23 @@ Shader "Tarrock/TerrainPainterly"
             float _AmbientBoost;
             float4 _ShadowTint;
             float4 _AmbientFloor;
+            float _ShadowPenumbra;
         CBUFFER_END
+
+        // The penumbra tap ring (see the Frag lighting block). Unit offsets in the light's own frame:
+        // x runs ALONG the sun's compass bearing, y across it. Across the beam the soft band is the
+        // sun's raw 0.53°; along it, that band stretched by the rake, so the ring is an ellipse and
+        // kPenumbraAcross is sin(12°) — SunEuler's elevation, quoted rather than derived, because
+        // the shading normal here has already been perturbed by the relief term and is no longer a
+        // safe place to read the lamp's angle from.
+        static const float kPenumbraAcross = 0.21;
+        static const float2 kPenumbraTaps[8] =
+        {
+            float2( 1.00,  0.00), float2(-1.00,  0.00),
+            float2( 0.50,  0.00), float2(-0.50,  0.00),
+            float2( 0.71,  0.71), float2(-0.71, -0.71),
+            float2( 0.71, -0.71), float2(-0.71,  0.71)
+        };
 
         // -- Hashes -----------------------------------------------------------------------------
         // Hash-based so the surface is deterministic in world space: the same metre of ground gets
@@ -487,6 +549,26 @@ Shader "Tarrock/TerrainPainterly"
             return sum / 0.875;
         }
 
+        // -- Turning the domain between octaves ---------------------------------------------------
+        // Value noise lives on an AXIS-ALIGNED lattice and its smoothstep interpolant kinks at
+        // every cell wall. Stack octaves on the same axes and those kinks COINCIDE into a
+        // rectilinear crease network — which is what the round-4 capture of v5 measured as a
+        // directional anisotropy of 12.7 on near-vertical rock, against a reference-plate band of
+        // 1.6-5.7 (fable-01 1.64, fable-06-L 5.72). Turning each octave by a golden-ratio angle
+        // costs two multiplies and no taps, and no two octaves share an axis again.
+        //
+        // The angles are 0.618034*pi*n: 111.25, 222.50, 333.75 degrees. Quoted as cos/sin pairs
+        // rather than computed, because these are constants and a sincos per octave per
+        // projection is twelve transcendentals a pixel for a number that never changes.
+        static const float2 kTurn1 = float2(-0.36327, 0.93169);   // 111.25 deg
+        static const float2 kTurn2 = float2(-0.73593, -0.67705);  // 222.50 deg
+        static const float2 kTurn3 = float2( 0.89685, -0.44234);  // 333.75 deg
+
+        float2 TkTurn(float2 p, float2 cs)
+        {
+            return float2(p.x * cs.x - p.y * cs.y, p.x * cs.y + p.y * cs.x);
+        }
+
         // -- The cavity / relief pair -------------------------------------------------------------
         // .x is the BROAD form and .y is the same form with one finer octave folded in, weighted so
         // BOTH have a mean of 0.5. Their difference is therefore a mean-zero signal that is positive
@@ -504,7 +586,12 @@ Shader "Tarrock/TerrainPainterly"
         float2 TkCavityPair(float2 p)
         {
             float broad = TkValueNoise(p);
-            float fine = TkValueNoise(p * 2.71 + 19.7);
+            // ROUND-5: the fine octave is TURNED as well as scaled (see kTurn1). Both octaves sat
+            // on the same axis-aligned lattice, so their interpolant kinks lined up — and this
+            // pair's DIFFERENCE is read by two things at once, the cavity term and the shading
+            // normal, so that crease network was being drawn twice over. Two multiplies on a tap
+            // that was already being taken.
+            float fine = TkValueNoise(TkTurn(p * 2.71 + 19.7, kTurn1));
             return float2(broad, broad * 0.68 + fine * 0.32);
         }
 
@@ -530,6 +617,151 @@ Shader "Tarrock/TerrainPainterly"
             return TkFbm2(worldPos.zy * inv) * blend.x
                  + TkFbm2(worldPos.xz * inv) * blend.y
                  + TkFbm2(worldPos.xy * inv) * blend.z;
+        }
+
+        // -- The detail stack (round 5) -----------------------------------------------------------
+        // WHY THIS EXISTS, in the numbers that produced it. Round 4's v5 measured 20 distinct luma
+        // levels over a 600x550 crop of near-vertical rock at ~2 m, where the reference plates run
+        // 149 (fable-01) to 230 (fable-06); relative high-pass amplitude at the 2-4 cm scale was
+        // 2.5% against a reference band of 10-16%; anisotropy 12.7 against 1.6-5.7.
+        //
+        // The cause is arithmetic, not taste. GauntletCapture puts v5's camera 2.61 m from its
+        // target at a 45 deg VERTICAL fov over 1080 px, so the ground sample distance there is
+        // 2*2.61*tan(22.5)/1080 = 2.0 mm per pixel. The FINEST term the stone branch owned was the
+        // 0.62 m rock dab — 310 pixels across. Nothing in the material varied inside a third of a
+        // metre. A numpy transcription of the whole round-4 chain reproduces the capture (modelled
+        // 1.40% relative amplitude vs 2.47% measured, 14 levels vs 20, anisotropy 16.4 vs 12.7)
+        // and shows the 6.5 m mottle and the 3.4 m cavity contributing EXACTLY ZERO at every scale
+        // a 1.2 m crop can measure. They are not weak there; they are absent.
+        //
+        // Two constructs, because neither can do the job alone.
+        //
+        //   * TkDetailFbm — the continuous field. Four octaves, lacunarity 2.71, gain 0.80, turned
+        //     between octaves. Gain 0.80 and not the conventional 0.5 because a gain-0.5 stack
+        //     buries its energy in its COARSEST octave, which is the one the eye already has: the
+        //     model measured 0.62% relative amplitude at gain 0.5 against 2.14% at gain 1.0 for
+        //     the same total swing. NON-FOLDING throughout — no abs(), no min(), no saturate() of
+        //     a coarse field. Each of those draws a LEVEL SET, and the level set of a smooth 2-D
+        //     field is a closed curve; that is the lesson TkCavityPair's header already records,
+        //     and the nested chevrons over the whole lower right of round-4's v5 are what it looks
+        //     like when it is forgotten.
+        //
+        //   * TkFleck — the sparse field, and the term that actually closes the gap. A smooth fbm
+        //     CANNOT reach the reference band at any sane amplitude: the model needed a 280%
+        //     albedo swing to put the 2-4 cm figure at 12%, because a smooth field spreads its
+        //     variance over every scale at once. The reference plates get there because their fine
+        //     energy is SPECKLE — lichen, grit, blade litter — a few strong marks over a small
+        //     fraction of the surface. A mark field of coverage p and contrast c has
+        //     rms = c*sqrt(p*(1-p)), so 13% coverage at 0.52 contrast buys 17% relative amplitude
+        //     while every individual mark stays a mark. That is brush economy written as a number.
+        //
+        // DISTANCE IS SOLVED BY RENORMALISATION, NOT BY FADING. Round 4 faded every fine term to
+        // nothing by 38 m (_DetailFadeStart + _DetailFadeRange) and the far hill duly measured
+        // 5.4% against a reference mid/far band of 15.5-28%; mid-distance mottle REGRESSED from
+        // round 3's 19.6% to 12.7%. Here each octave carries its own weight, keyed to whether its
+        // wavelength still spans more than about two pixels, and the sum is divided by the weights
+        // that SURVIVED. An octave that has fallen under the pixel grid stops contributing and the
+        // octaves above it inherit its share, so the surface holds its amplitude instead of
+        // dissolving into its own mean. Modelled at 3 / 12 / 40 / 100 / 200 m the relative
+        // amplitude reads 9.6 / 14.9 / 11.5 / 10.9 / 15.6 percent — flat to within a factor of 1.6
+        // across two decades of distance, and in band at every one of them.
+        //
+        // WHAT THE MODEL DOES NOT PREDICT, stated so the next round does not over-trust it: it is
+        // an ALBEDO model. It has no lighting, no shadow terminator, no grass tufts, no fog and no
+        // tonemapper, and the capture crops contain all five. Calibrated against round 4 the other
+        // contributors add about 2.0% of independent energy on rock and 9.1% on near ground, so
+        // the shipped numbers below are quoted as (modelled -> predicted in capture) with those
+        // added in quadrature. Anything outside that is a finding for round 6, not a rounding
+        // error.
+
+        // Below about two pixels an octave stops being a feature and becomes aliasing, and drawing
+        // it costs contrast at every other scale as well as crawling under camera motion. The
+        // window is quoted in PIXELS because that is the quantity that decides it; the metres it
+        // corresponds to change with every step the Fool takes.
+        static const float kDetailPxLo = 1.6;
+        static const float kDetailPxHi = 3.2;
+
+        float TkOctaveWeight(float wavelengthM, float pixelM)
+        {
+            return smoothstep(kDetailPxLo, kDetailPxHi, wavelengthM / max(pixelM, 1e-6));
+        }
+
+        float TkDetailFbm(float2 p, float baseM, float pixelM)
+        {
+            float lam = max(baseM, 1e-4);
+            float2 q = p / lam;
+
+            float w = TkOctaveWeight(lam, pixelM);
+            float sum = TkValueNoise(q) * w;
+            float tot = w;
+
+            q = TkTurn(q * 2.71 + 17.3, kTurn1); lam /= 2.71;
+            w = TkOctaveWeight(lam, pixelM) * 0.80;
+            sum += TkValueNoise(q) * w; tot += w;
+
+            q = TkTurn(q * 2.71 + 17.3, kTurn2); lam /= 2.71;
+            w = TkOctaveWeight(lam, pixelM) * 0.64;
+            sum += TkValueNoise(q) * w; tot += w;
+
+            q = TkTurn(q * 2.71 + 17.3, kTurn3); lam /= 2.71;
+            w = TkOctaveWeight(lam, pixelM) * 0.512;
+            sum += TkValueNoise(q) * w; tot += w;
+
+            // Mean 0.5 whatever survived, so an amplitude constant below means the same thing at
+            // 2 m as at 200 m. When every octave has fallen under the pixel — a hillside at the
+            // fog line — the guard returns the field's own mean and the surface goes flat, which
+            // is the correct answer: there is nothing left there to draw.
+            return tot > 1e-4 ? sum / tot : 0.5;
+        }
+
+        // Triplanar, for the same reason TkTriplanarCavityPair is: a planar projection smears to
+        // stripes on anything near-vertical, and near-vertical rock is exactly the surface this
+        // construct was written for.
+        float TkTriplanarDetail(float3 worldPos, float3 normal, float baseM, float pixelM)
+        {
+            float3 blend = pow(abs(normal), 4.0);
+            blend /= max(blend.x + blend.y + blend.z, 1e-4);
+            return TkDetailFbm(worldPos.zy, baseM, pixelM) * blend.x
+                 + TkDetailFbm(worldPos.xz, baseM, pixelM) * blend.y
+                 + TkDetailFbm(worldPos.xy, baseM, pixelM) * blend.z;
+        }
+
+        // Two decorrelated fields, ANDed. The AND is the whole construct: each field alone crosses
+        // its threshold over roughly a third of the ground, and their PRODUCT lands at 13% — at
+        // neither field's pitch, so the marks scatter instead of tiling. The second field runs at
+        // a non-integer multiple of the first's wavelength and is offset, so the two beat patterns
+        // never come back into phase inside the mantissa guard's 512 m.
+        //
+        // Self-gating on its own wavelength: a fleck under a couple of pixels is salt-and-pepper
+        // and nothing else, so it is not merely faded but BRANCHED AWAY, which is what pays for
+        // the detail stack's cost on the far hills. Safe under UNITY_BRANCH because nothing in
+        // here takes a screen derivative.
+        // Returns .x = a MEAN-PRESERVING multiplier, .y = the raw mark (for terms that want the
+        // mark's hue as well as its value).
+        //
+        // Mean-preserving matters more than it sounds. A mark field of coverage p at contrast c
+        // multiplies the surface mean by (1 - p*c), and three bands at the meadow's shipped
+        // settings compound to 0.85 — a 15% darkening of the whole meadow, arriving as a side
+        // effect of a texture change. The region's palette is canon ("pale dawn gold in the LIGHT,
+        // wind-scoured green"; the gold is in the light, not the albedo), so the marks divide
+        // their own expected mean back out and change the surface's VARIANCE without touching its
+        // value. The coverages are measured, not derived — a smoothstep pair over two value-noise
+        // fields has no closed form — over a 40 x 36 m population sample of the shipped fields.
+        //
+        // The divisor carries the SAME octave weight the mark does. Without that, a band that has
+        // faded out below the pixel goes on compensating for marks it is no longer drawing, and
+        // the far hills brighten: measured at +18% at 100 m before the weight was folded in.
+        float2 TkFleckBand(float2 p, float lamA, float lamB, float2 thr,
+                           float coverage, float amount, float pixelM)
+        {
+            float w = TkOctaveWeight(lamA, pixelM);
+            UNITY_BRANCH
+            if (w <= 0.002) return float2(1.0, 0.0);
+            float a = TkValueNoise(p / max(lamA, 1e-4));
+            float b = TkValueNoise(p / max(lamB, 1e-4) + 11.3);
+            float mark = smoothstep(thr.x, thr.y, a)
+                       * smoothstep(thr.x - 0.06, thr.y - 0.06, b) * w;
+            return float2((1.0 - mark * amount) / max(1.0 - coverage * amount * w, 0.05), mark);
         }
 
         // -- Painted dabs -----------------------------------------------------------------------
@@ -691,16 +923,42 @@ Shader "Tarrock/TerrainPainterly"
                 // footprint directly, because the lattice IS world Y (the dip and the capped warp
                 // move it by well under a bed).
                 float pixelY = max(fwidth(positionWS.y), 1e-5);
+                // WORLD METRES PER PIXEL, which is what the detail stack's per-octave weighting
+                // needs (see TkOctaveWeight). Taken off the derivatives already in hand, so it
+                // costs nothing new, and it is the honest quantity: it already carries distance,
+                // fov, resolution and the grazing angle of this particular pixel, none of which a
+                // camDist fade knows about. Round 4 faded detail on camDist alone, which is why a
+                // near-vertical face raking away from the camera lost its surface at the same
+                // metre as flat ground facing it.
+                float pixelM = max(max(length(dpdx), length(dpdy)), 1e-5);
 
                 // -- Cavity + relief, shared by both layers and by the shading normal --------------
                 // One field, three jobs: hollows darken, the same hollows are where lichen takes,
                 // and its gradient is the per-pixel shading relief that hides the facet kink.
                 float2 relief = TkTriplanarCavityPair(gp3, normalWS, _CavityScale);
-                float detailFade = 1.0 - saturate((camDist - _DetailFadeStart)
-                    / max(_DetailFadeRange, 0.01));
+                // ROUND-5: the fine-detail fade off this pair is GONE, and only the cavity's own
+                // (three times longer) fade survives. Round 4 hung every texel-scale term on
+                // _DetailFadeStart/_DetailFadeRange, so the whole surface was flat by 38 m; the
+                // measurement is that mid-distance mottle fell from round 3's 19.6% relative
+                // amplitude to 12.7% and the far hill sat at 3.3% against reference plates running
+                // 13-20%. Distance now belongs to the detail stack, per octave, against the pixel
+                // footprint. These two properties are kept for the cavity alone — it is a metre-
+                // scale shading term, not a texel one, and it has always wanted a fade of its own.
                 float cavityFade = 1.0 - saturate((camDist - _DetailFadeStart * 3.0)
                     / max(_DetailFadeRange * 3.0, 0.01));
-                float cavity = saturate((relief.x - relief.y) * _CavityContrast)
+                // ROUND-5: smoothstep, not saturate. saturate(d * contrast) CLAMPS, and the set
+                // where a smooth field first reaches its clamp is a LEVEL SET — a closed contour
+                // with a hard C1 break along it. Over the lower right of round-4's v5 that contour
+                // is visible as nested chevrons, because the level set of an axis-aligned
+                // value-noise lattice is a polyline that kinks at every cell wall; it is a
+                // straight-line contributor to that crop measuring 20 luma levels against a
+                // reference 149-230. Same term, same field, no clamp edge for a contour to be
+                // drawn along. The 1.35 widens the ramp so the mean cavity strength lands within a
+                // few percent of what the clamp gave (a smoothstep averages 0.5 across its ramp
+                // where saturate averages ~0.74 across the same reach) — matched by intent, not to
+                // three figures, because the term is a soft shade and not a threshold.
+                float cavity = smoothstep(0.0, 1.35 / max(_CavityContrast, 0.5),
+                        relief.x - relief.y)
                     * lerp(0.35, 1.0, cavityFade);
 
                 // One shared mid-scale field, used five times over: it jitters the meadow/rock
@@ -862,42 +1120,52 @@ Shader "Tarrock/TerrainPainterly"
                     // than any colour, this is what stops the tufts reading as decals on lino.
                     ground *= 1.0 - turfMask * _TurfContact;
 
-                    UNITY_BRANCH
-                    if (detailFade > 0.004)
-                    {
-                        // TWO fine layers on lattices that can never align, and both WARPED by the
-                        // grain field before they are sampled. This is the round-4 answer to "one
-                        // stamped decal repeated at one size on a visible cadence" at the level
-                        // above TkDabShaped's own per-cell shape work:
-                        //   * the second layer runs at 1/0.61 = 1.64x the first's wavelength, an
-                        //     irrational-enough ratio that the two beat patterns never repeat
-                        //     together inside the tile, and is offset so they share no origin;
-                        //   * the grain warp (0.34 m, an order below the mark) pushes the lattice
-                        //     itself around by a fraction of a cell, so even one layer's rows are
-                        //     not straight. A cadence needs marks in a line; there are none left.
-                        float grain = TkValueNoise(gp / max(_MeadowGrainScale, 0.01));
-                        float grain2 = TkValueNoise((gp + 43.7) / max(_MeadowGrainScale, 0.01));
-                        float2 fineWarp = float2(grain - 0.5, grain2 - 0.5) * _MeadowFineWarp;
-                        float3 fine = TkDabShaped(gp / max(_MeadowFineScale, 0.01) + fineWarp,
-                            _MeadowDabAniso, _MeadowDabSize);
-                        float3 fine2 = TkDabShaped(
-                            (gp * 0.61) / max(_MeadowFineScale, 0.01) + 91.3 - fineWarp,
-                            _MeadowDabAniso, _MeadowDabSize);
-                        float tooth = 1.0 + (fine.y - 0.5) * 2.0 * _MeadowFineTone
-                            + (fine2.y - 0.5) * 2.0 * _MeadowFineTone * 0.70
-                            + (grain - 0.5) * _MeadowGrain;
-                        ground *= lerp(1.0, tooth, detailFade);
+                    // -- The detail stack on the meadow (round 5) --------------------------------
+                    // Replaces round 4's two TkDabShaped fine layers, and is DELIBERATELY NOT
+                    // gated on detailFade. That gate is the round-4 regression itself: it faded
+                    // every fine term to nothing by 38 m (_DetailFadeStart + _DetailFadeRange), and
+                    // mid-distance mottle duly fell from round 3's 19.6% to 12.7% while the far
+                    // hill sat at 3.3% against reference plates running 13-20%. Distance is now
+                    // handled octave by octave inside the field, against the pixel footprint rather
+                    // than against camDist — see TkDetailFbm.
+                    //
+                    // The two dab layers are not mourned. They were a Worley F1 distance, and a
+                    // Worley F1 is a min() over nine cells: it CREASES along every cell wall, which
+                    // is a fold by another name. Modelled on its own it measured an anisotropy of
+                    // 17.2 against a reference band of 1.6-5.7, and it was the largest single
+                    // contributor to round-4's directional wood-grain read. The meadow keeps its
+                    // brushmarks where brushmarks are legible — the 6 m dab and the 16 m clump
+                    // above, both untouched — and gets a non-folding field underneath them.
+                    float detail = TkDetailFbm(gp, _MeadowDetailScale, pixelM);
+                    ground *= 1.0 + (detail - 0.5) * 2.0 * _MeadowDetailAmount;
 
-                        // Dab CORES take a straw fleck — dry strands and grit read as hue at texel
-                        // scale, not as one more brightness wobble. Suppressed inside the turf,
-                        // where the ground is damp and shaded by the blades above it. Taken off the
-                        // PRODUCT of the two layers, so a fleck lands only where both agree — a
-                        // scatter at neither layer's pitch, which is the point.
-                        float fleck = smoothstep(0.78, 0.97, 1.0 - fine.x)
-                            * smoothstep(0.55, 0.95, 1.0 - fine2.x);
-                        ground = lerp(ground, _MeadowStraw.rgb,
-                            fleck * _MeadowFineStraw * detailFade * (1.0 - turfMask * 0.6));
-                    }
+                    // Three mark bands an order apart, so the ground has speckle at every distance
+                    // the camera can stand at: blade litter underfoot, tussock shade at a few
+                    // metres, stands of drier growth on the hillsides. The wavelength pairs and
+                    // thresholds are model constants and should move together if they move at all
+                    // — they set the COVERAGE (measured 0.137 / 0.103 / 0.083 over a 40 m sample),
+                    // and coverage is what the whole amplitude argument rests on.
+                    float2 fleckFine = TkFleckBand(gp, 0.045, 0.075, float2(0.46, 0.76),
+                        0.1371, _MeadowFleckFine, pixelM);
+                    float2 fleckMid = TkFleckBand(gp + 53.1, 0.170, 0.280, float2(0.50, 0.79),
+                        0.1028, _MeadowFleckMid, pixelM);
+                    float2 fleckWide = TkFleckBand(gp + 217.7, 0.900, 1.500, float2(0.52, 0.81),
+                        0.0834, _MeadowFleckCoarse, pixelM);
+                    ground *= fleckFine.x * fleckMid.x * fleckWide.x;
+
+                    // The finest band also carries HUE, kept from round 4: dry strands and grit
+                    // read as colour at texel scale, not as one more brightness wobble. Suppressed
+                    // inside the turf, where the ground is damp and shaded by the blades above it.
+                    ground = lerp(ground, _MeadowStraw.rgb,
+                        fleckFine.y * _MeadowFineStraw * (1.0 - turfMask * 0.6));
+
+                    // The micro grain survives as the one term below the finest mark — half a
+                    // centimetre of tooth on the paint. On its own weight, so it leaves quietly
+                    // rather than aliasing: at 0.34 m it is the first thing to fall under the
+                    // pixel, and it is worth nothing once it has.
+                    float grain = TkValueNoise(gp / max(_MeadowGrainScale, 0.01));
+                    ground *= 1.0 + (grain - 0.5) * _MeadowGrain
+                        * TkOctaveWeight(_MeadowGrainScale, pixelM);
 
                     // Hollows in the mat, mildly — the meadow is soft and its dips hold shade.
                     ground *= 1.0 - cavity * _CavityGroundDarken;
@@ -1018,29 +1286,46 @@ Shader "Tarrock/TerrainPainterly"
                     // colour temperature as well as in shape.
                     stone = lerp(stone, _CliffColor.rgb * lerp(0.92, 1.08, mottle), cliffT);
 
-                    // -- Close-range paint on stone (round-4 finding on v5) ---------------------
-                    // The whole stone branch above works at 2.6 m and coarser. Under two metres
-                    // that leaves a flat wash between two partings, which is what "no surface
-                    // detail" meant. This is the meadow's texel band, given to rock.
+                    // -- The detail stack on stone (round 5) ------------------------------------
+                    // This replaces round 4's single 0.62 m face dab, which was the finest thing
+                    // the stone branch owned and is why v5's rock crop measured 20 luma levels and
+                    // 2.5% relative amplitude: at 2.0 mm per pixel that dab is 310 pixels across,
+                    // so between two partings there was one flat wash and nothing else. The dab
+                    // also cost what it could not pay for — a Worley F1 creases along every cell
+                    // wall, and modelled alone it measured an anisotropy of 17.2 against a
+                    // reference band of 1.6-5.7.
                     //
-                    // ONE dab, on the FACE'S own frame: x runs along the face's strike (the
-                    // horizontal direction lying in the surface) and y is world height. That is
-                    // both the cheap choice — a triplanar would be three lookups for a term that
-                    // is only ever wanted within a few metres — and the right one, because paint
-                    // and weathering on a rock face run ALONG the face. The frame degenerates on
-                    // an up-facing pixel, where normalWS.xz vanishes; the epsilon keeps it defined
-                    // and such pixels have almost no rockT to spend anyway.
-                    UNITY_BRANCH
-                    if (detailFade > 0.004)
-                    {
-                        float2 strike = normalize(float2(-normalWS.z, normalWS.x) + 1e-4);
-                        float2 faceUV = float2(dot(gp3.xz, strike), gp3.y)
-                            / max(_RockDabScale, 0.01);
-                        float3 rockDab = TkDabShaped(faceUV, _MeadowDabAniso, _MeadowDabSize);
-                        stone *= 1.0 + (rockDab.y - 0.5) * 2.0 * _RockDabTone * detailFade;
-                        stone *= 1.0 - smoothstep(0.55, 0.96, rockDab.x)
-                            * _RockDabEdge * detailFade;
-                    }
+                    // TRIPLANAR here, where the meadow's is planar, and the asymmetry is the point:
+                    // meadow only exists on near-flat ground, but this term exists FOR near-vertical
+                    // rock, and a planar projection smears to vertical stripes on exactly that
+                    // surface. Twelve taps is the honest price of the one place in the frame the
+                    // round-4 critique called the biggest gap.
+                    //
+                    // The three mark bands stay on the FACE'S own frame — x along the face's strike
+                    // (the horizontal direction lying in the surface), y world height. Cheap, and
+                    // right: paint and weathering on a rock face run ALONG the face. The frame
+                    // degenerates on an up-facing pixel where normalWS.xz vanishes; the epsilon
+                    // keeps it defined, and such pixels have almost no rockT to spend anyway.
+                    float rockDetail = TkTriplanarDetail(gp3, normalWS, _DetailBaseScale, pixelM);
+                    stone *= 1.0 + (rockDetail - 0.5) * 2.0 * _RockGrainAmount;
+
+                    float2 strike = normalize(float2(-normalWS.z, normalWS.x) + 1e-4);
+                    float2 faceUV = float2(dot(gp3.xz, strike), gp3.y);
+                    // Grit and lichen at 3 cm, weathering at 12 cm, damp patches at 85 cm.
+                    // Coverages measured over a 40 m population sample: 0.117 / 0.088 / 0.069.
+                    float2 rockFine = TkFleckBand(faceUV, 0.030, 0.052, float2(0.48, 0.78),
+                        0.1166, _RockFleckFine, pixelM);
+                    float2 rockMid = TkFleckBand(faceUV + 61.7, 0.115, 0.190, float2(0.52, 0.80),
+                        0.0878, _RockFleckMid, pixelM);
+                    float2 rockWide = TkFleckBand(faceUV + 193.1, 0.850, 1.400, float2(0.54, 0.82),
+                        0.0688, _RockFleckCoarse, pixelM);
+                    stone *= rockFine.x * rockMid.x * rockWide.x;
+
+                    // MOSS, NOT GRIME (the region's standing rule). The damp bands take the lichen
+                    // hue rather than merely going darker, so the speckle that carries the surface
+                    // amplitude is also the thing that keeps the rock from being grey on grey.
+                    stone = lerp(stone, _RockLichen.rgb,
+                        rockMid.y * _RockLichenAmount * 0.45 * saturate(normalWS.y * 1.6 + 0.25));
                 }
 
                 // When rockT >= 0.999 the meadow branch is skipped and `ground` is still the flat
@@ -1053,9 +1338,59 @@ Shader "Tarrock/TerrainPainterly"
                 float4 shadowCoord = TransformWorldToShadowCoord(positionWS);
                 Light mainLight = GetMainLight(shadowCoord);
 
+                // -- THE PENUMBRA (round-5 light pass). The round-4 critique measured the cast-shadow
+                //    terminator on flat ground as ONE PIXEL hard, where every plate on the reference
+                //    board carries a visibly soft edge. It is one pixel because the shadowmap is too
+                //    GOOD: the PC quality level runs a 4096 map over a 180 m shadow distance with 4
+                //    cascades, so the near cascade resolves 18 m across 2048 texels — 8.8 mm a texel
+                //    — and URP's soft-shadow filter is a fixed tap pattern a few TEXELS wide, i.e. a
+                //    2.6 cm penumbra. Nothing in the pipeline's own settings can widen that: raising
+                //    the filter quality moves texels, not metres, and dropping the map resolution to
+                //    buy metres is what round 3 raised it FROM (a 12° sun's long thin shadows die in
+                //    the far cascade).
+                //
+                //    So it is done here, in metres, from the physics the shadowmap threw away. The
+                //    sun subtends 0.53° (0.00925 rad), so an occluder D metres away casts a penumbra
+                //    D·0.00925 wide across the beam — and on ground raked at 12° that band is
+                //    stretched by 1/sin(12°) = 4.81× ALONG THE SUN'S BEARING. The forms that throw
+                //    this region's shadows stand 10-40 m from what they shade, which is a soft edge
+                //    0.45-1.8 m wide on the ground: _ShadowPenumbra 1.0 m of half-width is the
+                //    middle of that range, and it is why the offsets are an ELLIPSE elongated along
+                //    the light and not a disc — a real low-sun penumbra is a smear, not a blur.
+                //
+                //    Nine taps, so the ramp carries nine steps rather than the two it has now. They
+                //    are cheap (the shadowmap is already resident and this pass is one texture fetch
+                //    per tap) and they are the only place in this file that spends anything on the
+                //    shadow edge.
+                float3 sunAxis = float3(mainLight.direction.x, 0.0, mainLight.direction.z);
+                float axisLength = length(sunAxis);
+                sunAxis = axisLength > 1e-4 ? sunAxis / axisLength : float3(1.0, 0.0, 0.0);
+                float3 sunSide = float3(-sunAxis.z, 0.0, sunAxis.x);
+                float penumbra = max(_ShadowPenumbra, 0.0);
+                float atten = mainLight.shadowAttenuation;
+                // NOT in the screen-space variant: there MainLightRealtimeShadow reads a full-screen
+                // texture and treats shadowCoord.xy as a SCREEN uv, so offsetting a world position
+                // and re-transforming it would sample eight unrelated pixels. This project ships no
+                // ScreenSpaceShadows renderer feature (PC_Renderer carries only SSAO), so the branch
+                // is dead today; it is written down so it stays correct if one is ever added.
+                #if !defined(_MAIN_LIGHT_SHADOWS_SCREEN)
+                if (penumbra > 1e-3)
+                {
+                    [unroll]
+                    for (int tap = 0; tap < 8; tap++)
+                    {
+                        float3 offsetWS = positionWS
+                            + sunAxis * (kPenumbraTaps[tap].x * penumbra)
+                            + sunSide * (kPenumbraTaps[tap].y * penumbra * kPenumbraAcross);
+                        atten += MainLightRealtimeShadow(TransformWorldToShadowCoord(offsetWS));
+                    }
+                    atten *= (1.0 / 9.0);
+                }
+                #endif
+
                 float ndotl = dot(shadingNormalWS, mainLight.direction);
                 float wrapped = saturate((ndotl + _ShadeWrap) / (1.0 + _ShadeWrap));
-                float lit = wrapped * mainLight.shadowAttenuation;
+                float lit = wrapped * atten;
                 float3 direct = mainLight.color * lit;
                 float3 ambient = max(SampleSH(shadingNormalWS) * _AmbientBoost, _AmbientFloor.rgb);
                 float3 shade = lerp(_ShadowTint.rgb, float3(1.0, 1.0, 1.0), saturate(lit));

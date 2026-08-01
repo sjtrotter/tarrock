@@ -54,19 +54,24 @@ Shader "Tarrock/RockPainterly"
         _RockVariation ("Mottle Scale (m)", Float) = 1.6
         _RockContrast ("Mottle Contrast", Range(0.5, 4)) = 1.7
         _RockDetailAmount ("Detail Amount", Range(0, 0.5)) = 0.12
-        // ROUND-4 (gauntlet critique of round3/v5, "no surface detail at 2 m"): a jittered-cell
-        // value band under the mottle, so the block reads as laid marks at arm's length instead of
-        // one wash between two partings. Same construct and the same per-cell rotation/aspect/size
-        // spread as Tarrock/TerrainPainterly's TkDabShaped — the ground and the stones sitting on
-        // it must be made of the same paint. Sampled on the FACE'S own frame (strike across, world
-        // Y up) so it costs ONE lookup rather than a triplanar's three, and faded out past a few
-        // metres because a sub-pixel mark at range is a shimmer generator.
-        _RockDabScale ("Dab Scale (m)", Float) = 0.20
-        _RockDabTone ("Dab Tone", Range(0, 0.5)) = 0.17
-        _RockDabAniso ("Dab Aspect Spread", Range(0, 0.9)) = 0.55
-        _RockDabSize ("Dab Size Spread", Range(0, 0.9)) = 0.45
-        _RockDabFadeStart ("Dab Fade Start (m)", Float) = 6.0
-        _RockDabFadeRange ("Dab Fade Range (m)", Float) = 10.0
+        // ROUND-5. Round 4 answered "no surface detail at 2 m" with a 0.20 m jittered-cell band,
+        // and round 5 measured what that actually bought. Two faults, both arithmetic:
+        //   * TOO COARSE TO BE THE FINEST TERM. At the ground sample distance the gauntlet's close
+        //     vantage resolves — 2.0 mm per pixel — a 0.20 m mark is 100 pixels across, so a stone
+        //     at arm's length still had a flat wash INSIDE every mark.
+        //   * IT FOLDED. A Worley F1 is a min() over nine cells, so it creases along every cell
+        //     wall; modelled on its own that measured a directional anisotropy of 17.2 against a
+        //     reference-plate band of 1.6-5.7, and it was the largest single source of the
+        //     wood-grain read over round-4's v5.
+        // The replacement is the same construct the terrain took: a turned, non-folding fbm down to
+        // ~2 cm, plus sparse mark bands that buy amplitude at low coverage. See TkDetailFbm below.
+        // Base scale is the COARSEST octave and the finest is base/2.71³, so 0.45 m puts the finest
+        // at 2.3 cm — inside the 2-4 cm band the critique asked the ground for.
+        _DetailBaseScale ("Detail - base scale (m)", Float) = 0.45
+        _RockGrainAmount ("Detail - continuous amount", Range(0, 0.8)) = 0.40
+        _RockFleckFine ("Detail - fleck 2 cm (grit)", Range(0, 0.9)) = 0.58
+        _RockFleckMid ("Detail - fleck 9 cm (weathering)", Range(0, 0.9)) = 0.46
+        _RockFleckCoarse ("Detail - fleck 60 cm (patches)", Range(0, 0.9)) = 0.34
         // How far the block's own colour drifts between formations. It is a HUE swing between two
         // stone colours applied per formation, not a value oscillation applied per pixel.
         _FormationTint ("Formation Hue Swing", Range(0, 1)) = 0.55
@@ -131,12 +136,11 @@ Shader "Tarrock/RockPainterly"
             float _RockVariation;
             float _RockContrast;
             float _RockDetailAmount;
-            float _RockDabScale;
-            float _RockDabTone;
-            float _RockDabAniso;
-            float _RockDabSize;
-            float _RockDabFadeStart;
-            float _RockDabFadeRange;
+            float _DetailBaseScale;
+            float _RockGrainAmount;
+            float _RockFleckFine;
+            float _RockFleckMid;
+            float _RockFleckCoarse;
             float _FormationTint;
             float _BeddingSpacing;
             float4 _BeddingDip;
@@ -210,11 +214,100 @@ Shader "Tarrock/RockPainterly"
         // .x is the broad form, .y the same form plus one finer octave, both mean 0.5. Their
         // difference is positive exactly in the HOLLOWS — a filled region, never a level set. See
         // Tarrock/TerrainPainterly's TkCavityPair for why that distinction is the whole ballgame.
+        // -- Turning the domain between octaves (round 5) -----------------------------------------
+        // Value noise lives on an AXIS-ALIGNED lattice and its interpolant kinks at every cell
+        // wall; octaves stacked on the same axes make those kinks coincide into a rectilinear
+        // crease network. Measured on round-4's v5 terrain that read as a directional anisotropy of
+        // 12.7 against a reference-plate band of 1.6-5.7, and the stones are made of the same paint
+        // as the ground, so they take the same fix. Angles are 0.618034*pi*n, quoted as cos/sin
+        // because they are constants and a sincos per octave per projection is twelve
+        // transcendentals a pixel for a number that never changes.
+        static const float2 kTurn1 = float2(-0.36327, 0.93169);   // 111.25 deg
+        static const float2 kTurn2 = float2(-0.73593, -0.67705);  // 222.50 deg
+        static const float2 kTurn3 = float2( 0.89685, -0.44234);  // 333.75 deg
+
+        float2 TkTurn(float2 p, float2 cs)
+        {
+            return float2(p.x * cs.x - p.y * cs.y, p.x * cs.y + p.y * cs.x);
+        }
+
         float2 TkCavityPair(float2 p)
         {
             float broad = TkValueNoise(p);
-            float fine = TkValueNoise(p * 2.71 + 19.7);
+            // ROUND-5: the fine octave is TURNED as well as scaled, so the pair's difference — read
+            // here by both the cavity term and the texel-scale tone — stops carrying the lattice's
+            // own crease network.
+            float fine = TkValueNoise(TkTurn(p * 2.71 + 19.7, kTurn1));
             return float2(broad, broad * 0.68 + fine * 0.32);
+        }
+
+        // -- The detail stack (round 5) -----------------------------------------------------------
+        // The full derivation lives in Tarrock/TerrainPainterly's TkDetailFbm header; this is the
+        // same construct at prop scale, because a boulder sitting on the hillside must be made of
+        // the same paint as the hillside. The short version: round 4's finest term on this shader
+        // was a 0.20 m Worley dab, and a Worley F1 is a min() over nine cells, so it CREASES along
+        // every cell wall — a fold by another name, and modelled alone it measured an anisotropy of
+        // 17.2. It is replaced by a non-folding turned fbm plus sparse mark bands, and distance is
+        // handled per octave against the pixel footprint rather than by a camDist fade.
+        static const float kDetailPxLo = 1.6;
+        static const float kDetailPxHi = 3.2;
+
+        float TkOctaveWeight(float wavelengthM, float pixelM)
+        {
+            return smoothstep(kDetailPxLo, kDetailPxHi, wavelengthM / max(pixelM, 1e-6));
+        }
+
+        float TkDetailFbm(float2 p, float baseM, float pixelM)
+        {
+            float lam = max(baseM, 1e-4);
+            float2 q = p / lam;
+
+            float w = TkOctaveWeight(lam, pixelM);
+            float sum = TkValueNoise(q) * w;
+            float tot = w;
+
+            q = TkTurn(q * 2.71 + 17.3, kTurn1); lam /= 2.71;
+            w = TkOctaveWeight(lam, pixelM) * 0.80;
+            sum += TkValueNoise(q) * w; tot += w;
+
+            q = TkTurn(q * 2.71 + 17.3, kTurn2); lam /= 2.71;
+            w = TkOctaveWeight(lam, pixelM) * 0.64;
+            sum += TkValueNoise(q) * w; tot += w;
+
+            q = TkTurn(q * 2.71 + 17.3, kTurn3); lam /= 2.71;
+            w = TkOctaveWeight(lam, pixelM) * 0.512;
+            sum += TkValueNoise(q) * w; tot += w;
+
+            // Renormalised by the weights that SURVIVED, so an octave falling under the pixel hands
+            // its share to the octaves above it and the surface holds its amplitude with distance
+            // instead of dissolving into its own mean.
+            return tot > 1e-4 ? sum / tot : 0.5;
+        }
+
+        float TkTriplanarDetail(float3 worldPos, float3 normal, float baseM, float pixelM)
+        {
+            float3 blend = pow(abs(normal), 4.0);
+            blend /= max(blend.x + blend.y + blend.z, 1e-4);
+            return TkDetailFbm(worldPos.zy, baseM, pixelM) * blend.x
+                 + TkDetailFbm(worldPos.xz, baseM, pixelM) * blend.y
+                 + TkDetailFbm(worldPos.xy, baseM, pixelM) * blend.z;
+        }
+
+        // Sparse marks. Returns .x = a MEAN-PRESERVING multiplier, .y = the raw mark. A smooth
+        // field cannot reach the reference amplitude band at any sane swing; a mark field of
+        // coverage p at contrast c has rms = c*sqrt(p*(1-p)), which is how a few strong marks buy
+        // what an airbrush cannot. Dividing the expected mean back out matters because three bands
+        // compound to a ~15% darkening otherwise, and the stone palette is authored, not emergent.
+        float2 TkFleckBand(float2 p, float lamA, float lamB, float2 thr,
+                           float coverage, float amount, float pixelM)
+        {
+            float w = TkOctaveWeight(lamA, pixelM);
+            if (w <= 0.002) return float2(1.0, 0.0);
+            float a = TkValueNoise(p / max(lamA, 1e-4));
+            float b = TkValueNoise(p / max(lamB, 1e-4) + 11.3);
+            float mark = smoothstep(thr.x, thr.y, a)
+                       * smoothstep(thr.x - 0.06, thr.y - 0.06, b) * w;
+            return float2((1.0 - mark * amount) / max(1.0 - coverage * amount * w, 0.05), mark);
         }
 
         // Triplanar, because a boulder is mostly NOT facing up: a planar xz projection smears the
@@ -240,48 +333,12 @@ Shader "Tarrock/RockPainterly"
                  + TkCavityPair(worldPos.xy * inv) * blend.z;
         }
 
-        // The ground's round-4 brushmark field, copied under the same rule as everything else in
-        // this block: the rock and the ground must be made of one paint recipe. See
-        // Tarrock/TerrainPainterly's TkDabShaped for why a per-cell rotation, aspect and radius are
-        // what stop a jittered-cell field reading as one stamp on a visible pitch.
-        float3 TkDabShaped(float2 p, float aniso, float sizeJitter)
-        {
-            float2 cell = floor(p);
-            float2 f = p - cell;
-            float best = 8.0;
-            float bestTone = 0.0;
-            float bestId = 0.0;
-
-            [unroll]
-            for (int y = -1; y <= 1; y++)
-            {
-                [unroll]
-                for (int x = -1; x <= 1; x++)
-                {
-                    float2 g = float2(x, y);
-                    float2 h = TkHash22(cell + g);
-                    float2 s = TkHash22(cell + g + 37.19);
-                    float2 d = g + h - f;
-
-                    float sn, cs;
-                    sincos(s.x * 6.2831853, sn, cs);
-                    float2 r = float2(d.x * cs - d.y * sn, d.x * sn + d.y * cs);
-
-                    float stretch = max(1.0 + aniso * (s.y - 0.5) * 2.0, 0.25);
-                    r.x /= stretch;
-                    r.y *= stretch;
-
-                    float radius = max(1.0 + sizeJitter * (frac(s.x * 7.31 + s.y * 3.17) - 0.5) * 2.0, 0.25);
-                    float sq = dot(r, r) / (radius * radius);
-
-                    bestTone = sq < best ? frac(h.x * 3.71 + h.y * 7.13) : bestTone;
-                    bestId = sq < best ? frac(s.x * 5.17 + s.y * 9.43) : bestId;
-                    best = min(best, sq);
-                }
-            }
-
-            return float3(saturate(sqrt(best)), bestTone, bestId);
-        }
+        // ROUND-5: TkDabShaped is gone from this shader. It was a Worley F1 — a min() over
+        // nine cells — and a min() creases along every cell wall, which is a fold: modelled
+        // alone it measured a directional anisotropy of 17.2 against a reference-plate band of
+        // 1.6-5.7. The stones still share the ground's paint recipe; the recipe changed. Marks
+        // with EDGES are now bought with sparse mark fields (TkFleckBand above), which have
+        // real edges at low coverage and no crease network to draw.
 
         float TkContrast(float x, float k)
         {
@@ -364,6 +421,13 @@ Shader "Tarrock/RockPainterly"
                 float3 positionWS = input.positionWS;
                 float3 normalWS = normalize(input.normalWS);
 
+                // WORLD METRES PER PIXEL, taken at the top of the function and outside every
+                // branch — ddx/ddy in non-uniform flow control is undefined, and the mark branch
+                // below straddles the silhouette of every stone in the frame. This is what the
+                // detail stack weights its octaves against: it already carries distance, fov,
+                // resolution and this pixel's grazing angle, none of which a camDist fade knows.
+                float pixelM = max(max(length(ddx(positionWS)), length(ddy(positionWS))), 1e-5);
+
                 // -- Mottle: the block's own patchiness. Contrast-pushed for the same reason the
                 //    ground's is — three octaves of value noise sit in a narrow band around the mean
                 //    and read as an airbrush until they are pushed apart. It doubles as the bedding
@@ -375,7 +439,13 @@ Shader "Tarrock/RockPainterly"
                 //    texel-scale tone that round 2 took from a second triplanar fbm, so the extra
                 //    hollow costs three taps rather than nine.
                 float2 relief = TkTriplanarCavityPair(positionWS, normalWS, _CavityScale);
-                float cavity = saturate((relief.x - relief.y) * _CavityContrast);
+                // ROUND-5: smoothstep, not saturate. saturate(d * contrast) CLAMPS, and the set
+                // where a smooth field first reaches its clamp is a LEVEL SET — a closed contour
+                // with a hard C1 break along it, which is the artefact this construct's own header
+                // says it exists to avoid. The 1.35 widens the ramp so the mean cavity strength
+                // lands close to what the clamp gave.
+                float cavity = smoothstep(0.0, 1.35 / max(_CavityContrast, 0.5),
+                    relief.x - relief.y);
 
                 // -- Bedding, gravity-aligned, same grammar as the ground -------------------------
                 // Gated to the STEEP faces of the block: a horizontal bed cuts a thin line across a
@@ -431,21 +501,36 @@ Shader "Tarrock/RockPainterly"
                 albedo *= 1.0 + lip * _BeddingLip * lineAmount;
                 albedo *= 1.0 - cavity * _CavityDarken;
 
-                // -- Close-range brushmarks (round-4 finding on v5). Nothing above this line works
-                //    below ~0.35 m, so a boulder at arm's length was one flat wash between two
-                //    partings. Marks with EDGES are the house economy (art-bible.md); a smooth
-                //    field here would only be a second airbrush.
-                float dabFade = 1.0 - smoothstep(_RockDabFadeStart,
-                    max(_RockDabFadeStart + _RockDabFadeRange, _RockDabFadeStart + 0.01),
-                    distance(positionWS, _WorldSpaceCameraPos));
-                if (dabFade > 0.004)
-                {
-                    float2 strike = normalize(float2(-normalWS.z, normalWS.x) + 1e-4);
-                    float2 faceUV = float2(dot(positionWS.xz, strike), positionWS.y)
-                        / max(_RockDabScale, 0.01);
-                    float3 dab = TkDabShaped(faceUV, _RockDabAniso, _RockDabSize);
-                    albedo *= 1.0 + (dab.y - 0.5) * 2.0 * _RockDabTone * dabFade;
-                }
+                // -- The detail stack (round 5) ---------------------------------------------------
+                // Replaces round 4's 0.20 m face dab, on the same finding and for the same two
+                // reasons as the terrain's: the dab was too COARSE to be the finest term (at the
+                // 2.0 mm/px the gauntlet's close vantage resolves, 0.20 m is 100 pixels across, so
+                // a stone at arm's length still had a flat wash inside every mark), and being a
+                // Worley F1 it CREASED along its cell walls, which is a fold and measured as one.
+                //
+                // It was also fading on camDist — gone by 16 m — which is the same mistake that
+                // left round 4's far hills at 3.3% relative amplitude against a reference 13-20%.
+                // Nothing here fades on distance; the octaves and the mark bands each carry their
+                // own weight against the pixel, so a stone keeps its surface for as long as its
+                // surface is resolvable.
+                float stoneDetail = TkTriplanarDetail(positionWS, normalWS,
+                    _DetailBaseScale, pixelM);
+                albedo *= 1.0 + (stoneDetail - 0.5) * 2.0 * _RockGrainAmount;
+
+                // The mark bands stay on the FACE'S own frame — x along the strike, y world height
+                // — because weathering on a stone runs along its faces, and because three triplanar
+                // mark fields would be nine taps for a term two can carry. Grit at 2 cm, weathering
+                // at 9 cm, damp patches at 60 cm; coverages measured over a 40 m population sample
+                // of the shipped fields, which is what the mean-preserving divisor needs.
+                float2 strike = normalize(float2(-normalWS.z, normalWS.x) + 1e-4);
+                float2 faceUV = float2(dot(positionWS.xz, strike), positionWS.y);
+                float2 stoneFine = TkFleckBand(faceUV, 0.022, 0.038, float2(0.48, 0.78),
+                    0.1166, _RockFleckFine, pixelM);
+                float2 stoneMid = TkFleckBand(faceUV + 61.7, 0.090, 0.150, float2(0.52, 0.80),
+                    0.0878, _RockFleckMid, pixelM);
+                float2 stoneWide = TkFleckBand(faceUV + 193.1, 0.600, 0.990, float2(0.54, 0.82),
+                    0.0688, _RockFleckCoarse, pixelM);
+                albedo *= stoneFine.x * stoneMid.x * stoneWide.x;
 
                 // -- Moss on ledges: only where the face turns upward AND the hollows say damp, so
                 //    it lands in patches instead of coating every horizontal facet.

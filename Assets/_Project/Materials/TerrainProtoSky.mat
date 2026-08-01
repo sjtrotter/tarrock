@@ -38,6 +38,9 @@ Material:
     - _BankLumpScale: 5
     - _BankRelief: 0.045
     - _BankRimWidth: 0.006
+    - _BearingPower: 1.3
+    - _BearingRise: 0.45
+    - _BearingTilt: 3.2
     - _Dither: 0.0035
     - _GlowBroad: 0.22
     - _GlowBroadPower: 8

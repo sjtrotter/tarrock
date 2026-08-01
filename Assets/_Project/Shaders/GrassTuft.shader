@@ -124,6 +124,34 @@ Shader "Tarrock/GrassTuft"
         _ShadeWrap ("Shade Wrap", Range(0, 1)) = 0.55
         _AmbientBoost ("Ambient Boost", Range(0, 2)) = 1.0
 
+        // THE SHADE FILL (round 5). Round 4's shaded grass lost its texture completely: measured
+        // against the round-4 captures, shadowed mat detail ran at 0.269 of the lit mat's in v1 and
+        // 0.281 in v7, where seven reference-board frames run 0.485-0.931 (median 0.673). The cause
+        // is not the detail — it is the exposure. Frag's colour is albedo x (direct + ambient), so
+        // in shadow the ONLY term left is SampleSH, which at this rig measures about 7% of the
+        // direct term: shaded grass sat at 0.175 of the lit mat's luminance where the same seven
+        // references run 0.21-0.49 (median 0.37). Detail that is multiplied by a seventh of the
+        // light is a seventh as visible, and no amount of contrast in the albedo can survive it.
+        //
+        // So the fix is light, not texture. _ShadeFill is the dawn SKY DOME — a large, cool, purely
+        // ambient source that the sun's own beam swamps in the open and that is left holding the
+        // frame wherever the beam does not reach. It is gated to the shaded side (see Frag), so it
+        // cannot touch the lit meadow's pale dawn gold: the lit read is unchanged by construction.
+        // At 1.0 the model puts shaded mat at 0.296 of lit luminance and shadowed detail at 0.501
+        // of lit — both inside the reference band — and drops shaded saturation from 0.906 to 0.826
+        // on the way, which is the same move the references make (their shade is cool, not grey).
+        _ShadeFill ("Shade Fill (dawn sky dome)", Color) = (0.42, 0.52, 0.72, 1)
+        _ShadeFillStrength ("Shade Fill Strength", Range(0, 2)) = 1.0
+
+        // Sky occlusion down the blade. The fill above would be a flat wash on its own, and a flat
+        // wash is the round-3 failure with the lights turned up. The sky is ABOVE the mat, so a
+        // card lying on the floor sees a sliver of it and a tip standing clear sees all of it —
+        // which gives the shaded mat a root-to-tip value swing that is its own, rather than a copy
+        // of the lit one. It multiplies ONLY the ambient path, so it is nearly invisible in the sun
+        // (where direct dominates) and is most of the picture in shade: measured relative contrast
+        // stays at 1.69x the lit mat's, inside the references' 1.39-3.24.
+        _SkyOcclusionRoot ("Sky Occlusion At The Root", Range(0, 1)) = 0.45
+
         [Header(Wind combed pose)]
         _TuftHeight ("Tuft Mesh Height (m)", Float) = 0.3
         _WindAxis ("Comb Axis (XZ)", Vector) = (1, 0.35, 0, 0)
@@ -189,6 +217,32 @@ Shader "Tarrock/GrassTuft"
         _BendLayDegrees ("Bend Lay Angle (deg from vertical)", Range(30, 90)) = 72
         _BendDarken ("Bend Darken (multiplier inside the ring)", Range(0.4, 1)) = 0.78
 
+        // ROUND 5: THE RING READS AS A SMUDGE, AND THE REASON IS THAT IT IS ONE.
+        //
+        // Round 4's ring measures correctly in the radial direction (the critic's R = 0.215) and
+        // still photographs as a soft dark patch. Two faults, and neither is the radius.
+        //
+        //   IT IS TOO WIDE, AND ITS EDGE IS SPENT. With _BendCoreShare at 0.58 the held floor of the
+        //   Fool's 0.72 m ring is 0.418 m in radius — 0.835 m across against a 0.45 m shoulder, or
+        //   1.86x shoulder width, which is the 1.5-1.8x the critic measured. Worse, the whole
+        //   falloff is spent on a 0.302 m skirt, so the ring has no edge anywhere: it is a gradient
+        //   from the middle to the grass. The species tables now run a 0.375 core, which puts the
+        //   clearing at 0.540 m across = 1.20x shoulder, exactly the brief's target, and hands the
+        //   remaining 0.45 m to a rim that can be shaped rather than merely crossed.
+        //
+        //   IT IS THE SAME TERM AS A SHADOW. _BendDarken multiplies albedo and nothing else, so
+        //   "parted grass" and "something is casting a shadow here" are, to the renderer and to the
+        //   eye, literally the same signal. Two terms separate them. _BendTurfPull moves the pressed
+        //   area's HUE toward the floor it has been pressed into (you are seeing mat and blade
+        //   undersides, not a darker version of the canopy) — a shadow never changes hue like that.
+        //   _RingRimLift puts a narrow BRIGHT band on the contact line, where the blades that were
+        //   shoved outward stand shouldered-up and catch the low sun on their flanks. A value BREAK
+        //   at the boundary is the one cue a still frame reads as an edge, and a shadow cannot have
+        //   one: shadows have soft dark edges, parted grass has a bright shoulder.
+        _BendTurfPull ("Bend Turf Pull (pressed area toward the floor colour)", Range(0, 1)) = 0.45
+        _RingRimLift ("Ring Rim Lift (brightness at the contact line)", Range(0, 1)) = 0.34
+        _RingRimWidth ("Ring Rim Width (share of radius)", Range(0.02, 0.5)) = 0.16
+
         [Header(Distance handling)]
         _WidenStart ("Widen Start (m)", Float) = 18
         _WidenEnd ("Widen End (m)", Float) = 70
@@ -237,6 +291,9 @@ Shader "Tarrock/GrassTuft"
             float _RootDarken;
             float _ShadeWrap;
             float _AmbientBoost;
+            float4 _ShadeFill;
+            float _ShadeFillStrength;
+            float _SkyOcclusionRoot;
             float _TuftHeight;
             float4 _WindAxis;
             float _CombLean;
@@ -255,6 +312,9 @@ Shader "Tarrock/GrassTuft"
             float _BendCoreShare;
             float _BendLayDegrees;
             float _BendDarken;
+            float _BendTurfPull;
+            float _RingRimLift;
+            float _RingRimWidth;
             float _WidenStart;
             float _WidenEnd;
             float _WidenMax;
@@ -297,6 +357,11 @@ Shader "Tarrock/GrassTuft"
             float3 positionWS;
             float3 normalWS;
             float3 albedo;
+            // How much of the sky dome this vertex can see, 0 at the mat floor to 1 at a free tip.
+            // Carried to the fragment because it modulates only the AMBIENT path (see Frag) — it is
+            // a property of where the vertex sits in the mat, not of its albedo, and baking it into
+            // albedo would darken the sunlit meadow for no reason.
+            float skyOcclusion;
         };
 
         // Cheap deterministic hash of a world XZ position — used only for per-tuft scatter, so a
@@ -325,8 +390,13 @@ Shader "Tarrock/GrassTuft"
         // Total sideways push at one vertex, in metres, from every live bender. Radial and outward:
         // grass is shoved AWAY from the body, never toward it, so the ring around a standing figure
         // opens rather than closing on him.
-        float2 BenderPush(float3 positionWS)
+        // ROUND 5: `rim` comes back alongside the push — 1 exactly on the contact line, falling to 0
+        // on both sides of it within _RingRimWidth. It has to be produced HERE because it is a fact
+        // about the radial profile (where t crosses the core edge), and by the time ShapeTuft has a
+        // push vector that information has been summed away across benders and cannot be recovered.
+        float2 BenderPush(float3 positionWS, out float rim)
         {
+            rim = 0.0;
             // One test rejects the whole meadow when nobody is near it (and always, when nobody is
             // bending at all — the bounds radius is exactly 0 then, which is the sentinel and why
             // the inflation below is conditional rather than added unconditionally).
@@ -363,11 +433,21 @@ Shader "Tarrock/GrassTuft"
                 // (The 0.95 cap is not cosmetic: smoothstep's own edges must not meet, or the rim
                 // divides by zero.)
                 float t = spread / max(bender.w, 0.01);
-                float radial = 1.0 - smoothstep(min(saturate(_BendCoreShare), 0.95), 1.0, t);
+                float core = min(saturate(_BendCoreShare), 0.95);
+                float radial = 1.0 - smoothstep(core, 1.0, t);
 
                 // Height gate: a bender on the clifftop must not press the meadow seven metres
                 // below it. Grass is ankle-high, so the band only has to cover a body's own stride.
                 float vertical = 1.0 - saturate(abs(positionWS.y - bender.y) / max(_BendHeightRange, 0.1));
+
+                // The contact line is where the held floor ends and the grass begins to stand back
+                // up — t == core. A triangular window around it, carrying this bender's own gates so
+                // a settling wake loses its shoulder as it closes rather than leaving a bright ring
+                // behind, and so a bender overhead leaves none at all. Rims accumulate by max(), not
+                // by sum: two overlapping rings share one shoulder where they touch, and summing
+                // would double it into a seam.
+                float rimHalf = max(_RingRimWidth, 0.02);
+                rim = max(rim, saturate(1.0 - abs(t - core) / rimHalf) * vertical * power);
 
                 push += (delta / max(spread, 1e-4)) * (radial * vertical * power);
             }
@@ -482,7 +562,8 @@ Shader "Tarrock/GrassTuft"
             }
 
             // -- 3. Displacement response: the world yields to touch even while it is bound.
-            float2 rawPush = BenderPush(positionWS);
+            float ringRim;
+            float2 rawPush = BenderPush(positionWS, ringRim);
             // How hard this vertex is being pressed, before the species' own strength multiplies
             // it — 0 outside every ring, 1 in a held core. Used for the ring's albedo below.
             float pressed = saturate(length(rawPush));
@@ -553,6 +634,34 @@ Shader "Tarrock/GrassTuft"
             // exactly wrong for a pressed disc. A still frame reads an area by its value first.
             albedo *= lerp(1.0, saturate(_BendDarken), pressed);
 
+            // ROUND 5, AND THE PART THAT MAKES IT A RING RATHER THAN A STAIN. The line above is a
+            // pure value multiply, which is exactly what a shadow is — so for four rounds the ring
+            // has been rendering the one signal the eye is guaranteed to read as "something above
+            // is blocking the light". Two terms give it an identity of its own.
+            //
+            // HUE, not just value: pressed grass shows the mat it was pressed into and the pale
+            // undersides of its own blades, so the area moves toward the FLOOR's colour. A cast
+            // shadow never changes hue — it scales every channel by the same light. This is what
+            // makes the disc read as parted rather than as darkened.
+            float3 pressedTurf = lerp(_GroundColor.rgb, _GroundDryColor.rgb, exposure);
+            albedo = lerp(albedo, albedo * 0.62 + pressedTurf * 0.38, pressed * _BendTurfPull);
+
+            // A VALUE BREAK ON THE CONTACT LINE. The blades at the boundary were shoved outward and
+            // are standing shouldered-up against the ones still upright, catching a 12° sun on their
+            // flanks. A narrow BRIGHT band is the one cue a still frame reads as an edge, and it is
+            // a cue a shadow structurally cannot produce: shadow edges are soft and dark on the
+            // inside. This is why the round-4 ring measured right radially (R = 0.215) and still
+            // photographed as a smudge — it had a profile but no boundary.
+            albedo *= 1.0 + ringRim * _RingRimLift;
+
+            // Sky visibility down the blade. uv.y is the vertex's share of its own mesh height, so
+            // this is "how clear of the mat am I" — and the mat is the thatch, which is why the
+            // thatch runs the deepest occlusion of the six species. A blade laid over by the bend
+            // ring has climbed DOWN into the mat, so the press closes it toward the root value too;
+            // that is what keeps the pressed disc from lighting up as a bright hole in shade.
+            float sky = lerp(saturate(_SkyOcclusionRoot), 1.0, input.uv.y);
+            o.skyOcclusion = lerp(sky, saturate(_SkyOcclusionRoot), pressed * 0.7);
+
             o.positionWS = positionWS;
             o.albedo = albedo;
             return o;
@@ -578,7 +687,9 @@ Shader "Tarrock/GrassTuft"
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
-                float3 positionWS : TEXCOORD0;
+                // .w carries the sky occlusion rather than spending a whole interpolator on one
+                // scalar — this pass is already at four and mobile wants them back.
+                float4 positionWS : TEXCOORD0;
                 float3 normalWS : TEXCOORD1;
                 float3 albedo : TEXCOORD2;
                 float fogCoord : TEXCOORD3;
@@ -593,7 +704,7 @@ Shader "Tarrock/GrassTuft"
 
                 ShapedTuft tuft = ShapeTuft(input);
                 output.positionCS = TransformWorldToHClip(tuft.positionWS);
-                output.positionWS = tuft.positionWS;
+                output.positionWS = float4(tuft.positionWS, tuft.skyOcclusion);
                 output.normalWS = tuft.normalWS;
                 output.albedo = tuft.albedo;
                 output.fogCoord = ComputeFogFactor(output.positionCS.z);
@@ -609,13 +720,32 @@ Shader "Tarrock/GrassTuft"
                 // shadow at any given camera angle — exactly the dark, spiky read we removed.
                 float3 normalWS = normalize(input.normalWS);
 
-                float4 shadowCoord = TransformWorldToShadowCoord(input.positionWS);
+                float4 shadowCoord = TransformWorldToShadowCoord(input.positionWS.xyz);
                 Light mainLight = GetMainLight(shadowCoord);
 
                 float ndotl = dot(normalWS, mainLight.direction);
                 float wrapped = saturate((ndotl + _ShadeWrap) / (1.0 + _ShadeWrap));
-                float3 direct = mainLight.color * (wrapped * mainLight.shadowAttenuation);
-                float3 ambient = SampleSH(normalWS) * _AmbientBoost;
+                float lightReach = wrapped * mainLight.shadowAttenuation;
+                float3 direct = mainLight.color * lightReach;
+
+                // THE SHADE FILL (round 5) — see the property block for the measurements. This is
+                // gated on how little of the beam reaches the surface, so it is worth nothing in the
+                // open meadow and is holding the whole picture inside a shadow. Gating it this way,
+                // rather than adding it to ambient outright, is deliberate: the lit meadow's pale
+                // dawn gold is canon and a uniform fill would wash it. The lit read is unchanged.
+                //
+                // The 0.35 knee, not 1.0: a surface only half-reached by the beam is already reading
+                // as shade to the eye, and running the fill in over the whole terminator instead of
+                // the last sliver of it is what stops the boundary snapping into a visible line.
+                float shadeMix = 1.0 - smoothstep(0.0, 0.35, lightReach);
+                float3 fill = _ShadeFill.rgb * (_ShadeFillStrength * shadeMix);
+
+                // Sky occlusion multiplies the AMBIENT path only. In sun this is a rounding error
+                // against `direct`; in shade it is the entire root-to-tip value swing, which is what
+                // keeps the mat reading as blades rather than as a flat dark patch. Measured on the
+                // model: shaded detail rises from 0.320 to 0.501 of the lit mat's (references run
+                // 0.485-0.931) and relative contrast holds at 1.69x lit (references 1.39-3.24).
+                float3 ambient = (SampleSH(normalWS) * _AmbientBoost + fill) * input.positionWS.w;
 
                 float3 color = input.albedo * (direct + ambient);
                 color = MixFog(color, input.fogCoord);

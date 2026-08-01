@@ -28,11 +28,12 @@ Material:
     - _AmbientBoost: 1.05
     - _BaseBlend: 0.62
     - _BaseBlendHeight: 0.5
-    - _BendCoreShare: 0.58
+    - _BendCoreShare: 0.375
     - _BendDarken: 0.78
     - _BendHeightRange: 1.8
     - _BendLayDegrees: 74
     - _BendStrength: 1.6
+    - _BendTurfPull: 0.35
     - _CombDrift: 0.18
     - _CombFold: 0.55
     - _CombHollowLean: 0.34
@@ -45,8 +46,12 @@ Material:
     - _FadeMinScale: 0.08
     - _FadeStart: 78
     - _PatchScale: 26
+    - _RingRimLift: 0.38
+    - _RingRimWidth: 0.16
     - _RootDarken: 0.86
+    - _ShadeFillStrength: 1
     - _ShadeWrap: 0.55
+    - _SkyOcclusionRoot: 0.7
     - _SwaySpeed: 0.85
     - _SwayStrength: 0.46
     - _SwayWavelength: 14
@@ -59,10 +64,11 @@ Material:
     - _WindResponse: 1
     m_Colors:
     - _BaseColor: {r: 0.46, g: 0.58, b: 0.28, a: 1}
-    - _CoolColor: {r: 0.32, g: 0.52, b: 0.42, a: 1}
+    - _CoolColor: {r: 0.35, g: 0.48, b: 0.3, a: 1}
     - _DryColor: {r: 0.88, g: 0.78, b: 0.44, a: 1}
     - _GroundColor: {r: 0.23049997, g: 0.288, b: 0.16849996, a: 1}
     - _GroundDryColor: {r: 0.5, g: 0.41999996, b: 0.22999996, a: 1}
+    - _ShadeFill: {r: 0.42, g: 0.52, b: 0.72, a: 1}
     - _WindAxis: {r: 1, g: 0.35, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -168,6 +168,18 @@ struct TarrockSkyDesc
     float  bandSoftness;
     float  horizonHeight;
 
+    // THE BEARING (round 5). Round 4's sky was a pure function of ELEVATION, and the round-4
+    // captures prove it arithmetically: v8's column medians came out
+    // 128.1 125.7 121.4 116.9 113.6 | 113.6 116.9 121.4 125.7 128.1 — an exact mirror about the
+    // frame centre, which is only possible if nothing in the sky knows where the sun is. The
+    // glowBroad term above is not that knowledge: at glowBroadPower 8 it is under 1% of its peak
+    // 35° off the sun, so nine tenths of the vault never hears about the dawn at all.
+    // Every plate on the board that carries a low sun leans instead — fable-04's sky strip climbs
+    // 126.5 → 169.8 toward the sun (+43 sRGB luminance points), fable-01's 58.2 → 100.6 (+42).
+    float  bearingRise;    // broad warm wash, strongest low, peaking at the sun's compass bearing
+    float  bearingPower;   // 1 is a plain horizontal cosine; higher pulls the wash in toward the sun
+    float  bearingTilt;    // how much STEEPER the elevation ramps run on the anti-sun side
+
     // The far cloud bank: the cloud sea's own skyline, painted at infinity. All the vertical
     // measurements are in sin(elevation), which for the couple of degrees this thing occupies is
     // radians to three places — 0.01 is a little over half a degree, and the gameplay lens puts
@@ -372,8 +384,12 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
     // Break the vector-smooth edge into cauliflower. Two octaves: the low one moves whole lobes,
     // the high one nibbles their rims. Seeded off the cloud's own bearing and elevation, so moving
     // a cloud reshapes it — placement is the only authoring dial and it is a real one.
-    float scallop = (TarrockGradNoise(pc * 4.3 + spec.x)
-                   + TarrockGradNoise(pc * 9.7 + spec.y * 3.1) * 0.45) * sky.cloudLump;
+    // Kept unscaled as well as scaled: the SILHOUETTE wants it at cloudLump (0.090 of a half
+    // width), the interior's wash boundaries want it at their own amplitude, and the two are three
+    // orders apart. Measured over 200k samples this sum has std 0.26 and stays inside ±0.72.
+    float crumple = TarrockGradNoise(pc * 4.3 + spec.x)
+                  + TarrockGradNoise(pc * 9.7 + spec.y * 3.1) * 0.45;
+    float scallop = crumple * sky.cloudLump;
 
     float sd = TarrockCumulusField(pc, style) + scallop;
 
@@ -419,7 +435,38 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
         TarrockCumulusField(pc - wash * 0.62, style) + scallop);
     float form = (lit + crown) * 0.5;
 
-    float3 color = lerp(sky.cloudShade, sky.cloudLit, form);
+    // ROUND 5 — THE POSTERIZED THREE-BAND RAMP, and it is the round-4 critique's headline finding:
+    // "cloud interiors are single smooth ramps, 2-5x below reference interior contrast; the v4
+    // cumulus has 0.0000 px above gradient-magnitude 8". Both halves of that are true of the code
+    // above and both are fixed here.
+    //
+    //   * NO SHADOW END. The ramp ran cloudShade → cloudLit and cloudShadow was reachable only
+    //     through the belly term below, which is itself scaled by `thick` — so v4's 11°-wide mass
+    //     got 19% of it and its measured MINIMUM was sRGB 152.6 against a shadow colour that grades
+    //     to 54.5. The mass never had a dark end at all. The ramp is three colours now: the shadow
+    //     core is the bottom third of it, and every unlit flank of every lobe lands there.
+    //   * NO BOUNDARIES. form is a pair of smoothsteps and nothing quantised it, so the interior
+    //     was exactly the "single smooth ramp" the critic measured. It is terraced now with the
+    //     same TarrockSoftBand the sky and the deck use — three washes, hard-ish (0.92 over 0.030),
+    //     which the band arithmetic says is what clears gradient 8: a 70-point ramp in three steps
+    //     puts ~23 points on a boundary, and 0.030 of softness spends that over ~3 px on a mass
+    //     that fills 300 px, i.e. |grad| ≈ 8. Round 4's 0.130 spent it over 13 px and measured 0.
+    //   * ...AND THE BOUNDARIES SIT ON THE LOBES. The same `scallop` field that breaks the
+    //     silhouette is added to the ramp parameter before terracing, so a wash edge wanders with
+    //     the cauliflower it belongs to. Without this a terrace of a smooth field draws clean
+    //     latitude lines, which is a screen-space posterize and reads as a contour map.
+    // 0.30 on a field of std 0.26 moves a wash boundary by about a third of a wash — enough that
+    // the edges follow the cauliflower and not the latitude, not so much that a lobe's lit crown
+    // can be crumbled into its own shade.
+    form = saturate(form + crumple * 0.30);
+    form = TarrockSoftBand(form, 3.0, 0.92, 0.030);
+
+    // Two joined lerps, one ramp: shadow → shade over the bottom 46%, shade → lit over the top.
+    // 0.46 rather than 0.5 because a cumulus at this hour shows more shade than crown — the sun is
+    // 12° up, so the lit band is the thinner one on every mass in the frame.
+    float3 color = form < 0.46
+        ? lerp(sky.cloudShadow, sky.cloudShade, saturate(form / 0.46))
+        : lerp(sky.cloudShade, sky.cloudLit, saturate((form - 0.46) / 0.54));
 
     // THE DARK ANCHOR. Thickness reads as darkness: a 20°-wide cumulus at this hour is deep enough
     // that its base is the darkest value in the frame, and a 7° one is not. Deriving the weight
@@ -428,7 +475,14 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
     // Opacity is in it as well as size, and for the same reason: a mass you can see the sky
     // through is a mass the light gets through, so a 26%-opacity veil has no dark base to give
     // however wide it is drawn.
-    float thick = saturate((spec.z - 8.0) / 12.0) * saturate(spec.w * 1.15);
+    // ROUND 5 RE-CUTS THE THICKNESS CURVE, because round 4's demoted the frames' actual masses.
+    // (halfW − 8)/12 gives a 20° hero 1.00 but v4's two masses — 15° and 11° — only 0.58 and 0.25,
+    // and multiplied by opacity 0.55 and 0.19. That is why the v4 cumulus photographed with NO dark
+    // end (measured minimum sRGB 152.6). The ramp above now carries the shadow core on its own, so
+    // this term is back to what it is for — deciding which masses get an EXTRA deep belly — and it
+    // is cut so the 11-15° masses that fill the review frames actually qualify: 6° earns none,
+    // 14° earns all of it.
+    float thick = saturate((spec.z - 6.0) / 8.0) * saturate(spec.w * 1.15);
     float belly = (1.0 - smoothstep(-baseCut, baseCut + 0.34, pc.y)) * (1.0 - form * 0.62);
     color = lerp(color, sky.cloudShadow, saturate(belly * thick) * 0.95);
 
@@ -451,11 +505,32 @@ float3 TarrockSkyColor(float3 dir, TarrockSkyDesc sky)
     // pow(h, 1.25) ramp put its whole transition above the frustum and the sky read as flat tan.
     // smoothstep also lands the ramp on the horizon with zero derivative, so there is no crease
     // where the two hemispheres meet.
-    float t = smoothstep(0.0, 1.0, saturate(h / max(sky.midHeight, 0.001)));
+    // WHICH WAY THE SUN IS — round 5's first job, and the one the round-4 mirror symmetry proved
+    // was missing (see TarrockSkyDesc §THE BEARING). A HORIZONTAL cosine: 1 along the sun's compass
+    // bearing, 0 at the anti-sun, and it survives climbing above the sun's own 12° instead of
+    // dying with it the way dot(v, sunDir) does.
+    float2 vFlat = normalize(float2(v.x, v.z) + float2(1e-5, 1e-5));
+    float2 sFlat = normalize(float2(sky.sunDir.x, sky.sunDir.z) + float2(1e-5, 1e-5));
+    float bearing = pow(saturate(dot(vFlat, sFlat) * 0.5 + 0.5), max(sky.bearingPower, 0.05));
+
+    // ...and it TILTS THE ELEVATION RAMPS rather than only adding light. It has to: this grade's
+    // sky sits in the Neutral tonemap's shoulder, where 0.34 of extra sunGlow buys only ~10 sRGB
+    // points, while pulling the zenith DOWN the anti-sun sky moves 90. Modelled through the URP
+    // LUT chain over v3's frustum, tilt 3.2 with rise 0.45 turns round 4's +1.8 lean into +12.8;
+    // the plates run +42 to +43, but they are 60°-lens paintings of a sky whose horizon is the
+    // brightest thing in frame, and this one has a cloud sea under it doing that job. Applied to
+    // the ramp PARAMETER, so the terrace above picks the lean up and it reads as painted washes
+    // leaning toward the dawn rather than as an airbrushed side-light.
+    float lean = 1.0 + sky.bearingTilt * (1.0 - bearing);
+
+    float t = smoothstep(0.0, 1.0, saturate(h / max(sky.midHeight, 0.001) * lean));
     t = TarrockSoftBand(t, sky.bandCount, sky.bandStrength, sky.bandSoftness);
     float3 color = lerp(sky.horizon, sky.mid, t);
 
-    float u = smoothstep(0.0, 1.0, saturate((h - sky.midHeight) / max(1.0 - sky.midHeight, 0.001)));
+    // The mid band's own ceiling leans with it, so on the anti-sun side the cool blue starts where
+    // the cream would otherwise still be climbing.
+    float leanMid = sky.midHeight / lean;
+    float u = smoothstep(0.0, 1.0, saturate((h - leanMid) / max(1.0 - leanMid, 0.001)));
     u = TarrockSoftBand(u, sky.bandCount, sky.bandStrength, sky.bandSoftness);
     float3 above = lerp(color, sky.zenith, u);
 
@@ -511,6 +586,11 @@ float3 TarrockSkyColor(float3 dir, TarrockSkyDesc sky)
     float core = pow(sunDot, max(sky.glowCorePower, 1.0));
     result += sky.sunGlow * (sky.glowBroad * broad * horizonGlow + sky.glowCore * core);
 
+    // ...and the BROAD BEARING WASH, over everything, dying with height the way an air-path
+    // brightening does. This is the half of the lean that adds rather than takes: it is what makes
+    // the sunward third of the frame the warm end instead of merely the less-blue end.
+    result += sky.sunGlow * (sky.bearingRise * bearing * exp(-saturate(h) * 2.2));
+
     return result;
 }
 
@@ -543,6 +623,9 @@ float3 TarrockSkyColor(float3 dir, TarrockSkyDesc sky)
     sky.bandStrength = _BandStrength;                       \
     sky.bandSoftness = _BandSoftness;                       \
     sky.horizonHeight = _HorizonHeight;                     \
+    sky.bearingRise = _BearingRise;                         \
+    sky.bearingPower = _BearingPower;                       \
+    sky.bearingTilt = _BearingTilt;                         \
     sky.bankCrest = _BankCrestColor.rgb;                    \
     sky.bankShade = _BankShadeColor.rgb;                    \
     sky.bankHeight = _BankHeight;                           \

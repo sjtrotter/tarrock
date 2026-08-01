@@ -42,6 +42,7 @@ Material:
     - _CavityContrast: 4.5
     - _CavityDarken: 0.3
     - _CavityScale: 0.55
+    - _DetailBaseScale: 0.45
     - _FormationTint: 0.55
     - _MossAmount: 0.42
     - _MossStart: 0.28
@@ -54,6 +55,10 @@ Material:
     - _RockDabTone: 0.17
     - _RockDetailAmount: 0.13
     - _RockDetailScale: 0.32
+    - _RockFleckCoarse: 0.34
+    - _RockFleckFine: 0.58
+    - _RockFleckMid: 0.46
+    - _RockGrainAmount: 0.4
     - _RockVariation: 1.5
     - _ShadeWrap: 0.22
     - _StrataScale: 0.55

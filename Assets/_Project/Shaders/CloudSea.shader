@@ -82,6 +82,14 @@ Shader "Tarrock/CloudSea"
     {
         _CloudBright ("Cloud - lit tops", Color) = (0.97, 0.93, 0.85, 1)
         _CloudShade ("Cloud - furrows (cool)", Color) = (0.58, 0.62, 0.74, 1)
+        // ROUND 5: the middle of three washes (see the fragment's §THE THREE-BAND RAMP).
+        _CloudMid ("Cloud - body", Color) = (0.62, 0.64, 0.72, 1)
+        _CloudMidPoint ("Cloud - shadow/body split", Range(0.2, 0.8)) = 0.46
+        // The mid-field octave: size, weight, and the range over which it fades out.
+        _SwellScale ("Cloud - mid-field octave (m)", Float) = 26.0
+        _SwellWeight ("Cloud - mid-field octave weight", Range(0, 1)) = 0.40
+        _SwellFadeStart ("Cloud - mid-field octave fade start (m)", Float) = 260.0
+        _SwellFadeEnd ("Cloud - mid-field octave fade end (m)", Float) = 420.0
 
         _BroadScale ("Bank scale (m)", Float) = 130.0
         _MidScale ("Billow scale (m)", Float) = 48.0
@@ -103,7 +111,7 @@ Shader "Tarrock/CloudSea"
         // Same TarrockSoftBand the sky terraces with, so deck and sky are brushed alike.
         _MottleBands ("Mottle - painted washes", Range(2, 12)) = 5
         _MottleBandStrength ("Mottle - wash strength", Range(0, 1)) = 0.42
-        _MottleBandSoftness ("Mottle - wash softness", Range(0.02, 0.5)) = 0.17
+        _MottleBandSoftness ("Mottle - wash softness", Range(0.005, 0.5)) = 0.030
 
         _WarpScale ("Domain warp scale (m)", Float) = 95.0
         _WarpAmount ("Domain warp amount (m)", Float) = 26.0
@@ -179,6 +187,9 @@ Shader "Tarrock/CloudSea"
         _BandStrength ("Sky - band strength", Range(0, 1)) = 0.30
         _BandSoftness ("Sky - band softness", Range(0.02, 0.5)) = 0.22
         _HorizonHeight ("Sky - horizon height", Range(-0.2, 0.2)) = 0.0
+        _BearingRise ("Sky - lean toward the sun", Range(0, 2)) = 0.45
+        _BearingPower ("Sky - lean tightness", Range(0.2, 6)) = 1.3
+        _BearingTilt ("Sky - anti-sun ramp steepening", Range(0, 6)) = 3.2
         _BankCrestColor ("Sky - bank lit crest", Color) = (1.02, 0.97, 0.87, 1)
         _BankShadeColor ("Sky - bank shaded body", Color) = (0.50, 0.53, 0.65, 1)
         _BankHeight ("Sky - bank mean crest height", Range(-0.05, 0.15)) = 0.020
@@ -233,6 +244,12 @@ Shader "Tarrock/CloudSea"
             CBUFFER_START(UnityPerMaterial)
                 float4 _CloudBright;
                 float4 _CloudShade;
+                float4 _CloudMid;
+                float _CloudMidPoint;
+                float _SwellScale;
+                float _SwellWeight;
+                float _SwellFadeStart;
+                float _SwellFadeEnd;
                 float _BroadScale;
                 float _MidScale;
                 float _FineScale;
@@ -283,6 +300,9 @@ Shader "Tarrock/CloudSea"
                 float _BandStrength;
                 float _BandSoftness;
                 float _HorizonHeight;
+                float _BearingRise;
+                float _BearingPower;
+                float _BearingTilt;
                 float4 _BankCrestColor;
                 float4 _BankShadeColor;
                 float _BankHeight;
@@ -347,11 +367,30 @@ Shader "Tarrock/CloudSea"
             // it is a function and why the domain warp is passed in already computed: the warp
             // moves over 95 m and the step is 14, so re-warping each tap would buy nothing and cost
             // four more noise evaluations per pixel on a surface that can own a third of the frame.
-            float CsRelief(float2 p, float2 axis, float stretch, float2 warpOffset, float midFade)
+            float CsRelief(float2 p, float2 axis, float stretch, float2 warpOffset, float midFade,
+                           float swellFade)
             {
                 float2 q = CsStreak(p, axis, stretch) + warpOffset;
                 return TarrockGradNoise(q / max(_BroadScale, 1.0)) * 0.62
-                     + TarrockGradNoise(q / max(_MidScale, 1.0) + float2(19.4, 7.2)) * 0.38 * midFade;
+                     + TarrockGradNoise(q / max(_MidScale, 1.0) + float2(19.4, 7.2)) * 0.38 * midFade
+                // ROUND 5 — THE MID-FIELD OCTAVE, and it is the whole of the critic's finding
+                // "deck mid-field is a sheet: high-pass 15 px std is 1.2-2.4 where the references
+                // run 11-16". The arithmetic behind it: at 200 m from a camera 6.3 m above the deck
+                // the lens puts 0.19 m on a horizontal pixel, so the 130 m bank spans 673 px and
+                // the 48 m billow 249 — three and eight features across a 1920 px frame. A 15 px
+                // high-pass cannot see either of them, and the two octaves that COULD (15 m and
+                // 5 m) are deliberately faded out by 220 m and 80 m because at grazing incidence
+                // they alias. So the band between 100 and 300 m had, correctly, nothing in it.
+                //     26 m is the size that fits in the gap: 135 px across at 200 m, which a 15 px
+                // high-pass reads, and 1123·26·6.3/d² px of VERTICAL extent — 4.6 px at 300 m and
+                // 2.6 px at 400, so fading it 260→420 m keeps it above the shimmer floor the other
+                // octaves are derived against. Weighted 0.30 against the broad octave's 0.62 so it
+                // texture the banks rather than replacing them; modelled over the v3 frustum it
+                // takes mid-field high-pass std from 4.41 to 6.49 and interior gradient median from
+                // 0.67 to 1.53 (model units — the same model reads round 4's deck at 4.41 against
+                // the capture's 8.14, so it runs about 1.85× low).
+                     + TarrockGradNoise(q / max(_SwellScale, 1.0) + float2(51.7, 27.3))
+                       * _SwellWeight * swellFade;
             }
 
             half4 Frag(Varyings input) : SV_Target
@@ -365,6 +404,7 @@ Shader "Tarrock/CloudSea"
                 float curdFade = 1.0 - smoothstep(_CurdFadeStart, _CurdFadeEnd, dist);
                 float fineFade = 1.0 - smoothstep(_FineFadeStart, _FineFadeEnd, dist);
                 float midFade = 1.0 - smoothstep(_MidFadeStart, _MidFadeEnd, dist);
+                float swellFade = 1.0 - smoothstep(_SwellFadeStart, _SwellFadeEnd, dist);
 
                 // Metres from the deck centre. NO fmod wrap: the old guard tiled the deck every
                 // 512 m and left a hard step at each wrap. +-1500 m stays inside the hash's honest
@@ -404,9 +444,11 @@ Shader "Tarrock/CloudSea"
                 // reliefStep, not step: step() is an HLSL intrinsic and shadowing it in a function
                 // that also uses smoothstep is a compile error waiting for a different compiler.
                 float reliefStep = max(_SlopeStep, 1.0);
-                float r0 = CsRelief(p, axis, _StreakStretch, warpOffset, midFade);
-                float rx = CsRelief(p + float2(reliefStep, 0.0), axis, _StreakStretch, warpOffset, midFade);
-                float rz = CsRelief(p + float2(0.0, reliefStep), axis, _StreakStretch, warpOffset, midFade);
+                float r0 = CsRelief(p, axis, _StreakStretch, warpOffset, midFade, swellFade);
+                float rx = CsRelief(p + float2(reliefStep, 0.0), axis, _StreakStretch, warpOffset,
+                                    midFade, swellFade);
+                float rz = CsRelief(p + float2(0.0, reliefStep), axis, _StreakStretch, warpOffset,
+                                    midFade, swellFade);
 
                 float3 normalWS = normalize(float3(
                     -(rx - r0) * _ReliefHeight / reliefStep,
@@ -444,7 +486,17 @@ Shader "Tarrock/CloudSea"
                 // washes following the billow instead of cutting across it.
                 mottle = TarrockSoftBand(mottle, _MottleBands, _MottleBandStrength, _MottleBandSoftness);
 
-                float3 color = lerp(_CloudShade.rgb, _CloudBright.rgb, mottle);
+                // THE THREE-BAND RAMP (round 5). Round 4 ran one lerp from furrow to crest, which
+                // is a two-colour ramp however many washes are terraced onto it — the deck had a
+                // light end and a shade end and no shadow core, and the critic measured its
+                // interior contrast at 2-5x under the plates. Three named colours on the one ramp:
+                // the shadow core owns the bottom 46%, so a furrow floor is a genuinely dark value
+                // and not merely a dimmer crest. Modelled over the v3 frustum this alone moves
+                // mid-field high-pass std 4.41 → 5.06 before the new octave is added at all.
+                float3 color = mottle < _CloudMidPoint
+                    ? lerp(_CloudShade.rgb, _CloudMid.rgb, saturate(mottle / max(_CloudMidPoint, 0.01)))
+                    : lerp(_CloudMid.rgb, _CloudBright.rgb,
+                           saturate((mottle - _CloudMidPoint) / max(1.0 - _CloudMidPoint, 0.01)));
 
                 // Gold on the top wash only. The region's grade is warm LIGHT on cool material, so
                 // the warmth belongs where the light lands and nowhere else; spreading it over the

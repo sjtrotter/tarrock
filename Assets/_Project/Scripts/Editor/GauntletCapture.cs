@@ -585,27 +585,89 @@ namespace Tarrock.EditorTools
             Physics.SyncTransforms();
         }
 
+        // THE HIGHLIGHT CEILING, and it lived HERE — not in the grade, not in the lamp, not in the
+        // landform (round-5 finding 1, and it invalidates the highlight half of every capture from
+        // round 1 to round 4).
+        //
+        // WHAT WAS MEASURED. Across round4/v1, v2 and v8 no pixel in any frame exceeded sRGB8 229
+        // in red, 218 in green or 176 in blue; 7.0% of v1 and 13.0% of v8 sat inside the 13 levels
+        // below that ceiling; and 0.000% of any frame passed luminance 0.85, where every plate on
+        // the reference board reaches 255 in all three channels. A distribution that stops dead at
+        // one value is not a shoulder, it is a clamp.
+        //
+        // WHERE THE CLAMP IS. URP takes the CAMERA TARGET TEXTURE'S OWN FORMAT as the format of the
+        // camera colour buffer — the buffer every shader writes into, long before the post chain
+        // runs (UniversalRenderPipelineCore.CreateRenderTextureDescriptor, the `else` branch; its
+        // own comment calls the behaviour "incorrect" and says the workaround is "simply pick a
+        // suitable format for the external texture"). This rig handed it ARGB32 sRGB. So every
+        // shader output was sRGB-encoded into 8 bits and CLAMPED AT 1.0 at the moment it was
+        // written, and the tonemapper, the bloom prefilter and the grade all ran on a picture whose
+        // headroom had already been thrown away. HDR was on in the URP asset and on the camera; it
+        // was the render target that was LDR.
+        // Modelled end-to-end (the round-3/4 chain: shader → fog → bloom → vignette → LutBuilderHdr
+        // → Neutral tonemap), the highest sRGB8 value ANY scene colour can reach through a
+        // 1.0-clamped buffer is R 228 / G 218 / B 217 — and the measured maxima are R 229 / G 207 /
+        // B 176, i.e. red sits exactly on the clamp's own ceiling in every frame and the other two
+        // never get there because the dawn is warm. That is the proof.
+        //
+        // WHAT THE FIX BUYS, measured by inverting the round-4 captures through the grade, repairing
+        // the clipped channel from the channels that survived, and re-rendering unclamped:
+        //     max sRGB8      v1 229 → 245    v8 230 → 247    v2 224 → 237
+        //     pixels pinned  v1 3.7% → 0     v8 10.0% → 0    v2 1.3% → 0
+        //     top-end shape  a wall at 229 → a monotone ramp running out to 250 (v1's 215-255
+        //                    histogram goes 87k/72k/24k/0/0/0 → 115k/89k/49k/37k/8k/1.6k)
+        // The 3.7% of v1 that was one flat cream value is now the modelled highlight it always was.
+        //
+        // WHY THE TWO TEXTURES. The camera renders into a LINEAR HALF-FLOAT target, which is what
+        // gives the chain its headroom; the graded result it leaves there is display-referred but
+        // not yet sRGB-encoded (the hardware only encodes on write to an sRGB surface). The blit
+        // into the ARGB32 sRGB texture does exactly that encode, so the readback path below is
+        // byte-for-byte the one every previous round used and the frames stay comparable.
         private static bool TryRender(Camera camera, string path)
         {
-            // MSAA comes from the pinned quality level; the RT carries it so URP resolves the same
-            // edges the game view would. sRGB read/write keeps the graded output in display space.
-            var descriptor = new RenderTextureDescriptor(CaptureWidth, CaptureHeight)
+            // MSAA comes from the pinned quality level; both targets carry it so URP resolves the
+            // same edges the game view would.
+            int msaa = Mathf.Max(1, QualitySettings.antiAliasing);
+            var sceneDescriptor = new RenderTextureDescriptor(CaptureWidth, CaptureHeight)
+            {
+                colorFormat = RenderTextureFormat.ARGBHalf,
+                depthBufferBits = 24,
+                msaaSamples = msaa,
+                sRGB = false,
+                useMipMap = false,
+                autoGenerateMips = false,
+            };
+            var displayDescriptor = new RenderTextureDescriptor(CaptureWidth, CaptureHeight)
             {
                 colorFormat = RenderTextureFormat.ARGB32,
-                depthBufferBits = 24,
-                msaaSamples = Mathf.Max(1, QualitySettings.antiAliasing),
+                depthBufferBits = 0,
+                msaaSamples = 1,
                 sRGB = true,
                 useMipMap = false,
                 autoGenerateMips = false,
             };
 
-            var renderTexture = new RenderTexture(descriptor);
+            if (!SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBHalf))
+            {
+                // Never silently: an LDR capture is exactly the bug this method exists to document,
+                // so if the box cannot do half-float the round must know its highlights are fiction.
+                Debug.LogWarning(
+                    $"{LogPrefix} ARGBHalf render targets are unsupported on this device; falling " +
+                    "back to an LDR capture. Every value over 1.0 linear will be clamped and the " +
+                    "frame's highlights will be unreadable — see the ceiling note above.");
+                sceneDescriptor.colorFormat = RenderTextureFormat.ARGB32;
+                sceneDescriptor.sRGB = true;
+            }
+
+            var sceneTexture = new RenderTexture(sceneDescriptor);
+            var displayTexture = new RenderTexture(displayDescriptor);
             var readback = new Texture2D(CaptureWidth, CaptureHeight, TextureFormat.RGB24, mipChain: false);
             RenderTexture previousActive = RenderTexture.active;
+            bool previousSrgbWrite = GL.sRGBWrite;
 
             try
             {
-                if (!renderTexture.Create())
+                if (!sceneTexture.Create() || !displayTexture.Create())
                 {
                     Debug.LogError(
                         $"{LogPrefix} Could not create a {CaptureWidth}×{CaptureHeight} render target " +
@@ -613,10 +675,16 @@ namespace Tarrock.EditorTools
                     return false;
                 }
 
-                camera.targetTexture = renderTexture;
+                camera.targetTexture = sceneTexture;
                 camera.Render();
 
-                RenderTexture.active = renderTexture;
+                // The encode. Explicit rather than ambient: GL.sRGBWrite is editor state, and if it
+                // is off the blit copies the linear values through unconverted and the PNG comes out
+                // two stops dark.
+                GL.sRGBWrite = true;
+                Graphics.Blit(sceneTexture, displayTexture);
+
+                RenderTexture.active = displayTexture;
                 readback.ReadPixels(new Rect(0f, 0f, CaptureWidth, CaptureHeight), 0, 0, recalculateMipMaps: false);
                 readback.Apply(updateMipmaps: false);
 
@@ -630,11 +698,14 @@ namespace Tarrock.EditorTools
             }
             finally
             {
+                GL.sRGBWrite = previousSrgbWrite;
                 RenderTexture.active = previousActive;
                 camera.targetTexture = null;
                 UnityEngine.Object.DestroyImmediate(readback);
-                renderTexture.Release();
-                UnityEngine.Object.DestroyImmediate(renderTexture);
+                displayTexture.Release();
+                UnityEngine.Object.DestroyImmediate(displayTexture);
+                sceneTexture.Release();
+                UnityEngine.Object.DestroyImmediate(sceneTexture);
             }
         }
 

@@ -48,6 +48,7 @@ Material:
     - _CrevasseDarken: 0.42
     - _CrevasseScale: 2.9
     - _CrevasseWidth: 0.045
+    - _DetailBaseScale: 0.6
     - _DetailFadeRange: 28
     - _DetailFadeStart: 10
     - _HeightHigh: 48
@@ -62,10 +63,15 @@ Material:
     - _MeadowDabScale: 6
     - _MeadowDabSize: 0.45
     - _MeadowDabWarp: 0.55
+    - _MeadowDetailAmount: 0.52
+    - _MeadowDetailScale: 0.95
     - _MeadowFineScale: 0.95
     - _MeadowFineStraw: 0.28
     - _MeadowFineTone: 0.16
     - _MeadowFineWarp: 0.45
+    - _MeadowFleckCoarse: 0.48
+    - _MeadowFleckFine: 0.72
+    - _MeadowFleckMid: 0.58
     - _MeadowGrain: 0.13
     - _MeadowGrainScale: 0.34
     - _MeadowHueScale: 21
@@ -80,10 +86,15 @@ Material:
     - _RockDabEdge: 0.14
     - _RockDabScale: 0.62
     - _RockDabTone: 0.2
+    - _RockFleckCoarse: 0.34
+    - _RockFleckFine: 0.58
+    - _RockFleckMid: 0.46
+    - _RockGrainAmount: 0.4
     - _RockLichenAmount: 0.4
     - _RockMottleScale: 6.5
     - _RockNormalBoost: 2.2
     - _ShadeWrap: 0.4
+    - _ShadowPenumbra: 1
     - _SlopeEnd: 0.35721236
     - _SlopeJitter: 0.13
     - _SlopeStart: 0.18084794
