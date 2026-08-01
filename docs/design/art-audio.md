@@ -116,6 +116,20 @@ from day one, keyed off its Arcanum's world-state flag (`world.md`'s world-state
   light) — stasis made visible, not weather. Living drift — fireflies, blown pollen,
   falling leaves — is reserved for the unbound state, where it reads as motion
   returning.
+- **A bound world still yields to touch.** The stasis is the *world's*, not the Fool's.
+  Nothing moves on its own, but everything moves when he or Pip moves through it: grass
+  parts around them and settles back once they have passed, hanging cloth swings off a
+  shoulder that brushes it, motes drift out of the way of a passing body. This is the
+  one motion allowed while bound, and it is the difference between a held breath and a
+  painted backdrop. It is a **displacement response** — driven by a body's position, not
+  by a clock — so a still frame of a bound region still contains no moving thing.
+  (Director ruling, 2026-07-31.)
+- **"Wind-combed" is a shape, not a movement.** Where a bound region's description calls
+  for combed grass, leaning banners or drifted snow, that is the pose the *last* wind
+  left before the Stall — authored as a static lean with a coherent direction, stronger
+  on exposed ground than in shelter. Reading it as ambient sway puts wind back into a
+  region that canon says has none; prose like MQ00's "wind-combed grass" describes the
+  *shape* the last wind left, not motion. (Director ruling, 2026-07-31.)
 - **Unbound regions gain motion.** Wind returns to cloth and foliage, weather rotation
   activates, water animates properly, ambience beds gain layered one-shots (birds,
   distant voices, weather) so the loop point disappears. NPC posing loosens from
