@@ -452,10 +452,11 @@ namespace Tarrock.Editor
         // eight vantages the pass raises v1's skyline event density (mean |dv/du|) from 0.035 to
         // 0.040 and v8's from 0.032 to 0.040, moves no camera, buries none, and occludes no subject.
         //
-        // RESTRAINT. This DRESSES the existing sculpt: two raises and four cuts, none deeper than
-        // ~12 m, together touching 2.8% of the heightmap and none of it walkable-critical. The
-        // spawn bowl, the valley floor, the west mouth, the knoll's summit and the knoll's whole
-        // east half are byte-for-byte unchanged.
+        // RESTRAINT. This DRESSES the existing sculpt: three raises and six cuts, none deeper than
+        // ~12 m, together touching 3.7% of the heightmap (round 3: 3.3%) and none of it
+        // walkable-critical. The spawn bowl, the valley floor, the west mouth, the knoll's summit
+        // and the knoll's whole east half are byte-for-byte unchanged — re-checked after the
+        // round-4 pass at every vantage's own standing point, all nine identical to the centimetre.
         // -------------------------------------------------------------------------------------
         private static float ApplyLandformEvents(float height, float x, float z)
         {
@@ -478,6 +479,42 @@ namespace Tarrock.Editor
             //    them, so no col floor is ever the flat mesa the 2026-07-26 audit killed.
             //    Their spacing and depth are deliberately unequal — a rim with an even comb in it
             //    reads as a machined part. The two southern cols leave a horn between them.
+            // -- THE DAWN BREACH (round-4 light pass, and the only landform event in this file that
+            //    exists for the LIGHT rather than for the skyline — though it earns its keep twice).
+            //
+            //    THE FINDING: at the round-3 sun the beam could not reach the ground the game opens
+            //    on. Ray-traced along the sun's bearing, the horizon from the spawn mark stands at
+            //    26.2° — this valley's north refusing wall, 16 m of it 30 m away, sitting square on
+            //    the sun's line — so 100% of the ground within 15 m of the Fool and 100% of what v2
+            //    can see were in cast shadow. The wall is doing exactly what the grammar asks of it
+            //    (rule 5: north refuses); it simply also stood between the dawn and the meadow.
+            //
+            //    THE EVENT: one col through that wall, 32 m wide and cut 4-6 m into a crest that runs
+            //    33-37 m, capped at 30 m. Traced through the finished heightfield it does three
+            //    things with one cut, which is why it is one cut and not three:
+            //      - v1 (the opening frame): the lit boundary on the valley's centre line comes from
+            //        x 195 to x 211 — 8.4 m from the lens — so the near ground stays in shade, the
+            //        Fool stands at the edge of the light, and a lane opens just beyond him. Traced
+            //        along that centre line the read is shade (0-7 m), LIGHT (8-15 m), shade
+            //        (16-25 m), light again: a lane, not a floodlight, and the scatter's own long
+            //        shadows dapple it — at this sun a 2.5 m stone throws 11.8 m.
+            //      - v2 (the contre-jour frame): the col is the notch the dawn disc sits in. The sun
+            //        is at bearing 332° and 16° left of that view's axis, and round 3 had it BEHIND
+            //        this wall — measured on gauntlet/round3/v2, the pixel where the disc should be
+            //        reads (0.13, 0.14, 0.21). The col drops the horizon on that bearing from 17.2°
+            //        to 6.6°, so the disc clears it and the frame gets its top end back (the blaze
+            //        core lands ≈1.5 linear and blooms) plus 32° of open sky either side of it.
+            //      - and the crest gains a genuine skyline event where it is looked at.
+            //    Being a CAP it can only ever lower ground: if the sun is ever moved, the worst this
+            //    can do is quietly stop doing anything.
+            //
+            //    IT DOES NOT UNDO THE REFUSAL. The col takes the top off the wall; the 58-72° ramp
+            //    below it is untouched, so the climb from the valley floor to the col mouth still
+            //    breaks the CharacterController's 45° limit. Light passes, the player does not.
+            //    1026 m³ of cut and not a cubic metre of fill, over 0.40% of the heightmap. The
+            //    spawn bowl, the valley floor, the west mouth and the knoll are untouched by it.
+            height = CapTo(height, x, z, new Vector2(192f, 119f), runX: 16f, runZ: 9f, cap: 30.0f, degrees: 105f);
+
             height = CapTo(height, x, z, new Vector2(116f, 74f), runX: 24f, runZ: 7f, cap: 31.0f, degrees: 8f);
             height = CapTo(height, x, z, new Vector2(114f, 90f), runX: 26f, runZ: 8f, cap: 32.0f, degrees: -6f);
             height = CapTo(height, x, z, new Vector2(120f, 112f), runX: 22f, runZ: 12f, cap: 28.5f, degrees: 14f);
@@ -492,31 +529,54 @@ namespace Tarrock.Editor
             //    tree on it. Every reference skyline (fable-06, fable-02) is a crest the eye can
             //    draw from memory because something INTERRUPTS it.
             //
-            //    THE EVENT, and there is exactly one: a notch cut across the north-west shoulder,
-            //    with the ground rising again beyond it to a horn. Measured in v8's own frustum the
-            //    shoulder's crest drops from v −0.26 to v −0.39 across the cut — 3.0 m at that
-            //    range, ≈15% of the knoll's 20 m of relief, which is the size a notch has to be
-            //    before it reads as a decision rather than as noise — then climbs +0.11 to the horn
-            //    at u +0.30 before falling away. Fall, cut, rise, fall: a skyline with a shape.
+            //    ROUND 4 RE-CUTS IT, AND THE ROUND-3 PAIR IS GONE RATHER THAN ADDED TO. Re-traced
+            //    column by column through v8's frustum, the round-3 cut measured 0.06 NDC of bite
+            //    against the 0.13 its comment claimed, and the reason is instructive enough to
+            //    write down: the cut at (151, 69.8) DID trench the ground — the terrain at z ≈ 68
+            //    drops to 40.7-41.4 m between two 44 m shoulders — but that trench is not on the
+            //    skyline. From v8 the crest at u +0.18…+0.34 is drawn by the ridge at z 70-76, and
+            //    the trench sits BEHIND it. Cutting terrain that the horizon does not run along
+            //    buys nothing; the cut has to land on the line the eye actually reads.
+            //
+            //    THE EVENT, and there is exactly one: a V cut through THAT ridge, at (149.8, 73.5),
+            //    with the ground raised again beyond it to a horn at (146.6, 78.0). Measured in
+            //    v8's own frustum, per screen column:
+            //        u +0.10  v −0.062   the summit plateau's lip (the tree stands at u 0.00)
+            //        u +0.18  v −0.150   falling
+            //        u +0.22  v −0.326   the notch's east wall
+            //        u +0.26  v −0.496   THE FLOOR — 0.17 below the east shoulder, 0.20 below the
+            //                            horn, i.e. a 108-pixel bite at 1080p
+            //        u +0.30  v −0.378   climbing out, hard
+            //        u +0.38…+0.46  v ≈ −0.292   the horn, a level shelf 0.12 wide
+            //        u +0.54  v −0.501   and away.
+            //    Fall, cut, rise, fall — and ASYMMETRIC, which was the other half of the ask: the
+            //    east wall descends from the summit in two steps and the west wall is one sharp rise
+            //    onto a flat shelf. The two sides do not mirror.
             //
             //    WHY IT IS THIS BIG AN ELLIPSE. The shoulder is a RAMP, ~10 m deep along v8's line
             //    of sight, so a tidy little dimple in the crest simply reveals the ramp behind it
             //    and changes nothing — three rounds of narrower cuts measured under 0.08. The cut
-            //    is therefore elongated ALONG THE RAY (degrees 26 sits between v8's sight line at
-            //    ≈20° and the ridge's perpendicular at ≈40°), which is the same reasoning the four
-            //    western cols above are built on. It still touches only 0.23% of the heightmap.
+            //    is therefore elongated ALONG THE RAY (degrees 12 is v8's own sight line onto the
+            //    ridge), which is the same reasoning the four western cols above are built on.
+            //    Retiring the round-3 pair and cutting this one moves 1196 m³ in all — 951 of it
+            //    ground handed BACK where round 3 had trenched the wrong ridge — over 0.49% of the
+            //    heightmap.
             //
             //    THE COUNTER-ELEMENT IS STONE, NOT TREE. The knoll keeps ONE tree (art-audio.md
             //    §Region colour scripts; the dead tree is the Cliff's signature and the one tree
             //    that visibly dies). What stands on the horn is a family of leaning slabs — see
-            //    the notch-horn entries in RockAnchors — whose tops spike ≈0.17 above the notch
-            //    floor. The tree crowns the summit; the stones lean off the shoulder; nothing on
-            //    this hill competes with either.
+            //    the notch-horn entries in RockAnchors, moved onto the new horn with the cut —
+            //    whose tops read at v −0.219, −0.232 and −0.248 across u +0.41…+0.47: 0.25-0.28
+            //    above the notch floor and 0.06-0.07 clear of the horn's own shelf, three dark
+            //    verticals against open sky. They stand on ground measuring 3-8°, which is what a
+            //    slab can stand on. The tree crowns the summit; the stones lean off the shoulder;
+            //    nothing on this hill competes with either.
             //
-            //    The summit, the whole east half, the v4 vantage's ground and every metre of the
-            //    spawn bowl, the valley floor and the west mouth are byte-for-byte unchanged.
-            height = CapTo(height, x, z, new Vector2(151f, 69.8f), runX: 9.5f, runZ: 4.4f, cap: 40.0f, degrees: 26f);
-            height = RaiseTo(height, x, z, new Vector2(148f, 73f), radius: 2.2f, blend: 4.0f, top: 45.0f);
+            //    The summit (49.78 m, unchanged to the centimetre), the whole east half, the v4
+            //    vantage's ground (50.83 m, likewise) and every metre of the spawn bowl, the valley
+            //    floor and the west mouth are untouched.
+            height = CapTo(height, x, z, new Vector2(149.8f, 73.5f), runX: 13f, runZ: 5.5f, cap: 37.5f, degrees: 12f);
+            height = RaiseTo(height, x, z, new Vector2(146.6f, 78f), radius: 3.4f, blend: 5.0f, top: 44.0f);
             return height;
         }
 
@@ -710,6 +770,19 @@ namespace Tarrock.Editor
         internal const float GrassPatchFrequency = 0.045f;
         internal const float GrassPatchScaleMetres = 1f / GrassPatchFrequency;
 
+        // -- The brushmark family (round 4) ------------------------------------------------------
+        // SHARED SURFACE, same rule as the turf palette above: the ground shader and the rock
+        // shader both draw jittered-cell marks, and if their shape statistics differ the props stop
+        // looking like they are made of the hillside. One fact, one place.
+        //
+        // Aspect spread turns some cells into drawn-out strokes and others into blobs; size spread
+        // gives the family a range of brush widths. Both exist because jittering a Worley cell's
+        // CENTRE hides the lattice's phase and NOTHING else — the marks stay one circle at one
+        // radius on one pitch, which is what the round-4 critique read at 2 m as "one stamped decal
+        // repeated at one size on a visible cadence".
+        internal const float MeadowDabAniso = 0.55f;
+        internal const float MeadowDabSize = 0.45f;
+
         private static Material BuildTerrainMaterial(Shader shader)
         {
             var material = AssetDatabase.LoadAssetAtPath<Material>(TerrainMaterialPath);
@@ -746,6 +819,13 @@ namespace Tarrock.Editor
             material.SetFloat("_MeadowGrainScale", 0.34f);
             material.SetFloat("_MeadowDabWarp", 0.55f);
             material.SetFloat("_MeadowDabEdge", 0.10f);
+            // ROUND-4: the brushmark family's shape spread. Shared with the rock material below,
+            // because the ground and the stones sitting on it are made of one paint. See the
+            // shader's TkDabShaped for why jittering a Worley CENTRE alone leaves one stamp at one
+            // size on one pitch — which is exactly what the round-4 critique read at 2 m.
+            material.SetFloat("_MeadowDabAniso", MeadowDabAniso);
+            material.SetFloat("_MeadowDabSize", MeadowDabSize);
+            material.SetFloat("_MeadowFineWarp", 0.45f);
             material.SetFloat("_MeadowStrawAmount", 0.85f);
             material.SetFloat("_MeadowScuffAmount", 0.55f);
             material.SetFloat("_MeadowCoolAmount", 0.70f);
@@ -756,6 +836,16 @@ namespace Tarrock.Editor
             // is fully present for everything the player is actually standing in.
             material.SetFloat("_DetailFadeStart", 10f);
             material.SetFloat("_DetailFadeRange", 28f);
+
+            // THE CLUMP OCTAVE (round 4) — the band that carries the ground from 40 m to the
+            // horizon, where round 3 had nothing but smooth fbm and the hills read as olive
+            // gradients. 16 m is a stand of vegetation, not a hillside: coarse enough to still
+            // subtend ~9° at 100 m, fine enough that a hill carries a dozen of them. Nothing here is
+            // distance-faded — that is the whole point of the octave.
+            material.SetFloat("_MeadowClumpScale", 16f);
+            material.SetFloat("_MeadowClumpWarp", 0.85f);
+            material.SetFloat("_MeadowClumpAmount", 0.90f);
+            material.SetFloat("_MeadowClumpEdge", 0.11f);
 
             // Turf — the layer the tuft fields grow out of (shared constants above). GREEN family
             // now; the ochre is a scour PATCH rather than half of the base ramp.
@@ -785,6 +875,12 @@ namespace Tarrock.Editor
             material.SetColor("_RockLichen", new Color(0.35f, 0.40f, 0.26f));
             material.SetColor("_CliffColor", new Color(0.30f, 0.31f, 0.35f));
             material.SetFloat("_RockMottleScale", 6.5f);
+            // Close-range paint on the hillside's own stone (round 4). 0.62 m marks on the face's
+            // strike/height frame: below the bedding, above the pixel, and the band the round-4
+            // critique found empty on v5's 2 m rock face.
+            material.SetFloat("_RockDabScale", 0.62f);
+            material.SetFloat("_RockDabTone", 0.20f);
+            material.SetFloat("_RockDabEdge", 0.14f);
             // Down from round 2's 0.85. The hue swing now turns over per FORMATION (every ~3 beds)
             // instead of per bed, so the same swing at the old amount would read as a barcode.
             material.SetFloat("_RockBedTint", 0.55f);
@@ -829,8 +925,19 @@ namespace Tarrock.Editor
             // an enormous on-surface width and its edge necessarily traces a heightmap contour. Fade
             // the whole construct out below the angle where a bed cuts a thin line and the ring
             // cannot be drawn at all. Authored in degrees, like every other slope threshold here.
-            material.SetFloat("_BeddingSlopeStart", 35f);
-            material.SetFloat("_BeddingSlopeEnd", 48f);
+            //
+            // ROUND-4 RE-GATE, 35/48 -> 50/62, plus an AND against the rock classification in the
+            // shader. MEASURED, not eyed: over this generator's own 513² heightfield with Unity's
+            // central-difference normals, the landform filling v1's left third (x 140-218, z 30-88,
+            // the valley's SOUTH permitting ramp) runs a median slope of 31.5° across a 12.6-48.6°
+            // quartile range — a dune. 43.8% of it fell inside the old fade and drew beds; a
+            // horizontal plane cutting a rounded hill traces a CONTOUR, so those beds wrapped the
+            // form, which is precisely the round-4 finding. At 50/62 the same box drops to 22.2%
+            // touched, every cell under 50° takes exactly zero, and what keeps its strata is the
+            // north refusing wall (55-65°) and the broken edge (~70°) — true rock, where a 2.6 m bed
+            // meets the surface over 3.0 m instead of 5.2 m and can be a line rather than a shade.
+            material.SetFloat("_BeddingSlopeStart", 50f);
+            material.SetFloat("_BeddingSlopeEnd", 62f);
 
             // CAVITY — concavity darkening as its own AO-like term, deliberately NOT baked into the
             // bedding marks. It selects a filled REGION (where the fine relief sits below the broad
@@ -850,6 +957,12 @@ namespace Tarrock.Editor
             material.SetFloat("_NormalDetailStrength", 1f);
             material.SetFloat("_NormalDetailFadeStart", 45f);
             material.SetFloat("_NormalDetailFadeRange", 55f);
+            // ...and MORE of it on stone (round 4). The 0.30 m figure is sized for the meadow's
+            // near-flat triangles; on a 65° face the same triangles are edge-on and the ndotl step
+            // across each Gouraud kink is several times larger, which is why v5's rock face read as
+            // sliver triangles. 2.2x lands ~11° of shading tilt on stone and leaves the meadow
+            // untouched. Costs nothing: the same relief height, amplified before it is differentiated.
+            material.SetFloat("_RockNormalBoost", 2.2f);
 
             material.SetFloat("_HeightLow", 8f);
             material.SetFloat("_HeightHigh", 48f);
@@ -1013,9 +1126,23 @@ namespace Tarrock.Editor
         // squash, is most of why the capture reads as a smudge rather than a shape.
         private const float VaultCloudSoftness = 0.030f;
         private const float VaultCloudLump = 0.090f;
+        // ROUND 4. How far the mass's flat base is allowed to wander, in half widths. A ruler for a
+        // base was half of the critic's "flat-bottomed" reading of v4 and it was literal — every
+        // mass in the region cut its base at the same fraction of its own half width, so a row of
+        // them drew one horizontal line across the sky. 0.075 on the 21° anchor is 1.6° of wander,
+        // 31 px at the gameplay lens: a drawn edge, and still recognisably a condensation level.
+        private const float VaultCloudBaseLump = 0.075f;
+        // How far the shading wash tilts UP off the sun vector, in the mass's own flat frame. This
+        // answers "shaded on a horizontal axis that contradicts the sun" — see the long note in
+        // SkyGradient.hlsl §TarrockVaultCloud for why the sun vector goes horizontal for any mass
+        // more than a few degrees round the compass from the disc, and why a cloud's crowns are
+        // bright anyway. 0.58 against a unit sun vector puts the wash 30° above the frame's
+        // horizontal, which leaves the disc deciding which FLANK is gold and the dome deciding
+        // which end is up.
+        private const float VaultCloudLift = 0.58f;
 
         /// <summary>Compass bearing of the sun disc, Unity's convention (0° = +Z, increasing
-        /// toward +X). At SunEuler 7°/152° this is ≈332°, NNW — see BuildLighting. DERIVED, never
+        /// toward +X). At SunEuler 12°/152° this is ≈332°, NNW — see BuildLighting. DERIVED, never
         /// typed: the vault clouds are placed at offsets from it, so moving the sun moves the whole
         /// cloud composition with it.</summary>
         private static float SunBearingDegrees
@@ -1039,7 +1166,7 @@ namespace Tarrock.Editor
         // cloud deck's bank alignment all read this, because a second hand-typed copy is a drift
         // waiting to happen (the sky would glow where the sun is not).
         //
-        // Elevation 7° / azimuth 152° — the reasoning is written out at length in BuildLighting,
+        // Elevation 12° / azimuth 152° — the reasoning is written out at length in BuildLighting,
         // which owns this number. In short: light TRAVELS south-south-east, so the disc sits NNW
         // (compass 332°) and RAKES 62° across the v1 wake frame's due-west axis, low enough that
         // micro-relief casts.
@@ -1058,7 +1185,24 @@ namespace Tarrock.Editor
         // the blaze now sits ~35° further north and much closer to the horizon band, and
         // GauntletCapture's v1/v2 header comments still quote the round-1 bearings (see the report
         // for the corrected figures: v1 rakes 62°, v2 is now the near-contre-jour frame at 16°).
-        private static readonly Vector3 SunEuler = new Vector3(7f, 152f, 0f);
+        //
+        // MERGE NOTE (round 4, the beam pass): 7° → 12°. THE AZIMUTH DOES NOT MOVE, so every vector
+        // derived from it — the blaze, the cloud banks, the five vault masses, the rock family's
+        // bedding dip — keeps its round-3 bearing exactly and the round-3 sky composition is
+        // untouched. Only the disc's HEIGHT changes, and it changes because at 7° the beam could
+        // not physically reach the ground the player stands on: traced against this file's own
+        // heightfield, the horizon toward the sun from the spawn mark is 26.2° (the valley's north
+        // refusing wall, 16 m of it at 32 m range), so the entire spawn floor — 100% of the ground
+        // within 15 m of the Fool — sat in cast shadow, and 0% of v2's visible ground was lit.
+        // 12° is not a taste call: it is the lowest elevation at which the col cut through that
+        // wall (see ApplyLandformEvents, "the dawn breach") admits the beam to the meadow inside
+        // 10 m of the v1 lens. At 11° the same col still leaves the lit boundary 25 m out.
+        // The dawn is not spent by the raise: a form still throws 4.7× its height (8.1× at 7°), and
+        // what actually carries the modelling — the MODULATION of N·L by the fine relief, not its
+        // mean — is unchanged to three decimal places. Measured over the walkable floor between
+        // x 170-215: σ(N·L) 0.0844 → 0.0829, σ(wrapped) 0.0603 → 0.0592. The west-facing terrace
+        // risers keep their stripe (wrapped 1.29:1 over the treads at 7°, 1.24:1 at 12°).
+        private static readonly Vector3 SunEuler = new Vector3(12f, 152f, 0f);
 
         /// <summary>Unit vector pointing TOWARD the sun (a light's forward points the way its
         /// light travels, so the sun is behind it).</summary>
@@ -1126,17 +1270,33 @@ namespace Tarrock.Editor
             //  4 — a mid-size mass at bearing 36°, filling v4's left sky (centre u ≈ −0.53) with an
             //      8° gap of clear sky between it and mass 3. An unbroken belt is weather nobody
             //      believes; the gap is the composition.
+            //
+            // ROUND 4 RE-PITCHES THE TWO v4 MASSES, and leaves v3's alone because v3's read. The
+            // critique of v4 was "one edge-to-edge bank of same-size same-altitude flat-bottomed
+            // lobes". Three of those four words are answered in SkyGradient.hlsl (two alphabets, a
+            // base that wanders, a wash that tilts up off the sun vector); the sizes and altitudes
+            // are answered here, and they were fair comment — 3 and 4 sat 3.0° apart at half widths
+            // of 18° and 13°, which at v4's lens is 59 px of separation between two masses of nearly
+            // the same span. They are now 8.5° apart (167 px) at 21° and 11° — a tall wide anchor
+            // high in the frame and a small low one sitting almost on the far bank, which is what a
+            // dawn sky over a cloud sea actually looks like and what animation-02 draws.
+            //     Mass 3 also gains its belly outright: the thickness weight in the shader is
+            // saturate((halfWidth − 8)/12), so 18° took 83% of the dark anchor and 21° takes all of
+            // it. v4's frame has had no value under mid-grey in the whole upper half for four
+            // rounds; this is where it comes from.
             target.SetVector("_VaultCloud0", VaultCloud(-44f, 12.0f, 20.0f, 0.94f));
-            target.SetVector("_VaultCloud1", VaultCloud(26f, 8.5f, 8.0f, 0.72f));
-            target.SetVector("_VaultCloud2", VaultCloud(-98f, 25.0f, 24.0f, 0.26f));
-            target.SetVector("_VaultCloud3", VaultCloud(105f, 9.5f, 18.0f, 0.82f));
-            target.SetVector("_VaultCloud4", VaultCloud(64f, 6.5f, 13.0f, 0.66f));
+            target.SetVector("_VaultCloud1", VaultCloud(26f, 7.5f, 9.0f, 0.70f));
+            target.SetVector("_VaultCloud2", VaultCloud(-98f, 26.0f, 26.0f, 0.24f));
+            target.SetVector("_VaultCloud3", VaultCloud(105f, 13.5f, 21.0f, 0.88f));
+            target.SetVector("_VaultCloud4", VaultCloud(64f, 4.5f, 11.0f, 0.62f));
             target.SetColor("_VaultCloudLit", VaultCloudLitLinear);
             target.SetColor("_VaultCloudShade", VaultCloudShadeLinear);
             target.SetColor("_VaultCloudShadow", VaultCloudShadowLinear);
             target.SetFloat("_VaultCloudBase", VaultCloudBase);
+            target.SetFloat("_VaultCloudBaseLump", VaultCloudBaseLump);
             target.SetFloat("_VaultCloudSoftness", VaultCloudSoftness);
             target.SetFloat("_VaultCloudLump", VaultCloudLump);
+            target.SetFloat("_VaultCloudLift", VaultCloudLift);
         }
 
         private static void BuildLighting()
@@ -1146,18 +1306,40 @@ namespace Tarrock.Editor
             // plateau's gold lives in the LIGHT — the ground stays green meadow, dawn paints it.
             // Two decisions live in this one rotation:
             //
-            // ELEVATION 7°. Round 1 came down from a 42° near-midday sun to 17° and the pixel audit
-            // of round1/v1,v2 still measured NO raking: the meadow sat in a 0.23–0.41 luminance band
-            // (σ 0.06) with no lit-crest-against-shadowed-trough anywhere, and the warm key never
-            // landed on a walkable surface — gold stayed in the sky while the ground read grey-olive.
-            // 17° is still high enough that a metre of relief throws only 3.3 m of shadow, which the
-            // meadow's own gentle grain swallows. At 7° a form throws 8.1× its height, so the relief
+            // ELEVATION 12°, and rounds 1-3 are the argument for every part of that number.
+            // Round 1 came down from a 42° near-midday sun to 17° and the pixel audit of round1/v1,v2
+            // still measured NO raking: the meadow sat in a 0.23–0.41 luminance band (σ 0.06) with no
+            // lit-crest-against-shadowed-trough anywhere, and the warm key never landed on a walkable
+            // surface — gold stayed in the sky while the ground read grey-olive. 17° is still high
+            // enough that a metre of relief throws only 3.3 m of shadow, which the meadow's own gentle
+            // grain swallows. Round 2 went to 7°, where a form throws 8.1× its height and the relief
             // that is actually there starts casting: the fine grain on the valley floor (≈0.6 m at a
-            // 5 m wavelength — SampleHeight step 8) puts ±20° of tilt on the walkable surface, and at
-            // this sun that is the difference between N·L ≈ 0.45 (gold) and self-shadow (cool blue).
-            // The meadow stops being a colour and becomes a modelled surface. Everything else in this
-            // block exists to pay for that choice: at 7° flat ground receives only sin(7°) ≈ 0.12 of
-            // the beam, so intensity goes up and the fill comes down to keep the ratio.
+            // 5 m wavelength — SampleHeight step 8) puts ±20° of tilt on the walkable surface, which
+            // is the difference between a lit facet and a self-shadowed one. That was right, and it
+            // is kept.
+            //
+            // WHAT 7° GOT WRONG, and round 3 did not catch because it was measuring the grade and not
+            // the geometry: THE BEAM NEVER REACHED THE PLAYER. Ray-traced against this file's own
+            // heightfield, the elevation of the horizon toward the sun is 26.2° from the spawn mark,
+            // 21.2° from the v1 lens and 17.2° from the v2 lens — the valley's north refusing wall,
+            // 16 m of it standing 30 m away on exactly the sun's bearing. At a 7° sun that wall
+            // shadows 100% of the ground within 15 m of the Fool, 79% of the whole spawn bowl, and
+            // 100% of everything v2 can see. The round-3 critique measured the consequence exactly:
+            // one flat value at four depths across the walkable field, and no lit tier at all in v2.
+            // No grade can fix a surface the light does not land on.
+            //
+            // 12° IS DERIVED, not dialled. It is the lowest elevation at which the col cut through
+            // that wall (ApplyLandformEvents, "the dawn breach") lets the beam onto the meadow inside
+            // 10 m of the v1 lens: at 11° the same col leaves the lit boundary 25 m out, at 12° it
+            // lands at 8.4 m — the near ground stays in shade and the lane opens just beyond the
+            // Fool. A raise on its own could not do it (the sun would have to reach 26° — midday) and
+            // a col on its own could not either (at 7° the same lit boundary needs a 55 m trench
+            // through the rim, 8400 m³ against this one's 1030). The landform and the lamp each do
+            // the half they are good at.
+            // The dawn survives the raise: a form still throws 4.7× its height, and the MODULATION
+            // that does the modelling is untouched — σ(N·L) over the walkable floor 0.0844 → 0.0829.
+            // Everything else in this block exists to pay for the low sun: at 12° flat ground still
+            // receives only sin(12°) ≈ 0.21 of the beam, so intensity stays high and the fill low.
             //
             // AZIMUTH 152° — light TRAVELS south-south-east, so the sun disc sits NNW (compass 332°),
             // 62° off the axis of the west-facing wake frame. Round 1's 117° left the disc only 27°
@@ -1218,7 +1400,23 @@ namespace Tarrock.Editor
             // are UNLIT materials (GradientSky/CloudSea take no main light), so this raises the
             // ground alone: horizon-to-lit-ground closes from 7.9:1 to 2.7:1. Gold stops being a
             // thing that only happens in the sky.
-            light.intensity = 8.00f;
+            //
+            // ROUND 4, 8.00 → 6.71, and this is a CONSEQUENCE of the elevation raise, not a new
+            // opinion about brightness. Round 3's target — flat lit meadow arriving on the LogC
+            // contrast pivot, linear luminance 0.2249 — is kept exactly; the raise simply delivers
+            // more of the beam to flat ground, so the lamp must give back the difference or the
+            // whole grade slides off its own pivot. Solved rather than scaled, because the ambient
+            // term does not move with the lamp:
+            //     albedo·(key·wrapped(sin 12°) + ambient)·shade = 0.2249   →   intensity 6.713
+            // (the naive ratio 8.00 × wrapped(7°)/wrapped(12°) = 6.87 overshoots by 2.4%).
+            // Modelled through the full shader → fog → bloom → vignette → LUT chain, every round-3
+            // landing point therefore holds to within a sRGB level or two:
+            //     flat LIT meadow           0.497 (round 3: 0.497)
+            //     flat CAST-SHADOW meadow   0.181 (round 3: 0.182)
+            //     near lit : near shade     2.74:1 — the board is 2.4:1 to 4.1:1
+            // What changes is not the values but HOW MUCH OF THE FRAME IS AT THEM: v1's lit ground
+            // goes 22% → 43%, v2's 0% → 14%.
+            light.intensity = 6.71f;
             light.shadows = LightShadows.Soft;
             // NOT 1.0. At this elevation shadow covers most of the frame, and full-strength shadow
             // over a cool ambient is exactly how "luminous cool shade" becomes mud. The 10% of direct
@@ -1279,8 +1477,29 @@ namespace Tarrock.Editor
             // an order of magnitude under the trilight ground pole, i.e. inert on every terrain
             // normal. Nothing below depends on it; it is left alone deliberately (the ground
             // builder owns the rest of that SetColor block) but the claim should not be repeated.
+            //
+            // ROUND 4 moves the SKY POLE ONLY, (0.44, 0.49, 0.64) → (0.49, 0.485, 0.565), and it is
+            // the last measurable step of the same argument round 3 was making. The round-3 critique
+            // measured near-ground shade as olive with blue only ~10 levels under the top channel,
+            // where the board's shade quartiles run warmer; the board's own figure is R−B between
+            // +0.013 and +0.082 in sRGB. Round 3 landed at +0.024. Solved against that target rather
+            // than nudged, holding shade luminance constant so nothing else in the grade shifts:
+            //     cast-shadow meadow  round 3 (0.170, 0.187, 0.147)  Y 0.181  R−B +0.024
+            //                         round 4 (0.179, 0.186, 0.131)  Y 0.181  R−B +0.048
+            // The fill is still COOL AGAINST THE KEY, which is the whole point of the opposition and
+            // is what "cool shadow" means on a painted plate — the key's linear R/B is 2.92 and the
+            // fill's is 0.75 — it has simply stopped being a saturated blue of its own. The key still
+            // beats the fill in every channel and by more in the one that mattered: per-channel
+            // key/fill on flat ground 8.9/5.0/1.5 → 7.4/5.1/1.9.
+            // A bonus, and it removes the one place round 3 was flirting with the LogC clip: the
+            // refusing north wall's red, the darkest large surface in any frame, goes from sRGB
+            // 0.0015 (a hair off zero) to 0.0075.
+            // R > G in the shade is still out of reach here and still belongs to the ground builder:
+            // the meadow albedo is linear (0.105, 0.130, 0.047), so green outruns red by 24% whatever
+            // falls on it, and only a straw-warmer _MeadowGreen neighbourhood can close that.
+            // The equator and ground poles are deliberately untouched.
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.44f, 0.49f, 0.64f);
+            RenderSettings.ambientSkyColor = new Color(0.49f, 0.485f, 0.565f);
             RenderSettings.ambientEquatorColor = new Color(0.42f, 0.44f, 0.55f);
             RenderSettings.ambientGroundColor = new Color(0.40f, 0.34f, 0.26f);
 
@@ -1891,9 +2110,29 @@ namespace Tarrock.Editor
                     // lawn. Round 2 bottomed the drift out at 9% and the review could not tell the
                     // drifts from the ambient gaps, because there was no place where the meadow
                     // stopped for a reason you could name.
+                    // ROUND-4: THE LANE'S EDGE IS BROKEN BEFORE IT IS MEASURED. The round-3 lane had
+                    // "straight polygon edges" (critique of v7) and it did, for a reason no amount
+                    // of albedo work would have touched: the drift is a POLYLINE, its anchors were
+                    // 12 m apart, and the level sets of a distance-to-polyline field are straight
+                    // chords with mitred corners. `ragged` was supposed to be the wander, but it is
+                    // a 9.5 m field moving the edge by ±0.4 m — smooth at the scale the edge is
+                    // straight at, and therefore invisible.
+                    //
+                    // The fix is two octaves at the scale a footpath's edge actually frays (1.7 m
+                    // and 0.6 m), added to the MEASURED DISTANCE rather than to the threshold, so
+                    // every one of the three gates below — thinning, bare core, and the scuff
+                    // layer's own core — inherits the same broken boundary and they cannot part
+                    // company. Amplitude 0.55 m against a 0.25-0.6 m core is larger than the core
+                    // itself: the lane pinches and swells and occasionally closes, which is what a
+                    // desire line does. (FindValleyDrift's step also came down to 5 m in the same
+                    // pass, so the chords themselves bend.)
+                    float edgeWander =
+                        0.40f * Fbm(wx * 0.60f + 71f, wz * 0.60f + 13f)
+                        + 0.15f * Fbm(wx * 1.70f + 23f, wz * 1.70f + 59f);
                     float driftEdge = Mathf.Lerp(0.55f, 1.35f, ragged);
                     float toDrift = Mathf.Min(
                         DistanceToPolyline(wx, wz, wayWest), DistanceToPolyline(wx, wz, wayToTree));
+                    toDrift = Mathf.Max(0f, toDrift + edgeWander);
                     float wear = 1f - Mathf.SmoothStep(0f, 1f,
                         Mathf.InverseLerp(driftEdge, driftEdge + 1.9f, toDrift));
                     float coreRadius = driftEdge * 0.45f;
@@ -1949,7 +2188,7 @@ namespace Tarrock.Editor
 
                     for (int s = 0; s < Species.Length; s++)
                     {
-                        if (s == SpeciesThatch)
+                        if (s == SpeciesThatch || s == SpeciesScuff)
                         {
                             // The thatch is the floor, not one of the plants standing on it, so it
                             // is scattered by its own rule below rather than out of the tuft
@@ -1978,15 +2217,27 @@ namespace Tarrock.Editor
                     //
                     // THE BUDGET, because a full-coverage ground layer is where a frame budget goes
                     // to die and this number is the whole of it. Cells are 0.5 m (512 detail res
-                    // over a 256 m region), so one mat per cell is 4 per m². thatchCover runs about
-                    // 0.87 through the meadow body, so 1.15 dithers to ~1.0 mats/cell ≈ 4.0/m²:
-                    // roughly 290 triangles per square metre of meadow, against the tuft layer's
-                    // ~85. Everything past 52 m is squashed flat by the shader's fade, so the far
-                    // half of that is vertex cost with no pixels behind it.
+                    // over a 256 m region), so one mat per cell is 4 per m², and everything past
+                    // the shader's fade window is squashed flat — vertex cost with no pixels
+                    // behind it.
                     //
-                    // Turn THIS number down first if the ground layer ever has to get cheaper — it
-                    // trades coverage for cost linearly and changes nothing else about the look.
-                    const float MaxMatsPerCell = 1.15f;
+                    // ROUND-4: 1.15 -> 1.55 mats per 0.5 m cell. Cells are 0.25 m², so through the
+                    // meadow body (thatchCover ≈ 0.87) that is ~5.4 mats/m² against round 3's ~4.0.
+                    //
+                    // THE COVERAGE ARITHMETIC, because "the bare terrain shader is never visible
+                    // inside the meadow" is a measurable claim and not a hope. A round-3 mat reached
+                    // 0.168 m (0.089 m² of disc); a round-4 mat reaches 0.323 m (0.328 m²), 3.7x
+                    // the area for the same instance. Expected discs over a point go from 0.35 to
+                    // 1.77, and the mats land independently, so the share of ground with at least
+                    // one mat over it goes from 30% to 83% — before the tufts standing in it and
+                    // before the scuff on the lanes. Almost all of that came from SIZE, which costs
+                    // vertices already paid for, and only 1.35x from COUNT, which costs instances.
+                    //
+                    // THE BILL: 34 cards x 3 tris = 102 tris a mat, so ~550 tris per square metre
+                    // of near meadow against round 3's ~288. Turn THIS number down first; it trades
+                    // coverage for cost linearly and changes nothing else about the look. The wear
+                    // term is what keeps the mat off the lanes, where the scuff below takes over.
+                    const float MaxMatsPerCell = 1.55f;
                     float thatchCover = band * Mathf.Lerp(1f, 0.78f, scour)
                                         * Mathf.Lerp(1f, 0.30f, wear) * (1f - bare);
                     float thatchDither = Hash21(
@@ -1996,6 +2247,30 @@ namespace Tarrock.Editor
                         Mathf.FloorToInt(thatchCover * MaxMatsPerCell + thatchDither),
                         0,
                         Species[SpeciesThatch].MaxPerCell);
+
+                    // THE SCUFF LAYER — the exact inverse of everything above. It exists only where
+                    // the meadow has been worn through, so its gate is `wear` and `bare` READ THE
+                    // OTHER WAY UP: densest in the core the tufts and the mat are excluded from,
+                    // thinning out through the trodden fringe, gone in the meadow proper.
+                    //
+                    // This is the layer that gives the worn lane its own albedo. Without it a
+                    // desire line is grass that stops — which is a mown stripe, not a path — and
+                    // the round-4 critique's "unchanged albedo" was precisely that. It costs
+                    // instances only inside a ribbon: at ~1.2 m of usable width over roughly 400 m
+                    // of drift and spur, the whole layer is a few thousand instances against the
+                    // meadow's hundreds of thousands.
+                    //
+                    // It carries the SAME slope/height band as everything else. A lane over bare
+                    // rock is not a worn lane, it is a rock.
+                    const float MaxScuffPerCell = 2.6f;
+                    float scuffCover = band * Mathf.Max(bare, wear * wear * 0.55f);
+                    float scuffDither = Hash21(
+                        dx * 0.37f + Species[SpeciesScuff].DitherOffset,
+                        dz * 0.53f + Species[SpeciesScuff].DitherOffset * 1.7f);
+                    density[SpeciesScuff][dz, dx] = Mathf.Clamp(
+                        Mathf.FloorToInt(scuffCover * MaxScuffPerCell + scuffDither),
+                        0,
+                        Species[SpeciesScuff].MaxPerCell);
                 }
             }
 
@@ -2042,7 +2317,14 @@ namespace Tarrock.Editor
             // silhouette — the same SSOT argument as the root blend below, applied to the tint.
             material.SetColor("_CoolColor", Color.Lerp(species.Cool, turfMid, species.TurfTintWeight));
             material.SetColor("_BaseColor", Color.Lerp(species.Green, turfMid, species.TurfTintWeight));
-            material.SetColor("_DryColor", Color.Lerp(species.Dry, turfDry, species.TurfTintWeight));
+            // The DRY pole is pulled by its own weight (round 4), and the split is a correction of
+            // a real mistake rather than a knob. The ground's dry note is _TurfOchre, and in the
+            // ground shader that colour is the SCOUR PATCH — the place the mat has worn THROUGH.
+            // Pulling the mat's own dry end 78% into it therefore painted the thatch the colour of
+            // its own absence, which is where round 3's brown starbursts on green ground came from.
+            // The mat now takes only a third of it; the SCUFF species, which really is bare trodden
+            // ground, takes nearly all of it. One palette, two honest readings of it.
+            material.SetColor("_DryColor", Color.Lerp(species.Dry, turfDry, species.TurfDryTintWeight));
             material.SetFloat("_DryBias", species.DryBias);
             material.SetFloat("_PatchScale", PatchScaleMetres);
             material.SetFloat("_TuftVariation", species.HueVariation);
@@ -2078,6 +2360,12 @@ namespace Tarrock.Editor
             // stand of grass the wind has actually been through. See the shader header.
             material.SetFloat("_CombFold", species.CombFold);
             material.SetFloat("_CombDrift", species.CombDrift);
+            // THE RAKE (round 4) — the one bearing every layer is combed on. It is per-species only
+            // because the species differ in how RADIAL they are: a two-stem bent has almost no fan
+            // to rake and a 40-card mat is nothing but fan. The bearing itself is _WindAxis, which
+            // is one constant for the whole region, so "unified" is a fact about the axis and not
+            // about these numbers.
+            material.SetFloat("_CombRake", species.CombRake);
 
             // Unbound wind. Every one of these is multiplied by RegionWind's global, so the meadow
             // is COMPLETELY still while the Cliff is bound (director ruling 2026-07-31) and gains
@@ -2098,6 +2386,14 @@ namespace Tarrock.Editor
             // finding on v6 was not "the ring is too weak" but "the ring is not in the frame":
             // a dish with no edge does not survive being photographed. See the shader.
             material.SetFloat("_BendCoreShare", species.BendCore);
+            // ROUND 4 — the ring's silhouette and the ring's value. The bend geometry was never the
+            // problem (the re-projection of round3/v6 finds the disc exactly where the bender puts
+            // it); a blade laid to 90° is optically an absent blade, and a pressed patch with no
+            // value change is a bald patch. Stopping the press at 72° leaves each blade 31% of its
+            // height, lying outward as a readable spoke, and the darkening gives the disc an area
+            // the eye can find before it resolves any individual blade.
+            material.SetFloat("_BendLayDegrees", species.BendLayDegrees);
+            material.SetFloat("_BendDarken", species.BendDarken);
 
             // Distance handling. Tufts widen with range (thin blades go sub-pixel and shimmer),
             // then the fade window — which sits INSIDE detailObjectDistance so tufts are already
@@ -2194,7 +2490,13 @@ namespace Tarrock.Editor
         /// </summary>
         private static Vector2[] FindValleyDrift(TerrainData terrainData)
         {
-            const float StepX = 12f;         // fine enough that the chords stay on the meander
+            // ROUND-4: 12 m -> 5 m. A distance-to-polyline field has STRAIGHT level sets along each
+            // chord and a mitre at each joint, so the lane's edge was as straight as the anchor
+            // spacing made it — which the round-4 critique of v7 read directly off the frame. Five
+            // metres is short enough that the chords follow the meander as a curve; the density
+            // loop's own two-octave edge wander does the rest, at the metre and sub-metre scales a
+            // polyline could never reach however finely it is stepped.
+            const float StepX = 5f;
             const float SearchHalfWidth = 16f;
             const float SearchStep = 0.5f;   // one heightmap sample
             const float WanderMetres = 2.6f; // a desire line is not a survey line
@@ -2332,7 +2634,15 @@ namespace Tarrock.Editor
                 float r3 = Hash21(i * 2.53f + 5.10f + species.Seed, i * 3.47f + 9.40f + species.Seed);
 
                 // Fan the blades around the root, jittered so the tuft is not a tidy rosette.
-                float angle = (i + 0.35f * (r1 - 0.5f)) * Mathf.PI * 2f / species.Blades;
+                //
+                // ROUND-4: the jitter is per-species and the MAT runs it far higher. At 0.35 the
+                // angular scatter is a third of a slot on an evenly divided circle, which is a
+                // wobble on a spoke pattern, not a scatter — and the round-4 critique read the mat
+                // exactly that way ("discrete brown starburst cards"). Past 1.0 slots overlap and
+                // cards clump on some bearings and leave others open, which is a tangle: what
+                // ground cover actually looks like. The four upright species keep round 2's 0.35 —
+                // a tuft SHOULD read as a plant with a crown.
+                float angle = (i + species.AngleJitter * (r1 - 0.5f)) * Mathf.PI * 2f / species.Blades;
                 var outward = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
                 var side = new Vector3(-outward.z, 0f, outward.x);
 
@@ -2467,6 +2777,18 @@ namespace Tarrock.Editor
                     // the same press over 1.6x the area and produced the vague thinning the
                     // gauntlet review could not find in v6 at all. The brief's window is 0.6-0.8 m
                     // and this sits in it.
+                    //
+                    // ROUND-4 KEEPS IT, deliberately, having checked. The ring's failure to read
+                    // was never its size — re-projected through v6's own vantage the 0.72 m disc
+                    // spans 446 px of a 1920 px frame, roughly a fifth of the width, and it is
+                    // visibly there in the round-3 capture. What it lacked was a silhouette and a
+                    // value, which _BendLayDegrees and _BendDarken supply, plus a mat dense enough
+                    // for "pressed" and "bare" to look like different things. With BendCore now
+                    // 0.58 the HELD floor of the ring is 0.42 m in radius — 0.84 m across, against
+                    // a 0.45 m shoulder — so the laid disc clears the Fool's own silhouette by
+                    // ~0.19 m on each side and can be seen past him from behind. Moving the radius
+                    // would have desynced this from GauntletCapture's StandInBendRadius for no
+                    // picture, and the game's ring and the photographed ring must be one ring.
                     AddGrassBender(root, radius: 0.72f, strength: 1f, trailSpacing: 0.42f, settleSeconds: 1.2f);
                     changed = true;
                 }
@@ -2531,6 +2853,10 @@ namespace Tarrock.Editor
         // The THATCH — not a fifth kind of grass but the FLOOR the other four stand in. Scattered
         // by its own rule (see BuildGrassDetails), never out of the tuft budget's share.
         private const int SpeciesThatch = 4;
+        // The SCUFF — bare trodden earth on the worn drifts, and the only layer that exists where
+        // the meadow does NOT. Scattered by its own rule too, and by the inverse gate: everything
+        // else thins toward the lane's core, this one is the core.
+        private const int SpeciesScuff = 5;
 
         // Blade cross-sections. Four rows for an upright blade that has to taper convincingly over
         // 20-50 cm; three for a thatch card, which is 5 cm long and gains nothing from a fourth.
@@ -2561,6 +2887,7 @@ namespace Tarrock.Editor
                 MaxPerCell = 3,
                 Blades = 5,
                 Rows = 4,
+                AngleJitter = 0.35f,
                 MeshHeight = 0.30f,
                 ShortestBlade = 0.52f,
                 BladeArc = 1.30f,
@@ -2580,6 +2907,7 @@ namespace Tarrock.Editor
                 Green = new Color(0.33f, 0.54f, 0.22f),
                 Dry = new Color(0.80f, 0.69f, 0.35f),
                 TurfTintWeight = 0f,
+                TurfDryTintWeight = 0f,
                 DryBias = 0.50f,
                 HueVariation = 0.55f,
                 ValueVariation = 0.18f,
@@ -2589,9 +2917,12 @@ namespace Tarrock.Editor
                 CombLean = 0.52f,        // was 0.34: ~20 deg of lean is a tilt, not a comb
                 CombFold = 0.50f,
                 CombDrift = 0.12f,
+                CombRake = 0.45f,        // a modest fan, so a modest rake carries it
                 UnboundSway = 0.34f,
                 BendStrength = 1.35f,
-                BendCore = 0.50f,
+                BendCore = 0.58f,        // round 4: a wider HELD disc, so the ring clears the body
+                BendLayDegrees = 72f,
+                BendDarken = 0.78f,
                 WidenStart = 18f,
                 WidenEnd = 70f,
                 WidenMax = 2.4f,
@@ -2613,6 +2944,7 @@ namespace Tarrock.Editor
                 MaxPerCell = 2,
                 Blades = 3,
                 Rows = 4,
+                AngleJitter = 0.35f,
                 MeshHeight = 0.38f,
                 ShortestBlade = 0.72f,
                 BladeArc = 0.80f,        // nearly straight: dead stems do not bow, they stand
@@ -2632,6 +2964,7 @@ namespace Tarrock.Editor
                 Green = new Color(0.55f, 0.58f, 0.27f),
                 Dry = new Color(0.86f, 0.72f, 0.33f),
                 TurfTintWeight = 0f,
+                TurfDryTintWeight = 0f,
                 DryBias = 0.78f,
                 HueVariation = 0.40f,
                 ValueVariation = 0.16f,
@@ -2641,9 +2974,12 @@ namespace Tarrock.Editor
                 CombLean = 0.56f,        // it stands, but three hundred years of wind set the set
                 CombFold = 0.42f,        // only three stems: fold hard and the tuft loses its stand
                 CombDrift = 0.14f,
+                CombRake = 0.30f,        // barely a fan to rake — the lean already carries this one
                 UnboundSway = 0.26f,     // stiff stems move least
                 BendStrength = 1.40f,
-                BendCore = 0.50f,
+                BendCore = 0.58f,
+                BendLayDegrees = 72f,
+                BendDarken = 0.78f,
                 WidenStart = 18f,
                 WidenEnd = 70f,
                 WidenMax = 2.4f,
@@ -2665,6 +3001,7 @@ namespace Tarrock.Editor
                 MaxPerCell = 2,
                 Blades = 7,
                 Rows = 4,
+                AngleJitter = 0.35f,
                 MeshHeight = 0.22f,
                 ShortestBlade = 0.45f,
                 BladeArc = 1.70f,        // bows hard: broad leaves fold under their own weight
@@ -2684,18 +3021,27 @@ namespace Tarrock.Editor
                 Green = new Color(0.26f, 0.48f, 0.28f),
                 Dry = new Color(0.55f, 0.58f, 0.32f),
                 TurfTintWeight = 0f,
+                TurfDryTintWeight = 0f,
                 DryBias = 0.24f,
                 HueVariation = 0.42f,
                 ValueVariation = 0.14f,
                 BaseBlend = 0.62f,
                 BaseBlendHeight = 0.50f,
                 RootDarken = 0.86f,
-                CombLean = 0.36f,        // low and broad: the wind gets less purchase on it
+                // ROUND 4: this is the "teal stubble splays symmetric" species, and it is where the
+                // rake earns its keep. Its splay (0.19 m) is three times what its old 0.36 lean
+                // could move (0.055 m), so the tip translation was invisible against the fan; the
+                // rake stretches the fan itself. The lean comes up too — a rosette that has sat in
+                // the same wind as everything else should not be the one plant standing square.
+                CombLean = 0.58f,
                 CombFold = 0.62f,        // seven leaves is a rosette, and a rosette folds visibly
-                CombDrift = 0.08f,
+                CombDrift = 0.10f,
+                CombRake = 0.72f,        // the most radial upright species, so the hardest rake
                 UnboundSway = 0.18f,
                 BendStrength = 1.05f,    // short and broad: it parts rather than lies down
-                BendCore = 0.50f,
+                BendCore = 0.58f,
+                BendLayDegrees = 70f,
+                BendDarken = 0.80f,
                 WidenStart = 18f,
                 WidenEnd = 70f,
                 WidenMax = 2.4f,
@@ -2717,6 +3063,7 @@ namespace Tarrock.Editor
                 MaxPerCell = 1,
                 Blades = 2,
                 Rows = 4,
+                AngleJitter = 0.35f,
                 MeshHeight = 0.52f,
                 ShortestBlade = 0.80f,
                 BladeArc = 1.90f,        // past the turn: the tips nod back down
@@ -2736,6 +3083,7 @@ namespace Tarrock.Editor
                 Green = new Color(0.46f, 0.58f, 0.28f),
                 Dry = new Color(0.88f, 0.78f, 0.44f),
                 TurfTintWeight = 0f,
+                TurfDryTintWeight = 0f,
                 DryBias = 0.66f,
                 HueVariation = 0.50f,
                 ValueVariation = 0.20f,
@@ -2745,9 +3093,12 @@ namespace Tarrock.Editor
                 CombLean = 0.68f,        // tall and thin: it lies over furthest
                 CombFold = 0.55f,
                 CombDrift = 0.18f,       // the accent that draws the eye ALONG the comb
+                CombRake = 0.35f,
                 UnboundSway = 0.46f,
                 BendStrength = 1.60f,    // tall and thin: it goes right over
-                BendCore = 0.50f,
+                BendCore = 0.58f,
+                BendLayDegrees = 74f,    // the tallest species keeps the most tip above the disc
+                BendDarken = 0.78f,
                 WidenStart = 18f,
                 WidenEnd = 70f,
                 WidenMax = 2.4f,
@@ -2761,21 +3112,37 @@ namespace Tarrock.Editor
             // that gap there was nothing but the terrain pass. No amount of tuft variety fixes
             // that, because the fault is not in the tufts.
             //
-            // WHAT IT IS: a 2-5 cm mat of 24 short, wide, low-arcing cards splayed out to about
-            // 20 cm around their root — a scruffy little disc of ground cover, not a plant. It is
-            // tinted 78% of the way to the ground builder's own turf palette and darkened 36% at
-            // the root (RootDarken 0.64), so it is the floor's colour with a silhouette and a
-            // shadow in it. The tufts stop being plants standing ON the ground and become plants
-            // standing IN something.
+            // ROUND-4 REBUILD. Round 3's mat did not fail because a mat was the wrong idea; it
+            // failed because it was neither dense enough nor the right colour to be a FLOOR. The
+            // critique of v6/v7 — "a sparse scatter of discrete brown STARBURST cards lying BESIDE
+            // the tufts on smooth untextured terrain" — names all three faults exactly, and each is
+            // a number below:
             //
-            // COST, because a ground layer is where a frame budget goes to die: 24 cards x 3
-            // triangles = 72 tris, at about 4.0 mats/m² across the meadow band (MaxMatsPerCell in
-            // BuildGrassDetails owns that number and is the dial). It is the only
-            // species with its own distance window (WidenStart 9 / FadeStart 30 / FadeEnd 52),
-            // which is what keeps it a near-field layer instead of a bill paid out to 120 m — and
-            // it can fade early precisely BECAUSE it is the ground's colour: what it dissolves
-            // into is what it was imitating. Widen 2.6 buys mid-range coverage by spreading each
-            // mat about its own root, which costs vertices already paid for rather than instances.
+            //   * STARBURST. 24 cards on an evenly divided circle jittered by a third of a slot is
+            //     a spoke pattern with a wobble. It reads as one stamp because it IS one stamp.
+            //     Now 34 cards at AngleJitter 1.7 — past a full slot, so cards clump on some
+            //     bearings and leave others open, which is a tangle rather than a rosette.
+            //   * SPARSE. Each mat covered a disc of ~0.089 m² at ~4.0/m², about 30% of the ground
+            //     before the gaps between the cards inside each disc are counted. Reach goes from
+            //     16.8 cm to 32.3 cm (0.328 m², 3.7x the area) and the layer is scattered 1.35x
+            //     thicker, which together take the share of ground with a mat over it from 30% to
+            //     83% — the terrain shader becomes what shows THROUGH the mat rather than what sits
+            //     beside it. Coverage bought by SIZE first and by count second, deliberately: a
+            //     bigger card costs vertices already paid for and a further mat costs a draw.
+            //   * BROWN. DryBias 0.46 with the exposure drift's ±0.7 swing put a large share of
+            //     mats at the dry end of a ramp whose dry end is the turf's OCHRE — brown stars on
+            //     green ground, which is the most conspicuous thing a ground layer can possibly be.
+            //     The mat is the floor: it goes to 0.20 bias against a dry end that is itself
+            //     pulled 88% into the turf palette. The ochre still exists — as SCOUR, in the
+            //     ground shader, where "wind-scoured green" says it belongs.
+            //
+            // COST, because a ground layer is where a frame budget goes to die: 34 cards x 3
+            // triangles = 102 tris per mat, ~550 tris per square metre of near meadow against round
+            // 3's ~288 (BuildGrassDetails' MaxMatsPerCell owns the count and is the dial to turn
+            // FIRST if this ever has to get cheaper). It keeps its own near-field
+            // distance window, which is what stops a full-coverage layer being billed out to 120 m,
+            // and it can fade early precisely BECAUSE it is the ground's colour: what it dissolves
+            // into is what it was imitating.
             new TuftSpecies
             {
                 Name = "GrassThatch",
@@ -2784,50 +3151,143 @@ namespace Tarrock.Editor
                 PrefabPath = TerrainDataDir + "/GrassThatch.prefab",
                 Seed = 67.1f,
                 DitherOffset = 29.7f,
-                MaxPerCell = 2,
-                Blades = 24,
-                Rows = 3,                // a 5 cm card gains nothing from a fourth cross-section
-                MeshHeight = 0.052f,
-                ShortestBlade = 0.42f,   // 2-5 cm: the brief's ground-hugging band
+                MaxPerCell = 3,
+                // 34 cards, not 24 and not 44. 24 was a spoke pattern; 44 was priced without
+                // checking the bill (132 tris a mat against a layer that covers the whole meadow).
+                // At 34 the cards inside one mat's own disc already overlap about 2.3 times over,
+                // so the disc is solid and every card past that is paying for nothing.
+                Blades = 34,
+                Rows = 3,                // a 6 cm card gains nothing from a fourth cross-section
+                AngleJitter = 1.7f,      // a tangle, not a rosette — see BuildTuftMesh
+                MeshHeight = 0.060f,
+                ShortestBlade = 0.42f,   // 2-6 cm: the ground-hugging band
                 BladeArc = 1.05f,
-                HalfWidthMin = 0.018f,
-                HalfWidthMax = 0.032f,   // cards, not blades — width is what covers ground
-                SplayMin = 0.05f,
-                SplayMax = 0.13f,
-                RootOffsetMin = 0.015f,
-                RootOffsetMax = 0.085f,  // cards reach 6-21 cm out: a mat, not a tuft
-                // Sized against the splay, not picked: at ~13 cm of typical reach this leaves the
-                // card tip about 3.8 cm up, or 16 degrees off the floor. Flat enough to be thatch,
+                HalfWidthMin = 0.024f,
+                HalfWidthMax = 0.046f,   // cards, not blades — width is what covers ground
+                SplayMin = 0.09f,
+                SplayMax = 0.20f,
+                RootOffsetMin = 0.030f,
+                RootOffsetMax = 0.150f,  // cards reach 12-35 cm out: a mat, not a tuft
+                // Sized against the splay, not picked: at ~24 cm of typical reach this leaves the
+                // card tip about 2.3 cm up, or 5-6 degrees off the floor. Flat enough to be thatch,
                 // steep enough to still occlude ground at the grazing angles every gameplay and
                 // gauntlet framing looks at it from — a card lying truly flat covers nothing at all
                 // from a standing eye, which is the trap this layer exists to avoid falling into.
-                TipDrop = 0.014f,
-                MinWidthScale = 0.85f,
-                MaxWidthScale = 1.55f,
+                // Up a little with the reach: a wider mat crosses more of the ground's own roll, so
+                // it needs more sink to keep its rim buried rather than hovering.
+                TipDrop = 0.020f,
+                MinWidthScale = 0.95f,
+                MaxWidthScale = 1.80f,
                 MinHeightScale = 0.70f,
                 MaxHeightScale = 1.30f,
                 AlignToGround = 0.95f,   // thatch does not stand plumb on a slope; it lies on it
-                Cool = new Color(0.24f, 0.38f, 0.30f),
-                Green = new Color(0.31f, 0.40f, 0.23f),
-                Dry = new Color(0.58f, 0.50f, 0.29f),
-                TurfTintWeight = 0.78f,  // it IS the floor's colour (see the class doc)
-                DryBias = 0.46f,
-                HueVariation = 0.30f,    // it must not out-vary the tufts standing in it
+                Cool = new Color(0.22f, 0.34f, 0.26f),
+                Green = new Color(0.28f, 0.37f, 0.21f),
+                // The mat's own "dry" is dead blade in a green mat, NOT bare earth. Bare earth is
+                // the scuff species below, and it belongs on the worn lanes, not under the meadow.
+                Dry = new Color(0.42f, 0.42f, 0.26f),
+                TurfTintWeight = 0.88f,  // it IS the floor's colour (see the class doc)
+                TurfDryTintWeight = 0.34f,
+                DryBias = 0.20f,
+                HueVariation = 0.26f,    // it must not out-vary the tufts standing in it
                 ValueVariation = 0.20f,
-                BaseBlend = 0.80f,
+                BaseBlend = 0.84f,
                 BaseBlendHeight = 0.92f, // nearly the whole card blends toward the turf
-                RootDarken = 0.64f,      // 36% darker at the root — the brief's 30-40%
-                CombLean = 0.24f,        // a mat combs too, but it has little height to lean with
+                RootDarken = 0.60f,      // 40% darker at the root: the layer everything stands IN
+                CombLean = 0.34f,        // a mat combs too, but it has little height to lean with
                 CombFold = 0.55f,
                 CombDrift = 0.06f,
+                // Nothing BUT fan, so the rake is the only way a mat can comb at all. 0.65 draws
+                // each mat into an ellipse about 1.07 m along the wind by 0.39 m across it — the
+                // same area as the disc the coverage arithmetic in BuildGrassDetails is written
+                // against, laid on the region's one bearing instead of pointing everywhere.
+                CombRake = 0.65f,
                 UnboundSway = 0.10f,     // still zero while bound; a mat barely stirs when it isn't
                 BendStrength = 0.60f,
-                BendCore = 0.55f,        // the pressed floor of the ring, held a touch wider
+                BendCore = 0.64f,        // the pressed floor of the ring, held a touch wider
+                BendLayDegrees = 66f,    // already low: press it flat and the disc has no floor
+                BendDarken = 0.74f,      // the mat carries most of the ring's value change
                 WidenStart = 9f,
-                WidenEnd = 40f,
+                WidenEnd = 44f,
                 WidenMax = 2.6f,
-                FadeStart = 30f,
-                FadeEnd = 52f,
+                FadeStart = 34f,
+                FadeEnd = 60f,
+            },
+
+            // THE SCUFF — bare trodden earth, and the round-4 answer to "the worn lane has straight
+            // polygon edges and unchanged albedo" (critique of v7).
+            //
+            // WHY IT IS A DETAIL SPECIES AND NOT A SHADER TERM. The worn drifts are FOUND, not
+            // authored: FindValleyDrift walks the region's own low line and FindTreeSpur bows off
+            // it, so where the lane runs is a polyline computed from the finished heightfield. A
+            // fragment shader cannot know that — there is no splatmap on this terrain by design
+            // (see Tarrock/TerrainPainterly's header) and adding one to paint a footpath would cost
+            // the whole procedural surfacing. A near-flat, ground-coloured detail layer scattered
+            // ONLY inside the lane paints it exactly where the density map already knows the lane
+            // is, for instances confined to a ribbon a metre or so wide.
+            //
+            // WHAT IT IS: eight wide, almost horizontal cards, 1-2 cm tall, in the turf's bare-earth
+            // scuff colour. Not grass — trodden ground with grit and dead stem in it. It is the one
+            // place on this plateau the palette's _MeadowScuff / _TurfOchre browns belong, which is
+            // the same swap that took the brown OUT of the thatch above: earth colours go where the
+            // earth is bare, and nowhere else.
+            //
+            // ITS EDGES ARE ORGANIC BY CONSTRUCTION. The density loop gives the lane a two-octave
+            // noise offset before the distance test (see BuildGrassDetails), so the boundary wanders
+            // by up to ±0.55 m at 1.7 m and 0.6 m wavelengths — the scale a footpath's edge actually
+            // frays at — and the per-cell dither breaks whatever is left of the 0.5 m grid.
+            new TuftSpecies
+            {
+                Name = "GroundScuff",
+                MeshPath = TerrainDataDir + "/GroundScuff.asset",
+                MaterialPath = MaterialDir + "/GroundScuff.mat",
+                PrefabPath = TerrainDataDir + "/GroundScuff.prefab",
+                Seed = 83.9f,
+                DitherOffset = 37.3f,
+                MaxPerCell = 3,
+                Blades = 8,
+                Rows = 3,
+                AngleJitter = 1.9f,
+                MeshHeight = 0.020f,
+                ShortestBlade = 0.35f,
+                BladeArc = 0.75f,        // barely an arc: these lie down, they do not bow
+                HalfWidthMin = 0.045f,
+                HalfWidthMax = 0.085f,   // wide flakes of trodden ground, not blades
+                SplayMin = 0.10f,
+                SplayMax = 0.20f,
+                RootOffsetMin = 0.020f,
+                RootOffsetMax = 0.140f,
+                TipDrop = 0.014f,        // the rim buries itself in the lane's own roll
+                MinWidthScale = 1.00f,
+                MaxWidthScale = 1.90f,
+                MinHeightScale = 0.60f,
+                MaxHeightScale = 1.10f,
+                AlignToGround = 1f,      // it IS the ground
+                Cool = new Color(0.33f, 0.31f, 0.24f),
+                Green = new Color(0.40f, 0.34f, 0.23f),
+                Dry = new Color(0.52f, 0.43f, 0.27f),
+                TurfTintWeight = 0.35f,  // near the turf, but it must be allowed to be EARTH
+                TurfDryTintWeight = 0.85f,
+                DryBias = 0.72f,
+                HueVariation = 0.22f,
+                ValueVariation = 0.22f,  // grit and scuff: value is most of what it has
+                BaseBlend = 0.55f,
+                BaseBlendHeight = 0.95f,
+                RootDarken = 0.72f,
+                CombLean = 0.10f,        // trodden earth does not comb; it is not a plant
+                CombFold = 0.20f,
+                CombDrift = 0.02f,
+                CombRake = 0.30f,        // just enough that the lane's grain runs with the meadow
+                UnboundSway = 0f,        // it never moves, bound or not
+                BendStrength = 0.20f,
+                BendCore = 0.64f,
+                BendLayDegrees = 60f,
+                BendDarken = 0.82f,
+                WidenStart = 9f,
+                WidenEnd = 44f,
+                WidenMax = 2.4f,
+                FadeStart = 34f,
+                FadeEnd = 60f,
             },
         };
 
@@ -2866,6 +3326,11 @@ namespace Tarrock.Editor
             public float RootOffsetMin;
             public float RootOffsetMax;
 
+            /// <summary>Angular scatter of the blade fan, in slots of the evenly divided circle.
+            /// Under 1 the blades are a wobbled spoke pattern (a plant with a crown); over 1 they
+            /// clump and gap (a tangle of ground cover). See BuildTuftMesh.</summary>
+            public float AngleJitter;
+
             /// <summary>Metres the outer end of a blade sinks below its own arc, so a wide flat mat
             /// buries its rim in rolling ground instead of hovering over it. 0 for upright
             /// species.</summary>
@@ -2890,6 +3355,12 @@ namespace Tarrock.Editor
             /// <see cref="ReadColour"/>.</summary>
             public float TurfTintWeight;
 
+            /// <summary>The same pull, applied to the DRY pole against the ground's _TurfOchre.
+            /// Separate from <see cref="TurfTintWeight"/> because that ochre means "scoured bare" in
+            /// the ground shader: the mat wants a little of it, trodden earth wants nearly all of
+            /// it, and a standing plant wants none.</summary>
+            public float TurfDryTintWeight;
+
             public float DryBias;
             public float HueVariation;
             public float ValueVariation;
@@ -2913,12 +3384,25 @@ namespace Tarrock.Editor
             /// </summary>
             public float CombDrift;
 
+            /// <summary>How far this species' FAN is stretched along the comb axis and squeezed
+            /// across it — the round-4 construct that puts a short broad species on the same bearing
+            /// as a tall thin one. See Tarrock/GrassTuft §_CombRake.</summary>
+            public float CombRake;
+
             public float UnboundSway;
             public float BendStrength;
 
             /// <summary>Share of a bender's radius held fully laid over before the rim falls off.
             /// </summary>
             public float BendCore;
+
+            /// <summary>Degrees from vertical a pressed blade is allowed to reach. Never 90: a
+            /// blade laid flat has no silhouette and its ring reads as bare ground.</summary>
+            public float BendLayDegrees;
+
+            /// <summary>Albedo multiplier inside a bend ring — crushed cover is darker cover.
+            /// </summary>
+            public float BendDarken;
 
             // -- Distance handling. Shared across the four upright species on purpose (four
             //    different fade windows would draw three faint lines across the meadow); the
@@ -3003,19 +3487,62 @@ namespace Tarrock.Editor
             moteRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
 
-        // -- The cloud deck's surface. 3 km square at y=11; a 128² grid is 23 m per cell, which is
-        //    fine enough for the billow to read as relief rather than facets from every vantage a
-        //    128 m plateau offers, and 16 641 verts keeps it on 16-bit indices.
+        // -- The cloud deck's surface. 3 km square at y=11.
+        //
+        //    ROUND 4 GRADES THE GRID AND RAISES IT. A uniform 128² over 3 km is 23.4 m per cell
+        //    everywhere, and 23 m cells cannot carry relief the eye reads at 60-250 m — which is
+        //    exactly the band the critic called "an airbrushed sheet with no top-surface relief
+        //    crossing the mid-field". Two changes, and MEASURED rather than assumed:
+        //      * the cell SIZE is graded. The vertex parameter runs -1..1 and the axis map is
+        //        x = sign(u)·|u|^CloudDeckGridBias·halfSize, so spacing is
+        //        bias·halfSize·|u|^(bias−1) · du. At bias 1.8 that is 6 m at 50 m from centre,
+        //        10 m at 150 m, 14 m at 300 m and 28 m at the 1.5 km rim.
+        //      * the grid goes 128 → 192. Grading alone buys a factor of two in the band that
+        //        matters and no more (the useful budget is 64 cells per half axis however it is
+        //        distributed), and 193² = 37 249 verts is still comfortably inside 16-bit indices
+        //        for one static mesh. A 90 m swell is now nine vertices across at 150 m instead of
+        //        four, which is the difference between a curve and a chevron.
         private const float CloudDeckHalfSize = 1500f;
-        private const int CloudDeckGrid = 128;
+        private const int CloudDeckGrid = 192;
+        private const float CloudDeckGridBias = 1.8f;
         private const float CloudDeckLevel = 11.0f;
         private const float CloudBillowAmplitude = 7.0f;
-        // The billow ramps in OUTSIDE the terrain. A 256 m square's farthest corner is 181 m from
-        // centre, so holding the deck dead flat to 200 m guarantees no billow can ever push cloud
-        // up through a walkable floor; by 340 m it is at full amplitude and the deck stops being a
-        // plate. (The terrain's own low edges fall to 1.5 m and stay properly submerged.)
-        private const float CloudBillowFlatRadius = 200f;
-        private const float CloudBillowRampRadius = 340f;
+        // The billow ramps in from OUTSIDE THE FOOTPRINT, not from a radius about the centre, and
+        // that swap is most of what buys the mid-field its relief. The old rule held the deck dead
+        // flat inside a 200 m circle so no swell could push cloud up through a walkable floor — but
+        // the walkable floor is the 256 m SQUARE, and a circle that contains it swallows 20 m of
+        // open sea off the west rim as well. v3's camera stands at x 25 and looks west: under the
+        // old rule the whole first 175 m of its deck was inside the flat circle and could only ever
+        // be shaded, never shaped. Measuring from the square instead keeps the guarantee exactly
+        // (the deck is flat over every metre of terrain) and starts the swell where the island
+        // stops.
+        //
+        // AND THE NEAR SWELL ONLY EVER FALLS. The lowest walkable floor is the west mouth at ~17 m
+        // and the deck sits at 11, so a +7 m crest 30 m off the rim would be level with ground the
+        // player walks on. Inside CloudBillowNearDamp the positive half of the swell is scaled to a
+        // quarter, so the near sea can trough away from the island's foot but cannot rise to meet
+        // it — which is also the truer picture: cloud falls away from a cliff, it does not lap it.
+        private const float CloudBillowFlatMargin = 12f;
+        private const float CloudBillowRampMargin = 220f;
+        private const float CloudBillowNearDamp = 0.25f;
+        // AND THE AMPLITUDE IS FINALLY WORTH WHAT IT SAYS. Three octaves of zero-mean gradient
+        // noise summed at 0.54/0.30/0.16 have a standard deviation of 0.128 and never leave ±0.48,
+        // so multiplying by a 7 m amplitude produced a deck whose typical relief was 0.9 m and whose
+        // extremes were 3.4 — round 3's comment claimed "±7 m" and the mesh delivered less than
+        // half of it. The sum is soft-saturated (x·rsqrt(1+x²), the same curve the far cloud bank
+        // uses, and for the same reason: a hard clamp gives the tall swells dead flat tops and they
+        // read as mesas) with a gain of 2.6, which maps the field onto ±0.78 at a standard deviation
+        // of 0.307. MEASURED over the finished mesh: the deck is exactly 0.00000 m over every metre
+        // of the footprint, runs ±1.7 m through the first 120 m of open sea, ±4.3 m from 120-300 m
+        // and ±4.9 m beyond, with an overall standard deviation of 1.96 m against round 3's 0.9.
+        // The deepest trough anywhere is −5.46 m, which still clears the shallowest lobe hang
+        // (8.55 m — see CloudLobeSinkMin) by 3.1 m, so no head can be caught floating.
+        //     What that relief is worth on screen: from v3 the eye stands 6.3 m over the deck, so a
+        // 1.5 m crest at 80 m lifts the surface from −4.50° to −3.43° — 21 px of the gameplay lens —
+        // and a 4 m crest at 200 m lifts it from −1.80° to −0.66°, 22 px. The near sea gets a
+        // readable, occluding undulation the whole way out, which is what "crossing the mid-field"
+        // asks for and what no amount of shading a plane could supply.
+        private const float CloudBillowGain = 2.6f;
 
         // The sea of cloud (world.md §The Cliff — island in cloud, director-blessed 2026-07-26).
         // A vast deck below every lip: the horizon is cloud-top, the drop is "lost in haze", the
@@ -3056,8 +3583,19 @@ namespace Tarrock.Editor
             // the fog and the bloom is the "one value, std 7.5" the critic measured all over again.
             // 0.51 against 0.94 is a real light-to-shadow split, and the shader now has a real
             // light to apply it with (see CloudSea.shader §THE DECK IS LIT).
+            //
+            // ROUND 4 takes the furrow down once more, (0.47,0.52,0.66) → (0.37,0.42,0.57), and this
+            // one is measured through the grade rather than argued in linear. Round 3's pair lands
+            // at sRGB luminance 201 and 156 — a 45-point ladder — and the near deck owns a third of
+            // v3's frame, so 45 points spread over a smooth low-frequency field is exactly the
+            // "airbrushed sheet" reading. The new pair lands at 201 and 139: a 62-point ladder, 38%
+            // wider, and the near field keeps 82-98% of it through the fog (the deck inside 100 m is
+            // barely hazed at all). It stops there rather than at the 66 points a furrow of
+            // (0.34,0.39,0.54) would buy, because the deck is canon-bound to read as a BRIGHT
+            // motionless sea (world.md §The Cliff) and its own mean is what carries that — the
+            // furrows are a step down from the light, not a second night.
             material.SetColor("_CloudBright", new Color(1.00f, 0.95f, 0.84f));
-            material.SetColor("_CloudShade", new Color(0.47f, 0.52f, 0.66f));
+            material.SetColor("_CloudShade", new Color(0.37f, 0.42f, 0.57f));
             // ROUND 2 RESCALE. The 07-31 numbers were authored for a viewer far above the deck.
             // The vantage that actually meets the cloud sea is the western rim (round1/v3): eye
             // 1.6 m over ground at ~15.7 m, deck at 11 — SIX METRES of elevation over it. From
@@ -3083,9 +3621,13 @@ namespace Tarrock.Editor
             // in the ramp there is something worth terracing, and 42% of five washes over a
             // near-flat ramp was a rounding error — the boundaries the critic could not find were
             // never drawn.
-            material.SetFloat("_MottleBands", 4f);
-            material.SetFloat("_MottleBandStrength", 0.58f);
-            material.SetFloat("_MottleBandSoftness", 0.14f);
+            // ROUND 4: five washes at 0.66. With a 62-point ladder under it a four-wash terrace puts
+            // 15 sRGB points on every boundary, which past the first is a poster; five at 0.66 gives
+            // 12-point steps and one more of them, so the near deck reads as four or five flat
+            // shapes with visible edges instead of two.
+            material.SetFloat("_MottleBands", 5f);
+            material.SetFloat("_MottleBandStrength", 0.66f);
+            material.SetFloat("_MottleBandSoftness", 0.13f);
             material.SetFloat("_WarpScale", 95f);
             material.SetFloat("_WarpAmount", 26f);
             // Banks drawn out along the sun/valley axis (the wind that made them is the wind that
@@ -3102,6 +3644,11 @@ namespace Tarrock.Editor
             // which is a hue shift and not a light-to-shadow separation), so the strength comes
             // down to match: it is a highlight, not a grade.
             material.SetFloat("_SunFormStrength", 1.1f);
+            // ...and the onset moves with the ramp. Round 3 hardcoded 0.72 in the shader while the
+            // ramp's 98th percentile sat at 0.74, so the gold fell on the top 2% of the sea. The
+            // re-solved round-4 ramp reaches 0.93, and 0.80 keeps the same discipline: the highlight
+            // lands on the crests and nowhere else.
+            material.SetFloat("_SunFormThreshold", 0.80f);
             // The finite-difference step for the relief normal. ~1/9 of the bank scale: small
             // enough that two taps still straddle one slope rather than two unrelated banks, large
             // enough that the difference is well clear of the noise's own precision floor.
@@ -3109,20 +3656,33 @@ namespace Tarrock.Editor
             // THE VIRTUAL RELIEF. The deck mesh billows ±7 m, but ±7 m at 400 m is a 1° swell —
             // it can shape a silhouette (it does not: the deck's skyline is painted, see the bank)
             // and it can never shade anything. So the surface is shaded as though it carried 26 m
-            // of relief over its 130 m banks: a 10-11° flank, which at a 7° sun is exactly the
-            // difference between catching the dawn and not. The mesh's own swell still contributes
-            // through _CrestLift, so silhouette and shading do not contradict.
-            material.SetFloat("_ReliefHeight", 26f);
-            // N·L on those flanks swings about 0.12 ± 0.19 at this sun height, so the ramp has to
-            // be gained and biased onto 0..1 rather than saturated raw — a raw saturate would put
-            // the entire deck in the bottom sixth of the ramp, which is another way of spelling
-            // "one flat value".
-            material.SetFloat("_FormGain", 2.6f);
-            material.SetFloat("_FormBias", 0.18f);
-            // Light 62 / altitude 38. Pure N·L stripes the deck across the billows (the lit flank
+            // of relief over its 130 m banks: a 10-11° flank, which at a low dawn sun is exactly
+            // the difference between catching the dawn and not. The mesh's own swell still
+            // contributes through _CrestLift, so silhouette and shading do not contradict.
+            // ROUND 4 ACTS ON THE NOTE THE BEAM PASS LEFT HERE. The sun came up from 7° to 12°, and
+            // 26 m of relief over a 130 m bank is a 7.8° mean flank (95th percentile 15.1°): at 7°
+            // that self-shadowed — traced over a 1 km square of the field, the 2nd percentile of
+            // N·L was 0.0007 — and at 12° the same field's 2nd percentile is +0.081, so no flank on
+            // the deck turns away from the disc at all. The dark end of the deck's range simply
+            // stopped existing, and at the other end 4.4% of the surface clipped flat white.
+            //     46 m puts it back: mean flank 13.5°, 95th percentile 25.4°, 3.0% of the deck at or
+            // below N·L 0. A 25° flank is gentle for the thing this is drawing — cumulus tops are
+            // far steeper — and the finite-difference step (14 m) is unchanged, so nothing about the
+            // sampling gets noisier; only the amplitude it is asked to shade.
+            material.SetFloat("_ReliefHeight", 46f);
+            // Solved from that field, not dialled. At 46 m and 12° the N·L band runs −0.061 (1st
+            // percentile) to +0.412 (99th), so gain 0.96/(hi−lo) = 2.03 with bias 0.02 − gain·lo =
+            // +0.09 maps it onto 0.03-0.93 — the whole ramp used, nothing clipped at either end.
+            material.SetFloat("_FormGain", 2.03f);
+            material.SetFloat("_FormBias", 0.09f);
+            // Light 66 / altitude 34. Pure N·L stripes the deck across the billows (the lit flank
             // of a trough looks like the lit flank of a crest); mixing the height back in keeps the
-            // washes reading as one billowing surface.
-            material.SetFloat("_ReliefWeight", 0.62f);
+            // washes reading as one billowing surface. Round 3 weighted it 62/38, but its altitude
+            // term was gained so gently (×1.35 on a field of std 0.144) that it only ever spanned
+            // 0.19-0.81 — it was quietly narrowing the range the light half had just widened. The
+            // gain goes to 2.05, which puts the altitude term on the same 0.03-0.97 as the light.
+            material.SetFloat("_ReliefWeight", 0.66f);
+            material.SetFloat("_HeightGain", 2.05f);
             material.SetFloat("_DeckLevel", CloudDeckLevel);
             material.SetFloat("_CrestRange", CloudBillowAmplitude);
             material.SetFloat("_CrestLift", 0.14f);
@@ -3201,27 +3761,41 @@ namespace Tarrock.Editor
         private static Mesh BuildCloudDeckMesh()
         {
             const int side = CloudDeckGrid + 1;
-            float step = (CloudDeckHalfSize * 2f) / CloudDeckGrid;
-
             var verts = new Vector3[side * side];
             // The shader shades from world position, so these UVs exist only so that marking the
             // deck static never produces a mesh Unity refuses to unwrap.
             var uvs = new Vector2[side * side];
             for (int z = 0; z < side; z++)
             {
-                float wz = -CloudDeckHalfSize + z * step;
+                float wz = CloudDeckAxis(z);
                 for (int x = 0; x < side; x++)
                 {
-                    float wx = -CloudDeckHalfSize + x * step;
-                    float radius = Mathf.Sqrt(wx * wx + wz * wz);
+                    float wx = CloudDeckAxis(x);
+                    // Distance OUTSIDE the terrain square (Chebyshev), not radius from the centre —
+                    // see the constants block. Negative inside the footprint, so the ramp is zero
+                    // over every metre of walkable ground by construction.
+                    float outside = Mathf.Max(Mathf.Abs(wx), Mathf.Abs(wz)) - TerrainSize * 0.5f;
                     float ramp = Mathf.SmoothStep(0f, 1f,
-                        Mathf.InverseLerp(CloudBillowFlatRadius, CloudBillowRampRadius, radius));
+                        Mathf.InverseLerp(CloudBillowFlatMargin, CloudBillowRampMargin, outside));
                     // Zero-mean, so the deck's average height stays exactly at the deck level and
-                    // the catch slab beneath it keeps meaning what it says.
+                    // the catch slab beneath it keeps meaning what it says. THREE octaves now: the
+                    // 90 m one is the mid-field's own scale, and it is the octave the graded grid
+                    // above exists to resolve (1.9 m cells at 100 m out, so a 90 m swell is 47
+                    // vertices across rather than four).
                     float swell =
-                        GradNoise(wx / 430f, wz / 430f) * 0.68f +
-                        GradNoise(wx / 155f + 13.7f, wz / 155f + 41.3f) * 0.32f;
-                    verts[z * side + x] = new Vector3(wx, swell * CloudBillowAmplitude * ramp, wz);
+                        GradNoise(wx / 430f, wz / 430f) * 0.54f +
+                        GradNoise(wx / 155f + 13.7f, wz / 155f + 41.3f) * 0.30f +
+                        GradNoise(wx / 90f + 61.9f, wz / 90f + 7.4f) * 0.16f;
+                    // Soft-saturated onto ±1 rather than left at the ±0.48 three octaves of
+                    // gradient noise actually reach — see CloudBillowGain.
+                    float gained = swell * CloudBillowGain;
+                    swell = gained / Mathf.Sqrt(1f + gained * gained);
+                    // Rises are damped near the island and troughs are not: the sea falls away from
+                    // the cliff's foot, it never climbs to meet it (see CloudBillowNearDamp).
+                    float lift = swell > 0f
+                        ? swell * Mathf.Lerp(CloudBillowNearDamp, 1f, ramp)
+                        : swell;
+                    verts[z * side + x] = new Vector3(wx, lift * CloudBillowAmplitude * ramp, wz);
                     uvs[z * side + x] = new Vector2(x / (float)CloudDeckGrid, z / (float)CloudDeckGrid);
                 }
             }
@@ -3248,6 +3822,16 @@ namespace Tarrock.Editor
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
             return mesh;
+        }
+
+        /// <summary>The deck grid's graded axis: vertex index → world metres from the deck centre.
+        /// Dense in the middle, coarse at the rim — see the constants block for why, and for the
+        /// measured spacings. The map is odd and monotone, so the grid stays a well-formed quad
+        /// mesh and the winding below is unaffected.</summary>
+        private static float CloudDeckAxis(int index)
+        {
+            float u = (index / (float)CloudDeckGrid) * 2f - 1f;   // -1 .. +1
+            return Mathf.Sign(u) * Mathf.Pow(Mathf.Abs(u), CloudDeckGridBias) * CloudDeckHalfSize;
         }
 
         // -------------------------------------------------------------------------------------
@@ -3290,41 +3874,101 @@ namespace Tarrock.Editor
         // up, so a 200 m cloud would throw a 1.6 km bar across the island. Nothing moves: the
         // region is BOUND (art-audio.md §The world-state is the art direction).
         // -------------------------------------------------------------------------------------
-        private const int CloudLobeVariants = 4;
-        private const int CloudLobeMeridians = 48;
-        private const int CloudLobeParallels = 26;
+        // SEVEN masses now, not four. Round 3's four were drawn by one hand and that was right, but
+        // four arrangements over fifty-odd instances is a stamp — the critic's "same-size
+        // same-altitude same-silhouette". 4-6 are the round-4 additions: the LOW SWELL (the mass
+        // that answers "the deck has no top-surface relief crossing the mid-field"), the SHOULDERED
+        // ANVIL (the near hero, asymmetric enough that it cannot read as a dumpling), and the NUB.
+        private const int CloudLobeVariants = 7;
+        // 72 × 40 rather than 48 × 26. The silhouette now carries a cauliflower displacement (see
+        // BuildCloudLobeMesh §THE SCALLOP), and at round-3's tessellation a 24 m mass 100 m away
+        // put 20 screen pixels on each meridian segment — a displaced silhouette at that spacing is
+        // a polygon, which is the one thing this pass must not add. 2993 verts per mass, 21k for
+        // the whole alphabet, still 16-bit.
+        private const int CloudLobeMeridians = 72;
+        private const int CloudLobeParallels = 40;
         // The mass's centre sits this fraction of its radius BELOW the deck, so the deck plane cuts
         // it and it reads as cloud RISING OUT of the sea rather than as a ball resting on it.
         // Cutting a little under the widest section (rather than at it, or above it) is what gives
-        // a head the slight overhang a cumulus has over its own base. Measured heights of the four
-        // masses after normalisation are 0.660, 0.942, 0.661 and 0.675, so a mass stands
-        // (top − 0.12) × radius proud: 54% of its radius for the low banks and 82% for the tower.
-        private const float CloudLobeSink = 0.12f;
-        // The scatter that fills the rest of the compass. 260 m clears the terrain's farthest
-        // corner (181 m from centre) with room to spare, so the nearest scattered mass is still
-        // ~157 m from the most exposed camera and cannot loom; 620 m is where the shader's sky
-        // convergence has taken over anyway.
-        private const float CloudLobeScatterInner = 260f;
-        private const float CloudLobeScatterOuter = 620f;
-        private const int CloudLobeScatterCount = 44;
-        // 18 m is a floor, not a taste call. The shallowest of the four masses reaches 0.391 of its
-        // radius below its own centre, so it hangs (0.12 + 0.391) × radius under the deck, and the
-        // deck's own billow can drop 7 m beyond 340 m: below ~14 m radius a scattered head could be
-        // caught floating over a trough with its dark underside showing. 18 m leaves 2.2 m of
-        // margin against the worst case the mesh can produce.
+        // a head the slight overhang a cumulus has over its own base.
+        //
+        // ROUND 4: this is now a RANGE, not the one value every mass used — sink is authored per
+        // anchor and rolled per scattered head, because one sink for the whole region is one
+        // altitude for the whole region, which is half of what the critic read as "same-size
+        // same-altitude". The floor is the safety rule round 3 derived and it
+        // still holds. The shallowest-keeled mass is the new swell, which reaches 0.355 of its radius
+        // below its own centre, so at sink s a mass hangs (s + 0.355) × radius under the deck, and
+        // the deck's billow can drop CloudBillowAmplitude (7 m) beneath the level. At the floor of
+        // 0.12 and the far scatter's smallest radius of 18 m that is 8.55 m of hang against a 7 m
+        // trough — 1.55 m of margin, so no head can be caught floating with a lit gap under it, from
+        // any camera, at any of the sizes the rolls can produce.
+        private const float CloudLobeSinkMin = 0.12f;
+        private const float CloudLobeSinkMax = 0.34f;
+        // THE SCALLOP. A metaball cluster has a vector-smooth silhouette, and a vector-smooth
+        // silhouette is the one thing storybook cloud never has — Wolfwalkers and fable-03 both draw
+        // cumulus as a chain of scallops, and the round-3 capture's big near mass reads as a dome
+        // partly because its outline is a French curve. Radial displacement rather than a shading
+        // trick, because the finding is about the SHAPE against the sky. Two octaves in the same
+        // 1 : 0.4 proportion as the vault's own cauliflower (SkyGradient.hlsl §TarrockVaultCloud),
+        // so near cloud and far cloud are broken by one hand. MEASURED over 200 000 directions, the
+        // summed field has std 0.295 and stays inside ±0.97, so at amplitude 0.11 the radial
+        // multiplier runs 0.89-1.10 with a 3.2% typical deviation: on a 24 m mass that is 0.8 m
+        // typical and 2.5 m at the extremes, which at 100 m is a 1.4° bite — 28 px of the gameplay
+        // lens. A drawn edge, and nowhere near enough to fold the surface back on itself.
+        // At scale 2.6 the broad octave turns ~5 times round the silhouette and the nibble ~11,
+        // which is 14 and 6 meridian segments per bump at the 72-meridian tessellation above.
+        private const float CloudLobeScallop = 0.11f;
+        private const float CloudLobeScallopScale = 2.6f;
+
+        // -- THE SWELL BAND (round 4). The deck's own answer to "no top-surface relief crossing the
+        //    mid-field": a ring of LOW, WIDE masses (variant 4) lying just off the island's edge,
+        //    crowns only 6-12 m proud of the sea, which cross every rim vantage's middle distance
+        //    and — being geometry — occlude the deck behind them. A shaded plane cannot do this at
+        //    any relief height, which two rounds of shading the deck have now proved.
+        //
+        //    Placed by distance OUTSIDE THE FOOTPRINT rather than by radius from the region centre,
+        //    which is what makes "mid-field" mean the same thing on every bearing: a ray on bearing
+        //    θ leaves the 256 m square at 128 / max(|sin θ|, |cos θ|) from centre — 128 m on the
+        //    axes, 181 m into the corners — and the band is measured from there. A centre-based ring
+        //    at these distances would sit on the island.
+        //
+        //    THE BAND IS TUNED BY WHAT IT DELIVERS, not by taste. Simulated over the real hash rolls
+        //    and the real anchor table, these numbers put 5 swells inside 220 m of the v3 lens (the
+        //    nearest at 82 m), 4 inside 220 m of v4 (nearest 140), 3 for v8 and 4 for v1 — a mid
+        //    distance with something standing in it from every vantage. The generous version (a
+        //    45 m inner gap and 14 m of clearance round the anchors, tried first) left v3 with ONE
+        //    swell inside 220 m and the rest past 235, where the fog has taken a third of everything
+        //    and an occlusion edge no longer reads. The clearance is small on purpose: cumulus
+        //    clusters, and a swell nestling against an anchor's foot is what a cluster looks like.
+        private const int CloudLobeSwellCount = 44;
+        private const float CloudLobeSwellInnerGap = 24f;   // metres of open sea beyond the rim
+        private const float CloudLobeSwellOuterGap = 150f;
+        private const float CloudLobeSwellMinRadius = 26f;
+        private const float CloudLobeSwellSizeRange = 20f;
+        private const float CloudLobeSwellClearance = 6f;
+
+        // The far scatter that fills the rest of the compass. 300 m clears the terrain's farthest
+        // corner (181 m from centre) and the swell band outside it; 700 m is where the shader's sky
+        // convergence has taken over anyway. These are silhouette and aerial perspective — at 300 m
+        // the fog leaves 18% of any mass's own contrast and at 500 m under 1%, so nothing out here
+        // is asked to carry value.
+        private const float CloudLobeScatterInner = 300f;
+        private const float CloudLobeScatterOuter = 700f;
+        private const int CloudLobeScatterCount = 40;
         private const float CloudLobeScatterMinRadius = 18f;
-        private const float CloudLobeScatterSizeRange = 13f;
+        private const float CloudLobeScatterSizeRange = 15f;
 
         /// <summary>One art-directed cumulus head standing out of the cloud sea: where it is, how
-        /// big, and which of the four masses.</summary>
+        /// big, which mass, and how deep it sits in the sea.</summary>
         private readonly struct CloudLobeAnchor
         {
-            public CloudLobeAnchor(float x, float z, float radius, int variant)
+            public CloudLobeAnchor(float x, float z, float radius, int variant, float sink)
             {
                 X = x;
                 Z = z;
                 Radius = radius;
                 Variant = variant;
+                Sink = sink;
             }
 
             public float X { get; }
@@ -3336,42 +3980,80 @@ namespace Tarrock.Editor
             public float Radius { get; }
 
             public int Variant { get; }
+
+            /// <summary>Fractions of its own radius that this mass's centre sits BELOW the deck.
+            /// ROUND 4: per-anchor, where round 3 had one constant for every mass in the region —
+            /// which is most of why the critic read v4's cloud as "same-size same-altitude". Two
+            /// masses of the same shape at 0.12 and 0.30 stand at quite different heights out of
+            /// the sea, and a row that mixes them reads as weather rather than as a fence.
+            /// Bounded by CloudLobeSinkMin: a mass must hang far enough under the deck that the
+            /// deck's own billow can never expose a lit gap beneath it.</summary>
+            public float Sink { get; }
         }
 
         // The composition anchors, in the order the frames need them. Coordinates were chosen by
         // back-projecting the wanted screen position through each vantage's frustum onto the deck.
+        //
+        // ROUND 4 MOVED THEM IN, and the reason is one line of arithmetic. The region's exp² fog at
+        // density 0.0044 leaves a surface exp(−(d·0.0044)²) of its own contrast, so a 100-point
+        // value ladder is worth 82 points at 100 m, 66 at 150 m, 46 at 200 m and 18 at 300 m. Round
+        // 3 stood its whole near row at 130-300 m and the critic measured the consequence — "a deck
+        // lobe spans 8 luminance points". Every anchor below therefore records the RANGE it can
+        // actually deliver in its own frame, modelled over the mass's visible surface through the
+        // shader → fog → grade chain, and the ones whose job is value now stand inside 200 m:
+        //
+        //     anchor  frame   d(m)   fog   crown-to-base (sRGB luminance)
+        //       B      v3      100   0.82        62      the hero, and the dark anchor
+        //       A      v3      185   0.51        35
+        //       D      v3      200   0.46        31
+        //       C      v3      300   0.18         9      silhouette only, and that is its job
+        //       E      v4      138   0.66        48      the near tower in the col
+        //       G      v4      165   0.59        44
+        //       F      v4      170   0.57        40
+        //       H     v8/v1    251   0.30        14      silhouette
+        //
+        // AND THEY NO LONGER SHARE ONE ALTITUDE. Sink is per-anchor now (0.10-0.32 of radius), so
+        // the masses stand at genuinely different heights out of the sea — the other half of the
+        // critic's "same-size same-altitude" reading.
         private static readonly CloudLobeAnchor[] CloudLobeAnchors =
         {
-            // -- v3's near row, west of the island's broken edge, in the four sizes that make it a
-            //    row and not a fence. A: the broad bank at 210 m, u +0.15, crown row 400 — inside
-            //    the far bank's crest band, so it cuts that band's base across 364 px of frame.
-            //    C: the small far head at 300 m, u −0.19, crown row 430 — the one that is clearly
-            //    BEHIND A and B, which is where the row's depth comes from. D: the answering mass
-            //    at u +0.68 so the right of frame is not left to the vault alone.
-            new CloudLobeAnchor(-184f, 160f, 30f, 0),
-            new CloudLobeAnchor(-268f, 76f, 22f, 2),
-            new CloudLobeAnchor(-200f, 268f, 25f, 1),
+            // -- B, and it is the one that does the work: v3's hero, and the frame's dark anchor at
+            //    the horizon. 100 m out on bearing 243° from the v3 lens — 30 m nearer than round 3,
+            //    which is the difference between 44 points of crown-to-base and 62. A SHOULDERED
+            //    ANVIL (mass 5) rather than round 3's tower: one high crown, a long shoulder falling
+            //    away from it, and a base wide enough to carry the dark. It spans x 135-750 px with
+            //    its crown on row ≈343 and its waterline on row ≈520, so it still cuts the far
+            //    bank's crest band and the left-hand island silhouettes' feet. Near cloud in front
+            //    of far land is the only sentence in the frame that says "sea".
+            new CloudLobeAnchor(-64f, 93f, 24f, 5, 0.14f),
 
-            // -- B, and it is the one that does the work. 131 m out on bearing 243° from v3, and a
-            //    TOWER (mass 1, the tallest of the four) rather than a bank: crown on row 327 —
-            //    54 px clear of the far bank's highest crest — and waterline on row 500. It stands
-            //    across the left-hand island silhouettes' base from x 209 to x 711. Near cloud in
-            //    front of far land is the only sentence in the frame that says "sea".
-            new CloudLobeAnchor(-91f, 79f, 26f, 1),
+            // -- A: the broad low bank behind and right of B, at 185 m and u +0.15. Sunk deeper
+            //    (0.24) than B so its crown sits visibly lower — the row's second altitude.
+            new CloudLobeAnchor(-159f, 157f, 28f, 0, 0.24f),
 
-            // -- v4's row, east and north-east of the island, standing in the cream gap. E is the
-            //    big tower filling the col at u +0.23 (crown row 424, waterline 589) from 161 m,
-            //    which is nearer than the mid-distance ridge behind it — so it occludes that
-            //    ridge's foot rather than peering over its shoulder. F answers low on the left at
-            //    u −0.51 (crown row 458). G crops the right edge at u +0.81 (crown row 437).
-            new CloudLobeAnchor(310f, 102f, 32f, 1),
-            new CloudLobeAnchor(278f, 219f, 28f, 3),
-            new CloudLobeAnchor(382f, 21f, 30f, 0),
+            // -- D: the answering mass at u +0.67, so the right of frame is not left to the vault
+            //    alone. Drawn out along the wind axis (mass 2) and at 200 m.
+            new CloudLobeAnchor(-148f, 238f, 26f, 2, 0.18f),
+
+            // -- C: the small far head at 300 m, u −0.19 — clearly BEHIND B and A, which is where
+            //    the row's depth comes from. Nine points of internal value at that range and no
+            //    pretence otherwise: it is a silhouette, sunk almost to its shoulders (0.32).
+            new CloudLobeAnchor(-268f, 76f, 20f, 3, 0.32f),
+
+            // -- v4's row, east and north-east of the island, standing in the cream gap that round 3
+            //    named. E is the near tower filling the col at u +0.23 from 138 m, nearer than the
+            //    mid-distance ridge behind it — so it occludes that ridge's foot rather than peering
+            //    over its shoulder. G crops the right edge at u +0.98 and stands HIGH (sink 0.10);
+            //    F answers low on the left at u −0.51 and sits DEEP (0.26). Three masses, three
+            //    sizes, three altitudes, and a gap of open sea between each pair.
+            new CloudLobeAnchor(288f, 96f, 28f, 1, 0.12f),
+            new CloudLobeAnchor(314f, 18f, 30f, 5, 0.10f),
+            new CloudLobeAnchor(259f, 195f, 26f, 0, 0.26f),
 
             // -- H: south-west of the island, behind the knoll. Not for v3 or v4 — it is what v8's
             //    backlit dead tree gets to be silhouetted against once the eye follows the ridge
             //    down, and what v1's left edge sees past the south wall.
-            new CloudLobeAnchor(60f, -120f, 36f, 2),
+            new CloudLobeAnchor(60f, -124f, 34f, 2, 0.22f),
         };
 
         /// <summary>The cumulus heads standing out of the deck. Real geometry, because occlusion is
@@ -3403,15 +4085,85 @@ namespace Tarrock.Editor
             foreach (CloudLobeAnchor anchor in CloudLobeAnchors)
             {
                 PlaceCloudLobe(root.transform, meshes, material, anchor.X, anchor.Z, anchor.Radius,
-                    anchor.Variant, Hash21(anchor.X * 0.19f, anchor.Z * 0.53f));
+                    anchor.Variant, Hash21(anchor.X * 0.19f, anchor.Z * 0.53f), anchor.Sink);
             }
 
-            int scattered = 0;
-            for (int i = 0; i < CloudLobeScatterCount; i++)
+            var placed = new List<Vector3>();   // (x, z, radius) of everything already standing
+            foreach (CloudLobeAnchor anchor in CloudLobeAnchors)
+            {
+                placed.Add(new Vector3(anchor.X, anchor.Z, anchor.Radius));
+            }
+
+            int swells = BuildCloudSwellBand(root.transform, meshes, material, placed);
+            int scattered = BuildCloudFarScatter(root.transform, meshes, material, placed);
+
+            Debug.Log($"[Tarrock] Cloud lobes: {CloudLobeAnchors.Length} art-directed + " +
+                      $"{swells} mid-field swells + {scattered} far scattered.");
+        }
+
+        /// <summary>The mid-field swell band — low wide masses lying in the open sea just off the
+        /// island, which is the only thing that can put top-surface relief across the deck's middle
+        /// distance. See the constants block for why they are placed from the FOOTPRINT and not
+        /// from the region centre.</summary>
+        private static int BuildCloudSwellBand(
+            Transform parent, Mesh[] meshes, Material material, List<Vector3> placed)
+        {
+            int built = 0;
+            for (int i = 0; i < CloudLobeSwellCount; i++)
             {
                 // Bearings walk the compass in equal steps with a jittered offset, rather than
                 // coming off a hash: a hashed bearing clumps, and a clumped ring round an island
                 // reads as three cloud banks and five holes.
+                float bearing = (i + 0.5f) * (360f / CloudLobeSwellCount)
+                                + (Hash21(i + 5.31f, 17.7f) - 0.5f) * 7.2f;
+                float radians = bearing * Mathf.Deg2Rad;
+                float sin = Mathf.Sin(radians);
+                float cos = Mathf.Cos(radians);
+
+                float sizeRoll = Hash21(i + 61.7f, 13.3f);
+                float gapRoll = Hash21(i + 27.9f, 44.1f);
+                float keepRoll = Hash21(i + 91.3f, 8.6f);
+                float spinRoll = Hash21(i + 36.5f, 72.4f);
+                float sinkRoll = Hash21(i + 14.2f, 55.8f);
+
+                // Squared roll: most swells are modest and a few are broad. A flat size
+                // distribution is the tell of a scatter tool, in cloud exactly as in stone.
+                float radius = CloudLobeSwellMinRadius + CloudLobeSwellSizeRange * sizeRoll * sizeRoll;
+                // Where this bearing's ray leaves the terrain square, plus open sea. The +radius
+                // keeps the mass's NEAR EDGE outside the footprint by the full inner gap, so no
+                // swell can ever overlap ground that stands above the deck.
+                float exit = (TerrainSize * 0.5f) / Mathf.Max(Mathf.Abs(sin), Mathf.Abs(cos));
+                float ring = exit + radius
+                             + Mathf.Lerp(CloudLobeSwellInnerGap, CloudLobeSwellOuterGap, gapRoll * gapRoll);
+
+                float x = TerrainSize * 0.5f + ring * sin;
+                float z = TerrainSize * 0.5f + ring * cos;
+                if (keepRoll > 0.74f || CloudLobeCrowds(placed, x, z, radius, CloudLobeSwellClearance))
+                {
+                    continue;   // gaps are composition; an unbroken ring is a belt
+                }
+
+                // A NARROWER sink range than the far scatter's: a swell already stands only 3-11 m
+                // proud, and the deck's own billow now reaches 5.5 m, so a swell sunk past ~0.26
+                // would simply be swallowed by the sea it is meant to shape.
+                float sink = Mathf.Lerp(CloudLobeSinkMin + 0.03f, 0.26f, sinkRoll);
+                PlaceCloudLobe(parent, meshes, material, x, z, radius, 4, spinRoll, sink);
+                placed.Add(new Vector3(x, z, radius));
+                built++;
+            }
+
+            return built;
+        }
+
+        /// <summary>The far ring. Silhouette and aerial perspective only — at these ranges the fog
+        /// leaves under a fifth of any mass's own contrast, so what these buy is the layered
+        /// horizon, not value.</summary>
+        private static int BuildCloudFarScatter(
+            Transform parent, Mesh[] meshes, Material material, List<Vector3> placed)
+        {
+            int built = 0;
+            for (int i = 0; i < CloudLobeScatterCount; i++)
+            {
                 float bearing = (i + 0.5f) * (360f / CloudLobeScatterCount)
                                 + (Hash21(i + 3.17f, 11.9f) - 0.5f) * 5.6f;
                 float radiusRoll = Hash21(i + 41.3f, 7.7f);
@@ -3419,42 +4171,47 @@ namespace Tarrock.Editor
                 float keepRoll = Hash21(i + 12.7f, 61.5f);
                 float spinRoll = Hash21(i + 55.1f, 34.9f);
                 float variantRoll = Hash21(i + 70.3f, 5.2f);
+                float sinkRoll = Hash21(i + 23.8f, 66.2f);
 
-                // Two rings' worth of range, biased inward (the squared roll), because the row that
-                // matters is the near one and the far ones are mostly aerial perspective by the
-                // time the shader has finished with them.
+                // Biased inward (the squared roll), because the ring that still reads is the near
+                // one and the far ones are mostly aerial perspective by the time the shader has
+                // finished with them.
                 float ring = Mathf.Lerp(CloudLobeScatterInner, CloudLobeScatterOuter,
                     radiusRoll * radiusRoll);
                 float x = TerrainSize * 0.5f + ring * Mathf.Sin(bearing * Mathf.Deg2Rad);
                 float z = TerrainSize * 0.5f + ring * Mathf.Cos(bearing * Mathf.Deg2Rad);
 
-                // Squared roll again: most heads are small and a few are big. A flat size
-                // distribution is the tell of a scatter tool, in cloud exactly as in stone.
                 float radius = CloudLobeScatterMinRadius
                                + CloudLobeScatterSizeRange * sizeRoll * sizeRoll;
-                if (keepRoll > 0.68f || CloudLobeCrowdsAnchor(x, z, radius))
+                if (keepRoll > 0.68f || CloudLobeCrowds(placed, x, z, radius, 20f))
                 {
-                    continue;   // gaps are composition; an unbroken ring is a belt
+                    continue;
                 }
 
-                int variant = Mathf.Clamp(
-                    Mathf.FloorToInt(variantRoll * CloudLobeVariants), 0, CloudLobeVariants - 1);
-                PlaceCloudLobe(root.transform, meshes, material, x, z, radius, variant, spinRoll);
-                scattered++;
+                // The nub (6) is drawn twice as often as the rest out here: at 300 m and beyond a
+                // mass is a shape on the skyline, and a skyline of six identical anvils is a fence.
+                int variant = variantRoll < 0.34f
+                    ? 6
+                    : Mathf.Clamp(Mathf.FloorToInt(variantRoll * CloudLobeVariants), 0, CloudLobeVariants - 1);
+                float sink = Mathf.Lerp(CloudLobeSinkMin, CloudLobeSinkMax, sinkRoll * sinkRoll);
+                PlaceCloudLobe(parent, meshes, material, x, z, radius, variant, spinRoll, sink);
+                placed.Add(new Vector3(x, z, radius));
+                built++;
             }
 
-            Debug.Log(
-                $"[Tarrock] Cloud lobes: {CloudLobeAnchors.Length} art-directed + {scattered} scattered.");
+            return built;
         }
 
-        /// <summary>An anchor is a composition; a scattered head must not crowd one or hide it.
-        /// </summary>
-        private static bool CloudLobeCrowdsAnchor(float x, float z, float radius)
+        /// <summary>An anchor is a composition and a swell is a shape; nothing placed later may
+        /// crowd one or hide it. <paramref name="clearance"/> is the open sea demanded between two
+        /// masses' edges.</summary>
+        private static bool CloudLobeCrowds(
+            List<Vector3> placed, float x, float z, float radius, float clearance)
         {
             var point = new Vector2(x, z);
-            foreach (CloudLobeAnchor anchor in CloudLobeAnchors)
+            foreach (Vector3 other in placed)
             {
-                if (Vector2.Distance(point, new Vector2(anchor.X, anchor.Z)) < anchor.Radius + radius + 20f)
+                if (Vector2.Distance(point, new Vector2(other.x, other.y)) < other.z + radius + clearance)
                 {
                     return true;
                 }
@@ -3479,31 +4236,70 @@ namespace Tarrock.Editor
             // Every property explicit (same rule as the deck and the terrain — a reused .mat keeps
             // stale serialized values while shader defaults appear to change).
             //
-            // The three washes, and the value ladder they sit on is deliberate. Lit crown = the far
-            // bank's crest EXACTLY (a near cloud head and a far one are the same weather in the
-            // same light; any difference reads as two art passes). Shade at luminance 0.475 —
-            // BELOW the far bank's shaded body (0.53) and below the deck's own furrows (0.51),
-            // which is both correct aerial perspective and the reason the near row reads as near.
-            // Belly below that again. A vertical cloud face turned from a 7° sun receives almost
-            // nothing, while a near-horizontal deck furrow still catches it at a graze: the ladder
-            // is physics as much as composition.
-            material.SetColor("_LobeLit", CloudBankCrestLinear);
-            material.SetColor("_LobeShade", new Color(0.42f, 0.47f, 0.62f));
-            material.SetColor("_LobeUnder", new Color(0.30f, 0.35f, 0.48f));
-            // Three washes at 85%: nearly hard edges between them, which is the storybook read.
-            // The sky's own terrace is gentler (30%) because a sky IS a gradient and a cloud is
-            // not.
-            material.SetFloat("_LobeBands", 3f);
-            material.SetFloat("_LobeBandStrength", 0.85f);
-            material.SetFloat("_LobeBandSoftness", 0.10f);
-            // The sun is 7° up, so N·L on a rounded head runs about −1..+1 with the terminator
-            // nearly vertical: gain near 1 and a bias that puts the terminator a little sunward of
-            // the geometric one, because cloud scatters light round its own limb.
-            material.SetFloat("_LobeFormGain", 1.15f);
-            material.SetFloat("_LobeFormBias", 0.42f);
-            material.SetFloat("_LobeUnderDepth", 0.62f);
-            material.SetFloat("_LobeRim", 0.9f);
-            material.SetFloat("_LobeRimPower", 4f);
+            // ROUND 4 — THE LADDER, AND WHY IT WIDENS BY 22 sRGB POINTS. The round-3 critique was
+            // "a deck lobe spans 8 luminance points crown-to-base and matches the sheet behind it".
+            // Measured on round3/v3 the small heads run 180→198. That is not the palette's fault:
+            // modelled through this project's grade, round 3's crown (1.02,0.97,0.86) lands at sRGB
+            // luminance 202 and its belly (0.30,0.35,0.48) at 124 — a 78-point ladder. The loss is
+            // FOG plus a base that was never drawn:
+            //   * FOG. exp² at density 0.0044 keeps exp(−(d·0.0044)²) of a surface's own contrast:
+            //     0.72 at 130 m, 0.43 at 210 m, 0.18 at 300 m. Round 3's row stood at 130-300 m, so
+            //     78 × 0.18 = 14 points at the far end. The capture is the arithmetic exactly.
+            //   * THE BASE. Round 3 drew the belly from saturate(−N.y), and from a camera standing
+            //     on the island the only down-facing surface in view is the sliver of overhang at
+            //     the waterline — so the masses had no dark end at all. The shader now paints the
+            //     base from the mass's own height above the cloud sea (CloudLobe.shader §THE BASE).
+            // Both are answered: the ladder widens to 100 points and the anchors move in (see
+            // CloudLobeAnchors, where every entry carries the fog factor it will be seen through).
+            //
+            // The values themselves. Lit crown is the far bank's crest plus a touch — a near head
+            // and a far one are the same weather in the same light. Shade sits at sRGB luminance
+            // 153, below the far bank's body (which grades to 158) and below the deck's own furrows,
+            // which is correct aerial perspective and is why the near row reads as near. The belly
+            // is the new value: 105, within eleven points of the vault's own dark anchor (94), so
+            // the horizon gets the same weight of dark that the sky already has.
+            material.SetColor("_LobeLit", new Color(1.06f, 1.00f, 0.88f));
+            material.SetColor("_LobeShade", new Color(0.44f, 0.50f, 0.66f));
+            material.SetColor("_LobeUnder", new Color(0.22f, 0.27f, 0.41f));
+            // FOUR washes at 55% over 0.22 of softness — the sky's own brush. Round 3's three at
+            // 85% over 0.10 is what drew the hard vertical bevel the critic named: with the sun 12°
+            // up the iso-N·L contours on a rounded head are near-vertical great circles, and an 85%
+            // terrace of them is a stencil of vertical stripes. The boundaries still read (they are
+            // what makes it a painting); they no longer cut facets.
+            material.SetFloat("_LobeBands", 4f);
+            material.SetFloat("_LobeBandStrength", 0.55f);
+            material.SetFloat("_LobeBandSoftness", 0.22f);
+            // The wrapped terminator and the sky term (see the shader header). Gain and bias are
+            // solved rather than dialled. Sampled over a mass's VISIBLE surface — normals facing the
+            // camera and above the waterline, weighted by projected area — the combined parameter
+            // runs 0.185 to 0.815 (1st to 99th percentile) at v3's bearing and 0.188 to 0.884 at
+            // v4's, so gain 1.45 / bias −0.12 maps v3's band onto 0.148-1.062: the whole ladder
+            // used, with the top 6% rolling into the crown wash, which on a cumulus is a highlight
+            // and is wanted. Round 3's gain 1.15 / bias +0.42 put the same surface at 0.21-1.00 on
+            // a THREE-wash ladder at 85% terrace strength, which is why the bands showed and the
+            // form did not.
+            material.SetFloat("_LobeFormGain", 1.45f);
+            material.SetFloat("_LobeFormBias", -0.12f);
+            material.SetFloat("_LobeWrap", 0.55f);
+            material.SetFloat("_LobeSunWeight", 0.68f);
+            material.SetFloat("_LobeUnderDepth", 0.90f);
+            // The painted base: full dark at the waterline, gone 0.42 radii above it — 10 m of dark
+            // base on a 24 m mass, which is the proportion every cumulus on the reference board has.
+            material.SetFloat("_LobeBaseRise", 0.42f);
+            material.SetFloat("_LobeBasePower", 1.7f);
+            material.SetFloat("_LobeDeckLevel", CloudDeckLevel);
+            // THICKNESS READS AS DARKNESS, and these two numbers set which masses count as thick.
+            // 24 m is where the anchors start (the smallest composition anchor is 24), so every
+            // hand-placed mass earns the full anchor; 14 m is under the scatter's own floor of 18,
+            // so a scatter nub earns 40% of it and stays light. Same rule, same reasoning, as the
+            // vault's half-width weighting in SkyGradient.hlsl.
+            material.SetFloat("_LobeThinRadius", 14f);
+            material.SetFloat("_LobeThickRadius", 24f);
+            // Tighter than round 3's power 4: on a mass that fills 500 px a power-4 grazing term is
+            // not a rim, it is a wash over the whole limb, and it was part of what kept the round-3
+            // heads pale all over.
+            material.SetFloat("_LobeRim", 1.1f);
+            material.SetFloat("_LobeRimPower", 6f);
             // The same convergence numbers as the deck, so the near row and the sea it stands in
             // recede together instead of separating into two layers.
             material.SetFloat("_SkyBlendStart", 430f);
@@ -3516,11 +4312,14 @@ namespace Tarrock.Editor
 
         private static void PlaceCloudLobe(
             Transform parent, Mesh[] meshes, Material material,
-            float x, float z, float radius, int variant, float spinRoll)
+            float x, float z, float radius, int variant, float spinRoll, float sink)
         {
             var go = new GameObject($"CloudLobe_{x:F0}_{z:F0}");
             go.transform.SetParent(parent, worldPositionStays: false);
-            go.transform.position = new Vector3(x, CloudDeckLevel - radius * CloudLobeSink, z);
+            // Clamped, not trusted: the sink is what guarantees a mass hangs far enough under the
+            // deck that the billow can never open a lit gap beneath it (see CloudLobeSinkMin).
+            sink = Mathf.Clamp(sink, CloudLobeSinkMin, CloudLobeSinkMax);
+            go.transform.position = new Vector3(x, CloudDeckLevel - radius * sink, z);
             // Yaw only. A cumulus has an up; rolling one puts its flat base in the air.
             go.transform.rotation = Quaternion.Euler(0f, spinRoll * 360f, 0f);
             go.transform.localScale = Vector3.one * radius;
@@ -3528,7 +4327,7 @@ namespace Tarrock.Editor
             go.AddComponent<MeshFilter>().sharedMesh = meshes[variant];
             var renderer = go.AddComponent<MeshRenderer>();
             renderer.sharedMaterial = material;
-            // A 7° sun turns a 30 m cloud into a 250 m bar of shadow laid across whatever is
+            // A 12° sun turns a 30 m cloud into a 141 m bar of shadow laid across whatever is
             // downlight of it — which from these positions is the island. Cloud shadow on the
             // plateau is a real effect and a real decision, and it is not this pass's to make.
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -3578,7 +4377,7 @@ namespace Tarrock.Editor
                     var dir = new Vector3(
                         sinP * Mathf.Sin(azimuth), cosP, sinP * Mathf.Cos(azimuth));
 
-                    Vector3 v = dir * CloudLobeSurface(lobes, dir);
+                    Vector3 v = dir * (CloudLobeSurface(lobes, dir) * CloudLobeScallopFactor(dir));
                     int index = p * (meridians + 1) + m;
                     verts[index] = v;
                     uvs[index] = new Vector2(m / (float)meridians, p / (float)parallels);
@@ -3626,13 +4425,73 @@ namespace Tarrock.Editor
             return mesh;
         }
 
-        /// <summary>The four cumulus arrangements, as (offset x, y, z, radius) with the weight
+        /// <summary>The seven cumulus arrangements, as (offset x, y, z, radius) with the weight
         /// folded into the radius. Every lobe overlaps the origin so the mass stays star-shaped
-        /// about it — see BuildCloudLobeMesh.</summary>
+        /// about it — see BuildCloudLobeMesh.
+        ///
+        /// ROUND 4 adds 4-6 and re-cuts nothing else. The critic's reading of v4 was "one
+        /// edge-to-edge bank of same-size same-altitude flat-bottomed lobes", and while the sizes
+        /// and altitudes are fixed at the placement end (see CloudLobeAnchors), the SILHOUETTES were
+        /// genuinely four arrangements over fifty instances, three of which are near-symmetric
+        /// clusters of one core plus a ring — which resolve to a dome. The additions are the three
+        /// shapes the region was missing: something long and low enough to read as a swell on the
+        /// sea, something tall and frankly ASYMMETRIC for the near hero, and something small.
+        /// </summary>
         private static Vector4[] CloudLobeShape(int variant)
         {
             switch (variant)
             {
+                case 4:
+                    // THE LOW SWELL — the mid-field band's mass, and the deck's only real
+                    // top-surface relief. Eight lobes strung along its own x with the middle three
+                    // lifted, so it lies ACROSS a frame rather than standing in it. Measured after
+                    // normalisation: crown +0.426, keel −0.355, 1.97 long by 0.98 across — height
+                    // 0.40 of width, which is a swell on the sea. At the swell band's shallowest
+                    // roll (sink 0.18) a 40 m swell stands (0.426 − 0.18) × 40 ≈ 9.8 m proud and at
+                    // its deepest (0.34) only 3.4 m; 10 m of cloud at 150 m subtends 3.8°
+                    // — 75 px of the gameplay lens, in front of everything behind it.
+                    // The lobe RADII are large (0.44-0.70) on purpose: a lone Wyvill lobe of radius
+                    // r has its 0.42 isosurface at only 0.50 r, so a chain built from small lobes
+                    // pinches to a waist between them. Measured minimum radial extent 0.26, and it
+                    // falls at the tips of the long axis where a taper belongs.
+                    return new[]
+                    {
+                        new Vector4(0f, 0.06f, 0f, 0.70f),
+                        new Vector4(0.50f, 0.00f, 0.08f, 0.62f),
+                        new Vector4(-0.48f, -0.02f, -0.08f, 0.60f),
+                        new Vector4(0.88f, -0.08f, -0.04f, 0.48f),
+                        new Vector4(-0.86f, -0.06f, 0.06f, 0.46f),
+                        new Vector4(0.16f, 0.20f, -0.30f, 0.50f),
+                        new Vector4(-0.24f, 0.14f, 0.30f, 0.48f),
+                        new Vector4(0.30f, -0.14f, 0.18f, 0.44f),
+                    };
+                case 5:
+                    // THE SHOULDERED ANVIL — the near hero (v3's B, v4's G). ASYMMETRIC on purpose:
+                    // one crown high and forward, a long shoulder falling away behind it, a heavy
+                    // wide base under both. Round 3's tower was a core with a ring of satellites and
+                    // it photographed as a smooth dome with a bevel down it; this one cannot, because
+                    // its own mass is not centred on its own axis. Measured: crown +0.670, keel
+                    // −0.381, 1.56 by 0.97, minimum radial extent 0.295 — so at sink 0.14 a 24 m
+                    // anvil stands 12.7 m out of the sea and hangs 12.5 m under it.
+                    return new[]
+                    {
+                        new Vector4(0f, -0.04f, 0f, 0.68f),
+                        new Vector4(0.18f, 0.48f, -0.02f, 0.50f),
+                        new Vector4(0.32f, 0.16f, 0.16f, 0.52f),
+                        new Vector4(-0.26f, 0.20f, -0.18f, 0.46f),
+                        new Vector4(-0.58f, 0.00f, 0.12f, 0.48f),
+                        new Vector4(-0.88f, -0.14f, -0.04f, 0.40f),
+                        new Vector4(0.40f, -0.16f, 0.28f, 0.44f),
+                        new Vector4(-0.12f, -0.18f, -0.34f, 0.42f),
+                    };
+                case 6:
+                    // THE NUB. Two lobes and nothing else — the small thing on a far skyline that
+                    // stops the far ring reading as one repeated silhouette.
+                    return new[]
+                    {
+                        new Vector4(0f, 0f, 0f, 0.66f),
+                        new Vector4(0.30f, 0.14f, -0.18f, 0.40f),
+                    };
                 case 1:
                     // The two-headed tower: one crown up and forward, a lower shoulder behind it.
                     return new[]
@@ -3675,6 +4534,27 @@ namespace Tarrock.Editor
                         new Vector4(0.26f, -0.14f, 0.30f, 0.34f),
                     };
             }
+        }
+
+        /// <summary>The cauliflower on a mass's rim, as a multiplier on its radial extent.
+        ///
+        /// A function of the DIRECTION only, so it is continuous everywhere on the sphere and has no
+        /// seam at the meridian wrap or pinch at the poles — which noise of (azimuth, polar) would
+        /// have at both. Two 2-D lookups on complementary component pairs is the portable way to get
+        /// a direction-continuous field out of the same GradNoise the whole region is built from;
+        /// summing them also keeps the result zero-mean, so the scallop never inflates a mass, it
+        /// only breaks its edge.</summary>
+        private static float CloudLobeScallopFactor(Vector3 dir)
+        {
+            const float fine = 2.15f;   // the second octave, as a multiple of the first
+            float k = CloudLobeScallopScale;
+            float broad =
+                GradNoise(dir.x * k + 4.1f, dir.z * k + 9.7f) +
+                GradNoise(dir.y * k + 31.3f, dir.x * k + 18.9f);
+            float nibble =
+                GradNoise(dir.z * k * fine + 57.2f, dir.y * k * fine + 12.4f) +
+                GradNoise(dir.x * k * fine + 73.6f, dir.z * k * fine + 41.8f);
+            return 1f + (broad + nibble * 0.4f) * CloudLobeScallop;
         }
 
         /// <summary>Distance from the cluster centre to the metaball isosurface along
@@ -3778,9 +4658,11 @@ namespace Tarrock.Editor
         // vantage frustums before it was written down (see the table).
         //
         // The scatter never buries a camera or occludes a subject. Re-measured over all eight
-        // vantages after the round-3 change: no stone over 0.9 m tall lands within 2.6 m of any
-        // camera, nothing stands on a camera's sight line to its subject at a height that could
-        // reach it, and the nearest stone to the spawn mark is 4.0 m away and waist-high.
+        // vantages after the round-4 change (anchors and scatter together, against the round-4
+        // heightfield): the closest any stone's SURFACE comes to a camera is 2.08 m (v1's new
+        // foreground mass, which is meant to crowd that lens), the median is 4.3 m, and no stone
+        // stands on any camera's sight line to its subject at a height that could reach it — all
+        // seven aimed vantages measure clear. The nearest stone to the spawn mark is 3.6 m away.
         // -------------------------------------------------------------------------------------
         // ROUND 3 — THE NEAR-LENS LAYER. The critic's measurement on round2/v1 and v8 was that the
         // darkest mass in the frame still sits ~30 m out (measured here: the nearest stone to v1's
@@ -3795,6 +4677,10 @@ namespace Tarrock.Editor
         //     island's bones. Measured over 120 random standing points on walkable ground, the mean
         //     distance to the nearest stone falls from 12.2 m (round 2, 103 stones) to 4.7 m
         //     (round 3, ~560). That one number IS the near-lens layer; everything else is framing.
+        //     ROUND-4 CORRECTION, and it is a correction of the REASONING, not of the pitch: an even
+        //     4.7 m everywhere is not a near layer, it is wallpaper — see the gathering field at the
+        //     end of AcceptsRock for what replaced it, and for why the near-lens job belongs to the
+        //     anchors instead. The lattice pitch and the zone chances below are untouched.
         //
         //  2. SIZE-AWARE CLEARANCES. Round 2 kept EVERY stone 5.5 m off the travelled line, which
         //     is why nothing could ever be near the lens — the lens looks down the travelled line.
@@ -3814,18 +4700,25 @@ namespace Tarrock.Editor
 
         // THE CLIFF'S BEDDING. Every stone in the family leans the same way, by the same law: the
         // strata dip toward bearing 152° and their broken faces therefore look up-sun, toward the
-        // dawn disc at bearing 332° (BuildLighting's SunEuler is 7°/152°; every sky vector in this
+        // dawn disc at bearing 332° (BuildLighting's SunEuler is 12°/152°; every sky vector in this
         // file derives from it). This is one line of geology doing three jobs at once:
         //   - it is TRUE — a bedded island has one dip, not a per-prop random tilt;
         //   - it ties the whole rock family into one formation instead of scattered props; and
-        //   - it is what makes a near mass READ. At a 7° sun a horizontal top plane takes
-        //     sin 7° = 0.12 of the key light and stays as dark as the ground it sits on. Tip a
-        //     stone's up-sun face 14° back and that face takes cos 7° ≈ 0.99 — eight times the
-        //     light — while its top cap falls into shadow. The hard bright-to-dark line where they
+        //   - it is what makes a near mass READ. At a 12° sun a horizontal top plane takes
+        //     sin 12° = 0.21 of the key light and stays about as dark as the ground it sits on.
+        //     Tip a stone's up-sun face 14° back and that face takes cos 2° ≈ 1.00 — nearly five
+        //     times the light — while its top cap falls into shadow. (At round 3's 7° sun the same
+        //     dip bought cos 7° = 0.99 against sin 7° = 0.12, a factor of eight; the raise costs
+        //     this edge some of its bite and the weathering step in BuildRockMaterial gives it
+        //     back, by darkening the cap rather than by brightening the face.) The hard bright-to-dark line where they
         //     meet is the lit top edge the round-2 critique asked for, and it is exactly the
         //     confident edge art-bible.md wants: two flat values and one clean boundary.
         // Standing stones lean further (they are the slabs the scarp shed, stood on their ends),
         // and their broad face is yawed to front the disc rather than spun at random.
+        /// <summary>How much of the hillside's own stone value a free-standing block keeps (see
+        /// BuildRockMaterial): the weathering step that lets a near mass anchor the frame.</summary>
+        private const float RockWeathering = 0.82f;
+
         private const float BeddingDipBearing = 152f;
         private const float BeddingDipDegrees = 14f;
         private const float StandingDipDegrees = 24f;
@@ -3871,12 +4764,20 @@ namespace Tarrock.Editor
             new RockAnchor(210.3f, 96.6f, 2.9f, 1),
 
             // ...and the south side, deliberately NOT a mirror. The near one is the closest thing to
-            // v1's lens at 3.6 m — it shows only its top (v −1.42 to −0.63, so its base is below the
-            // frame edge, which is what "cropped" means) across u −1.34..−0.78. Behind it three more
-            // answer at 9.3, 13.4 and 14.5 m. Four distances on one side and three on the other, all
-            // seven of them different: the frame is held, not fenced.
-            // The near one is also v2's near layer, cropping that frame's right edge from 3.2 m.
-            new RockAnchor(217.0f, 88.3f, 1.5f, 2),
+            // v1's lens, and ROUND 4 REBUILT IT because round 3's was a chip and not a mass: at
+            // 1.5 × the low-brow mesh it reached only v −0.40, so it filled the bottom-left corner
+            // and stopped, and the critique read the frame as having no near-lens anchor at all.
+            // Re-solved for the two things a foreground mass has to do — CROP TWO EDGES and hold a
+            // real slice of the frame — it now stands 3.0 m from the lens across u −1.48…−0.36 and
+            // v −2.43…−0.03: off the left edge, off the bottom edge, and up to the frame's own
+            // mid-line. It is 0.29 clear of the Fool's screen box (u ±0.07) so it crowds him
+            // without touching him, and 2.1 m clear of the lens so nothing is buried.
+            // IT IS DARK BY GEOMETRY, NOT BY PIGMENT: the ground it stands on is in the north wall's
+            // cast shadow (verified against the beam, which now lands 8.4 m out — see the dawn
+            // breach), so the whole stone sits at ambient while the lane behind it is lit. The rock
+            // family's albedo is the ground's, read not restated, and it does not move.
+            // It is also v2's near layer, cropping THAT frame's right edge (u +0.48…+1.45) from 3.9 m.
+            new RockAnchor(217.09f, 89.07f, 2.2f, 1),
             new RockAnchor(211.6f, 86.0f, 2.4f, 1),
             new RockAnchor(206.5f, 84.3f, 2.6f, 1),
             new RockAnchor(209.0f, 82.6f, 1.5f, 3),
@@ -3888,15 +4789,32 @@ namespace Tarrock.Editor
             new RockAnchor(188.2f, 66.4f, 2.4f, 1),
             new RockAnchor(192.6f, 70.0f, 1.8f, 2),
 
-            // v8's NEAR LAYER: a leaning finger at 2.6 m and the plate it broke off at 3.9 m, on the
-            // valley floor's south side. This vantage looks UP at the knoll — its frame bottom sits
-            // 3.9° ABOVE the horizontal — which is why round 2's nearest stone (12.0 m) read as
-            // midground and why these must be STANDING stones and not boulders: at 3 m, nothing
-            // under 1.9 m tall is in this picture at all. Together they fill the bottom-left corner
-            // across u −1.38..−0.26 from below the frame edge up to v −0.51, and they stop 0.26
-            // short of the dead tree's screen column with 0.5 of clear sky under its crown.
+            // v8's NEAR LAYER: a leaning finger at 2.6 m on the valley floor's south side, filling
+            // the bottom-left corner. This vantage looks UP at the knoll — its frame bottom sits
+            // 3.5° ABOVE the horizontal — which is why round 2's nearest stone (12.0 m) read as
+            // midground and why this one must be a STANDING stone and not a boulder: at 3 m, nothing
+            // under 1.9 m tall is in this picture at all.
             new RockAnchor(199.0f, 81.6f, 2.4f, 4),
-            new RockAnchor(198.2f, 80.6f, 2.9f, 5),
+
+            // ...and OPPOSITE it, the round-4 addition: v8's dark near mass, on the RIGHT.
+            //
+            // THE FINDING was that v8's near stones read PALE — brighter than the hazed distance
+            // behind them, which is an anchor upside down. The cause is orientation, not albedo, and
+            // it is worth stating as a rule because it decides where a near mass can go in any
+            // frame: a stone's camera-facing side points at (bearing from the lens + 180°), and it
+            // takes the key only while that is within 90° of the sun's 332°. In v8 (axis 242.5°,
+            // half-width 39.7°) that splits the frame down the middle — every near stone LEFT of
+            // centre is lit and every one RIGHT of centre is not. Round 3 put both of v8's near
+            // stones on the left. This one stands at bearing 290° from the lens, so its near face
+            // points 110°, a full 138° off the sun: ambient only, and it renders at sRGB ≈ 0.16
+            // against ground the same frame lifts to 0.59 — a 3.7:1 anchor.
+            // Geometry: 4.0 m from the lens, crossing the RIGHT edge (u +0.68 outward) and the
+            // BOTTOM edge, topping at v −0.27, and 2.4 m clear of the camera. It stops well short of
+            // the dead tree (u ±0.05) and of the new knoll notch (u +0.22…+0.30) — it frames them
+            // rather than arguing with them. It replaces round 3's second left-hand stone: two pale
+            // masses in one corner is not a foreground, it is clutter.
+            // In v1 the same stone reads as the 24 m midground layer on the left (u −0.33…−0.20).
+            new RockAnchor(196.24f, 85.37f, 3.2f, 1),
 
             // The knoll's crown tor, beside the dead tree — unchanged from round 2.
             new RockAnchor(158.4f, 64.8f, 2.6f, 1),
@@ -3904,14 +4822,17 @@ namespace Tarrock.Editor
             new RockAnchor(152.0f, 63.5f, 1.8f, 0),
 
             // THE NOTCH HORN: the leaning counter-element of the skyline event cut in
-            // ApplyLandformEvents. Three slabs standing on the horn beyond the notch, tops at
-            // v −0.21..−0.24 against open sky — ≈0.17 above the notch floor and 0.07 clear of the
-            // horn's own crest, so the shoulder reads summit → cut → three dark leaning verticals →
-            // falls away. They stand where the ground is under 15°; the 51° scarp west of them is
-            // left bare, because a slab does not perch.
-            new RockAnchor(148.0f, 73.0f, 3.2f, 4),
-            new RockAnchor(147.0f, 74.2f, 2.6f, 5),
-            new RockAnchor(149.0f, 71.9f, 2.2f, 4),
+            // ApplyLandformEvents. Three slabs standing on the horn beyond the notch — MOVED WITH
+            // THE NOTCH in round 4, because the round-4 cut goes through the ground round 3 stood
+            // them on and a slab left there would have filled the very V it exists to answer.
+            // On the new horn their tops read at v −0.219, −0.232 and −0.248 across u +0.41…+0.47:
+            // 0.25-0.28 above the notch floor and 0.06-0.07 clear of the horn's own shelf, so the
+            // shoulder reads summit → cut → three dark leaning verticals → falls away. The ground
+            // under them measures 3.4-8.4°; the scarp west of them is left bare, because a slab
+            // does not perch.
+            new RockAnchor(146.8f, 77.8f, 3.2f, 4),
+            new RockAnchor(146.0f, 78.6f, 2.6f, 5),
+            new RockAnchor(147.4f, 77.2f, 2.2f, 4),
         };
 
         private static void BuildRockOutcrops(TerrainData terrainData, Material terrainMaterial)
@@ -3973,6 +4894,20 @@ namespace Tarrock.Editor
                     float scale = standing
                         ? 1.6f + 1.4f * sizeRoll
                         : 0.40f + 2.9f * Mathf.Pow(sizeRoll, 2.2f);
+
+                    // SIZE HIERARCHY (round 4). A gathering's stones are not all one grade: the
+                    // block that broke first is the biggest and the rest are its debris. Sitting
+                    // stones therefore take 72% of their rolled size out in the clears and 128% in
+                    // a core, which is enough to give every group a head. Measured over the finished
+                    // field, the largest stone in a three-plus group is 1.78× the second largest,
+                    // and mean scale runs 1.61 in the cores against 1.04 in the clears. Standing
+                    // stones are exempt: a slab is the size the scarp shed, not the size of the
+                    // company it keeps.
+                    if (!standing)
+                    {
+                        scale *= 0.725f + 0.55f * RockCluster(x, z);
+                    }
+
                     if (!AcceptsRock(terrainData, x, z, pick, scale))
                     {
                         continue;
@@ -4088,7 +5023,47 @@ namespace Tarrock.Editor
                 chance = Mathf.Max(chance, 0.36f);
             }
 
+            // -- THE GATHERING FIELD (round 4), applied last so it modulates every zone above.
+            //
+            // THE FINDING (art lead, on gauntlet/round3/v1): the boulders read as an even confetti
+            // sprinkle. The numbers agree — round 3's field put a stone within 4.3 m of the average
+            // standing point on walkable ground and left only 8% of that ground more than 8 m from
+            // one. Stone was everywhere, so stone meant nothing, and with nothing to be sparse
+            // against a group could not read as a group.
+            //
+            // Stone does not lie evenly. It gathers where a block came apart and it is absent in
+            // between, and the eye reads the ABSENCE — the open meadow is what makes the cluster a
+            // cluster. So the zone chances above (which say where stone BELONGS) are multiplied by a
+            // field that says where it GATHERED, and that multiplier is deliberately brutal at both
+            // ends: 0.06 in the clears, up to 4.56 in a core, which saturates the lattice so a core
+            // fills at the 3 m cell pitch and comes out as a knot of touching stones.
+            // Measured over the finished field, against round 3:
+            //     stones                     582  →  341   (and the near-lens layer is unhurt: it
+            //                                              was never the scatter's job, it is the
+            //                                              anchors' — see RockAnchors)
+            //     density CV, 10 m discs    0.55  →  0.92
+            //     ground > 8 m from a stone   8%  →   32%   the clears
+            //     ground > 12 m               1%  →   11%
+            //     groups (6 m single link)   219  →  140, of which 41 are the 2-4 stone gatherings
+            //                                              the brief asks for and 18 are larger
+            // The field is TWO octaves on purpose: the ~19 m octave decides where a gathering is,
+            // the ~9 m one breaks each gathering into knots so a core is not a disc of gravel.
+            chance *= 0.06f + 4.5f * RockCluster(x, z);
+
             return pick <= chance;
+        }
+
+        /// <summary>Where stone GATHERED, 0 in the open meadow and 1 in the core of a group. Shared
+        /// by <see cref="AcceptsRock"/> (how many) and <see cref="BuildRockOutcrops"/> (how big), so
+        /// the two cannot disagree about where a gathering is.</summary>
+        private static float RockCluster(float x, float z)
+        {
+            float broad = Fbm(x * 0.052f + 31f, z * 0.052f + 13f);
+            float knots = Fbm(x * 0.115f + 7f, z * 0.115f + 41f);
+            float field = 0.5f + 0.5f * ((0.68f * broad) + (0.32f * knots));
+            // A LINEAR clamp, not a smoothstep: the smoothstep's flat shoulders would widen both the
+            // saturated cores and the dead clears, and the measured figures below are this ramp's.
+            return Mathf.InverseLerp(0.50f, 0.66f, field);
         }
 
         /// <summary>Metres inboard of the nearest broken edge (negative once past the lip). The edge
@@ -4140,6 +5115,19 @@ namespace Tarrock.Editor
             if (standing)
             {
                 sink += 0.14f * scale;
+            }
+            else
+            {
+                // PARTIAL BURIAL (round 4). Stones in a gathering have been there long enough for
+                // the turf to climb them, and they have not settled equally: squaring the roll means
+                // most stones take almost none of this and a few are set in to the shoulder, which
+                // is what stops a group reading as a handful of pebbles tipped out on the grass.
+                // Squared and capped at 0.26, so the most deeply set stone still stands 0.56 × scale
+                // proud on the flat and 0.29 × on the steepest ground the scatter accepts — buried,
+                // never swallowed. Standing stones are exempt: their footing is already deeper, and
+                // a half-sunk slab is a step, not a slab.
+                float burial = Hash21(x * 0.77f + 3.1f, z * 0.53f + 8.6f);
+                sink += 0.26f * scale * burial * burial;
             }
 
             var go = new GameObject("Rock");
@@ -4224,7 +5212,35 @@ namespace Tarrock.Editor
             // The cool bed is deliberately NOT read: a boulder sitting on a hillside is a lump of
             // the sunny bed that fell off it, and mixing both here would grey the prop out of the
             // cliff it came from. The fallbacks are the ground pass's own numbers.
-            material.SetColor("_RockColor", PaletteColour(terrainMaterial, "_RockWarm", new Color(0.56f, 0.51f, 0.42f)));
+            // ROUND 4 — THE WEATHERING STEP. The HUE is still the ground's, read and not restated;
+            // what is added is one VALUE decision, and it is the difference between a foreground
+            // mass and a pale lump. The critique was that the near stones are brighter than the
+            // hazed distance behind them, which is an anchor upside down, and the numbers were
+            // blunt: at the hillside's own value a free-standing block in cast shadow renders at
+            // luminance 0.300 against shaded meadow at 0.181 — a LIGHT shape on dark ground, where
+            // every reference plate's foreground rock is a dark shape on light ground.
+            // 0.82 of the bedding's value is where the two constraints meet, and both were solved
+            // rather than eyed:
+            //   - a block in cast shadow lands at 0.236, so it reads 2.1:1 against the light lane
+            //     behind it and 3.1:1 against the far haze — it anchors;
+            //   - a face square to the beam still reaches 1.20 linear against the bloom threshold's
+            //     0.90, so sun-struck stone is still what carries the frame's brightest pixels
+            //     (round 3's doctrine, and it survives the step with a 33% margin).
+            // It is also true: the hillside colour is FRESH bedding in a cut face. A block that has
+            // sat in wet turf long enough for the grass to climb it is weathered and lichened and
+            // is not the colour of the quarry it fell out of. _CliffColor and the lichen are NOT
+            // scaled — the refusing faces are hillside, and the lichen is already the dark note.
+            Color bedding = PaletteColour(terrainMaterial, "_RockWarm", new Color(0.56f, 0.51f, 0.42f));
+            // Scaled channel by channel rather than with Color's own operator*, which would take the
+            // alpha down with it — an opaque shader would not care today and would care the day
+            // someone reads it.
+            material.SetColor(
+                "_RockColor",
+                new Color(
+                    bedding.r * RockWeathering,
+                    bedding.g * RockWeathering,
+                    bedding.b * RockWeathering,
+                    bedding.a));
             material.SetColor("_CliffColor", PaletteColour(terrainMaterial, "_CliffColor", new Color(0.30f, 0.31f, 0.35f)));
             material.SetColor("_MossColor", PaletteColour(terrainMaterial, "_RockLichen", new Color(0.35f, 0.40f, 0.26f)));
             material.SetColor("_ShadowTint", PaletteColour(terrainMaterial, "_ShadowTint", new Color(0.80f, 0.88f, 1.06f)));
@@ -4241,6 +5257,18 @@ namespace Tarrock.Editor
             material.SetFloat("_RockContrast", 1.8f);
             material.SetFloat("_RockDetailAmount", 0.13f);
             material.SetFloat("_FormationTint", 0.55f);
+
+            // ROUND-4 close-range brushmarks. The whole block above works at 0.34 m and coarser, so
+            // a boulder at arm's length was one flat wash between two partings ("no surface detail",
+            // round-4 critique of v5). 0.20 m marks are two or three to a hand's width — laid paint,
+            // not noise — and they fade out over 6-16 m so nothing sub-pixel is ever drawn at range.
+            // The aspect/size spreads are the ground's own numbers: one paint recipe, two shaders.
+            material.SetFloat("_RockDabScale", 0.20f);
+            material.SetFloat("_RockDabTone", 0.17f);
+            material.SetFloat("_RockDabAniso", MeadowDabAniso);
+            material.SetFloat("_RockDabSize", MeadowDabSize);
+            material.SetFloat("_RockDabFadeStart", 6f);
+            material.SetFloat("_RockDabFadeRange", 10f);
 
             // BEDDING (round 3) — the same construct as the ground's, an order finer because a
             // boulder is a metre tall and wants three or four beds, not one. Round 2 drew

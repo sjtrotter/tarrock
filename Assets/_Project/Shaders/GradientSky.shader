@@ -75,8 +75,10 @@ Shader "Tarrock/GradientSky"
         _VaultCloudShade ("Vault cloud - cool body", Color) = (0.52, 0.57, 0.71, 1)
         _VaultCloudShadow ("Vault cloud - belly (the dark anchor)", Color) = (0.19, 0.23, 0.35, 1)
         _VaultCloudBase ("Vault cloud - flat base (half widths)", Range(0.05, 0.6)) = 0.22
+        _VaultCloudBaseLump ("Vault cloud - base wander", Range(0, 0.25)) = 0.075
         _VaultCloudSoftness ("Vault cloud - edge softness", Range(0.005, 0.3)) = 0.030
         _VaultCloudLump ("Vault cloud - cauliflower", Range(0, 0.4)) = 0.090
+        _VaultCloudLift ("Vault cloud - wash lift off the sun vector", Range(0, 2)) = 0.58
     }
 
     SubShader
@@ -137,8 +139,10 @@ Shader "Tarrock/GradientSky"
             float4 _VaultCloudShade;
             float4 _VaultCloudShadow;
             float _VaultCloudBase;
+            float _VaultCloudBaseLump;
             float _VaultCloudSoftness;
             float _VaultCloudLump;
+            float _VaultCloudLift;
 
             v2f vert (appdata v)
             {

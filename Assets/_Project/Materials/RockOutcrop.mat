@@ -46,6 +46,12 @@ Material:
     - _MossAmount: 0.42
     - _MossStart: 0.28
     - _RockContrast: 1.8
+    - _RockDabAniso: 0.55
+    - _RockDabFadeRange: 10
+    - _RockDabFadeStart: 6
+    - _RockDabScale: 0.2
+    - _RockDabSize: 0.45
+    - _RockDabTone: 0.17
     - _RockDetailAmount: 0.13
     - _RockDetailScale: 0.32
     - _RockVariation: 1.5
@@ -59,7 +65,7 @@ Material:
     - _BeddingDip: {r: 0.07, g: 0, b: -0.05, a: 0}
     - _CliffColor: {r: 0.29999998, g: 0.30999997, b: 0.34999996, a: 1}
     - _MossColor: {r: 0.34999996, g: 0.39999998, b: 0.25999996, a: 1}
-    - _RockColor: {r: 0.56, g: 0.50999993, b: 0.41999996, a: 1}
+    - _RockColor: {r: 0.4592, g: 0.41819993, b: 0.34439996, a: 1}
     - _ShadowTint: {r: 0.8, g: 0.88, b: 1.06, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

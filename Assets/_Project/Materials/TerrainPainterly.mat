@@ -33,8 +33,8 @@ Material:
     - _BeddingLineWidth: 0.085
     - _BeddingLip: 0.2
     - _BeddingRough: 0.22
-    - _BeddingSlopeEnd: 48
-    - _BeddingSlopeStart: 35
+    - _BeddingSlopeEnd: 62
+    - _BeddingSlopeStart: 50
     - _BeddingSpacing: 2.6
     - _BeddingWarp: 0.55
     - _BeddingWidthJitter: 0.6
@@ -52,13 +52,20 @@ Material:
     - _DetailFadeStart: 10
     - _HeightHigh: 48
     - _HeightLow: 8
+    - _MeadowClumpAmount: 0.9
+    - _MeadowClumpEdge: 0.11
+    - _MeadowClumpScale: 16
+    - _MeadowClumpWarp: 0.85
     - _MeadowCoolAmount: 0.7
+    - _MeadowDabAniso: 0.55
     - _MeadowDabEdge: 0.1
     - _MeadowDabScale: 6
+    - _MeadowDabSize: 0.45
     - _MeadowDabWarp: 0.55
     - _MeadowFineScale: 0.95
     - _MeadowFineStraw: 0.28
     - _MeadowFineTone: 0.16
+    - _MeadowFineWarp: 0.45
     - _MeadowGrain: 0.13
     - _MeadowGrainScale: 0.34
     - _MeadowHueScale: 21
@@ -70,8 +77,12 @@ Material:
     - _NormalDetailHeight: 0.3
     - _NormalDetailStrength: 1
     - _RockBedTint: 0.55
+    - _RockDabEdge: 0.14
+    - _RockDabScale: 0.62
+    - _RockDabTone: 0.2
     - _RockLichenAmount: 0.4
     - _RockMottleScale: 6.5
+    - _RockNormalBoost: 2.2
     - _ShadeWrap: 0.4
     - _SlopeEnd: 0.35721236
     - _SlopeJitter: 0.13

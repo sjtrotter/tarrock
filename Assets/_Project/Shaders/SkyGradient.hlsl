@@ -63,6 +63,24 @@
 //     paints the belly of a mass, weighted by the mass's own half-width: a 20°-wide cumulus at
 //     this hour is deep enough for a dark base and a 7° one is not, so the composition's largest
 //     cloud becomes its value anchor with nothing hand-flagged.
+//
+// 2026-07-31 ROUND 4 (against gauntlet/round3/v3, v4, and following the sun from 7° to 12°). The
+// bank survived a second critic and is UNTOUCHED again. v3's vault masses read. v4's did not:
+// "one edge-to-edge bank of same-size same-altitude flat-bottomed lobes shaded on a horizontal
+// axis that contradicts the sun" — four separate complaints in one sentence, and all four were
+// fair. Three of them are answered in this file and the fourth (the sizes and altitudes) in
+// TerrainRegionGenerator §THE VAULT CLOUDS:
+//
+//   * ONE SILHOUETTE, FIVE TIMES. The six-lobe alphabet was a stamp. It now has two handwritings
+//     and each mass is authored somewhere between them — see TarrockCumulusField.
+//   * A RULER FOR A BASE. Every mass cut its base at the same fraction of its own half width, so a
+//     row of them drew one horizontal line across the sky. The base now wanders, one octave along
+//     the mass's own x, exactly as the far bank's base already did and for the same reason.
+//   * A WASH THAT CONTRADICTS THE SUN. This one is worth the space it gets at the terminator code
+//     below: a mass more than a few degrees round the compass from the disc has a sun vector that
+//     comes out almost perfectly horizontal in its own flat frame, so the three washes stepped
+//     sideways and gave the mass no top and no bottom. The wash direction is now tilted up off the
+//     sun vector; the disc still decides which flank is gold.
 
 // ---------------------------------------------------------------------------------------------
 // Noise. GRADIENT noise, not value noise: the 2026-07-26 terrain audit measured that value noise
@@ -180,8 +198,10 @@ struct TarrockSkyDesc
     float3 cloudShade;     // the cool body — the middle of three washes
     float3 cloudShadow;    // the belly of the big masses: the frame's DARK ANCHOR
     float  cloudBase;      // flat base, in half-widths below the mass's centre
+    float  cloudBaseLump;  // and how far that base wanders, so it is drawn and not ruled
     float  cloudSoftness;  // silhouette softness, in half-widths
     float  cloudLump;      // how much noise breaks the lobe silhouette into cauliflower
+    float  cloudLift;      // how far the wash tilts UP off the sun vector — see TarrockVaultCloud
 };
 
 // ---------------------------------------------------------------------------------------------
@@ -273,27 +293,41 @@ float2 TarrockDirToAzEl(float3 v)
     return float2(atan2(v.x, v.z), asin(clamp(v.y, -1.0, 1.0)));
 }
 
-// The alphabet itself, as a signed distance field in half-widths. Six lobes on a wide, low
-// arrangement: a broad shoulder left, the main head just left of centre, a smaller second head
-// stepped up and right (asymmetry is what stops a cumulus reading as a cauliflower stamp), a full
-// flank right and a trailing wisp. Unrolled rather than held in a const array: this file has to
-// compile inside a CGPROGRAM skybox pass as well as a URP one, and unrolled min()s are the
-// portable spelling. min() of spheres unions them with CONCAVE creases at the joins, and those
-// creases are the scallops in the silhouette — they are the point, not an artefact.
-float TarrockCumulusField(float2 pc)
+// The alphabet, as a signed distance field in half-widths. Six lobes; unrolled rather than held in
+// a const array because this file has to compile inside a CGPROGRAM skybox pass as well as a URP
+// one, and unrolled min()s are the portable spelling. min() of spheres unions them with CONCAVE
+// creases at the joins, and those creases are the scallops in the silhouette — they are the point,
+// not an artefact.
+//
+// ROUND 4 GIVES IT TWO HANDWRITINGS, blended by `style`. The round-3 critique of v4 was "one
+// edge-to-edge bank of same-size same-altitude flat-bottomed lobes", and while the sizes and
+// altitudes are set at the placement end (TerrainRegionGenerator §THE VAULT CLOUDS), the SHAPE was
+// genuinely one arrangement stamped five times. Style 0 is that arrangement — wide and low, a broad
+// shoulder left, the main head just left of centre, a smaller second head stepped up and right, a
+// full flank right and a trailing wisp. Style 1 is a BUILDING cumulus: the same six lobes restrung
+// so one crown climbs well clear of the rest and the shoulders fall away under it, which reaches
+// 0.84 half-widths above centre against style 0's 0.70. Blending rather than switching means a
+// style of 0.4 is a legal cloud too, so five masses can be five different clouds rather than two.
+float TarrockCumulusField(float2 pc, float style)
 {
-    float sd = length(pc - float2(-0.72, -0.02)) - 0.30;
-    sd = min(sd, length(pc - float2(-0.38, 0.10)) - 0.40);
-    sd = min(sd, length(pc - float2(-0.02, 0.24)) - 0.46);
-    sd = min(sd, length(pc - float2(0.30, 0.34)) - 0.34);
-    sd = min(sd, length(pc - float2(0.52, 0.06)) - 0.38);
-    sd = min(sd, length(pc - float2(0.82, -0.06)) - 0.24);
+    float s = saturate(style);
+    float sd = length(pc - lerp(float2(-0.72, -0.02), float2(-0.68, -0.08), s)) - lerp(0.30, 0.24, s);
+    sd = min(sd, length(pc - lerp(float2(-0.38, 0.10), float2(-0.32, 0.04), s)) - lerp(0.40, 0.34, s));
+    sd = min(sd, length(pc - lerp(float2(-0.02, 0.24), float2(0.00, 0.22), s)) - lerp(0.46, 0.38, s));
+    sd = min(sd, length(pc - lerp(float2(0.30, 0.34), float2(0.10, 0.56), s)) - lerp(0.34, 0.28, s));
+    sd = min(sd, length(pc - lerp(float2(0.52, 0.06), float2(0.42, 0.20), s)) - lerp(0.38, 0.32, s));
+    sd = min(sd, length(pc - lerp(float2(0.82, -0.06), float2(0.74, -0.04), s)) - lerp(0.24, 0.26, s));
     return sd;
 }
 
-// Returns (colour, coverage). flip mirrors the alphabet so five clouds are not five copies.
-float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float flip, TarrockSkyDesc sky)
+// Returns (colour, coverage). `variant` is (flip, style): flip mirrors the alphabet, style chooses
+// between its two handwritings (see TarrockCumulusField). Both are authored at the call site in
+// TarrockSkyColor, beside the painter's order, because all three are the same decision — which
+// cloud is drawn where, facing which way, and over which of its neighbours.
+float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 variant, TarrockSkyDesc sky)
 {
+    float flip = variant.x;
+    float style = variant.y;
     if (spec.w <= 0.001)
     {
         return float4(0.0, 0.0, 0.0, 0.0);
@@ -322,7 +356,17 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float flip, T
     // Flat base. Cumulus sits on its own shadow line; without this the shapes read as balloons.
     // Below the base the field falls away three times as fast, which cuts a nearly straight bottom
     // edge without the hard clip that would alias.
-    float baseCut = max(sky.cloudBase, 0.02);
+    //
+    // ROUND 4: "flat-bottomed" was half the critic's reading of v4, and it was literal — every mass
+    // in the region had a ruler for a base, at the same fraction of its own half width, so a row of
+    // them drew one horizontal line across the sky. The base now carries a slow wave of its own,
+    // one octave along the mass's own x seeded off its bearing, exactly as the far cloud bank's base
+    // already does (§TarrockCloudBank: "a slab with a ruled bottom edge reads as a cut-out
+    // rectangle however lumpy its top is"). Still a base — cumulus does sit on its condensation
+    // level — but a drawn one.
+    float baseCut = max(sky.cloudBase, 0.02)
+                    + TarrockGradNoise(float2(pc.x * 1.35, spec.x * 0.083)) * sky.cloudBaseLump;
+    baseCut = max(baseCut, 0.02);
     pc.y = pc.y < -baseCut ? -baseCut + (pc.y + baseCut) * 3.0 : pc.y;
 
     // Break the vector-smooth edge into cauliflower. Two octaves: the low one moves whole lobes,
@@ -331,7 +375,7 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float flip, T
     float scallop = (TarrockGradNoise(pc * 4.3 + spec.x)
                    + TarrockGradNoise(pc * 9.7 + spec.y * 3.1) * 0.45) * sky.cloudLump;
 
-    float sd = TarrockCumulusField(pc) + scallop;
+    float sd = TarrockCumulusField(pc, style) + scallop;
 
     float soft = max(sky.cloudSoftness, 1e-3);
     float cover = (1.0 - smoothstep(-soft, soft, sd)) * saturate(spec.w);
@@ -346,6 +390,20 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float flip, T
         TarrockWrapPi(sunAzEl.x - centre.x) * cos(centre.y) / halfW * flip,
         (sunAzEl.y - centre.y) / halfW) + float2(1e-5, 1e-5));
 
+    // ...AND THE WASH STEPS UP-AND-SUNWARD, not straight along that vector. The round-3 critique of
+    // v4 was that the vault was "shaded on a horizontal axis that contradicts the sun", and the
+    // arithmetic says it was — but the cause is subtler than a wrong sign. In a mass's own flat
+    // frame the sun vector is (Δbearing·cos el / halfW, Δelevation / halfW), and Δbearing is divided
+    // by a half width of ten or twenty degrees while Δelevation is a couple of degrees at most. For
+    // v4's anchor at bearing 77° that comes out (0.9997, 0.024): a purely SIDEWAYS light, with the
+    // terminator a vertical line down the middle of the mass and its top no brighter than its
+    // bottom. Which is geometrically true and pictorially wrong — a cloud is lit by the whole dome
+    // as well as by the disc, so its crowns are bright whatever the bearing does, and every plate on
+    // the reference board draws it that way. Tilting the wash direction toward +y by cloudLift
+    // recovers that at 30° above the frame's horizontal while leaving the disc to decide which FLANK
+    // is gold. The rim below still uses the true toSun, because a rim really is the disc's alone.
+    float2 wash = normalize(toSun + float2(0.0, sky.cloudLift));
+
     // THREE WASHES, WITH A TERMINATOR PER LOBE. The same alphabet, stepped toward the sun and
     // re-evaluated: a pixel the stepped mass still covers is on a flank that faces the dawn, and a
     // pixel it has slipped off is in that lobe's own shade. Two step lengths give a lit crown, a
@@ -356,9 +414,9 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float flip, T
     // The same scallop is added to all three fields, so the terminator wobbles with the silhouette
     // instead of cutting across it.
     float lit = 1.0 - smoothstep(-soft * 2.0, soft * 2.0,
-        TarrockCumulusField(pc - toSun * 0.30) + scallop);
+        TarrockCumulusField(pc - wash * 0.30, style) + scallop);
     float crown = 1.0 - smoothstep(-soft * 2.0, soft * 2.0,
-        TarrockCumulusField(pc - toSun * 0.62) + scallop);
+        TarrockCumulusField(pc - wash * 0.62, style) + scallop);
     float form = (lit + crown) * 0.5;
 
     float3 color = lerp(sky.cloudShade, sky.cloudLit, form);
@@ -426,15 +484,20 @@ float3 TarrockSkyColor(float3 dir, TarrockSkyDesc sky)
         // Painter's order, back to front: the high veil first, then the flanking masses, then the
         // hero LAST so it overlaps rather than being overlapped. Overlap is a depth cue and the
         // vault has no other one.
-        float4 c2 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud2, 1.0, sky);
+        // (flip, style) per mass. The STYLES are the round-4 answer to "same-size same-altitude":
+        // the two masses that share a frame never share a handwriting. v4 sees 3 and 4 — a tall
+        // building cumulus (0.85) beside a low wide one (0.10). v3 sees 0 and 2 — the hero at 0.30,
+        // mostly the wide arrangement because it is the frame's broad shape, and the high veil at
+        // 0.55 so it is neither.
+        float4 c2 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud2, float2(1.0, 0.55), sky);
         result = lerp(result, c2.rgb, c2.a);
-        float4 c4 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud4, 1.0, sky);
+        float4 c4 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud4, float2(1.0, 0.10), sky);
         result = lerp(result, c4.rgb, c4.a);
-        float4 c1 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud1, -1.0, sky);
+        float4 c1 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud1, float2(-1.0, 0.70), sky);
         result = lerp(result, c1.rgb, c1.a);
-        float4 c3 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud3, -1.0, sky);
+        float4 c3 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud3, float2(-1.0, 0.85), sky);
         result = lerp(result, c3.rgb, c3.a);
-        float4 c0 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud0, 1.0, sky);
+        float4 c0 = TarrockVaultCloud(azEl, sunAzEl, sky.cloud0, float2(1.0, 0.30), sky);
         result = lerp(result, c0.rgb, c0.a);
     }
 
@@ -501,8 +564,10 @@ float3 TarrockSkyColor(float3 dir, TarrockSkyDesc sky)
     sky.cloudShade = _VaultCloudShade.rgb;                  \
     sky.cloudShadow = _VaultCloudShadow.rgb;                \
     sky.cloudBase = _VaultCloudBase;                        \
+    sky.cloudBaseLump = _VaultCloudBaseLump;                \
     sky.cloudSoftness = _VaultCloudSoftness;                \
-    sky.cloudLump = _VaultCloudLump;
+    sky.cloudLump = _VaultCloudLump;                        \
+    sky.cloudLift = _VaultCloudLift;
 
 // The property block both materials must carry, so the two lists cannot fall out of step either.
 // Included verbatim by Tarrock/GradientSky and Tarrock/CloudSea.

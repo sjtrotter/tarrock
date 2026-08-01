@@ -49,7 +49,7 @@ Shader "Tarrock/CloudSea"
     // light-to-shadow separation". The octaves were never the whole problem: a noise field mapped
     // straight to colour has PATTERN and no LIGHT, and a cloud sea with no light in it is a
     // textured floor. So the two low octaves are now a HEIGHT FIELD — finite-differenced in world
-    // xz into a normal and shaded against the same 7° sun as everything else in the region — and
+    // xz into a normal and shaded against the same sun as everything else in the region — and
     // the curd and fleece octaves demote from being the washes to texturing them. The furrow
     // colour also comes down (0.58,0.62,0.74 → 0.47,0.52,0.66 linear, set in the generator) so the
     // shaded flanks are a value step and not a hue step.
@@ -61,6 +61,23 @@ Shader "Tarrock/CloudSea"
     // is a third dimension standing on it: Tarrock/CloudLobe draws real cumulus geometry rising
     // out of the deck near the island, which is the only way anything can OCCLUDE — see that
     // shader and TerrainRegionGenerator §The cloud lobes.
+    //
+    // ROUND 4 (2026-07-31, against gauntlet/round3/v3 and v4, and following the sun from 7° to 12°).
+    // Two things, and the second is the answer to "the deck sheet has no top-surface relief crossing
+    // the mid-field — airbrushed streaks only":
+    //
+    //   * THE SHADING MODEL IS RE-SOLVED FOR THE NEW SUN. Every number in the relief block below is
+    //     traced rather than tuned; the short version is that 26 m of virtual relief self-shadowed
+    //     at 7° and cannot at 12°, so it goes to 46 m and the ramp is re-fitted around it. The
+    //     furrow colour comes down again with it (0.47,0.52,0.66 → 0.34,0.39,0.54 linear, set in the
+    //     generator), which takes the deck's own ladder from 45 sRGB points to 70.
+    //   * THE MID-FIELD RELIEF IS NOT THIS SHADER'S TO GIVE, and saying so plainly is the round-4
+    //     lesson. A shading field on a plane can put light and shade on the deck — it cannot put one
+    //     part of the deck IN FRONT OF another, and "lobed rises crossing the mid-field" is an
+    //     occlusion read, not a value read. Two things now supply it, both geometry: the deck mesh's
+    //     own billow, which round 4 grades finer and brings in to the island's edge, and a band of
+    //     low wide swells standing in the open sea just off the rim (TerrainRegionGenerator §THE
+    //     SWELL BAND). This shader's job is the light on that surface, and only that.
     Properties
     {
         _CloudBright ("Cloud - lit tops", Color) = (0.97, 0.93, 0.85, 1)
@@ -100,15 +117,34 @@ Shader "Tarrock/CloudSea"
         // separation, and the critic measured exactly that: "a flat-shaded fill".
         _SunFormColor ("Form warmth", Color) = (1.00, 0.84, 0.58, 1)
         _SunFormStrength ("Lit-wash gold", Range(0, 3)) = 1.1
+        // Where the gold starts, on the terraced ramp. A CONSTANT 0.72 through round 3, which was
+        // fine while the ramp's 98th percentile sat at 0.74 — at the round-4 sun the same ramp runs
+        // to 0.86 and a hardcoded 0.72 would pour the highlight over a third of the sea.
+        _SunFormThreshold ("Lit-wash gold - onset", Range(0, 1)) = 0.80
         _SlopeStep ("Relief sampling step (m)", Float) = 14.0
         // Metres of VIRTUAL relief on a mathematically flat plane. The deck mesh billows ±7 m, but
         // that is a 1° swell at 400 m and it can never shade anything; the surface's readable form
-        // has to come from the shading field itself. 26 m over a 130 m bank is a 10-11° flank,
-        // which at a 7° sun is the difference between catching the dawn and not.
-        _ReliefHeight ("Relief height (m)", Float) = 26.0
-        _FormGain ("Light gain", Range(0.5, 8)) = 2.6
-        _FormBias ("Light bias", Range(-1, 1)) = 0.18
-        _ReliefWeight ("Light vs. altitude", Range(0, 1)) = 0.62
+        // has to come from the shading field itself.
+        //
+        // ROUND 4: 26 → 46 m, and the sun's raise from 7° to 12° is the whole reason. Traced over a
+        // 1 km square of the field, 26 m of relief over a 130 m bank puts a mean flank tilt of 7.8°
+        // on the deck (95th percentile 15.1°). At a 7° sun that is enough for a lee flank to turn
+        // away from the disc entirely — the measured 2nd percentile of N·L was 0.0007, i.e. the
+        // deck genuinely self-shadowed. At 12° the same field's 2nd percentile is +0.081: NOTHING
+        // on the deck turns away any more, the dark end of the range is simply gone, and the whole
+        // ramp shifts up 0.22 and clips 4.4% of the surface flat white at the top. 46 m restores
+        // it — mean tilt 13.5°, 95th percentile 25.4°, 3.0% of the deck back at or below N·L 0 —
+        // and a 25° flank on a cloud bank is gentle by the standards of the thing it is drawing.
+        _ReliefHeight ("Relief height (m)", Float) = 46.0
+        // Solved, not dialled: at 46 m the field's N·L runs −0.061 (1st pct) to +0.412 (99th), so
+        // gain 2.03 / bias +0.09 maps that band onto 0.03-0.93 with nothing clipped at either end.
+        _FormGain ("Light gain", Range(0.5, 8)) = 2.03
+        _FormBias ("Light bias", Range(-1, 1)) = 0.09
+        _ReliefWeight ("Light vs. altitude", Range(0, 1)) = 0.66
+        // How hard the ALTITUDE term is worked. The relief field sits at std 0.144, so round 3's
+        // 1.35 left the altitude half of the mix spanning only 0.19-0.81 — it was quietly narrowing
+        // the very range the light half had just been widened to reach.
+        _HeightGain ("Altitude gain", Range(0.5, 4)) = 2.05
 
         _DeckLevel ("Deck level (world Y)", Float) = 11.0
         _CrestRange ("Crest range (m)", Float) = 7.0
@@ -164,8 +200,10 @@ Shader "Tarrock/CloudSea"
         _VaultCloudShade ("Sky - vault cloud shade", Color) = (0.52, 0.57, 0.71, 1)
         _VaultCloudShadow ("Sky - vault cloud belly", Color) = (0.19, 0.23, 0.35, 1)
         _VaultCloudBase ("Sky - vault cloud flat base", Range(0.05, 0.6)) = 0.22
+        _VaultCloudBaseLump ("Sky - vault cloud base wander", Range(0, 0.25)) = 0.075
         _VaultCloudSoftness ("Sky - vault cloud softness", Range(0.005, 0.3)) = 0.030
         _VaultCloudLump ("Sky - vault cloud cauliflower", Range(0, 0.4)) = 0.090
+        _VaultCloudLift ("Sky - vault cloud wash lift", Range(0, 2)) = 0.58
     }
 
     SubShader
@@ -209,11 +247,13 @@ Shader "Tarrock/CloudSea"
                 float _StreakStretch;
                 float4 _SunFormColor;
                 float _SunFormStrength;
+                float _SunFormThreshold;
                 float _SlopeStep;
                 float _ReliefHeight;
                 float _FormGain;
                 float _FormBias;
                 float _ReliefWeight;
+                float _HeightGain;
                 float _DeckLevel;
                 float _CrestRange;
                 float _CrestLift;
@@ -264,8 +304,10 @@ Shader "Tarrock/CloudSea"
                 float4 _VaultCloudShade;
                 float4 _VaultCloudShadow;
                 float _VaultCloudBase;
+                float _VaultCloudBaseLump;
                 float _VaultCloudSoftness;
                 float _VaultCloudLump;
+                float _VaultCloudLift;
             CBUFFER_END
 
             struct Attributes
@@ -349,10 +391,15 @@ Shader "Tarrock/CloudSea"
                 // mathematically flat plane. Two world-axis taps give the gradient; the normal
                 // follows; N·L against the 7° dawn does the rest.
                 //
-                // A 7° sun on a 26 m/130 m flank means N·L swings roughly 0.12 ± 0.19, which is a
-                // narrow band around a low mean — hence gain and bias rather than a raw saturate.
-                // The result is what the reference plates do: the sunward flank of every bank
-                // catches gold and its lee goes cool blue-grey, in flat washes.
+                // ROUND 4, and this is the number the sun's raise moved. Traced over a 1 km square
+                // of the field: at 26 m of relief and a 7° sun, N·L ran 0.123 ± 0.064 with its 2nd
+                // percentile at 0.0007 — the lee flanks turned away from the disc entirely and the
+                // deck genuinely self-shadowed. At 12° the same field gives 0.209 ± 0.063 with its
+                // 2nd percentile at +0.081: nothing turns away, the dark end is gone, and the ramp
+                // clips 4.4% of the surface flat white at the other end. 46 m of relief puts the
+                // 1st-99th percentile band back at −0.061…+0.412, which gain 2.03 / bias 0.09 maps
+                // onto 0.03-0.93. The result is what the reference plates do: the sunward flank of
+                // every bank catches gold and its lee goes cool blue-grey, in flat washes.
                 // -------------------------------------------------------------------------------
                 // reliefStep, not step: step() is an HLSL intrinsic and shadowing it in a function
                 // that also uses smoothstep is a compile error waiting for a different compiler.
@@ -371,7 +418,7 @@ Shader "Tarrock/CloudSea"
                 // Altitude, mixed in beside the light: cloud tops are brighter than cloud troughs
                 // whatever the sun is doing, and mixing the two keeps the washes reading as ONE
                 // billowing surface instead of as stripes running across it.
-                float heightT = saturate(r0 * 1.35 + 0.5);
+                float heightT = saturate(r0 * _HeightGain + 0.5);
                 float mottle = lerp(heightT, lightT, saturate(_ReliefWeight));
 
                 // The high octaves stay, but as TEXTURE on the washes rather than as the washes.
@@ -402,7 +449,7 @@ Shader "Tarrock/CloudSea"
                 // Gold on the top wash only. The region's grade is warm LIGHT on cool material, so
                 // the warmth belongs where the light lands and nowhere else; spreading it over the
                 // whole surface (round 2) is how the deck ended up one tinted value.
-                color += _SunFormColor.rgb * saturate(mottle - 0.72) * _SunFormStrength;
+                color += _SunFormColor.rgb * saturate(mottle - _SunFormThreshold) * _SunFormStrength;
 
                 // The deck mesh carries a gentle billow of its own beyond the plateau (see
                 // TerrainRegionGenerator.BuildCloudDeckMesh). Reading its height keeps shading and

@@ -29,19 +29,77 @@ Shader "Tarrock/CloudLobe"
     // around it: sunlit gold on the bearing-332 flank, cool blue-grey opposite, a darker belly
     // underneath. Wolfwalkers and fable-03 both draw cloud exactly this way — value shapes, not
     // scattering.
+    //
+    // ROUND 4 (2026-07-31, against gauntlet/round3/v3 and v4). Two findings, and the second one
+    // explains the first:
+    //
+    //   * "A DECK LOBE SPANS 8 LUMINANCE POINTS CROWN-TO-BASE AND MATCHES THE SHEET BEHIND IT."
+    //     Measured on round3/v3 the small heads run 180→198 sRGB — 18 points at best, 8 typical.
+    //     That is NOT a palette failure: the round-3 ladder (crown 1.02,0.97,0.86 → belly
+    //     0.30,0.35,0.48) is worth 78 sRGB points through this project's grade. It is FOG. The
+    //     region's exp² fog at density 0.0044 keeps exp(−(d·0.0044)²) of any surface's own
+    //     contrast, and round 3's near row stood at 200-300 m, where that is 0.46 down to 0.18.
+    //     78 × 0.18 = 14 points. The capture is the arithmetic, exactly.
+    //     So this pass does BOTH halves: the ladder widens to ~100 points (a genuinely dark base,
+    //     see _LobeUnder), and the masses that have to carry value move inside 150 m — see
+    //     TerrainRegionGenerator §CloudLobeAnchors, where every anchor now records the fog factor
+    //     it will be seen through.
+    //
+    //   * "THE BIG FORM LEFT-OF-CENTRE IS HARD-FACETED WITH A VERTICAL BEVEL HIGHLIGHT." That was
+    //     THREE flat washes of a raw N·L, terraced at 85% strength over 0.10 of softness. With the
+    //     sun 12° up, the iso-N·L contours on a rounded head are near-vertical great circles, so an
+    //     85% terrace of them draws hard vertical stripes down the mass — a bevel. The band edges
+    //     were doing the modelling and the form was not.
+    //
+    // WHAT SHADES A LOBE NOW, and none of it is a raw N·L quantised:
+    //   1. WRAPPED sun. Cloud scatters light round its own limb, so the terminator is a wide soft
+    //      band, not an edge; (N·L + w)/(1 + w) is the standard wrap and it is what stops the head
+    //      reading as a stone lit by a torch.
+    //   2. SKY. A cumulus top takes the whole dome and its underside takes almost none of it. This
+    //      is the term that gives the mass a top and a bottom, and it is the one round 3 refused on
+    //      the grounds that top-bright/bottom-dark "would read as a row of dumplings". The dumplings
+    //      came from having no dark base and no scallops — not from knowing which way is up.
+    //   3. HEIGHT IN THE MASS, painted. A cumulus base is dark because there is a kilometre of
+    //      cloud above it, not because the surface points down; round 3 asked saturate(−N.y) for the
+    //      base and got almost nothing, because from any camera standing on the island the only
+    //      down-facing surface you can see is the sliver of overhang at the waterline. The base is
+    //      now drawn from the mass's own object-space height, which is what a painter does.
+    //   4. THICKNESS = DARKNESS, from the object's world scale. Same rule the vault masses already
+    //      obey (SkyGradient.hlsl §THE DARK ANCHOR): the big near masses get the deep base and the
+    //      18 m nubs stay light, with nothing hand-flagged and no per-instance data — the radius is
+    //      already in unity_ObjectToWorld, and reading it there survives instancing.
+    // The terrace stays, because storybook cloud is washes — but four of them at 0.55 over 0.22 of
+    // softness, which is the sky's own brush, not a stencil.
     Properties
     {
-        _LobeLit ("Lobe - sunlit crown", Color) = (1.02, 0.97, 0.86, 1)
-        _LobeShade ("Lobe - cool shade", Color) = (0.42, 0.47, 0.62, 1)
-        _LobeUnder ("Lobe - belly", Color) = (0.30, 0.35, 0.48, 1)
-        _LobeBands ("Lobe - painted washes", Range(2, 8)) = 3
-        _LobeBandStrength ("Lobe - wash strength", Range(0, 1)) = 0.85
-        _LobeBandSoftness ("Lobe - wash softness", Range(0.02, 0.5)) = 0.10
-        _LobeFormGain ("Lobe - light gain", Range(0.2, 4)) = 1.15
-        _LobeFormBias ("Lobe - light bias", Range(-1, 1)) = 0.42
-        _LobeUnderDepth ("Lobe - belly depth", Range(0, 1)) = 0.62
-        _LobeRim ("Lobe - dawn rim", Range(0, 3)) = 0.9
-        _LobeRimPower ("Lobe - dawn rim tightness", Range(1, 16)) = 4
+        _LobeLit ("Lobe - sunlit crown", Color) = (1.06, 1.00, 0.88, 1)
+        _LobeShade ("Lobe - cool shade", Color) = (0.44, 0.50, 0.66, 1)
+        _LobeUnder ("Lobe - belly", Color) = (0.22, 0.27, 0.41, 1)
+        _LobeBands ("Lobe - painted washes", Range(2, 8)) = 4
+        _LobeBandStrength ("Lobe - wash strength", Range(0, 1)) = 0.55
+        _LobeBandSoftness ("Lobe - wash softness", Range(0.02, 0.5)) = 0.22
+        _LobeFormGain ("Lobe - light gain", Range(0.2, 4)) = 1.45
+        _LobeFormBias ("Lobe - light bias", Range(-1, 1)) = -0.12
+        // How wide the terminator wraps round the limb. 0 is a hard N·L edge (a stone); 1 puts the
+        // terminator halfway round the far side (a paper lantern). 0.55 is a cumulus.
+        _LobeWrap ("Lobe - light wrap", Range(0, 1)) = 0.55
+        // Sun against sky. 1 is pure N·L — round 3, and a vertical-terminator bevel; 0 is pure
+        // top-lighting — a dumpling. The reference plates are between, nearer the sun.
+        _LobeSunWeight ("Lobe - sun vs. sky", Range(0, 1)) = 0.68
+        _LobeUnderDepth ("Lobe - belly depth", Range(0, 1)) = 0.90
+        // How far the painted base climbs above the cloud sea, in RADII, and how fast it falls off.
+        // 0.42 on a 30 m mass is 12.6 m of dark base standing out of the deck.
+        _LobeBaseRise ("Lobe - base rise (radii)", Range(0.05, 1.2)) = 0.42
+        _LobeBasePower ("Lobe - base falloff", Range(0.5, 6)) = 1.7
+        // The cloud sea's world Y. Only used to find each mass's own waterline — see the fragment.
+        _LobeDeckLevel ("Lobe - deck level (world Y)", Float) = 11.0
+        // Thickness reads as darkness: the metre radius at which a mass earns its full dark base,
+        // and the one below which it earns none. Read from the transform, so the scatter's own size
+        // roll drives it.
+        _LobeThinRadius ("Lobe - no base below (m)", Float) = 14.0
+        _LobeThickRadius ("Lobe - full base above (m)", Float) = 24.0
+        _LobeRim ("Lobe - dawn rim", Range(0, 3)) = 1.1
+        _LobeRimPower ("Lobe - dawn rim tightness", Range(1, 16)) = 6
 
         _SkyBlendStart ("Sky blend start (m)", Float) = 430.0
         _SkyBlendEnd ("Sky blend end (m)", Float) = 820.0
@@ -87,8 +145,10 @@ Shader "Tarrock/CloudLobe"
         _VaultCloudShade ("Sky - vault cloud shade", Color) = (0.52, 0.57, 0.71, 1)
         _VaultCloudShadow ("Sky - vault cloud belly", Color) = (0.19, 0.23, 0.35, 1)
         _VaultCloudBase ("Sky - vault cloud flat base", Range(0.05, 0.6)) = 0.22
+        _VaultCloudBaseLump ("Sky - vault cloud base wander", Range(0, 0.25)) = 0.075
         _VaultCloudSoftness ("Sky - vault cloud softness", Range(0.005, 0.3)) = 0.030
         _VaultCloudLump ("Sky - vault cloud cauliflower", Range(0, 0.4)) = 0.090
+        _VaultCloudLift ("Sky - vault cloud wash lift", Range(0, 2)) = 0.58
     }
 
     SubShader
@@ -125,7 +185,14 @@ Shader "Tarrock/CloudLobe"
                 float _LobeBandSoftness;
                 float _LobeFormGain;
                 float _LobeFormBias;
+                float _LobeWrap;
+                float _LobeSunWeight;
                 float _LobeUnderDepth;
+                float _LobeBaseRise;
+                float _LobeBasePower;
+                float _LobeDeckLevel;
+                float _LobeThinRadius;
+                float _LobeThickRadius;
                 float _LobeRim;
                 float _LobeRimPower;
                 float _SkyBlendStart;
@@ -168,8 +235,10 @@ Shader "Tarrock/CloudLobe"
                 float4 _VaultCloudShade;
                 float4 _VaultCloudShadow;
                 float _VaultCloudBase;
+                float _VaultCloudBaseLump;
                 float _VaultCloudSoftness;
                 float _VaultCloudLump;
+                float _VaultCloudLift;
             CBUFFER_END
 
             struct Attributes
@@ -185,6 +254,13 @@ Shader "Tarrock/CloudLobe"
                 float3 positionWS : TEXCOORD0;
                 float3 normalWS : TEXCOORD1;
                 float fogCoord : TEXCOORD2;
+                // (object height, radius in metres, waterline in object units). Height because a
+                // cumulus base is painted from how far down the mass a pixel sits, not from which
+                // way its surface points (see the header); radius because thickness reads as
+                // darkness. Both come off the instanced transform, and they are read HERE rather
+                // than in the fragment because unity_ObjectToWorld only means the right instance
+                // after UNITY_SETUP_INSTANCE_ID, which is a vertex-stage call.
+                float3 lobeParams : TEXCOORD3;
             };
 
             Varyings Vert(Attributes input)
@@ -196,6 +272,17 @@ Shader "Tarrock/CloudLobe"
                 output.positionWS = positions.positionWS;
                 output.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 output.fogCoord = ComputeFogFactor(positions.positionCS.z);
+                // The lobes are placed with a uniform scale (PlaceCloudLobe), so any basis column's
+                // length is the radius in metres. Column 1 rather than 0: the yaw spin is about Y,
+                // so the Y column is exactly the scale whatever the rotation is doing.
+                float radius = length(float3(
+                    unity_ObjectToWorld._m01, unity_ObjectToWorld._m11, unity_ObjectToWorld._m21));
+                // The deck plane, in this mass's own object units. PlaceCloudLobe puts the centre at
+                // deckLevel − radius·sink, so this is exactly the sink the anchor chose — which is
+                // how the painted base below stays anchored to the cloud sea while each mass is
+                // free to stand more or less proud of it.
+                float waterline = (_LobeDeckLevel - unity_ObjectToWorld._m13) / max(radius, 0.01);
+                output.lobeParams = float3(input.positionOS.y, radius, waterline);
                 return output;
             }
 
@@ -203,26 +290,72 @@ Shader "Tarrock/CloudLobe"
             {
                 float3 normalWS = normalize(input.normalWS);
                 float3 sunDirWS = normalize(_SunDirection.xyz);
+                float lobeY = input.lobeParams.x;
+                float lobeRadius = input.lobeParams.y;
+                float waterline = input.lobeParams.z;
 
-                // ONE direction, three washes. The sun sits 7° up, so a lobe is lit from the SIDE:
-                // the terminator on each head runs nearly vertical and the gold lands on the
-                // bearing-332 flank, not on the top. Shading these top-bright/bottom-dark — the
-                // reflex — would read as a row of dumplings and would also fight the raking light
-                // the whole region is graded to.
+                // -------------------------------------------------------------------------------
+                // THE LIGHT — wrapped, not raw. Round 3 terraced a raw N·L at 85% strength, and
+                // with the sun 12° up the iso-N·L contours on a rounded head are near-vertical
+                // great circles: the bands came out as hard vertical stripes down the mass, which
+                // is the bevel the critic named. Wrapping is the fix and it is also the physics —
+                // a cumulus is a scattering body, so light carries a long way round its own limb
+                // and the terminator is a wide soft band. At _LobeWrap 0.55 the surface stops
+                // receiving anything only past N·L = −0.55, i.e. 33° round the back.
+                // -------------------------------------------------------------------------------
                 float ndl = dot(normalWS, sunDirWS);
-                float form = saturate(ndl * _LobeFormGain + _LobeFormBias);
+                float wrapped = saturate((ndl + _LobeWrap) / (1.0 + _LobeWrap));
+
+                // THE SKY. A cumulus crown sees the whole dome and its underside sees almost none
+                // of it. Round 3 refused this term on the grounds that top-bright/bottom-dark reads
+                // as a row of dumplings — but the dumpling read came from having no dark base and no
+                // scallops, and refusing it is what left the masses with no top and no bottom at
+                // all. Weighted UNDER the sun (_LobeSunWeight 0.68), so the dawn still decides which
+                // flank is gold; the sky only decides which way is up.
+                float skyT = saturate(normalWS.y * 0.5 + 0.5);
+
+                float form = saturate(lerp(skyT, wrapped, saturate(_LobeSunWeight))
+                                      * _LobeFormGain + _LobeFormBias);
+                // ...and then terraced. Four washes at 0.55 over 0.22 of softness — the sky's own
+                // brush, not round 3's 3-at-0.85-over-0.10 stencil. The boundaries are still
+                // legible (they are what makes it a painting) and they no longer cut facets.
                 form = TarrockSoftBand(form, _LobeBands, _LobeBandStrength, _LobeBandSoftness);
                 float3 color = lerp(_LobeShade.rgb, _LobeLit.rgb, form);
 
-                // The belly. Downward-facing cloud gets nothing but bounce off the deck below it,
-                // which at this hour is dim and cool — and a cumulus with a bright underside is a
-                // cotton ball. This is also the deck row's share of the frame's dark anchor: the
-                // vault's big masses own the sky's, these own the horizon's.
+                // -------------------------------------------------------------------------------
+                // THE BASE, PAINTED. A cumulus base is dark because there is a great depth of cloud
+                // standing on it — not because its surface points downward. Round 3 asked
+                // saturate(−N.y) for this and got almost nothing: from any camera on the island the
+                // only down-facing surface in view is the sliver of overhang at the waterline, so
+                // the masses had no dark end and the row read as white dumplings on a white sheet.
+                // Drawing it from the mass's own height is what a painter does, and it is what puts
+                // a value anchor at the horizon.
+                //
+                // THICKNESS READS AS DARKNESS — the same rule the vault masses obey (SkyGradient
+                // §THE DARK ANCHOR). The weight comes from the instance's own radius, so the big
+                // near anchors carry the anchor and the 18 m scatter nubs stay light, with nothing
+                // hand-flagged. It also survives instancing: the radius is in the transform.
+                // -------------------------------------------------------------------------------
+                float thick = saturate((lobeRadius - _LobeThinRadius)
+                                       / max(_LobeThickRadius - _LobeThinRadius, 0.01));
+                // The base gradient is measured from the WATERLINE (computed in Vert), not from the
+                // mesh's bottom: everything below the deck plane is occluded by the deck and never
+                // seen, so a ramp anchored to the mesh spends its whole dark end out of sight and
+                // leaves the visible part of the mass uniformly pale — which is round 3 exactly.
+                float rise = max(_LobeBaseRise, 0.01);
+                float depth = pow(saturate((waterline + rise - lobeY) / rise),
+                                  max(_LobeBasePower, 0.5));
+                // The true overhang still counts for its own share: where the surface really does
+                // face down it is darker than the painted gradient alone would make it.
                 float under = saturate(-normalWS.y);
-                color = lerp(color, _LobeUnder.rgb, under * _LobeUnderDepth * (1.0 - form * 0.5));
+                float belly = saturate(depth * (1.0 + 0.45 * under)) * (1.0 - form * 0.30);
+                color = lerp(color, _LobeUnder.rgb, saturate(belly * thick) * _LobeUnderDepth);
 
                 // The dawn rim: the silhouette edge on the sun side is the brightest thing a cloud
                 // has at this hour. Grazing angle × sunward, so it lights the rim and not the face.
+                // Tighter than round 3 (power 6, not 4): on a mass that fills 500 px a power-4
+                // grazing term is not a rim, it is a wash over the whole limb, and it was part of
+                // what kept the round-3 heads pale all over.
                 float3 viewDirWS = normalize(_WorldSpaceCameraPos - input.positionWS);
                 float grazing = pow(saturate(1.0 - abs(dot(normalWS, viewDirWS))), max(_LobeRimPower, 1.0));
                 color += _SunGlowColor.rgb * grazing * saturate(ndl) * _LobeRim;

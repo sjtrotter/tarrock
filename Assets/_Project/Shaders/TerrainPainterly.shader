@@ -76,6 +76,30 @@ Shader "Tarrock/TerrainPainterly"
     // steep face the same horizontal slab cuts a thin near-straight line, which is what bedding
     // looks like in the world and on the reference board.
     //
+    // ROUND-4 PASS (2026-07-31 gauntlet critique of round3/v1, v5, v8). Four findings, each answered
+    // at the place that caused it; the detail is at each property and each construct below.
+    //
+    //   e. THE RULED DUNES. "Perfectly parallel horizontal bands wrap ENTIRE rounded grass-topped
+    //      landforms." Round 3's slope gate opened at 35°, and the landform filling v1's left third
+    //      — the valley's SOUTH permitting ramp — measures a median of 31.5° over a 12.6-48.6°
+    //      quartile range (513² samples of this generator's own heightfield, Unity's central-
+    //      difference normals). 43.8% of it therefore drew beds, a horizontal plane cutting a
+    //      rounded hill traces a CONTOUR, and so the beds wrapped the form. The gate is now 50→62°
+    //      AND the rock classification, ANDed — see _BeddingSlopeStart.
+    //   f. THE DEAD HORIZON. "Mid-distance mottle dies by ~40 m; the hills become flat olive
+    //      gradients." Everything that survived past 40 m was fbm, and fbm integrates to a gradient.
+    //      A new jittered-cell CLUMP octave at ~16 m carries the 40-150 m band, and it is not
+    //      distance-faded — see _MeadowClumpScale.
+    //   g. THE STAMPED DECAL. "Close mottle is one stamped decal repeated at one size on a visible
+    //      cadence." Jittering a Worley cell's CENTRE hides the lattice's phase and nothing else;
+    //      the marks were still one circle at one radius on one pitch. Every dab now carries its
+    //      own rotation, aspect and radius (TkDabShaped), and the texel band runs two warped
+    //      layers at a non-harmonic ratio.
+    //   h. THE SLIVER TRIANGLES. "The rock face at 2 m is hard-faceted sliver triangles with no
+    //      surface detail." Two faults: the shading-normal relief was sized for near-flat meadow
+    //      triangles (_RockNormalBoost), and the stone branch had nothing at all below a metre
+    //      (_RockDabScale).
+    //
     // The economy rule underneath all of it: fbm is smooth everywhere by construction, so an fbm
     // surface can only ever be airbrush. Painted-dab economy needs marks with EDGES — hence the
     // jittered-cell (Worley) fields, whose cells each take one flat tone, and the thin hard bedding
@@ -110,6 +134,16 @@ Shader "Tarrock/TerrainPainterly"
         _MeadowGrainScale ("Meadow Grain Scale (m)", Float) = 0.34
         _MeadowDabWarp ("Meadow Dab Warp", Range(0,1.5)) = 0.55
         _MeadowDabEdge ("Meadow Dab Edge Darken", Range(0,0.4)) = 0.10
+        // ROUND-4 (gauntlet critique of round3/v1, v5): "close mottle is one stamped decal repeated
+        // at one size on a visible cadence". It was: TkDab returned the ISOTROPIC distance to a
+        // jittered cell centre, so every mark in the field was a circle of the same radius on a
+        // lattice of the same pitch, and at 2 m the eye reads that pitch straight off. These two
+        // give every cell its own ASPECT (some marks are strokes, some are blobs) and its own
+        // RADIUS (a family of brush widths, not one stamp) on top of the rotation TkDabShaped now
+        // applies per cell — see that function.
+        _MeadowDabAniso ("Meadow Dab Aspect Spread", Range(0,0.9)) = 0.55
+        _MeadowDabSize ("Meadow Dab Size Spread", Range(0,0.9)) = 0.45
+        _MeadowFineWarp ("Meadow Fine Dab Lattice Warp", Range(0,1)) = 0.45
         _MeadowStrawAmount ("Meadow Straw Amount", Range(0,2)) = 0.85
         _MeadowScuffAmount ("Meadow Scuff Amount", Range(0,2)) = 0.55
         _MeadowCoolAmount ("Meadow Cool Amount", Range(0,2)) = 0.70
@@ -118,6 +152,27 @@ Shader "Tarrock/TerrainPainterly"
         _MeadowGrain ("Meadow Micro Grain", Range(0,0.4)) = 0.13
         _DetailFadeStart ("Detail Fade Start (m)", Float) = 10.0
         _DetailFadeRange ("Detail Fade Range (m)", Float) = 28.0
+
+        [Header(Meadow clumps    the horizon octave)]
+        // ROUND-4 (gauntlet critique of round3/v1): "mid-distance mottle dies by ~40 m — the hills
+        // become flat olive gradients, where fable-01/05 keep clump structure to the horizon".
+        //
+        // WHY IT DIED, structurally. Everything that survived past 40 m was fbm — macro at 38 m and
+        // hue at 21 m — and fbm is C1 smooth by construction, so at range it integrates to a
+        // GRADIENT. The two fields that had edges were the 6 m dab and the 0.95 m fine dab, and both
+        // are inside _DetailFade or are simply too fine to resolve at 60 m+. A surface whose only
+        // long-range content is smooth cannot read as clumped ground no matter how much hue swing it
+        // carries: the eye reads clumps from BOUNDARIES.
+        //
+        // THE FIX is one more jittered-cell octave, sized at the scale a stand of vegetation
+        // actually clumps at (~16 m), carrying its own flat tone per cell and its own edge darken —
+        // and DELIBERATELY NOT distance-faded, because its whole job is the 40-150 m band. It costs
+        // one TkDabShaped in the meadow branch. At 100 m a 16 m clump still subtends ~9°, which is
+        // hundreds of pixels: it is resolvable exactly where the fbm has stopped saying anything.
+        _MeadowClumpScale ("Meadow Clump Scale (m)", Float) = 16.0
+        _MeadowClumpWarp ("Meadow Clump Warp", Range(0,2)) = 0.85
+        _MeadowClumpAmount ("Meadow Clump Hue Amount", Range(0,2)) = 0.90
+        _MeadowClumpEdge ("Meadow Clump Edge Darken", Range(0,0.35)) = 0.11
 
         [Header(Turf under the tuft fields)]
         // The layer the grass grows OUT of, and therefore a GREEN-family layer: damp root shadow
@@ -150,6 +205,20 @@ Shader "Tarrock/TerrainPainterly"
         _RockMottleScale ("Rock Mottle Scale (m)", Float) = 6.5
         _RockBedTint ("Rock Formation Hue Swing", Range(0,1)) = 0.55
         _RockLichenAmount ("Rock Lichen Amount", Range(0,1)) = 0.40
+        // ROUND-4 (gauntlet critique of round3/v5): "the rock face at 2 m is hard-faceted sliver
+        // triangles with no surface detail". Two separate faults, answered separately.
+        //
+        //   * NO SURFACE DETAIL. The stone branch carried mottle at 6.5 m, bedding at 2.6 m and
+        //     cavity at 3.4 m — nothing at all below a metre — so at a 2 m camera the whole face was
+        //     one flat wash between two partings. The meadow has had a texel-scale band since round
+        //     2 and the rock never did. These give stone the same painted tooth, on the FACE'S OWN
+        //     coordinate frame (strike across, world Y up), which is one dab lookup rather than the
+        //     three a triplanar would cost — and it is the right frame anyway: paint on a rock face
+        //     runs along the face, not through it.
+        //   * THE FACETS. See _RockNormalBoost under Shading normal.
+        _RockDabScale ("Rock Dab Scale (m)", Float) = 0.62
+        _RockDabTone ("Rock Dab Tone", Range(0,0.5)) = 0.20
+        _RockDabEdge ("Rock Dab Edge Darken", Range(0,0.4)) = 0.14
 
         [Header(Bedding)]
         // GRAVITY-ALIGNED. Sediment is laid down flat, so the band coordinate is world Y with only a
@@ -176,8 +245,22 @@ Shader "Tarrock/TerrainPainterly"
         // Below this slope a horizontal bed meets the ground over an enormous on-surface width and
         // its edge has no choice but to trace a heightmap contour — which is exactly the round-1
         // ring. Above it the same bed cuts a thin near-straight line across the face.
-        _BeddingSlopeStart ("Bedding - slope fade in (deg)", Float) = 35.0
-        _BeddingSlopeEnd ("Bedding - slope full (deg)", Float) = 48.0
+        //
+        // ROUND-4 RE-GATE, 35/48 -> 50/62 (gauntlet critique of round3/v1, v8): "perfectly parallel
+        // horizontal bands wrap ENTIRE rounded grass-topped landforms". They did, and the round-3
+        // gate is why. Measured off this generator's own heightfield (513² samples, Unity's own
+        // central-difference normals), the landform filling v1's left third — x 140-218, z 30-88,
+        // the valley's SOUTH permitting ramp — runs a median of 31.5° with a quartile range of
+        // 12.6-48.6°: it is a dune, not a cliff, and 43.8% of it sat inside the old 35-48° fade.
+        // A 12% mask on a 0.36 darken is only a 4% step, but 4% laid as a continuous curve across a
+        // smooth pale slope is a Mach band, and a horizontal plane cutting a rounded hill traces a
+        // CONTOUR — so the bands wrapped the form. At 50/62 that same box drops to 22.2% touched and
+        // every cell under 50° gets EXACTLY zero, which is the whole of the fix.
+        //
+        // The number is not taste, it is the geometry: a 2.6 m bed meets a 30° slope over 5.20 m of
+        // surface and a 60° slope over 3.00 m. Beds have to be thin lines or they are shading.
+        _BeddingSlopeStart ("Bedding - slope fade in (deg)", Float) = 50.0
+        _BeddingSlopeEnd ("Bedding - slope full (deg)", Float) = 62.0
 
         [Header(Cavity)]
         // Concavity darkening, AO-like and DELIBERATELY SEPARATE from any line drawing: it is the
@@ -197,6 +280,14 @@ Shader "Tarrock/TerrainPainterly"
         _NormalDetailStrength ("Shading Normal - strength", Range(0,3)) = 1.0
         _NormalDetailFadeStart ("Shading Normal - fade start (m)", Float) = 45.0
         _NormalDetailFadeRange ("Shading Normal - fade range (m)", Float) = 55.0
+        // ROUND-4: the relief that camouflages the Gouraud facet kink is sized for the MEADOW, where
+        // the terrain triangles are ~0.5 m of nearly flat ground and 0.30 m over a 3.4 m field is
+        // plenty. On a 65° face the same triangles are edge-on, the ndotl step across each kink is
+        // several times larger, and 0.30 m of relief measured ~5° of tilt — not enough to break it,
+        // which is why v5 read as sliver triangles. Rock therefore gets the relief scaled up by
+        // this, weighted by rockT, for ~11° of tilt on stone and nothing at all on the meadow. It
+        // costs no extra taps: the same relief height is simply amplified before it is differentiated.
+        _RockNormalBoost ("Shading Normal - rock relief multiplier", Range(1,4)) = 2.2
 
         [Header(Slope blending)]
         // Steepness = 1 - N.y. Rock takes over from about 35° (0.18) and owns the surface by 50°
@@ -257,6 +348,9 @@ Shader "Tarrock/TerrainPainterly"
             float _MeadowGrainScale;
             float _MeadowDabWarp;
             float _MeadowDabEdge;
+            float _MeadowDabAniso;
+            float _MeadowDabSize;
+            float _MeadowFineWarp;
             float _MeadowStrawAmount;
             float _MeadowScuffAmount;
             float _MeadowCoolAmount;
@@ -265,6 +359,10 @@ Shader "Tarrock/TerrainPainterly"
             float _MeadowGrain;
             float _DetailFadeStart;
             float _DetailFadeRange;
+            float _MeadowClumpScale;
+            float _MeadowClumpWarp;
+            float _MeadowClumpAmount;
+            float _MeadowClumpEdge;
             float4 _TurfSoil;
             float4 _TurfBlade;
             float4 _TurfOchre;
@@ -286,6 +384,9 @@ Shader "Tarrock/TerrainPainterly"
             float _RockMottleScale;
             float _RockBedTint;
             float _RockLichenAmount;
+            float _RockDabScale;
+            float _RockDabTone;
+            float _RockDabEdge;
             float _BeddingSpacing;
             float4 _BeddingDip;
             float _BeddingWarp;
@@ -306,6 +407,7 @@ Shader "Tarrock/TerrainPainterly"
             float _NormalDetailStrength;
             float _NormalDetailFadeStart;
             float _NormalDetailFadeRange;
+            float _RockNormalBoost;
             float _SlopeStart;
             float _SlopeEnd;
             float _CliffStart;
@@ -431,17 +533,38 @@ Shader "Tarrock/TerrainPainterly"
         }
 
         // -- Painted dabs -----------------------------------------------------------------------
-        // Jittered-cell (Worley) field. Returns .x = distance to the nearest dab centre and
-        // .y = that dab's OWN random tone. The tone is the point of the whole construct: every
-        // cell takes one flat value, so the ground reads as marks laid side by side, with edges
-        // between them. No amount of fbm can do that — fbm is C1 smooth by construction, which is
-        // exactly why round 1's meadow measured as an airbrush.
-        float2 TkDab(float2 p)
+        // Jittered-cell (Worley) field. Returns .x = distance to the nearest dab centre in that
+        // dab's OWN metric, .y = that dab's flat tone, .z = a second decorrelated per-dab random.
+        // The tone is the point of the whole construct: every cell takes one flat value, so the
+        // ground reads as marks laid side by side, with edges between them. No amount of fbm can do
+        // that — fbm is C1 smooth by construction, which is exactly why round 1's meadow measured
+        // as an airbrush.
+        //
+        // ROUND-4: EVERY DAB IS ITS OWN BRUSHMARK. Round 3 took the plain isotropic distance to the
+        // jittered centre, which means every mark in the field was a CIRCLE of the SAME radius on a
+        // lattice of the SAME pitch. Jittering the centres hides the lattice's phase and nothing
+        // else — the mark family is still one stamp, and at a 2 m camera the eye reads the pitch
+        // straight off it ("one stamped decal repeated at one size on a visible cadence", round-4
+        // critique of v1/v5). Three per-cell channels off a SECOND hash fix it at the source:
+        //   * ROTATION   — the mark's long axis points somewhere new in every cell, so no two
+        //                  neighbours share a stroke direction and there is no readable grain.
+        //   * ASPECT     — `aniso` turns some cells into drawn-out strokes and others into blobs.
+        //   * RADIUS     — `sizeJitter` gives the family a range of brush widths, which is what
+        //                  makes a cadence impossible: a rhythm needs marks the same size.
+        // The shape hash is offset far from the position hash so a cell's shape and its position
+        // are uncorrelated — otherwise every mark that sat left in its cell would also be the same
+        // shape, and the field would gain a new regularity in place of the one removed.
+        //
+        // The anisotropic metric is deliberately NOT a true Voronoi: a stretched cell can fail to
+        // claim ground its neighbour also fails to claim, which leaves small unowned gaps where the
+        // distance runs high. That is a feature — it is where the ground shows between the marks.
+        float3 TkDabShaped(float2 p, float aniso, float sizeJitter)
         {
             float2 cell = floor(p);
             float2 f = p - cell;
             float best = 8.0;
             float bestTone = 0.0;
+            float bestId = 0.0;
 
             [unroll]
             for (int y = -1; y <= 1; y++)
@@ -451,14 +574,27 @@ Shader "Tarrock/TerrainPainterly"
                 {
                     float2 g = float2(x, y);
                     float2 h = TkHash22(cell + g);
+                    float2 s = TkHash22(cell + g + 37.19);
                     float2 d = g + h - f;
-                    float sq = dot(d, d);
+
+                    float sn, cs;
+                    sincos(s.x * 6.2831853, sn, cs);
+                    float2 r = float2(d.x * cs - d.y * sn, d.x * sn + d.y * cs);
+
+                    float stretch = max(1.0 + aniso * (s.y - 0.5) * 2.0, 0.25);
+                    r.x /= stretch;
+                    r.y *= stretch;
+
+                    float radius = max(1.0 + sizeJitter * (frac(s.x * 7.31 + s.y * 3.17) - 0.5) * 2.0, 0.25);
+                    float sq = dot(r, r) / (radius * radius);
+
                     bestTone = sq < best ? frac(h.x * 3.71 + h.y * 7.13) : bestTone;
+                    bestId = sq < best ? frac(s.x * 5.17 + s.y * 9.43) : bestId;
                     best = min(best, sq);
                 }
             }
 
-            return float2(saturate(sqrt(best)), bestTone);
+            return float3(saturate(sqrt(best)), bestTone, bestId);
         }
         ENDHLSL
 
@@ -567,11 +703,35 @@ Shader "Tarrock/TerrainPainterly"
                 float cavity = saturate((relief.x - relief.y) * _CavityContrast)
                     * lerp(0.35, 1.0, cavityFade);
 
+                // One shared mid-scale field, used five times over: it jitters the meadow/rock
+                // boundary into a ragged natural edge, warps the bedding, picks where lichen has
+                // taken, drifts the turf scour, and (round 4) tells the shading normal whether this
+                // pixel is stone. Computing it once outside both branches is what pays for the
+                // richer per-layer work below.
+                //
+                // HOISTED ABOVE THE SHADING NORMAL in round 4, deliberately and safely: rockT now
+                // scales the relief height that the surface gradient differentiates, so it has to
+                // exist first. Nothing in this block takes a screen derivative, so moving it changes
+                // no result — the ddx/ddy rule the header states is about the two UNITY_BRANCHes
+                // further down, and both are still below every derivative in this function.
+                float blendField = TkTriplanarFbm2(gp3, normalWS, _BlendFieldScale);
+
+                float steepness = 1.0 - saturate(normalWS.y);
+                float jitter = (blendField - 0.5) * _SlopeJitter;
+                float rockT = smoothstep(_SlopeStart, _SlopeEnd, steepness + jitter);
+                float cliffT = smoothstep(_CliffStart, _CliffEnd, steepness + jitter * 0.6);
+
                 // -- Per-pixel shading normal (header note c) --------------------------------------
                 // Mikkelsen surface gradient: differentiate the relief height in screen space and
                 // project it back onto the surface through the two tangent bivectors. No tangent
                 // frame, no UVs, no extra noise taps — the height is already in hand.
-                float reliefH = (relief.y - 0.5) * _NormalDetailHeight;
+                // ROCK GETS MORE OF IT (round-4 finding on v5). Same field, same taps, amplitude
+                // scaled by rockT: 0.30 m of relief over 3.4 m is ~5° of tilt, which hides the
+                // Gouraud kink on the meadow's near-flat triangles and does nothing at all on a 65°
+                // face, where the triangles are edge-on and the ndotl step across each kink is
+                // several times larger. At the boost this is ~11° on stone, which does break it.
+                float reliefH = (relief.y - 0.5) * _NormalDetailHeight
+                    * lerp(1.0, _RockNormalBoost, rockT);
                 float3 r1 = cross(dpdy, normalWS);
                 float3 r2 = cross(normalWS, dpdx);
                 float det = dot(dpdx, r1);
@@ -590,17 +750,6 @@ Shader "Tarrock/TerrainPainterly"
                 delta /= max(1.0, length(delta) / 0.85);             // never tilt past ~40°
                 float3 shadingNormalWS = normalize(normalWS - delta);
 
-                // One shared mid-scale field, used four times over: it jitters the meadow/rock
-                // boundary into a ragged natural edge, warps the bedding, picks where lichen has
-                // taken, and drifts the turf scour. Computing it once outside both branches is what
-                // pays for the richer per-layer work below.
-                float blendField = TkTriplanarFbm2(gp3, normalWS, _BlendFieldScale);
-
-                float steepness = 1.0 - saturate(normalWS.y);
-                float jitter = (blendField - 0.5) * _SlopeJitter;
-                float rockT = smoothstep(_SlopeStart, _SlopeEnd, steepness + jitter);
-                float cliffT = smoothstep(_CliffStart, _CliffEnd, steepness + jitter * 0.6);
-
                 float3 ground = _MeadowGreen.rgb;
                 float3 stone = _RockWarm.rgb;
 
@@ -614,9 +763,23 @@ Shader "Tarrock/TerrainPainterly"
                     // The dab lattice is domain-warped by the two low-frequency fields, so dabs are
                     // irregular organic marks rather than a Voronoi mosaic that reads as cracked mud.
                     float2 warp = float2(macro - 0.5, hue - 0.5) * _MeadowDabWarp;
-                    float2 dab = TkDab(gp / max(_MeadowDabScale, 0.01) + warp);
+                    float3 dab = TkDabShaped(gp / max(_MeadowDabScale, 0.01) + warp,
+                        _MeadowDabAniso, _MeadowDabSize);
                     float dabTone = dab.y;
                     float dabEdge = smoothstep(0.45, 0.92, dab.x);
+
+                    // THE CLUMP OCTAVE — the one band that has to survive to the horizon. Its scale
+                    // is an order above the dab and an order below the macro field, which is the gap
+                    // round 3 had nothing in but smooth fbm; and unlike every other term here it is
+                    // never distance-faded, because 40-150 m is precisely its job. Warped by the
+                    // macro field so the clumps drift with the ground's own broad drying rather than
+                    // sitting on their own independent lattice.
+                    float3 clump = TkDabShaped(
+                        (gp + 519.0) / max(_MeadowClumpScale, 0.01)
+                            + float2(macro - 0.5, hue - 0.5) * _MeadowClumpWarp,
+                        _MeadowDabAniso, _MeadowDabSize);
+                    float clumpTone = clump.y;
+                    float clumpEdge = smoothstep(0.40, 0.95, clump.x);
 
                     // Three selectors off three decorrelated sources. Scuff is applied LAST because
                     // bare earth is the strongest read on the ground and should win where it shows.
@@ -629,17 +792,28 @@ Shader "Tarrock/TerrainPainterly"
                     // of the ground, cool in the sheltered dips, scuff only in the top tail, which
                     // is the balance "wind-scoured green" asks for. A threshold at the mean would
                     // paint half the meadow that colour and lose the region's palette.
+                    // ROUND-4: each selector gains a CLUMP term. The clump field is the only one of
+                    // the three that still has edges at 60 m+, so putting it into the hue choice —
+                    // not merely into a value wobble — is what keeps a distant hillside reading as
+                    // stands of straw among stands of green instead of as an olive gradient. The
+                    // straw and cool terms take the clump's TONE and the scuff takes its second,
+                    // decorrelated channel, so bare patches do not simply coincide with gold ones.
                     float strawT = saturate((hue - 0.50) * _MeadowStrawAmount * 3.4
+                        + (clumpTone - 0.50) * _MeadowClumpAmount * 2.2
                         + (dabTone - 0.55) * 0.8 + heightT * 0.18);
                     float scuffT = saturate((macro - 0.66) * _MeadowScuffAmount * 5.0
+                        + (clump.z - 0.74) * _MeadowClumpAmount * 2.4
                         + (dabTone - 0.64) * 0.8);
                     float coolT = saturate((0.44 - macro) * _MeadowCoolAmount * 4.0
+                        + (0.46 - clumpTone) * _MeadowClumpAmount * 2.0
                         + (0.5 - dabTone) * 0.6);
 
                     ground = lerp(ground, _MeadowCool.rgb, coolT);
                     ground = lerp(ground, _MeadowStraw.rgb, strawT);
                     ground = lerp(ground, _MeadowScuff.rgb, scuffT);
                     ground *= 1.0 - dabEdge * _MeadowDabEdge;   // the visible edge of each mark
+                    // ...and the clump's own edge, which is the mark the far hills are made of.
+                    ground *= 1.0 - clumpEdge * _MeadowClumpEdge;
 
                     // Turf mask = the detail-density band, feathered. The steepness and height
                     // thresholds are the SAME constants BuildGrassDetails scatters tufts with (the
@@ -667,7 +841,8 @@ Shader "Tarrock/TerrainPainterly"
                     // green blades is what made round2/v3 read as dirt with grass decals on it. The
                     // dab centres keep the meadow's own green so the mat and the meadow are the same
                     // plant seen at two densities.
-                    float2 turfDab = TkDab(gp / max(_TurfScale, 0.01) + warp * 0.6);
+                    float3 turfDab = TkDabShaped(gp / max(_TurfScale, 0.01) + warp * 0.6,
+                        _MeadowDabAniso, _MeadowDabSize);
                     float3 turf = lerp(_TurfSoil.rgb, _TurfBlade.rgb,
                         saturate(turfDab.y * 1.20 - 0.05));
                     turf = lerp(turf, _MeadowGreen.rgb, saturate((1.0 - turfDab.x) * 0.55));
@@ -690,16 +865,36 @@ Shader "Tarrock/TerrainPainterly"
                     UNITY_BRANCH
                     if (detailFade > 0.004)
                     {
-                        float2 fine = TkDab(gp / max(_MeadowFineScale, 0.01));
+                        // TWO fine layers on lattices that can never align, and both WARPED by the
+                        // grain field before they are sampled. This is the round-4 answer to "one
+                        // stamped decal repeated at one size on a visible cadence" at the level
+                        // above TkDabShaped's own per-cell shape work:
+                        //   * the second layer runs at 1/0.61 = 1.64x the first's wavelength, an
+                        //     irrational-enough ratio that the two beat patterns never repeat
+                        //     together inside the tile, and is offset so they share no origin;
+                        //   * the grain warp (0.34 m, an order below the mark) pushes the lattice
+                        //     itself around by a fraction of a cell, so even one layer's rows are
+                        //     not straight. A cadence needs marks in a line; there are none left.
                         float grain = TkValueNoise(gp / max(_MeadowGrainScale, 0.01));
+                        float grain2 = TkValueNoise((gp + 43.7) / max(_MeadowGrainScale, 0.01));
+                        float2 fineWarp = float2(grain - 0.5, grain2 - 0.5) * _MeadowFineWarp;
+                        float3 fine = TkDabShaped(gp / max(_MeadowFineScale, 0.01) + fineWarp,
+                            _MeadowDabAniso, _MeadowDabSize);
+                        float3 fine2 = TkDabShaped(
+                            (gp * 0.61) / max(_MeadowFineScale, 0.01) + 91.3 - fineWarp,
+                            _MeadowDabAniso, _MeadowDabSize);
                         float tooth = 1.0 + (fine.y - 0.5) * 2.0 * _MeadowFineTone
+                            + (fine2.y - 0.5) * 2.0 * _MeadowFineTone * 0.70
                             + (grain - 0.5) * _MeadowGrain;
                         ground *= lerp(1.0, tooth, detailFade);
 
                         // Dab CORES take a straw fleck — dry strands and grit read as hue at texel
                         // scale, not as one more brightness wobble. Suppressed inside the turf,
-                        // where the ground is damp and shaded by the blades above it.
-                        float fleck = smoothstep(0.78, 0.97, 1.0 - fine.x);
+                        // where the ground is damp and shaded by the blades above it. Taken off the
+                        // PRODUCT of the two layers, so a fleck lands only where both agree — a
+                        // scatter at neither layer's pitch, which is the point.
+                        float fleck = smoothstep(0.78, 0.97, 1.0 - fine.x)
+                            * smoothstep(0.55, 0.95, 1.0 - fine2.x);
                         ground = lerp(ground, _MeadowStraw.rgb,
                             fleck * _MeadowFineStraw * detailFade * (1.0 - turfMask * 0.6));
                     }
@@ -719,7 +914,16 @@ Shader "Tarrock/TerrainPainterly"
                     // them. Below the fade-in a horizontal slab meets the ground over an enormous
                     // on-surface width and its edge has no choice but to trace a heightmap contour;
                     // that is round 1's ring, and slope is the honest gate against it.
-                    float beddingMask = smoothstep(_BeddingSlopeStart, _BeddingSlopeEnd, steepDeg);
+                    //
+                    // ROUND-4: TWO gates, ANDed, and the second is not redundant. The slope gate is
+                    // taken off the GEOMETRIC normal and the rock gate off the same steepness PLUS
+                    // the ±0.065 boundary jitter, so a face can be classified as stone by a jitter
+                    // excursion while measuring under 50° — and drawing beds on ground the jitter
+                    // merely painted grey is exactly how a dune ends up ruled. Requiring both means
+                    // strata appear only where the surface is BOTH steep and stone. Every cell under
+                    // 50° now takes exactly zero bedding, which is the round-4 finding's whole ask.
+                    float beddingMask = smoothstep(_BeddingSlopeStart, _BeddingSlopeEnd, steepDeg)
+                        * smoothstep(0.55, 0.95, rockT);
 
                     float spacing = max(_BeddingSpacing, 0.05);
                     // The warp and the edge roughness are CAPPED as fractions of a bed. This is the
@@ -785,6 +989,14 @@ Shader "Tarrock/TerrainPainterly"
 
                     stone = lerp(_RockWarm.rgb, _RockCool.rgb,
                         saturate(formRand * 1.35 - 0.18) * _RockBedTint * beddingMask);
+                    // ROUND-4: the formation swing rides on beddingMask, and beddingMask is now
+                    // zero below 50°, so the 35-50° APRON — the scree-and-soil band between meadow
+                    // and cliff — would have lost its only hue variation along with its (wrongly
+                    // drawn) beds. It gets a broad drift of its own instead, off the mottle field
+                    // already in hand and weighted by exactly what the bedding gave up. Patches,
+                    // not stripes: this is a 6.5 m blotch field, so it cannot draw a contour.
+                    stone = lerp(stone, _RockCool.rgb,
+                        saturate((mottle - 0.55) * 2.2) * _RockBedTint * 0.55 * (1.0 - beddingMask));
                     stone *= lerp(0.88, 1.12, mottle);
                     stone *= 1.0 + (bedTone - 0.5) * 2.0 * _BedValueJitter * beddingMask;
                     stone *= 1.0 - parting * _BeddingDarken * lineAmount;
@@ -805,6 +1017,30 @@ Shader "Tarrock/TerrainPainterly"
                     // The refusing faces go cool slate: "cliffs refuse, slopes permit" reads in
                     // colour temperature as well as in shape.
                     stone = lerp(stone, _CliffColor.rgb * lerp(0.92, 1.08, mottle), cliffT);
+
+                    // -- Close-range paint on stone (round-4 finding on v5) ---------------------
+                    // The whole stone branch above works at 2.6 m and coarser. Under two metres
+                    // that leaves a flat wash between two partings, which is what "no surface
+                    // detail" meant. This is the meadow's texel band, given to rock.
+                    //
+                    // ONE dab, on the FACE'S own frame: x runs along the face's strike (the
+                    // horizontal direction lying in the surface) and y is world height. That is
+                    // both the cheap choice — a triplanar would be three lookups for a term that
+                    // is only ever wanted within a few metres — and the right one, because paint
+                    // and weathering on a rock face run ALONG the face. The frame degenerates on
+                    // an up-facing pixel, where normalWS.xz vanishes; the epsilon keeps it defined
+                    // and such pixels have almost no rockT to spend anyway.
+                    UNITY_BRANCH
+                    if (detailFade > 0.004)
+                    {
+                        float2 strike = normalize(float2(-normalWS.z, normalWS.x) + 1e-4);
+                        float2 faceUV = float2(dot(gp3.xz, strike), gp3.y)
+                            / max(_RockDabScale, 0.01);
+                        float3 rockDab = TkDabShaped(faceUV, _MeadowDabAniso, _MeadowDabSize);
+                        stone *= 1.0 + (rockDab.y - 0.5) * 2.0 * _RockDabTone * detailFade;
+                        stone *= 1.0 - smoothstep(0.55, 0.96, rockDab.x)
+                            * _RockDabEdge * detailFade;
+                    }
                 }
 
                 // When rockT >= 0.999 the meadow branch is skipped and `ground` is still the flat

@@ -26,38 +26,41 @@ Material:
     m_Ints: []
     m_Floats:
     - _AmbientBoost: 1.05
-    - _BaseBlend: 0.8
+    - _BaseBlend: 0.84
     - _BaseBlendHeight: 0.92
-    - _BendCoreShare: 0.55
+    - _BendCoreShare: 0.64
+    - _BendDarken: 0.74
     - _BendHeightRange: 1.8
+    - _BendLayDegrees: 66
     - _BendStrength: 0.6
     - _CombDrift: 0.06
     - _CombFold: 0.55
     - _CombHollowLean: 0.34
-    - _CombLean: 0.24
+    - _CombLean: 0.34
+    - _CombRake: 0.65
     - _CombWanderDegrees: 14
     - _CombWanderLength: 46
-    - _DryBias: 0.46
-    - _FadeEnd: 52
+    - _DryBias: 0.2
+    - _FadeEnd: 60
     - _FadeMinScale: 0.08
-    - _FadeStart: 30
+    - _FadeStart: 34
     - _PatchScale: 26
-    - _RootDarken: 0.64
+    - _RootDarken: 0.6
     - _ShadeWrap: 0.55
     - _SwaySpeed: 0.85
     - _SwayStrength: 0.1
     - _SwayWavelength: 14
-    - _TuftHeight: 0.052
-    - _TuftVariation: 0.3
+    - _TuftHeight: 0.06
+    - _TuftVariation: 0.26
     - _ValueVariation: 0.2
-    - _WidenEnd: 40
+    - _WidenEnd: 44
     - _WidenMax: 2.6
     - _WidenStart: 9
     - _WindResponse: 1
     m_Colors:
-    - _BaseColor: {r: 0.24798998, g: 0.31263998, b: 0.18202998, a: 1}
-    - _CoolColor: {r: 0.23258997, g: 0.30824, b: 0.19742997, a: 1}
-    - _DryColor: {r: 0.5176, g: 0.43759996, b: 0.24319997, a: 1}
+    - _BaseColor: {r: 0.23643997, g: 0.29784, b: 0.17347996, a: 1}
+    - _CoolColor: {r: 0.22923997, g: 0.29424, b: 0.17947997, a: 1}
+    - _DryColor: {r: 0.4472, g: 0.42, b: 0.24979998, a: 1}
     - _GroundColor: {r: 0.23049997, g: 0.288, b: 0.16849996, a: 1}
     - _GroundDryColor: {r: 0.5, g: 0.41999996, b: 0.22999996, a: 1}
     - _WindAxis: {r: 1, g: 0.35, b: 0, a: 0}

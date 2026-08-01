@@ -66,6 +66,23 @@ Shader "Tarrock/GrassTuft"
     //      the shape a still photograph can show. Roots stay anchored either way: the lean is
     //      scaled by COLOR.a, which is 0 at every blade's base.
     //
+    // ROUND-4 PASS (2026-07-31 gauntlet critique of round3/v6, v7). Three findings:
+    //
+    //   i.   ONE BEARING, NOT TWO. "Teal stubble splays symmetric while tall yellow blades lean
+    //        left." True, and no lean value could have fixed it: round 3 combs by translating a
+    //        tip, which a tall thin species notices and a short broad one does not (a sedge splays
+    //        0.19 m and leans 0.055 m). _CombRake rakes the FAN instead of the tip, so every layer
+    //        is drawn out on one bearing regardless of how radial its blade layout is.
+    //   ii.  THE RING THAT WAS ALWAYS THERE. Re-projected through v6's own vantage, the stand-in's
+    //        feet land at pixel (960, 999) and the 0.72 m ring spans 723-1169 px — and it IS in the
+    //        frame, as a clean disc with no upright blades in it. The bend coordinates were never
+    //        wrong. Blades laid to exactly flat simply read as blades that are not there, so the
+    //        ring photographed as one more bald patch. _BendLayDegrees and _BendDarken give it a
+    //        silhouette and a value.
+    //   iii. THE MAT. "Discrete brown starburst cards lying BESIDE tufts on smooth untextured
+    //        terrain." That is the thatch prototype, and the fix is on the generator's side of the
+    //        contract — see TerrainRegionGenerator's SpeciesThatch and SpeciesScuff.
+    //
     // THE THATCH. A fifth prototype (TerrainRegionGenerator's SpeciesThatch) shares this shader: a
     // 2-5 cm mat of near-horizontal cards, tinted to the ground shader's own turf palette and
     // darkened at the root by _RootDarken. It is not decoration — round 2's meadow was tufts
@@ -119,6 +136,22 @@ Shader "Tarrock/GrassTuft"
         // reproduces round 2's symmetric translation.
         _CombFold ("Comb Fold (upwind blades over the crown)", Range(0, 1)) = 0.5
         _CombDrift ("Comb Crown Drift (share of height)", Range(0, 0.6)) = 0.12
+        // ROUND-4 — THE RAKE, and the fix for "ONE lean bearing across ALL layers". Round 3's comb
+        // leans a blade by TRANSLATING its tip along the axis, scaled by that blade's height. That
+        // works on a tall thin species, whose tip travels further than its own splay, and it does
+        // almost nothing to a short broad one: the sedge stands 0.22 m tall and splays 0.19 m, so a
+        // 0.36 lean moves its tips 5.5 cm against a 19 cm radial fan and the tuft stays a symmetric
+        // star ("teal stubble splays symmetric while tall yellow blades lean left" — round-4
+        // critique of v6/v7). No lean value fixes that, because the fault is in the FAN, not the tip.
+        //
+        // The rake works on the fan itself: the vertex's offset from its own root is stretched along
+        // the comb axis and squeezed across it, so every species' silhouette is drawn out on ONE
+        // bearing no matter how radial its blade layout is. It is a static change of shape — the
+        // pose the last wind left — never an animation, and it is applied in world space off
+        // TEXCOORD1 rotated by the instance matrix, so it survives the random Y rotation Unity gives
+        // each detail instance (an object-space version would point somewhere different per tuft and
+        // average to nothing across the field).
+        _CombRake ("Comb Rake (fan stretched along the axis)", Range(0, 1)) = 0.5
 
         [Header(Unbound wind)]
         // Zero-at-bound by construction: every term below is multiplied by _TarrockWindStrength.
@@ -137,6 +170,24 @@ Shader "Tarrock/GrassTuft"
         // round 2's centre-to-rim smoothstep; anything above it turns the dish into a disc with an
         // edge you can see in a still frame.
         _BendCoreShare ("Bend Core (share of radius held flat)", Range(0, 0.9)) = 0.5
+        // ROUND-4, and the two lines that decide whether the ring photographs at all.
+        //
+        // THE RING WAS ALWAYS THERE. Re-projecting round3/v6 through its own vantage puts the
+        // stand-in's feet at pixel (960, 999) and the 0.72 m ring at 723-1169 px across — and the
+        // crop shows it: a clean disc of ground under him with no upright blades in it. The bend
+        // coordinates were never wrong. What was wrong is that a blade laid FLAT is not a laid
+        // blade to the eye, it is an absent one: the ring rendered as a bald patch, identical in
+        // value and silhouette to the bare ground the critique has been calling a fault for three
+        // rounds. So the ring was invisible for the same reason bare ground is ugly.
+        //
+        //   _BendLayDegrees stops the press at ~70-75° from vertical instead of 90°, so a pressed
+        //   blade keeps a third of its height and lies OUTWARD as a visible radial spoke. This is
+        //   what a body actually leaves — grass laid over, not grass deleted.
+        //   _BendDarken gives the pressed area its own value. Crushed ground cover is darker: the
+        //   blades lie over their own root shadow and stop catching the sun edge-on. A still frame
+        //   reads an area by its value before it reads it by its silhouette.
+        _BendLayDegrees ("Bend Lay Angle (deg from vertical)", Range(30, 90)) = 72
+        _BendDarken ("Bend Darken (multiplier inside the ring)", Range(0.4, 1)) = 0.78
 
         [Header(Distance handling)]
         _WidenStart ("Widen Start (m)", Float) = 18
@@ -194,6 +245,7 @@ Shader "Tarrock/GrassTuft"
             float _CombWanderDegrees;
             float _CombFold;
             float _CombDrift;
+            float _CombRake;
             float _SwayStrength;
             float _SwaySpeed;
             float _SwayWavelength;
@@ -201,6 +253,8 @@ Shader "Tarrock/GrassTuft"
             float _BendStrength;
             float _BendHeightRange;
             float _BendCoreShare;
+            float _BendLayDegrees;
+            float _BendDarken;
             float _WidenStart;
             float _WidenEnd;
             float _WidenMax;
@@ -353,20 +407,41 @@ Shader "Tarrock/GrassTuft"
             float widen = lerp(1.0, _WidenMax,
                 smoothstep(_WidenStart, max(_WidenEnd, _WidenStart + 1.0), viewDistance));
             float3 rootOffsetWS = mul((float3x3)unity_ObjectToWorld, float3(input.rootOffsetOS.x, 0.0, input.rootOffsetOS.y));
-            positionWS.xz += rootOffsetWS.xz * (widen - 1.0);
-
-            float exposure = ExposureDrift(positionWS.xz);
 
             // -- 1. The comb: a STATIC lean, the shape the last wind left.
             // The axis WANDERS by a few degrees over tens of metres. A single constant direction
             // across a whole region is a shear, not a wind: real combed ground curves around the
             // landform, and the eye reads the curvature as air having moved through.
+            //
+            // The axis is resolved BEFORE the tuft is widened or raked (round 4), because both of
+            // those are measured against it. It is taken off the tuft's un-widened world position,
+            // which moves by centimetres at most — the wander is a 46 m field, so nothing here can
+            // notice.
             float2 axis = normalize(_WindAxis.xy + float2(1e-5, 0.0));
             float wander = sin(dot(positionWS.xz, float2(0.71, 0.70)) * (6.2831853 / max(_CombWanderLength, 1.0)))
                          * radians(_CombWanderDegrees);
             float wanderSin, wanderCos;
             sincos(wander, wanderSin, wanderCos);
             axis = float2(axis.x * wanderCos - axis.y * wanderSin, axis.x * wanderSin + axis.y * wanderCos);
+
+            // THE RAKE (round 4, see the header). The fan itself is stretched along the comb axis
+            // and squeezed across it, which is the only construct here that puts a SHORT BROAD
+            // species on the same bearing as a tall thin one — a tip translation cannot, because a
+            // sedge's splay is three times its own lean. Distance widening rides in the same
+            // expression (it is a uniform scale of the same offset), so the vertex is displaced
+            // once rather than twice.
+            //
+            // The across term shrinks by 0.6 of the rake rather than by the whole of it: squeezing
+            // a fan to a line is a fin, not a combed tuft, and grass keeps some width across the
+            // wind even after three hundred years of it.
+            float2 lateral = rootOffsetWS.xz * widen;
+            float alongLength = dot(lateral, axis);
+            float2 acrossVec = lateral - (axis * alongLength);
+            float2 raked = (axis * (alongLength * (1.0 + _CombRake)))
+                         + (acrossVec * (1.0 - _CombRake * 0.6));
+            positionWS.xz += raked - rootOffsetWS.xz;
+
+            float exposure = ExposureDrift(positionWS.xz);
 
             // Exposed ground was scoured flatter than sheltered ground: the hollows keep more of
             // their stand. Same field as the dry tint, so gold ground and flattened ground agree.
@@ -380,9 +455,10 @@ Shader "Tarrock/GrassTuft"
             // over the crown, so the lean is scaled UP on the negative side.
             //
             // Without this, comb is a rigid translation of a radially symmetric fan and the fan
-            // stays symmetric — the exact finding round 2 came back with.
-            float rootReach = length(rootOffsetWS.xz);
-            float alongAxis = rootReach > 1e-4 ? dot(rootOffsetWS.xz / rootReach, axis) : 0.0;
+            // stays symmetric — the exact finding round 2 came back with. Measured on the RAKED
+            // offset so the fold and the rake agree about which side of the tuft a blade is on.
+            float rootReach = length(raked);
+            float alongAxis = rootReach > 1e-4 ? dot(raked / rootReach, axis) : 0.0;
             float fold = 1.0 - (_CombFold * alongAxis);
 
             // The crown drift is NOT folded: it is the whole tuft carried downwind, which is what
@@ -406,18 +482,28 @@ Shader "Tarrock/GrassTuft"
             }
 
             // -- 3. Displacement response: the world yields to touch even while it is bound.
-            float2 bend = BenderPush(positionWS) * _BendStrength;
+            float2 rawPush = BenderPush(positionWS);
+            // How hard this vertex is being pressed, before the species' own strength multiplies
+            // it — 0 outside every ring, 1 in a held core. Used for the ring's albedo below.
+            float pressed = saturate(length(rawPush));
+            float2 bend = rawPush * _BendStrength;
 
             // EXACT pendulum arc, not the small-angle approximation. A blade is a rigid length
             // pivoting at its anchor: lean it sideways by s and the vertical shortens to
-            // sqrt(L^2 - s^2), so the tip travels a circle and a fully leant blade lies flat on the
-            // ground and no further. The round-1 build used the s^2/2L approximation, which is fine
-            // for the ~0.3 comb it carried but sends a tip UNDERGROUND once the displacement
-            // response can lay a blade right over — s is clamped to L here for the same reason: a
-            // leaning blade is not a stretched one.
+            // sqrt(L^2 - s^2), so the tip travels a circle. The round-1 build used the s^2/2L
+            // approximation, which is fine for the ~0.3 comb it carried but sends a tip UNDERGROUND
+            // once the displacement response can lay a blade right over — s is clamped here for the
+            // same reason: a leaning blade is not a stretched one.
+            //
+            // ROUND-4: the clamp is now _BendLayDegrees rather than a flat 90°. A blade laid to
+            // exactly flat has no silhouette and no height, and the ring it makes is optically
+            // identical to bare ground — which is why three rounds of review could not find a ring
+            // that was, measurably, right there (see the property). At 72° a pressed blade keeps
+            // 31% of its height and points outward as a readable spoke.
             float2 offset = (axis * ((comb + sway) * leanMetres)) + (bend * leanMetres);
             float leanLength = max(leanMetres, 1e-4);
-            float sideways = min(length(offset), leanLength);
+            float layLimit = sin(radians(clamp(_BendLayDegrees, 20.0, 90.0)));
+            float sideways = min(length(offset), leanLength * layLimit);
             positionWS.xz += (offset / max(length(offset), 1e-4)) * sideways;
             positionWS.y -= leanLength - sqrt(max((leanLength * leanLength) - (sideways * sideways), 0.0));
 
@@ -458,6 +544,14 @@ Shader "Tarrock/GrassTuft"
             // the thatch read as a layer WITH depth that the tufts stand in, rather than a second
             // flat colour laid beside the ground pass.
             albedo *= lerp(1.0, saturate(_RootDarken), rootWeight);
+
+            // THE RING'S OWN VALUE (round 4). Crushed ground cover is darker than standing cover:
+            // the blades lie over their own root shadow, they stop catching a low sun edge-on, and
+            // what was a lit vertical face becomes a shaded horizontal one. Baked into albedo
+            // because the lighting cannot know — the blade's normal is deliberately biased to +Y
+            // and barely moves when the blade goes over, which is right for the meadow at large and
+            // exactly wrong for a pressed disc. A still frame reads an area by its value first.
+            albedo *= lerp(1.0, saturate(_BendDarken), pressed);
 
             o.positionWS = positionWS;
             o.albedo = albedo;

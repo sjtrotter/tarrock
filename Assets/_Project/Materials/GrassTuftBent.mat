@@ -28,13 +28,16 @@ Material:
     - _AmbientBoost: 1.05
     - _BaseBlend: 0.62
     - _BaseBlendHeight: 0.5
-    - _BendCoreShare: 0.5
+    - _BendCoreShare: 0.58
+    - _BendDarken: 0.78
     - _BendHeightRange: 1.8
+    - _BendLayDegrees: 74
     - _BendStrength: 1.6
     - _CombDrift: 0.18
     - _CombFold: 0.55
     - _CombHollowLean: 0.34
     - _CombLean: 0.68
+    - _CombRake: 0.35
     - _CombWanderDegrees: 14
     - _CombWanderLength: 46
     - _DryBias: 0.66

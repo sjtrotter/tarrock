@@ -54,6 +54,19 @@ Shader "Tarrock/RockPainterly"
         _RockVariation ("Mottle Scale (m)", Float) = 1.6
         _RockContrast ("Mottle Contrast", Range(0.5, 4)) = 1.7
         _RockDetailAmount ("Detail Amount", Range(0, 0.5)) = 0.12
+        // ROUND-4 (gauntlet critique of round3/v5, "no surface detail at 2 m"): a jittered-cell
+        // value band under the mottle, so the block reads as laid marks at arm's length instead of
+        // one wash between two partings. Same construct and the same per-cell rotation/aspect/size
+        // spread as Tarrock/TerrainPainterly's TkDabShaped — the ground and the stones sitting on
+        // it must be made of the same paint. Sampled on the FACE'S own frame (strike across, world
+        // Y up) so it costs ONE lookup rather than a triplanar's three, and faded out past a few
+        // metres because a sub-pixel mark at range is a shimmer generator.
+        _RockDabScale ("Dab Scale (m)", Float) = 0.20
+        _RockDabTone ("Dab Tone", Range(0, 0.5)) = 0.17
+        _RockDabAniso ("Dab Aspect Spread", Range(0, 0.9)) = 0.55
+        _RockDabSize ("Dab Size Spread", Range(0, 0.9)) = 0.45
+        _RockDabFadeStart ("Dab Fade Start (m)", Float) = 6.0
+        _RockDabFadeRange ("Dab Fade Range (m)", Float) = 10.0
         // How far the block's own colour drifts between formations. It is a HUE swing between two
         // stone colours applied per formation, not a value oscillation applied per pixel.
         _FormationTint ("Formation Hue Swing", Range(0, 1)) = 0.55
@@ -118,6 +131,12 @@ Shader "Tarrock/RockPainterly"
             float _RockVariation;
             float _RockContrast;
             float _RockDetailAmount;
+            float _RockDabScale;
+            float _RockDabTone;
+            float _RockDabAniso;
+            float _RockDabSize;
+            float _RockDabFadeStart;
+            float _RockDabFadeRange;
             float _FormationTint;
             float _BeddingSpacing;
             float4 _BeddingDip;
@@ -219,6 +238,49 @@ Shader "Tarrock/RockPainterly"
             return TkCavityPair(worldPos.zy * inv) * blend.x
                  + TkCavityPair(worldPos.xz * inv) * blend.y
                  + TkCavityPair(worldPos.xy * inv) * blend.z;
+        }
+
+        // The ground's round-4 brushmark field, copied under the same rule as everything else in
+        // this block: the rock and the ground must be made of one paint recipe. See
+        // Tarrock/TerrainPainterly's TkDabShaped for why a per-cell rotation, aspect and radius are
+        // what stop a jittered-cell field reading as one stamp on a visible pitch.
+        float3 TkDabShaped(float2 p, float aniso, float sizeJitter)
+        {
+            float2 cell = floor(p);
+            float2 f = p - cell;
+            float best = 8.0;
+            float bestTone = 0.0;
+            float bestId = 0.0;
+
+            [unroll]
+            for (int y = -1; y <= 1; y++)
+            {
+                [unroll]
+                for (int x = -1; x <= 1; x++)
+                {
+                    float2 g = float2(x, y);
+                    float2 h = TkHash22(cell + g);
+                    float2 s = TkHash22(cell + g + 37.19);
+                    float2 d = g + h - f;
+
+                    float sn, cs;
+                    sincos(s.x * 6.2831853, sn, cs);
+                    float2 r = float2(d.x * cs - d.y * sn, d.x * sn + d.y * cs);
+
+                    float stretch = max(1.0 + aniso * (s.y - 0.5) * 2.0, 0.25);
+                    r.x /= stretch;
+                    r.y *= stretch;
+
+                    float radius = max(1.0 + sizeJitter * (frac(s.x * 7.31 + s.y * 3.17) - 0.5) * 2.0, 0.25);
+                    float sq = dot(r, r) / (radius * radius);
+
+                    bestTone = sq < best ? frac(h.x * 3.71 + h.y * 7.13) : bestTone;
+                    bestId = sq < best ? frac(s.x * 5.17 + s.y * 9.43) : bestId;
+                    best = min(best, sq);
+                }
+            }
+
+            return float3(saturate(sqrt(best)), bestTone, bestId);
         }
 
         float TkContrast(float x, float k)
@@ -368,6 +430,22 @@ Shader "Tarrock/RockPainterly"
                 albedo *= 1.0 - parting * _BeddingDarken * lineAmount;
                 albedo *= 1.0 + lip * _BeddingLip * lineAmount;
                 albedo *= 1.0 - cavity * _CavityDarken;
+
+                // -- Close-range brushmarks (round-4 finding on v5). Nothing above this line works
+                //    below ~0.35 m, so a boulder at arm's length was one flat wash between two
+                //    partings. Marks with EDGES are the house economy (art-bible.md); a smooth
+                //    field here would only be a second airbrush.
+                float dabFade = 1.0 - smoothstep(_RockDabFadeStart,
+                    max(_RockDabFadeStart + _RockDabFadeRange, _RockDabFadeStart + 0.01),
+                    distance(positionWS, _WorldSpaceCameraPos));
+                if (dabFade > 0.004)
+                {
+                    float2 strike = normalize(float2(-normalWS.z, normalWS.x) + 1e-4);
+                    float2 faceUV = float2(dot(positionWS.xz, strike), positionWS.y)
+                        / max(_RockDabScale, 0.01);
+                    float3 dab = TkDabShaped(faceUV, _RockDabAniso, _RockDabSize);
+                    albedo *= 1.0 + (dab.y - 0.5) * 2.0 * _RockDabTone * dabFade;
+                }
 
                 // -- Moss on ledges: only where the face turns upward AND the hollows say damp, so
                 //    it lands in patches instead of coating every horizontal facet.

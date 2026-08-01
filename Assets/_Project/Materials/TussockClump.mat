@@ -29,12 +29,15 @@ Material:
     - _BaseBlend: 0.62
     - _BaseBlendHeight: 0.5
     - _BendCoreShare: 0.5
+    - _BendDarken: 0.78
     - _BendHeightRange: 1.8
+    - _BendLayDegrees: 72
     - _BendStrength: 0.9
     - _CombDrift: 0.05
     - _CombFold: 0.35
     - _CombHollowLean: 0.34
     - _CombLean: 0.24
+    - _CombRake: 0.5
     - _CombWanderDegrees: 14
     - _CombWanderLength: 46
     - _DryBias: 0.55

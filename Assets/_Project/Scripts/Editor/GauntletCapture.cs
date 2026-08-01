@@ -104,6 +104,21 @@ namespace Tarrock.EditorTools
         // the same size as the one the player walks around in. It MUST track that value: a shoot
         // that photographs a ring the game does not produce is worse than a shoot with no ring in
         // it, because the review passes something that was never there.
+        //
+        // ROUND-4 VERIFICATION, written down so the next round does not re-suspect it. The bend
+        // ring had failed to read for three rounds and the leading theory was that these globals
+        // did not land where the stand-in was actually planted. THEY DO, and the check is exact:
+        // WriteBendGlobals takes `standIn.position` AFTER PlaceStandIn has set it from the
+        // vantage's own StandInXz, so the two cannot differ by construction — there is no second
+        // source of the coordinate to disagree with. Re-projecting round3/v6 through its own
+        // vantage maths puts the feet at pixel (960, 999) in a 1920x1080 frame and the 0.72 m ring
+        // at 723-1169 px across, and the crop of that region shows the disc plainly: no upright
+        // blades inside it. THE RING WAS ALWAYS IN THE PICTURE. It did not read because a blade
+        // laid to 90° is optically an absent blade and the pressed area carried no value change,
+        // so the ring rendered as one more bald patch on ground the same critique was already
+        // calling too bare. The fix is therefore entirely in Tarrock/GrassTuft (_BendLayDegrees,
+        // _BendDarken) and in the mat the disc is pressed into — not here. This number is correct
+        // and should be left alone unless the rig's own radius moves.
         private const float StandInBendRadius = 0.72f;
         // Two fading wake points behind him: a still of a standing figure shows a ring, but a ring
         // with a wake behind it shows that he WALKED here, which is the thing being reviewed. The
@@ -159,7 +174,7 @@ namespace Tarrock.EditorTools
         {
             // v1 — the opening frame. Third-person at the spawn bowl looking due west, down the
             // valley: the shot that decides whether the game's first second is beautiful. This is
-            // now the RAKING frame — TerrainRegionGenerator.SunEuler is 7°/152°, so the disc sits at
+            // now the RAKING frame — TerrainRegionGenerator.SunEuler is 12°/152°, so the disc sits at
             // bearing ≈332° (NNW), 62° off this view — which is what makes the landform's
             // north-refuses/south-permits grammar readable in the very first frame.
             // (ROUND 2: v1 and v2 have SWAPPED ROLES. Round 1's sun sat at ≈297°, only 27° off this
