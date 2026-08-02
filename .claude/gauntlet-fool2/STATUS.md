@@ -50,3 +50,33 @@ flatten the pillowed foot soles, and the arm build must supply the deltoid out t
 
 **Round verdict: PASS.** Carry-forward list logged in ROUND-STATE.md. Next: Round 2 —
 neck, arms, hands (pipeline Step 2) from the sheet's left-limb cutouts.
+
+---
+
+## Round 2 — neck, left arm + hand blockout, attach (2026-08-02)
+
+**Builder (Opus):** arm chain blocked vertically over the sheet's left-limb cutouts
+(registered to BOTH cutout views at once via X=front-cutout / Y=side-cutout centres),
+verified there (`Fool-v2-003`), then attached by vertex rotation to the shoulder-socket
+locator; neck cylinder fitted to the drawn profile (`Fool-v2-004`). 9 new blocks, 560
+cage verts. Arm lengths within 2 mm of the reconciled drawings; shoulder half-width
+reaches the drawn deltoid at 0.244 m; all joints ≥ 0.018 m interpenetration.
+
+| Front overlay | Side overlay |
+|---|---|
+| ![front](renders/r2-front.png) | ![side](renders/r2-side.png) |
+| ![3/4](renders/r2-three-quarter.png) | ![hand](renders/r2-front-zoom-hand.png) |
+
+**Critic (Opus, fresh context):** **SEND BACK.** Passing: symmetry (1–2 px), arm span,
+wrist/hand reach, neck width and lean, finger simplicity (correctly rejected the fanned
+side-cutout envelope). Named gap: **the elbow has no shape** — near-constant 43–46 px
+tube where the sheet draws a 52–53 px forearm swell flanking a 42 px elbow neck (mesh
+−19 mm at the swell, +8 mm at the neck, mirrored both arms). Secondaries: arm inferior
+surface 6–10 mm high into the axilla; shoulder integration is saddle-then-bump (trap
+plateau up to 18 mm low, deltoid crown 6 mm proud — must be fixed as ONE edit);
+thumb 21 mm long, ~13° abduction, no thenar wedge; finger/palm split finger-short.
+
+**Round verdict: SEND BACK → Round 3 = fix round (elbow profile, axilla, one-edit
+shoulder integration, thumb, finger/palm split) + the critic's three verification
+demands (arm-root vs socket circle with torso hidden, wrist roll printout, joint-centre
+coordinates).**
