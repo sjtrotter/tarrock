@@ -89,6 +89,64 @@ namespace Tarrock.Editor
         internal const float MeadowDabAniso = 0.55f;
         internal const float MeadowDabSize = 0.45f;
 
+        // -- THE MARK FRAME (round 7) -----------------------------------------------------------
+        // SHARED SURFACE, declared once and consumed twice — the terrain and the free-standing
+        // stones must be painted by the same hand, in the same direction, at the same distances,
+        // or a boulder reads as a prop dropped onto the hillside instead of a lump of it.
+        //
+        // WHAT THESE ANSWER. Round 6 stretched every mark along ONE world axis, everywhere. That
+        // killed the round-5 contour lock (the marks no longer follow the landform) and replaced it
+        // with wallpaper: measured on the round-6 captures with this round's implementation, the
+        // block-wise stroke direction over v1's meadow collapsed to a single lean — nine of nine
+        // blocks inside 63-97 degrees, spread 0.146 -> 0.022. A painter's strokes turn with the
+        // passage of ground they describe; they do not all lean the same way across a valley.
+        //
+        // The axis is now chosen by a TWO-OCTAVE world field and the second octave is the part that
+        // is easy to get wrong. A single 24 m field is right for a wide shot and useless for the
+        // close frames: a two-metre crop of a wall samples ONE value of it and comes back with one
+        // lean again, which is exactly how round 6's fault survived a world-space rewrite. 1.9 m is
+        // 30 marks across at the 6 cm grit band — coarse enough that the turn is a passage of
+        // stone rather than a per-mark jitter, fine enough that a close crop contains several.
+        //
+        // The same four fields carry the rest of the round-6 "one size, one lean, one value"
+        // finding: SIZE scales every band's wavelength, VALUE scales every band's contrast, and
+        // DENSITY shifts every band's threshold (the shaders compensate the mean-preserving
+        // divisor for the coverage that shift buys, or a denser patch would also be a darker one).
+        internal const float MarkAniso = 2.2f;
+        internal const float MarkTurnScale = 24f;
+        internal const float MarkTurnScaleFine = 1.9f;
+        internal const float MarkTurnSpread = 1.15f;   // radians, peak to peak (~66 degrees)
+        internal const float MarkSizeSpread = 0.33f;
+        internal const float MarkValueSpread = 0.36f;
+        internal const float MarkDensitySpread = 0.045f;
+
+        // -- THE SUN BLEACH (round 7) -----------------------------------------------------------
+        // These three were sitting at their SHADER DEFAULTS through round 6 — never written by the
+        // generator, invisible in the diff, and therefore hidden state of exactly the kind this
+        // project's conventions forbid. They are written here now, for both materials.
+        //
+        // They are also RE-PITCHED, and the arithmetic is the point. The shader ramps the bleach
+        // over smoothstep(_BleachStart, 1, lit), and `lit` is the wrapped lambert: at SunEuler's
+        // 12 degrees, flat sunlit ground sits at (sin 12 + 0.40)/1.40 = 0.434 and NOTHING on the
+        // floor of this region ever approaches 1. With the round-6 start of 0.28 the term
+        // evaluated to 0.059 on the lit meadow — a control that was doing nothing at all. At 0.06
+        // the same ground takes 0.20 and a face square to the beam takes the full amount, so the
+        // effect is proportional to how much beam a surface actually receives.
+        //
+        // THE TINT IS THE ROUND'S WARMTH, AND IT IS LOCAL BY CONSTRUCTION. Round 6 bought its clean
+        // palette with a global desaturation and the frame came back cool and empty; round 7 must
+        // put the warmth back without putting the clipping back. This is the lever that cannot
+        // clip: the tint is normalised to luminance 1 inside the shader, so it moves CHROMA and
+        // never exposure, it is multiplied by `lit` so it cannot touch a shadow, and — modelled
+        // through the full chain — it moves the lit meadow's blue UP, not down, because it
+        // desaturates a green toward a warm grey. "Pale dawn gold in the LIGHT, wind-scoured
+        // green" (art-audio.md), with the gold arriving on the surfaces the beam reaches and
+        // nowhere else. Authored as a swatch a hair cooler than the lamp's own (1.00, 0.91, 0.78):
+        // the light is the gold, this is what the light does to the paint.
+        internal const float SunBleach = 0.55f;
+        internal const float BleachStart = 0.06f;
+        internal static readonly Color BleachTint = new Color(1.00f, 0.92f, 0.78f);
+
         private static Material BuildTerrainMaterial(Shader shader)
         {
             var material = AssetDatabase.LoadAssetAtPath<Material>(TerrainMaterialPath);
@@ -168,17 +226,60 @@ namespace Tarrock.Editor
             // Base scale is the COARSEST octave and the finest is base/2.71³, so 0.60 m puts the
             // finest rock octave at 3.0 cm and 0.95 m puts the meadow's at 4.8 cm — the 2-4 cm band
             // the critique asked for, and the band the reference plates carry their speckle in.
-            material.SetFloat("_DetailBaseScale", 0.60f);
-            material.SetFloat("_MeadowDetailScale", 0.95f);
+            material.SetFloat("_DetailBaseScale", 0.42f);
+            material.SetFloat("_MeadowDetailScale", 0.72f);
+
+            // The mark frame, shared with the stones (constants above).
+            material.SetFloat("_MarkAniso", MarkAniso);
+            material.SetFloat("_MarkTurnScale", MarkTurnScale);
+            material.SetFloat("_MarkTurnScaleFine", MarkTurnScaleFine);
+            material.SetFloat("_MarkTurnSpread", MarkTurnSpread);
+            material.SetFloat("_MarkSizeSpread", MarkSizeSpread);
+            material.SetFloat("_MarkValueSpread", MarkValueSpread);
+            material.SetFloat("_MarkDensitySpread", MarkDensitySpread);
 
             // ROCK. Modelled at v5's 2.0 mm/px: 2.6 / 5.9 / 10.8 / 15.2 percent relative amplitude
             // at high-pass sigma 2/4/8/16 px, 54 luma levels, anisotropy 1.81 — against round 4's
             // measured 1.3 / 1.8 / 2.5 / 3.4, 20 levels, anisotropy 12.7. Held across distance:
             // 10.8 / 16.9 / 13.2 / 12.4 / 17.8 percent at 3 / 12 / 40 / 100 / 200 m.
-            material.SetFloat("_RockGrainAmount", 0.40f);
-            material.SetFloat("_RockFleckFine", 0.58f);
-            material.SetFloat("_RockFleckMid", 0.46f);
-            material.SetFloat("_RockFleckCoarse", 0.34f);
+            // ROUND 7 — THE GAINS ARE RETIRED (critique finding 5a). Round 6's shader multiplied
+            // every one of these eight by a `k*Gain` constant that lived in the HLSL, because the
+            // two files were owned by different builders that round. Both move together now, so
+            // the gains are gone from the shaders and these numbers are the EFFECTIVE amounts. For
+            // anyone reading a round-6 capture, the retired mapping was:
+            //
+            //     property              r6 value  x r6 gain  = r6 effective  -> r7 value
+            //     _RockGrainAmount        0.40      1.65         0.66            0.80
+            //     _RockFleckFine          0.58      1.48         0.86            0.88
+            //     _RockFleckMid           0.46      1.78         0.82            0.80
+            //     _RockFleckCoarse        0.34      1.88         0.64            0.50  (THINNED)
+            //     _MeadowDetailAmount     0.52      1.19         0.62            0.72
+            //     _MeadowFleckFine        0.72      1.11         0.80            0.88
+            //     _MeadowFleckMid         0.58      1.24         0.72            0.84
+            //     _MeadowFleckCoarse      0.48      1.25         0.60            0.78
+            //
+            // There is now exactly ONE number per band and it is this one. A gain folded into the
+            // shader is what made the round-6 arithmetic unauditable; do not reintroduce it.
+            //
+            // ROCK, and the ladder is a rung longer at both ends. The round-6 measurement on the
+            // v5 wall crop is the brief: 20.1% of the surface inside dark blobs of 150 px or more
+            // (the leopard spots), 0.2% of the crop's spectral energy below 8 px against round 5's
+            // 4.7% (nothing where a brush leaves tooth), and one mark value — dark. So:
+            //   * a 2.4 cm TOOTH rung under the 6 cm grit, which the geometric-mean footprint in
+            //     the shader finally admits on a raked face;
+            //   * the 56 cm patch band THINNED HARD, which is the "thin it hard on rocks" note:
+            //     amount 0.64 -> 0.50 with its threshold raised and its coverage cut by 28%;
+            //   * two LIGHT bands, so a face carries pale grit as well as dark pitting.
+            // Modelled through lighting, fog and the Neutral tonemap at the wall's fitted footprint
+            // (4 x 3 mm a pixel): lit relative amplitude 6.8 -> 9.9 per cent against the round-6
+            // critique's >= 10 target, blob coverage 0.201 -> 0.059.
+            material.SetFloat("_RockGrainAmount", 0.80f);
+            material.SetFloat("_RockFleckGrit", 0.88f);
+            material.SetFloat("_RockFleckFine", 0.88f);
+            material.SetFloat("_RockFleckMid", 0.80f);
+            material.SetFloat("_RockFleckCoarse", 0.50f);
+            material.SetFloat("_RockFleckLight", 0.78f);
+            material.SetFloat("_RockFleckLightMid", 0.44f);
 
             // MEADOW, pushed harder than rock on purpose. Near turf measured 9.5% against reference
             // plates at 17.8 (fable-08), 28.8 (fable-01) and 36.7 (fable-07), and the critique's
@@ -187,10 +288,17 @@ namespace Tarrock.Editor
             // Deliberately stopped in the lower third of that reference band: past about 0.6
             // continuous amount the model's marks stop being separable and the ground reads as
             // static rather than as paint, and no metric settles that — the next capture does.
-            material.SetFloat("_MeadowDetailAmount", 0.52f);
-            material.SetFloat("_MeadowFleckFine", 0.72f);
-            material.SetFloat("_MeadowFleckMid", 0.58f);
-            material.SetFloat("_MeadowFleckCoarse", 0.48f);
+            // ROUND 7 also fills the meadow's own hole: round 6's rungs were 5 / 32 / 210 cm, so
+            // between 32 cm and 2.1 m — nearly three octaves, and most of what the eye reads at
+            // 8-25 m — there was nothing. The ladder is now 5 / 16 / 56 / 210 cm plus a 7.5 cm
+            // LIGHT band, and _MeadowFleckStand is the 2.1 m rung that _MeadowFleckCoarse used to
+            // be (the name follows the wavelength, so the four read in order).
+            material.SetFloat("_MeadowDetailAmount", 0.72f);
+            material.SetFloat("_MeadowFleckFine", 0.88f);
+            material.SetFloat("_MeadowFleckMid", 0.84f);
+            material.SetFloat("_MeadowFleckCoarse", 0.78f);
+            material.SetFloat("_MeadowFleckStand", 0.72f);
+            material.SetFloat("_MeadowFleckLight", 0.58f);
 
             // THE CLUMP OCTAVE (round 4) — the band that carries the ground from 40 m to the
             // horizon, where round 3 had nothing but smooth fbm and the hills read as olive
@@ -338,6 +446,10 @@ namespace Tarrock.Editor
             // it is a LIGHTING number: it is derived from SunEuler's elevation and belongs beside
             // the lamp, not in a property sheet.
             material.SetFloat("_ShadowPenumbra", 1.0f);
+            // The sun bleach, written rather than left at the shader default (constants above).
+            material.SetFloat("_SunBleach", SunBleach);
+            material.SetFloat("_BleachStart", BleachStart);
+            material.SetColor("_BleachTint", BleachTint);
 
             // OPAQUE, pinned. The shader states its own blend state explicitly, but a .mat that has
             // ever carried a custom queue keeps it across a shader reassignment, and a ground in the
@@ -435,11 +547,58 @@ namespace Tarrock.Editor
             // same fault that left the far hills at 3.3% relative amplitude — nothing in the
             // replacement fades on distance, because each octave and each mark band carries its own
             // weight against the pixel footprint instead.
-            material.SetFloat("_DetailBaseScale", 0.45f);
-            material.SetFloat("_RockGrainAmount", 0.40f);
-            material.SetFloat("_RockFleckFine", 0.58f);
-            material.SetFloat("_RockFleckMid", 0.46f);
-            material.SetFloat("_RockFleckCoarse", 0.34f);
+            // ROUND 7 — the same recipe as the hillside's stone (see BuildTerrainMaterial for the
+            // measurement and for the retired gain mapping), one step finer throughout because a
+            // boulder is read from closer than a cliff: base 0.32 m against the terrain's 0.42, and
+            // a 1.6 cm tooth rung against the terrain's 2.4 cm. The gains that used to sit in
+            // RockPainterly.shader are gone; these are the effective amounts.
+            //
+            // ROUND-7 FOLLOW-UP — THE FRAMING MASSES (NEARMASS-FINISH's near mass, 7.1 x 2.3 x 7.3 m
+            // at 6-13 m and ~11.5% of v8, and the broken jamb, 5.7 x 3.8 x 3.6 m at 1.7-2.5 m).
+            // Their finding was that a 6-7 m mass reads as a flat card at 1.3% mark contrast where
+            // the reference board's dark near masses run 8-12%, and their proposed cause was that
+            // this ladder is pitched for a 1 m boulder.
+            //
+            // MEASURED, THE CAUSE IS THE OTHER DIRECTION, and the numbers are in the round-7
+            // report. Round 6's footprint gate was max(major axis), and a close mass is a RAKED
+            // mass: modelled at the jamb's fitted footprint the round-6 stack put 17.2% of the
+            // face inside blobs of 150 px or more with a median mark of 123 px — the leopard spots
+            // in the round-6 capture — because every rung under the coarsest was switched off.
+            // The round-7 geometric-mean gate alone moves that face from 16.0% to 28.2% contrast
+            // and drops blob coverage to 5.2% with a median mark of 8.8 px. The ladder is not
+            // mis-pitched; it was being gated off.
+            //
+            // So NOTHING here is re-pitched UPWARD. A coarser rung would land on top of
+            // NEARMASS's own spall sub-facets (0.15-0.5 m on the jamb, 0.5-0.9 m on the near mass)
+            // — duplicating a register they already supply — and it would re-draw the leopard
+            // spots on 11.5% of the frame, which their brief rightly says would be worse than the
+            // flat card. What IS added is the one rung the close end was missing: a sub-centimetre
+            // dark/light pair, which the octave gate switches off everywhere it is not wanted.
+            material.SetFloat("_DetailBaseScale", 0.32f);
+            material.SetFloat("_RockGrainAmount", 0.80f);
+            material.SetFloat("_RockFleckTooth", 0.88f);
+            material.SetFloat("_RockFleckToothLight", 0.72f);
+            material.SetFloat("_RockFleckGrit", 0.88f);
+            material.SetFloat("_RockFleckFine", 0.88f);
+            material.SetFloat("_RockFleckMid", 0.80f);
+            material.SetFloat("_RockFleckCoarse", 0.50f);
+            material.SetFloat("_RockFleckLight", 0.78f);
+            material.SetFloat("_RockFleckLightMid", 0.44f);
+
+            // The mark frame, IDENTICAL to the terrain's — one hand, one direction, one family of
+            // brush widths across the whole region (constants at the top of this file).
+            material.SetFloat("_MarkAniso", MarkAniso);
+            material.SetFloat("_MarkTurnScale", MarkTurnScale);
+            material.SetFloat("_MarkTurnScaleFine", MarkTurnScaleFine);
+            material.SetFloat("_MarkTurnSpread", MarkTurnSpread);
+            material.SetFloat("_MarkSizeSpread", MarkSizeSpread);
+            material.SetFloat("_MarkValueSpread", MarkValueSpread);
+            material.SetFloat("_MarkDensitySpread", MarkDensitySpread);
+
+            // The sun bleach, written rather than left at the shader default.
+            material.SetFloat("_SunBleach", SunBleach);
+            material.SetFloat("_BleachStart", BleachStart);
+            material.SetColor("_BleachTint", BleachTint);
 
             // BEDDING (round 3) — the same construct as the ground's, an order finer because a
             // boulder is a metre tall and wants three or four beds, not one. Round 2 drew

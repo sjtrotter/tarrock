@@ -29,18 +29,18 @@ Shader "Tarrock/GradientSky"
     // file only carries the property list.
     Properties
     {
-        _HorizonColor ("Horizon - pale dawn gold", Color) = (0.92, 0.82, 0.62, 1)
-        _MidColor ("Low sky - cooler cream", Color) = (0.58, 0.62, 0.69, 1)
-        _ZenithColor ("Zenith - cool blue", Color) = (0.20, 0.32, 0.54, 1)
-        _HazeColor ("Below horizon - the cloud sea at infinity", Color) = (0.90, 0.85, 0.74, 1)
-        _SunGlowColor ("Dawn blaze tint", Color) = (1.00, 0.84, 0.58, 1)
+        _HorizonColor ("Horizon - pale dawn gold", Color) = (1.00, 0.80, 0.46, 1)
+        _MidColor ("Low sky - cool blue", Color) = (0.40, 0.51, 0.75, 1)
+        _ZenithColor ("Zenith - deep blue", Color) = (0.15, 0.29, 0.60, 1)
+        _HazeColor ("Below horizon - the cloud sea at infinity", Color) = (0.94, 0.93, 0.89, 1)
+        _SunGlowColor ("Dawn blaze tint", Color) = (1.00, 0.82, 0.52, 1)
         _SunDirection ("Direction TO the sun (xyz)", Vector) = (-0.94, 0.276, -0.2, 0)
 
-        _MidHeight ("Mid band height (sin elevation)", Range(0.05, 0.95)) = 0.44
+        _MidHeight ("Mid band height (sin elevation)", Range(0.05, 0.95)) = 0.32
         _HazeDepth ("Below-horizon fade depth (sin elevation)", Range(0.01, 0.6)) = 0.09
         _GlowFalloff ("Blaze - falloff from the horizon", Range(1, 30)) = 7
-        _GlowBroad ("Blaze - broad lobe", Range(0, 2)) = 0.22
-        _GlowBroadPower ("Blaze - broad tightness", Range(1, 16)) = 8
+        _GlowBroad ("Blaze - broad lobe", Range(0, 2)) = 0.30
+        _GlowBroadPower ("Blaze - broad tightness", Range(1, 16)) = 5
         _GlowCore ("Blaze - core", Range(0, 4)) = 0.55
         _GlowCorePower ("Blaze - core tightness", Range(8, 400)) = 120
 
@@ -51,9 +51,9 @@ Shader "Tarrock/GradientSky"
         _HorizonHeight ("Horizon height", Range(-0.2, 0.2)) = 0.0
         // ROUND 5 — THE SUN'S BEARING. See SkyGradient.hlsl §THE BEARING: round 4's sky was a
         // pure function of elevation and v8's column medians came out an exact mirror.
-        _BearingRise ("Sky - lean toward the sun", Range(0, 2)) = 0.45
+        _BearingRise ("Sky - lean toward the sun", Range(0, 2)) = 1.15
         _BearingPower ("Sky - lean tightness", Range(0.2, 6)) = 1.3
-        _BearingTilt ("Sky - anti-sun ramp steepening", Range(0, 6)) = 3.2
+        _BearingTilt ("Sky - anti-sun ramp steepening", Range(0, 6)) = 5.2
         _Dither ("Dither (kills 8-bit ramp banding)", Range(0, 0.02)) = 0.0035
 
         // The far cloud bank — the cloud sea's skyline, and the frame's value anchor.
@@ -72,13 +72,13 @@ Shader "Tarrock/GradientSky"
 
         // Five designed masses in the vault: (bearing°, elevation°, half width°, opacity).
         _VaultCloud0 ("Vault cloud 0 (the hero)", Vector) = (288, 12.0, 20.0, 0.94)
-        _VaultCloud1 ("Vault cloud 1", Vector) = (358, 8.5, 8.0, 0.72)
+        _VaultCloud1 ("Vault cloud 1", Vector) = (358, 7.5, 11.0, 0.82)
         _VaultCloud2 ("Vault cloud 2", Vector) = (234, 25.0, 24.0, 0.26)
         _VaultCloud3 ("Vault cloud 3", Vector) = (77, 10.5, 15.0, 0.82)
-        _VaultCloud4 ("Vault cloud 4", Vector) = (40, 7.0, 11.0, 0.66)
-        _VaultCloudLit ("Vault cloud - sunlit crowns", Color) = (1.02, 0.97, 0.87, 1)
-        _VaultCloudShade ("Vault cloud - cool body", Color) = (0.52, 0.57, 0.71, 1)
-        _VaultCloudShadow ("Vault cloud - belly (the dark anchor)", Color) = (0.19, 0.23, 0.35, 1)
+        _VaultCloud4 ("Vault cloud 4", Vector) = (36, 4.5, 14.0, 0.88)
+        _VaultCloudLit ("Vault cloud - sunlit crowns", Color) = (1.03, 0.98, 0.88, 1)
+        _VaultCloudShade ("Vault cloud - cool body", Color) = (0.505, 0.560, 0.685, 1)
+        _VaultCloudShadow ("Vault cloud - belly (the dark anchor)", Color) = (0.145, 0.205, 0.415, 1)
         _VaultCloudBase ("Vault cloud - flat base (half widths)", Range(0.05, 0.6)) = 0.22
         _VaultCloudBaseLump ("Vault cloud - base wander", Range(0, 0.25)) = 0.075
         _VaultCloudSoftness ("Vault cloud - edge softness", Range(0.005, 0.3)) = 0.030

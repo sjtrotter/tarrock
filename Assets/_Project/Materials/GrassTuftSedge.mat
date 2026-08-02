@@ -34,7 +34,7 @@ Material:
     - _BendLayDegrees: 70
     - _BendStrength: 1.05
     - _BendTurfPull: 0.5
-    - _BleachStart: 0.28
+    - _BleachStart: 0.06
     - _CombDrift: 0.1
     - _CombFold: 0.62
     - _CombHollowLean: 0.34
@@ -53,7 +53,7 @@ Material:
     - _ShadeFillStrength: 1
     - _ShadeWrap: 0.55
     - _SkyOcclusionRoot: 0.44
-    - _SunBleach: 0.5
+    - _SunBleach: 0.45
     - _SwaySpeed: 0.85
     - _SwayStrength: 0.18
     - _SwayWavelength: 14
@@ -65,13 +65,13 @@ Material:
     - _WidenStart: 18
     - _WindResponse: 1
     m_Colors:
-    - _BaseColor: {r: 0.3, g: 0.45, b: 0.28, a: 1}
-    - _BleachTint: {r: 0.98, g: 0.96, b: 0.94, a: 1}
-    - _CoolColor: {r: 0.26, g: 0.38, b: 0.34, a: 1}
-    - _DryColor: {r: 0.52, g: 0.58, b: 0.42, a: 1}
+    - _BaseColor: {r: 0.28, g: 0.46, b: 0.26, a: 1}
+    - _BleachTint: {r: 1, g: 0.95, b: 0.86, a: 1}
+    - _CoolColor: {r: 0.24, g: 0.38, b: 0.36, a: 1}
+    - _DryColor: {r: 0.5, g: 0.58, b: 0.4, a: 1}
     - _GroundColor: {r: 0.23599996, g: 0.29899994, b: 0.21049997, a: 1}
-    - _GroundDryColor: {r: 0.52, g: 0.47999996, b: 0.35999998, a: 1}
-    - _ShadeFill: {r: 0.42, g: 0.52, b: 0.72, a: 1}
+    - _GroundDryColor: {r: 0.40499997, g: 0.42999995, b: 0.30999997, a: 1}
+    - _ShadeFill: {r: 0.43, g: 0.52, b: 0.71, a: 1}
     - _WindAxis: {r: 1, g: 0.35, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

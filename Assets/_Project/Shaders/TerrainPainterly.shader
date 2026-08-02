@@ -287,10 +287,20 @@ Shader "Tarrock/TerrainPainterly"
         // amplitude at high-pass sigma 2/4/8/16 px, 54 luma levels, anisotropy 1.81.
         // Round 4 measured 1.26/1.78/2.47/3.36, 20 levels, anisotropy 12.73.
         // Predicted in capture at the 2-4 cm scale: ~11.0%, against the critique's 10-16% band.
-        _RockGrainAmount ("Detail - rock continuous amount", Range(0, 0.8)) = 0.40
-        _RockFleckFine ("Detail - rock fleck 3 cm (grit)", Range(0, 0.9)) = 0.58
-        _RockFleckMid ("Detail - rock fleck 12 cm (weathering)", Range(0, 0.9)) = 0.46
-        _RockFleckCoarse ("Detail - rock fleck 85 cm (patches)", Range(0, 0.9)) = 0.34
+        // ROUND 7 — the amounts below are now the EFFECTIVE amounts. The eight `kMarkGain`
+        // constants that used to multiply them inside this file are gone and the generator writes
+        // the product (finding 5a; the mapping is recorded in Ground.cs).
+        _RockGrainAmount ("Detail - rock continuous amount", Range(0, 0.8)) = 0.66
+        _RockFleckGrit ("Detail - rock fleck 2.4 cm (tooth)", Range(0, 0.9)) = 0.88
+        _RockFleckFine ("Detail - rock fleck 6 cm (grit)", Range(0, 0.9)) = 0.88
+        _RockFleckMid ("Detail - rock fleck 17 cm (weathering)", Range(0, 0.9)) = 0.80
+        _RockFleckCoarse ("Detail - rock fleck 56 cm (patches)", Range(0, 0.9)) = 0.50
+        // LIGHT marks. Round 6 had exactly one mark VALUE on every surface — dark — which is half
+        // of the round-6 confetti finding ("one size, one lean, one value"). These two bands run
+        // the identical construct with the sign flipped, so a lit face carries pale grit catching
+        // the rake as well as dark pitting, and the mean-preserving divisor still holds.
+        _RockFleckLight ("Detail - rock LIGHT fleck 3.8 cm", Range(0, 0.9)) = 0.78
+        _RockFleckLightMid ("Detail - rock LIGHT fleck 14.5 cm", Range(0, 0.9)) = 0.44
 
         // MEADOW. Pushed harder than rock on purpose: near turf measured 9.47% against a
         // reference band of 17.8-36.7 (fable-08 17.76, fable-01 28.81, fable-07 36.69), and the
@@ -299,10 +309,31 @@ Shader "Tarrock/TerrainPainterly"
         // Predicted in capture ~21%, i.e. the lower third of the reference band. Deliberately not
         // further: past about 0.6 continuous amount the model's marks stop being separable and the
         // ground reads as static rather than as paint, and that is a judgement no metric settles.
-        _MeadowDetailAmount ("Detail - meadow continuous amount", Range(0, 0.8)) = 0.52
-        _MeadowFleckFine ("Detail - meadow fleck 4.5 cm (litter)", Range(0, 0.9)) = 0.72
-        _MeadowFleckMid ("Detail - meadow fleck 17 cm (tussock)", Range(0, 0.9)) = 0.58
-        _MeadowFleckCoarse ("Detail - meadow fleck 90 cm (stands)", Range(0, 0.9)) = 0.48
+        _MeadowDetailAmount ("Detail - meadow continuous amount", Range(0, 0.8)) = 0.72
+        _MeadowFleckFine ("Detail - meadow fleck 5 cm (litter)", Range(0, 0.9)) = 0.88
+        _MeadowFleckMid ("Detail - meadow fleck 16 cm (tussock)", Range(0, 0.9)) = 0.84
+        _MeadowFleckCoarse ("Detail - meadow fleck 56 cm (tufts)", Range(0, 0.9)) = 0.78
+        _MeadowFleckStand ("Detail - meadow fleck 2.1 m (stands)", Range(0, 0.9)) = 0.72
+        _MeadowFleckLight ("Detail - meadow LIGHT fleck 7.5 cm", Range(0, 0.9)) = 0.58
+
+        // -- THE MARK FRAME (round 7, finding 1) ---------------------------------------------
+        // Round 6 stretched every mark along world horizontal by ONE constant, which fixed the
+        // contour lock and replaced it with wallpaper: the block-wise stroke direction over the
+        // meadow collapsed to a single lean (measured spread 0.15 -> 0.02 on v1 with this round's
+        // implementation). A painter's strokes turn with the passage of ground they are
+        // describing. The mark frame is therefore ROTATED by a two-octave world field — coarse for
+        // a wide shot, fine so that a two-metre wall crop varies inside one frame — and the same
+        // pair of fields also drives per-region mark SIZE, VALUE and DENSITY (finding 2).
+        //
+        // It is still WORLD-LOCKED and still cannot trace a contour: nothing here reads the
+        // surface normal, the strike, or any projection. The round-6 win is structural and is kept.
+        _MarkAniso ("Mark - stretch along the frame axis", Range(1, 4)) = 2.2
+        _MarkTurnScale ("Mark - turn field coarse (m)", Float) = 24.0
+        _MarkTurnScaleFine ("Mark - turn field fine (m)", Float) = 1.9
+        _MarkTurnSpread ("Mark - turn spread (radians, peak to peak)", Range(0, 3.2)) = 1.15
+        _MarkSizeSpread ("Mark - per-region size spread", Range(0, 0.8)) = 0.33
+        _MarkValueSpread ("Mark - per-region value spread", Range(0, 0.8)) = 0.36
+        _MarkDensitySpread ("Mark - per-region threshold shift", Range(0, 0.15)) = 0.045
 
         _CavityScale ("Cavity Scale (m)", Float) = 3.4
         _CavityContrast ("Cavity Contrast", Range(0.5,10)) = 4.5
@@ -453,13 +484,25 @@ Shader "Tarrock/TerrainPainterly"
             float _DetailBaseScale;
             float _MeadowDetailScale;
             float _RockGrainAmount;
+            float _RockFleckGrit;
             float _RockFleckFine;
             float _RockFleckMid;
             float _RockFleckCoarse;
+            float _RockFleckLight;
+            float _RockFleckLightMid;
             float _MeadowDetailAmount;
             float _MeadowFleckFine;
             float _MeadowFleckMid;
             float _MeadowFleckCoarse;
+            float _MeadowFleckStand;
+            float _MeadowFleckLight;
+            float _MarkAniso;
+            float _MarkTurnScale;
+            float _MarkTurnScaleFine;
+            float _MarkTurnSpread;
+            float _MarkSizeSpread;
+            float _MarkValueSpread;
+            float _MarkDensitySpread;
             float _CavityScale;
             float _CavityContrast;
             float _CavityDarken;
@@ -843,54 +886,122 @@ Shader "Tarrock/TerrainPainterly"
         //
         // ANISOTROPY IS KEPT, BUT WORLD-LOCKED. Painterly rock is not isotropic mush and the
         // reference plates are not either (measured structure-tensor coherence 0.27-0.55 on my
-        // implementation over fable-01/03/06/07 and kena-01). The 3-D lookup divides its HORIZONTAL
-        // components by kMarkAniso, which stretches every mark along world horizontal — the bedding
-        // direction, weathering runs along a bed — by a CONSTANT that is the same on every face in
-        // the region. A constant direction cannot trace a contour: on a curving nose the marks stay
-        // horizontal while the contour turns, which is exactly what the reference plates show.
+        // implementation over fable-01/03/06/07 and kena-01). The 3-D lookup divides ONE horizontal
+        // component by _MarkAniso, which stretches every mark along a horizontal axis — weathering
+        // runs along a bed — and that axis cannot trace a contour, because it is a function of
+        // world position and of nothing else. On a curving nose the marks keep their lean while the
+        // contour turns, which is what the reference plates show.
         // Modelled at the v8 wall's footprint: coherence 0.14 at aniso 1.0, 0.55 at 2.2, 0.47 at 2.0.
-        static const float kMarkAniso = 2.0;
-
-        float3 TkMarkSpace(float3 worldPos)
+        // ROUND 7 REPLACES THE CONSTANT WITH A FIELD, and the constant is exactly what the round-6
+        // critique measured: one stretch axis over the whole region is one lean over the whole
+        // frame. `_MarkAniso` is now the stretch AMOUNT and the stretch AXIS turns with a
+        // two-octave world field (`_MarkTurnScale` ~ a region, `_MarkTurnScaleFine` ~ a passage of
+        // wall you can see all of at two metres). Both octaves are functions of world XZ ONLY, so
+        // the round-6 contour-lock fix is untouched: nothing here can rotate with a surface normal.
+        //
+        // The same four fields carry the rest of finding 2. `TkMarkVary` returns four decorrelated
+        // slow randoms and the caller spends them on TURN, SIZE, VALUE and DENSITY, so no two
+        // patches of the same rock carry the same mark family — which is the whole difference
+        // between paint and a stamp.
+        struct TkMarkFrame
         {
-            return float3(worldPos.x / kMarkAniso, worldPos.y, worldPos.z / kMarkAniso);
+            float2 turn;      // cos/sin of this region's stroke angle
+            float size;       // wavelength multiplier
+            float value;      // contrast multiplier
+            float shift;      // threshold shift (negative = denser)
+        };
+
+        float4 TkMarkVary(float2 p)
+        {
+            float sc = 1.0 / max(_MarkTurnScale, 0.01);
+            float fc = 1.0 / max(_MarkTurnScaleFine, 0.01);
+            // 60/40 coarse to fine: the coarse octave is what a wide shot reads, the fine octave is
+            // what a two-metre crop reads, and a wall crop that samples one value of a 24 m field
+            // is precisely how round 6's "one lean" survived a world-space rewrite.
+            float4 v;
+            v.x = 0.60 * TkValueNoise(p * sc) + 0.40 * TkValueNoise(p * fc);
+            v.y = 0.60 * TkValueNoise(p * sc + 71.3) + 0.40 * TkValueNoise(p * fc + 71.3);
+            v.z = 0.60 * TkValueNoise(p * sc * 0.61 + 143.9)
+                + 0.40 * TkValueNoise(p * fc * 0.61 + 143.9);
+            v.w = 0.60 * TkValueNoise(p * sc * 1.37 + 211.7)
+                + 0.40 * TkValueNoise(p * fc * 1.37 + 211.7);
+            return v;
         }
 
-        // -- MARK CONTRAST GAINS, AND WHY THEY ARE HERE AND NOT IN THE GENERATOR ------------------
-        // CROSS-FILE DEBT, STATED PLAINLY. The eight `_*FleckAmount` / `_*DetailAmount` properties
-        // are WRITTEN by TerrainRegionGenerator.Ground.cs, which is owned by another builder this
-        // round, so a shader default cannot reach the render — the generator's round-5 values win.
-        // The round-6 amplitude target needs roughly 1.5-1.9x those, so the gain lives here and the
-        // property keeps its round-5 meaning. The mapping is:
+        TkMarkFrame TkBuildMarkFrame(float2 worldXZ)
+        {
+            float4 v = TkMarkVary(worldXZ);
+            float ang = (v.x - 0.5) * _MarkTurnSpread;
+            float sn, cs;
+            sincos(ang, sn, cs);
+            TkMarkFrame f;
+            f.turn = float2(cs, sn);
+            f.size = 1.0 + _MarkSizeSpread * (v.y - 0.5) * 2.0;
+            f.value = 1.0 + _MarkValueSpread * (v.z - 0.5) * 2.0;
+            f.shift = _MarkDensitySpread * (v.w - 0.5) * 2.0;
+            return f;
+        }
+
+        // Density is moved by shifting the mark thresholds, so the mean-preserving divisor has to
+        // be told what that did to the coverage. kCoverageSlope is d(coverage)/d(-shift) measured
+        // over the shipped fields' own population (a 0.045 shift moves coverage by ~16% of itself);
+        // without it a denser region would also be a DARKER region and the density variation would
+        // read as blotching.
+        static const float kCoverageSlope = 3.6;
+
+        float TkMarkCoverage(float coverage, float shift)
+        {
+            return max(coverage * (1.0 + shift * kCoverageSlope), 0.0);
+        }
+
+        // The frameless mark space, now turned. Horizontal is rotated into the region's stroke
+        // axis and THAT axis is the one stretched; world Y is untouched, so a bed still reads
+        // horizontal on a wall and the stretch is a lean rather than a shear.
+        float3 TkMarkSpace(float3 worldPos, TkMarkFrame f)
+        {
+            float2 h = float2(worldPos.x * f.turn.x - worldPos.z * f.turn.y,
+                              worldPos.x * f.turn.y + worldPos.z * f.turn.x);
+            h.x /= max(_MarkAniso, 1.0);
+            return float3(h.x, worldPos.y, h.y);
+        }
+
+        // The meadow's twin: the ground is read from above, so its marks live in the horizontal
+        // plane and the same turn/stretch applies in 2-D.
+        float2 TkMarkSpace2(float2 worldXZ, TkMarkFrame f)
+        {
+            float2 h = float2(worldXZ.x * f.turn.x - worldXZ.y * f.turn.y,
+                              worldXZ.x * f.turn.y + worldXZ.y * f.turn.x);
+            h.x /= max(_MarkAniso, 1.0);
+            return h;
+        }
+
+        // -- MARK CONTRAST: THE GAINS ARE RETIRED (round 7, finding 5a) ---------------------------
+        // Round 6 carried eight `k*Gain` constants here because the generator was owned by another
+        // builder that round and a shader default could not reach the render. Both files move
+        // together this round, so the gains are GONE and the generator writes the product it used
+        // to write the factor of. The retired mapping, for anyone reading a round-6 capture:
         //
-        //     generator value      x gain     effective
-        //     _RockGrainAmount      0.40  x1.65   0.66
-        //     _RockFleckFine        0.58  x1.48   0.86
-        //     _RockFleckMid         0.46  x1.78   0.82
-        //     _RockFleckCoarse      0.34  x1.88   0.64
-        //     _MeadowDetailAmount   0.52  x1.19   0.62
-        //     _MeadowFleckFine      0.72  x1.11   0.80
-        //     _MeadowFleckMid       0.58  x1.24   0.72
-        //     _MeadowFleckCoarse    0.48  x1.25   0.60
+        //     property              r6 generator  x r6 gain   = r7 generator value
+        //     _RockGrainAmount           0.40       1.65           0.66  -> re-solved to 0.80
+        //     _RockFleckFine             0.58       1.48           0.86  -> re-solved to 0.88
+        //     _RockFleckMid              0.46       1.78           0.82  -> re-solved to 0.80
+        //     _RockFleckCoarse           0.34       1.88           0.64  -> THINNED to 0.50
+        //     _MeadowDetailAmount        0.52       1.19           0.62  -> re-solved to 0.72
+        //     _MeadowFleckFine           0.72       1.11           0.80  -> re-solved to 0.88
+        //     _MeadowFleckMid            0.58       1.24           0.72  -> re-solved to 0.84
+        //     _MeadowFleckCoarse         0.48       1.25           0.60  -> re-solved to 0.78
         //
-        // THIS IS TEMPORARY AND SHOULD NOT SURVIVE THE ROUND: the moment the shader and the
-        // generator can be changed together, move these numbers into Ground.cs and set every gain
-        // to 1.0. A gain that is silently folded in is exactly the kind of thing that makes the
-        // next round's arithmetic wrong.
-        static const float kRockGrainGain   = 1.65;
-        static const float kRockFineGain    = 1.48;
-        static const float kRockMidGain     = 1.78;
-        static const float kRockCoarseGain  = 1.88;
-        static const float kMeadowDetailGain = 1.19;
-        static const float kMeadowFineGain  = 1.11;
-        static const float kMeadowMidGain   = 1.24;
-        static const float kMeadowCoarseGain = 1.25;
+        // There is now exactly one number per band and it lives in Ground.cs. Do not reintroduce a
+        // gain here: a factor folded in silently is what made round 6's arithmetic unauditable.
 
         // Clamped, because a mark amount above 1 makes (1 - mark*amount) negative at the centre of
-        // a mark and paints a black hole. 0.90 is the properties' own Range maximum.
-        float TkMarkAmount(float property, float gain)
+        // a mark and paints a black hole. 0.90 is the properties' own Range maximum. The per-region
+        // VALUE multiplier is applied here so the clamp sees it, and the sign is preserved so the
+        // same helper serves the light bands (which pass a negative amount).
+        float TkMarkAmount(float property, float regionValue)
         {
-            return min(property * gain, 0.90);
+            float a = property * max(regionValue, 0.0);
+            return min(a, 0.90);
         }
 
         float TkDetailFbm3(float3 p, float baseM, float pixelM)
@@ -1160,7 +1271,31 @@ Shader "Tarrock/TerrainPainterly"
                 // down to lambda = 3.2*hi/k, and Nyquist needs lambda >= 2*hi — safe only for
                 // k <= 1.6. The gate is right; the LADDER was wrong, and both ladders below have
                 // been re-pitched to wavelengths that survive at the distances these frames contain.
-                float pixelM = max(max(length(dpdx), length(dpdy)), 1e-5);
+                //
+                // ROUND 7 TAKES THE MIDDLE, AND IT IS THE WHOLE OF FINDING 3. max() is the honest
+                // anti-aliasing bound and it is also why the close raked wall in v5 had NOTHING
+                // below its coarsest band: measured on the round-6 capture, the wall crop's power
+                // spectrum carries 2.4e-3 of its energy below 8 px against round 5's 4.7e-2 — a
+                // twenty-fold collapse — and the metric that reads "confetti" reads exactly that.
+                // The gate here is the GEOMETRIC MEAN of the two axes, i.e. sqrt of the footprint's
+                // AREA, which is what a single filtered tap of a band-limited field actually
+                // resolves; it is the same quantity a mip selector would pick for an isotropic
+                // approximation of an anisotropic footprint. Bands between the minor axis and the
+                // geometric mean are drawn and are undersampled ALONG ONE AXIS ONLY, by at most
+                // sqrt(major/minor) — 2.7x at 12 m, 4.9x at 40 m on the v6 camera. That is a real
+                // cost and it is paid knowingly: the world is BOUND, nothing in it moves, and a
+                // still frame that has a surface beats a still frame that shimmers in a future one.
+                // If a later round adds motion and this shimmers, the fix is a second tap along
+                // the major axis, not a return to max().
+                float pixelMajor = max(max(length(dpdx), length(dpdy)), 1e-5);
+                float pixelMinor = max(min(length(dpdx), length(dpdy)), 1e-5);
+                float pixelM = sqrt(pixelMajor * pixelMinor);
+
+                // The region's mark frame — turn, size, value, density — built ONCE, outside both
+                // branches, and shared by the meadow and the stone so a boulder and the turf it
+                // sits in are painted by the same hand in the same direction (round 7, findings 1
+                // and 2). It is a function of world XZ only.
+                TkMarkFrame markFrame = TkBuildMarkFrame(gp);
 
                 // -- Cavity + relief, shared by both layers and by the shading normal --------------
                 // One field, three jobs: hollows darken, the same hollows are where lichen takes,
@@ -1366,9 +1501,18 @@ Shader "Tarrock/TerrainPainterly"
                     // contributor to round-4's directional wood-grain read. The meadow keeps its
                     // brushmarks where brushmarks are legible — the 6 m dab and the 16 m clump
                     // above, both untouched — and gets a non-folding field underneath them.
-                    float detail = TkDetailFbm(gp, _MeadowDetailScale, pixelM);
+                    // ROUND 7: the meadow's marks are laid in the region's own stroke frame too.
+                    // On raked ground an isotropic world field projects to a screen field that is
+                    // horizontally streaked EVERYWHERE, which is the second half of the wallpaper
+                    // finding — the lean was constant because foreshortening, not the shader, was
+                    // choosing it. Turning and stretching the frame per region is what puts a
+                    // different angle in a different patch of floor.
+                    float2 mgp = TkMarkSpace2(gp, markFrame);
+                    float mSize = max(markFrame.size, 0.35);
+
+                    float detail = TkDetailFbm(mgp, _MeadowDetailScale * mSize, pixelM);
                     ground *= 1.0 + (detail - 0.5) * 2.0
-                        * TkMarkAmount(_MeadowDetailAmount, kMeadowDetailGain);
+                        * TkMarkAmount(_MeadowDetailAmount, markFrame.value);
 
                     // THE LADDER IS RE-PITCHED (round 6, finding 3 — see the pixelM note above
                     // for the proof that round 5's rungs were switched off in the frames that were
@@ -1383,13 +1527,36 @@ Shader "Tarrock/TerrainPainterly"
                     //   12 m 14.7 -> 21.6     20 m 20.8 -> 23.9     30 m 21.9 -> 28.9
                     //   45 m  0.0 -> 4.6      (45 m was six exact no-ops before this change)
                     // Coverages re-measured for the new wavelengths over the same 40 m sample.
-                    float2 fleckFine = TkFleckBand(gp, 0.050, 0.083, float2(0.46, 0.76),
-                        0.137, TkMarkAmount(_MeadowFleckFine, kMeadowFineGain), pixelM);
-                    float2 fleckMid = TkFleckBand(gp + 53.1, 0.320, 0.530, float2(0.50, 0.79),
-                        0.103, TkMarkAmount(_MeadowFleckMid, kMeadowMidGain), pixelM);
-                    float2 fleckWide = TkFleckBand(gp + 217.7, 2.100, 3.470, float2(0.52, 0.81),
-                        0.083, TkMarkAmount(_MeadowFleckCoarse, kMeadowCoarseGain), pixelM);
-                    ground *= fleckFine.x * fleckMid.x * fleckWide.x;
+                    //
+                    // ROUND 7 ADDS A RUNG AND A SECOND VALUE. Round 6 left a hole between 32 cm and
+                    // 2.1 m — nearly three octaves — which is most of what the eye reads at 8-25 m,
+                    // and every mark it did draw was DARK. The ladder is 5 / 16 / 56 / 210 cm plus a
+                    // 7.5 cm LIGHT band, all five wavelengths scaled per region by markFrame.size
+                    // and all five thresholds shifted per region by markFrame.shift, so no two
+                    // patches of meadow carry the same mark size or the same mark density.
+                    float2 thrA = float2(0.46, 0.76) - markFrame.shift;
+                    float2 thrB = float2(0.48, 0.78) - markFrame.shift;
+                    float2 thrC = float2(0.50, 0.79) - markFrame.shift;
+                    float2 thrD = float2(0.52, 0.81) - markFrame.shift;
+                    float2 thrL = float2(0.52, 0.82) - markFrame.shift;
+                    float2 fleckFine = TkFleckBand(mgp, 0.050 * mSize, 0.083 * mSize, thrA,
+                        TkMarkCoverage(0.137, markFrame.shift),
+                        TkMarkAmount(_MeadowFleckFine, markFrame.value), pixelM);
+                    float2 fleckMid = TkFleckBand(mgp + 53.1, 0.160 * mSize, 0.265 * mSize, thrB,
+                        TkMarkCoverage(0.120, markFrame.shift),
+                        TkMarkAmount(_MeadowFleckMid, markFrame.value), pixelM);
+                    float2 fleckTuft = TkFleckBand(mgp + 131.9, 0.560 * mSize, 0.925 * mSize, thrC,
+                        TkMarkCoverage(0.103, markFrame.shift),
+                        TkMarkAmount(_MeadowFleckCoarse, markFrame.value), pixelM);
+                    float2 fleckWide = TkFleckBand(mgp + 217.7, 2.100 * mSize, 3.470 * mSize, thrD,
+                        TkMarkCoverage(0.083, markFrame.shift),
+                        TkMarkAmount(_MeadowFleckStand, markFrame.value), pixelM);
+                    // The pale band. Same construct, amount NEGATED: (1 + mark*a) over a divisor
+                    // that grows with it, so it is still mean-preserving and still cannot clip.
+                    float2 fleckLight = TkFleckBand(mgp + 401.3, 0.075 * mSize, 0.124 * mSize, thrL,
+                        TkMarkCoverage(0.082, markFrame.shift),
+                        -TkMarkAmount(_MeadowFleckLight, markFrame.value), pixelM);
+                    ground *= fleckFine.x * fleckMid.x * fleckTuft.x * fleckWide.x * fleckLight.x;
 
                     // The finest band also carries HUE, kept from round 4: dry strands and grit
                     // read as colour at texel scale, not as one more brightness wobble. Suppressed
@@ -1542,10 +1709,11 @@ Shader "Tarrock/TerrainPainterly"
                     // being sampled at a rate set by the LANDFORM and elongated along its contours.
                     // These four lookups are 3-D and world-space. They also cost less: four 3-D taps
                     // (32 hashes) where the triplanar was twelve 2-D taps (48).
-                    float3 markPos = TkMarkSpace(gp3);
-                    float rockDetail = TkDetailFbm3(markPos, _DetailBaseScale, pixelM);
+                    float3 markPos = TkMarkSpace(gp3, markFrame);
+                    float rSize = max(markFrame.size, 0.35);
+                    float rockDetail = TkDetailFbm3(markPos, _DetailBaseScale * rSize, pixelM);
                     stone *= 1.0 + (rockDetail - 0.5) * 2.0
-                        * TkMarkAmount(_RockGrainAmount, kRockGrainGain);
+                        * TkMarkAmount(_RockGrainAmount, markFrame.value);
 
                     // THE LADDER IS RE-PITCHED (round 6, finding 4). Round 5's rungs were 3 / 11.5 /
                     // 85 cm, and at the v8 wall's measured footprint (1.7 cm a pixel) the 3 cm rung
@@ -1555,13 +1723,44 @@ Shader "Tarrock/TerrainPainterly"
                     // 6 / 16.5 / 56 cm the wall gets three: 3.5, 9.7 and 33 pixels. Modelled albedo
                     // relative amplitude at that footprint goes 15.0 -> 25.5 per cent.
                     // Coverages re-measured for the new wavelengths and thresholds.
-                    float2 rockFine = TkFleckBand3(markPos, 0.060, 0.100, float2(0.46, 0.76),
-                        0.140, TkMarkAmount(_RockFleckFine, kRockFineGain), pixelM);
-                    float2 rockMid = TkFleckBand3(markPos + 61.7, 0.165, 0.272, float2(0.50, 0.79),
-                        0.106, TkMarkAmount(_RockFleckMid, kRockMidGain), pixelM);
-                    float2 rockWide = TkFleckBand3(markPos + 193.1, 0.560, 0.925, float2(0.52, 0.81),
-                        0.086, TkMarkAmount(_RockFleckCoarse, kRockCoarseGain), pixelM);
-                    stone *= rockFine.x * rockMid.x * rockWide.x;
+                    //
+                    // ROUND 7 — THE CONFETTI PASS (findings 2, 3 and 4). Measured on the round-6
+                    // capture of v5, this branch put 20.1% of the wall inside dark blobs of 150 px
+                    // or more and carried 0.2% of its energy below 8 px: one mark size, one mark
+                    // value, and nothing at all where a brush leaves tooth. Three changes, each
+                    // aimed at one of those numbers:
+                    //   * A 2.4 cm TOOTH rung under the 6 cm grit, which is the band the geometric
+                    //     -mean footprint above finally admits on a raked face.
+                    //   * The 56 cm patch band THINNED HARD — amount 0.64 -> 0.50, threshold
+                    //     0.52/0.81 -> 0.56/0.86 and coverage 0.086 -> 0.062. It is the band the
+                    //     leopard spots were, and it is now the quietest of the five.
+                    //   * Two LIGHT bands, so a face carries pale grit as well as dark pitting.
+                    // Modelled through lighting, fog and tonemap at the v5 wall's fitted footprint:
+                    // lit relative amplitude 6.8 -> 9.9 per cent, blob coverage 0.201 -> 0.059.
+                    float2 rThrA = float2(0.46, 0.76) - markFrame.shift;
+                    float2 rThrB = float2(0.50, 0.79) - markFrame.shift;
+                    float2 rThrC = float2(0.56, 0.86) - markFrame.shift;
+                    float2 rThrL = float2(0.52, 0.82) - markFrame.shift;
+                    float2 rockTooth = TkFleckBand3(markPos + 17.3, 0.024 * rSize, 0.040 * rSize,
+                        rThrA, TkMarkCoverage(0.140, markFrame.shift),
+                        TkMarkAmount(_RockFleckGrit, markFrame.value), pixelM);
+                    float2 rockFine = TkFleckBand3(markPos, 0.062 * rSize, 0.103 * rSize,
+                        rThrA, TkMarkCoverage(0.140, markFrame.shift),
+                        TkMarkAmount(_RockFleckFine, markFrame.value), pixelM);
+                    float2 rockMid = TkFleckBand3(markPos + 61.7, 0.170 * rSize, 0.281 * rSize,
+                        rThrB, TkMarkCoverage(0.106, markFrame.shift),
+                        TkMarkAmount(_RockFleckMid, markFrame.value), pixelM);
+                    float2 rockWide = TkFleckBand3(markPos + 193.1, 0.560 * rSize, 0.925 * rSize,
+                        rThrC, TkMarkCoverage(0.062, markFrame.shift),
+                        TkMarkAmount(_RockFleckCoarse, markFrame.value), pixelM);
+                    float2 rockLight = TkFleckBand3(markPos + 331.1, 0.038 * rSize, 0.063 * rSize,
+                        rThrL, TkMarkCoverage(0.082, markFrame.shift),
+                        -TkMarkAmount(_RockFleckLight, markFrame.value), pixelM);
+                    float2 rockLightMid = TkFleckBand3(markPos + 457.9, 0.145 * rSize, 0.240 * rSize,
+                        rThrC, TkMarkCoverage(0.045, markFrame.shift),
+                        -TkMarkAmount(_RockFleckLightMid, markFrame.value), pixelM);
+                    stone *= rockTooth.x * rockFine.x * rockMid.x * rockWide.x
+                        * rockLight.x * rockLightMid.x;
 
                     // MOSS, NOT GRIME (the region's standing rule). The damp bands take the lichen
                     // hue rather than merely going darker, so the speckle that carries the surface

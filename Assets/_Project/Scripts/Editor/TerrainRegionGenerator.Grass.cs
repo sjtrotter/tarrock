@@ -147,7 +147,8 @@ namespace Tarrock.Editor
             var prototypes = new DetailPrototype[Species.Length];
             for (int s = 0; s < Species.Length; s++)
             {
-                prototypes[s] = BuildTuftPrototype(Species[s], tuftShader, turfMid, turfDry);
+                prototypes[s] = BuildTuftPrototype(
+                    Species[s], tuftShader, turfMid, turfDry, turfGreen);
             }
 
             terrainData.detailPrototypes = prototypes;
@@ -426,7 +427,7 @@ namespace Tarrock.Editor
         /// <summary>Mesh, material and prefab for one grass species, wrapped in the DetailPrototype
         /// the terrain scatters it with.</summary>
         private static DetailPrototype BuildTuftPrototype(
-            TuftSpecies species, Shader tuftShader, Color turfMid, Color turfDry)
+            TuftSpecies species, Shader tuftShader, Color turfMid, Color turfDry, Color turfGreen)
         {
             Mesh tuft = BuildTuftMesh(species);
             AssetDatabase.DeleteAsset(species.MeshPath);
@@ -469,7 +470,12 @@ namespace Tarrock.Editor
 
             // Turf blend — the ground builder's palette, passed through rather than restated.
             material.SetColor("_GroundColor", turfMid);
-            material.SetColor("_GroundDryColor", turfDry);
+            // ROUND 7: the dry note of the ROOT BLEND comes back off the scour. See
+            // TuftSpecies.RootDryGreenPull for why this is a correction and not a knob — the pull
+            // is per species precisely so the scuff lane can keep the raw ochre. The palette is
+            // still the ground builder's and still read, never restated.
+            material.SetColor("_GroundDryColor",
+                Color.Lerp(turfDry, turfGreen, species.RootDryGreenPull));
             material.SetFloat("_BaseBlend", species.BaseBlend);
             material.SetFloat("_BaseBlendHeight", species.BaseBlendHeight);
             // Contact shade at the root. Grass casts no shadows here by design, so nothing else in
@@ -518,10 +524,10 @@ namespace Tarrock.Editor
             // It is a chroma move only: the shader normalises the tint by its own luminance, so
             // this number cannot move the meadow's exposure and the three rounds of lamp
             // arithmetic in TerrainRegionGenerator.Lighting.cs stand untouched.
-            material.SetFloat("_SunBleach", 0.50f);
+            material.SetFloat("_SunBleach", 0.45f);
             // The knee sits just above the shade fill's own 0.35: the bleach must not begin until
             // the fill has finished handing the shaded side its chroma, or the two cancel.
-            material.SetFloat("_BleachStart", 0.28f);
+            material.SetFloat("_BleachStart", 0.06f);
             material.SetColor("_BleachTint", SunBleachTint);
 
             // How much sky a vertex at the ROOT of this species can see. Per-species because it is a
@@ -693,7 +699,27 @@ namespace Tarrock.Editor
             // should be LEAVING, not arriving. The tip is now a cream that is barely a colour at
             // all, which is what a blade with the dawn on it actually looks like, and the base
             // takes the green instead: colour in the shadows.
-            var baseCol = new Color(0.44f, 0.49f, 0.41f);
+            // ROUND 7 TAKES THE ROOT DOWN: (0.44, 0.49, 0.41) -> (0.34, 0.42, 0.36), the tip
+            // unchanged. Two of the round's targets are the same lever. The round-6 critique
+            // measured the meadow's value range down 29% and UNIMODAL, against a reference board
+            // whose meadow plates carry two value peaks (kena-01) and four (animation-04) — blades
+            // have to separate from the floor they stand in. And no frame in round 6 has a TRUE
+            // DARK: measured on this round's implementation, the share of pixels under 0.10 luma is
+            // 0.000 in v6 and 0.002 in v7. Deepening the root end of the gradient is where both
+            // come from, because the root end is the part of a meadow that is genuinely in its own
+            // shadow. It costs no exposure worth naming — the gradient is area-weighted toward the
+            // tip and the modelled frame mean moves about two sRGB levels — and it buys, modelled,
+            // meadow value range +13% and the sub-0.10-luma share 0.001 -> 0.069 on v1.
+            // The step is SIZED BY THE BLUE FLOOR, not by taste. LiftGammaGain resolves to
+            // (+0.0057, +0.0024, +0.0007) and blue is the first channel to leave, so a deeper root
+            // is spent against a 0.0007 floor. Modelled: at (0.34, 0.42, 0.36) with the mat's root
+            // at 0.48 the share of pixels at blue <= 2 goes 0.000 -> 0.007-0.010, which is inside
+            // the 3% bar but is the round-6 blue-crush fix starting to be spent. At the values
+            // below it is 0.002-0.003 and the sub-0.10-luma share still lands at 0.084-0.090 —
+            // fable-01's own figure is 0.086. Note also that blue is lifted RELATIVE to red here
+            // (0.395/0.37 against round 6's 0.41/0.44): the root goes darker without going warmer,
+            // because a warm dark on grass standing in its own sky-lit shade is round 5's mistake.
+            var baseCol = new Color(0.37f, 0.445f, 0.395f);
             var tipCol = new Color(1.00f, 0.99f, 0.93f);
 
             for (int i = 0; i < species.Blades; i++)
@@ -937,7 +963,18 @@ namespace Tarrock.Editor
         // only ever lights grass the sun has missed, which is exactly where the meadow's blue lives.
         // Held here rather than in the material writer because it is one fact about the scene's sky
         // and all six species must agree on it.
-        private static readonly Color ShadeFillColour = new Color(0.42f, 0.52f, 0.72f);
+        // ROUND 7: (0.42, 0.52, 0.72) -> (0.43, 0.52, 0.71). A one-point correction, and it is
+        // made because the round-6 captures fail this file's own law. Measured on round6/v7, the
+        // near shaded meadow reads (35, 44, 39) and (36, 43, 44) sRGB — BLUE AT OR ABOVE RED, i.e.
+        // the cyan shade TerrainRegionGenerator.Lighting.cs says no frame on the reference board
+        // contains, and which round 2 was corrected for producing. This fill is why: at
+        // shadeMix ~0.95 it is the single largest term on a shaded blade, and linear (0.147, 0.231,
+        // 0.478) is a saturated blue, not a sky dome. The move is deliberately tiny — the shade is
+        // supposed to stay round 6's, which is the one part of round 6 that was right — and it is
+        // enough: modelled, shaded meadow R/B goes 1.54 -> 1.60 while its luminance moves under
+        // half a level. The reference board's own dawn plates run shade R/B 1.48 (fable-07) to
+        // 2.02 (fable-01), so this is a step toward the band, not into it.
+        private static readonly Color ShadeFillColour = new Color(0.43f, 0.52f, 0.71f);
 
         // What the sun leaves on a blade it lands on square (round 6, the SUN BLEACH). A cream so
         // pale it is barely a colour — the point is that it is NOT the lamp's gold: gold on the
@@ -946,7 +983,13 @@ namespace Tarrock.Editor
         // using it, so only its HUE is load-bearing; its level cannot change the meadow's exposure.
         // Written through Material.SetColor, which sRGB-decodes it in a Linear project — so the
         // number here is the sRGB one and the shader receives linear (0.955, 0.911, 0.869).
-        private static readonly Color SunBleachTint = new Color(0.98f, 0.96f, 0.94f);
+        // ROUND 7 — see the property's own block in Tarrock/GrassTuft for the full argument. The
+        // short version: round 6's triple is linear R/B 1.09, which is WHITE, so every stroke of
+        // "white in the light" was also a stroke against "pale dawn gold". (1.00, 0.95, 0.86) is
+        // linear R/B 1.44 — the lamp's own colour, softened — so the storybook law and the colour
+        // script now pull the same way instead of against each other. Luma-normalised in Frag, so
+        // this is a HUE and cannot move the meadow's exposure.
+        private static readonly Color SunBleachTint = new Color(1.00f, 0.95f, 0.86f);
 
         private static readonly TuftSpecies[] Species =
         {
@@ -989,11 +1032,21 @@ namespace Tarrock.Editor
                 // STRAW (R and G within a few points of each other) rather than a gold, the cool
                 // pole is back in the blue-green where the chord lives, and DryBias drops because
                 // "wind-scoured GREEN" names green as the meadow's family and gold as its weather.
+                // ROUND 7 UNDOES THE ONE GLOBAL RATIO. Measured on this round's own code, round 6
+                // moved five materials' saturation by 0.427-0.478 — one number, applied everywhere,
+                // which is why the frame went grey together rather than settling. Chroma comes back
+                // PER MATERIAL and in different amounts, on one rule: green is the meadow's FAMILY
+                // and gold is its WEATHER (art-audio.md, "wind-scoured green"), so the green poles
+                // gain a little and the dry poles gain a lot but only on the species the drift
+                // actually paints gold.
+                // The body of the meadow: green +0.02 of chroma, dry to a true straw-gold. Its
+                // DryBias is 0.24, so the gold shows on about a fifth of it — a note, not a field.
                 Cool = new Color(0.28f, 0.44f, 0.38f),
-                Green = new Color(0.34f, 0.52f, 0.26f),
-                Dry = new Color(0.72f, 0.73f, 0.50f),
+                Green = new Color(0.32f, 0.53f, 0.24f),
+                Dry = new Color(0.78f, 0.74f, 0.44f),
                 TurfTintWeight = 0f,
                 TurfDryTintWeight = 0f,
+                RootDryGreenPull = 0.50f,
                 DryBias = 0.24f,
                 HueVariation = 0.55f,
                 ValueVariation = 0.18f,
@@ -1060,11 +1113,25 @@ namespace Tarrock.Editor
                 // was what most of the meadow was actually wearing. It is now (0.538, 0.571, 0.263),
                 // R/B 2.04 — pale straw, the colour of grass the wind has taken the water out of,
                 // not the colour of late-afternoon light on it.
+                // ROUND 7 — THE SCOURED DRIFT IS THE FRAME'S GOLD BAND. Round 6 flattened this
+                // pole to R and G within two points of each other, which is a pale straw: safe, and
+                // the reason nothing in round 6 has a high-chroma accent (measured top-1% chroma
+                // 0.26-0.32 against the reference board's 0.42-0.70). (0.84, 0.76, 0.44) is linear
+                // R/B 4.42 against round 6's 2.04 — a real dawn gold, and still half of round 5's
+                // 7.99, which is the number that crushed blue to zero.
+                //
+                // IT IS AN ACCENT BY CONSTRUCTION, NOT BY RESTRAINT, and that is the whole reason
+                // the chroma can go here. This species' share is gated on the exposure drift
+                // (SmoothStep 0.44 -> 0.80) and on the lane fringe, so it stands exactly where the
+                // wind has scoured the meadow and nowhere else — the drift IS the band. Nothing is
+                // invented: this is a re-weighting of content the generator already places, and
+                // "gold is the meadow's weather" is this file's own round-6 wording.
                 Cool = new Color(0.34f, 0.50f, 0.40f),
-                Green = new Color(0.48f, 0.58f, 0.32f),
-                Dry = new Color(0.76f, 0.78f, 0.55f),
+                Green = new Color(0.46f, 0.59f, 0.30f),
+                Dry = new Color(0.84f, 0.76f, 0.44f),
                 TurfTintWeight = 0f,
                 TurfDryTintWeight = 0f,
+                RootDryGreenPull = 0.50f,
                 DryBias = 0.46f,
                 HueVariation = 0.40f,
                 ValueVariation = 0.16f,
@@ -1148,11 +1215,16 @@ namespace Tarrock.Editor
                 // chord. Its cool pole goes back into blue-green (round 5 flattened every species'
                 // cool pole into a plain green, which is why the blue-band saturated pixel count
                 // fell from 14.55% to 0.07%: nothing in the meadow was cool any more).
-                Cool = new Color(0.26f, 0.38f, 0.34f),
-                Green = new Color(0.30f, 0.45f, 0.28f),
-                Dry = new Color(0.52f, 0.58f, 0.42f),
+                // ROUND 7: this is where "blue ALIVE" is paid for. It holds the cool end of the
+                // chord, so it gets the opposite treatment from the drift above — blue UP against
+                // red, not gold. Its dry pole comes down off straw as well: a sedge in a hollow is
+                // the last thing on the plateau the wind dries out.
+                Cool = new Color(0.24f, 0.38f, 0.36f),
+                Green = new Color(0.28f, 0.46f, 0.26f),
+                Dry = new Color(0.50f, 0.58f, 0.40f),
                 TurfTintWeight = 0f,
                 TurfDryTintWeight = 0f,
+                RootDryGreenPull = 0.50f,
                 DryBias = 0.12f,
                 HueVariation = 0.26f,    // was 0.42: the species that must NOT wander in hue
                 ValueVariation = 0.14f,
@@ -1217,12 +1289,21 @@ namespace Tarrock.Editor
                 // read a 150° hue as a fault; it was the chord. The fault was that the DRY pole had
                 // become an orange (linear R/B 4.51) and was swamping everything else — fix the
                 // gold, not the green.
+                // ROUND 7 PUTS THE FRAME'S CHROMA PEAK HERE, and this species is the only safe
+                // place for it. Its own doc above says it: "an ACCENT — a couple of tall wisps that
+                // break the top line, never a ground cover", MaxPerCell 1, double-gated on the
+                // tussock field AND the exposure drift. A pole this hot on the fescue or the mat
+                // would be round 5; on a population that appears in stands of ones and twos it is
+                // the single high-chroma note the reference board's plates all have and round 6 has
+                // none of. DryBias comes down with it so the wisps that are not in the sun's own
+                // drift stay green — accent, not field.
                 Cool = new Color(0.33f, 0.48f, 0.40f),
                 Green = new Color(0.42f, 0.57f, 0.31f),
-                Dry = new Color(0.78f, 0.80f, 0.60f),
+                Dry = new Color(0.90f, 0.78f, 0.36f),
                 TurfTintWeight = 0f,
                 TurfDryTintWeight = 0f,
-                DryBias = 0.36f,
+                RootDryGreenPull = 0.50f,
+                DryBias = 0.30f,
                 HueVariation = 0.50f,
                 ValueVariation = 0.20f,
                 BaseBlend = 0.62f,
@@ -1322,8 +1403,8 @@ namespace Tarrock.Editor
                 MinHeightScale = 0.70f,
                 MaxHeightScale = 1.30f,
                 AlignToGround = 0.95f,   // thatch does not stand plumb on a slope; it lies on it
-                Cool = new Color(0.24f, 0.33f, 0.27f),   // round 6: back toward the blue-green
-                Green = new Color(0.27f, 0.38f, 0.26f),
+                Cool = new Color(0.22f, 0.33f, 0.29f),   // round 7: further into the blue-green
+                Green = new Color(0.25f, 0.39f, 0.23f),
                 // The mat's own "dry" is dead blade in a green mat, NOT bare earth. Bare earth is
                 // the scuff species below, and it belongs on the worn lanes, not under the meadow.
                 // Blue up from 0.26 to 0.34 (round 5). The meadow's blue channel measured 11-16 in
@@ -1333,15 +1414,34 @@ namespace Tarrock.Editor
                 // ROUND 6 carries that argument one step further — 0.34 → 0.39, and the mat's cool
                 // pole gets the same treatment — because the mat is the largest single population
                 // of pixels on the floor and therefore sets the meadow's whole blue floor.
-                Dry = new Color(0.44f, 0.45f, 0.39f),
+                // ROUND 7 — THIS SPECIES IS FINDING 4. It is 52% of the meadow's pixels, and
+                // measured through the model its LIT hue median sits at 58.6 degrees with only 25%
+                // of it inside the green band: the mat, not the tufts, is what made the meadow read
+                // 88.8% straw. Three changes, all of them the species' own written rule finally
+                // applied to the paths it was never applied to:
+                //   - the dry pole becomes DEAD BLADE rather than dust, (0.44, 0.45, 0.39) ->
+                //     (0.43, 0.47, 0.36): green now above red, which is what a dried blade in a
+                //     green mat actually is and what the doc above already claims it is;
+                //   - TurfDryTintWeight 0.34 -> 0.12 and RootDryGreenPull 0.50, so neither the dry
+                //     pole nor the root blend interpolates to the ground's SCOURED-BARE ochre. See
+                //     TuftSpecies.RootDryGreenPull;
+                //   - RootDarken 0.60 -> 0.54, which is the true dark. The mat is the layer
+                //     everything else stands IN, so its floor is the one surface in the meadow
+                //     entitled to go genuinely dark, and together with the blade gradient's new
+                //     root (see baseCol in BuildTuftMesh) it is where the sub-0.10-luma pixels
+                //     round 6 has none of come from. SkyOcclusionRoot is NOT touched: at 0.30 it is
+                //     already the deepest of the six, and doubling up on the ambient path as well
+                //     as the albedo is how a dark floor becomes a dead one.
+                Dry = new Color(0.43f, 0.47f, 0.36f),
                 TurfTintWeight = 0.88f,  // it IS the floor's colour (see the class doc)
-                TurfDryTintWeight = 0.34f,
+                TurfDryTintWeight = 0.12f,
+                RootDryGreenPull = 0.50f,
                 DryBias = 0.08f,
                 HueVariation = 0.26f,    // it must not out-vary the tufts standing in it
                 ValueVariation = 0.20f,
                 BaseBlend = 0.84f,
                 BaseBlendHeight = 0.92f, // nearly the whole card blends toward the turf
-                RootDarken = 0.60f,      // 40% darker at the root: the layer everything stands IN
+                RootDarken = 0.54f,      // round 7: 46% darker at the root — see the block above
                 CombLean = 0.34f,        // a mat combs too, but it has little height to lean with
                 CombFold = 0.55f,
                 CombDrift = 0.06f,
@@ -1437,11 +1537,17 @@ namespace Tarrock.Editor
                 // ROUND 6: earth stays earth, but the last of the orange comes out of it — bare
                 // trodden ground on a cliff top is a grey-brown, and it is the surface with the
                 // least excuse for chroma in the frame.
+                // ROUND 7 LEAVES THIS SPECIES ALONE, ON PURPOSE. "Per material, not one global
+                // ratio" has to mean that some materials do not move: bare trodden ground on a
+                // cliff top is a grey-brown and it is the surface with the least excuse for chroma
+                // in the frame. RootDryGreenPull stays 0 for the same reason — this is the one
+                // species whose root really does sit in the ground shader's scoured ochre.
                 Cool = new Color(0.32f, 0.32f, 0.30f),
                 Green = new Color(0.37f, 0.36f, 0.32f),
                 Dry = new Color(0.48f, 0.45f, 0.41f),
                 TurfTintWeight = 0.35f,  // near the turf, but it must be allowed to be EARTH
                 TurfDryTintWeight = 0.30f,
+                RootDryGreenPull = 0f,
                 DryBias = 0.52f,
                 HueVariation = 0.22f,
                 ValueVariation = 0.26f,  // grit and scuff: value is most of what it has
@@ -1539,6 +1645,26 @@ namespace Tarrock.Editor
             /// the ground shader: the mat wants a little of it, trodden earth wants nearly all of
             /// it, and a standing plant wants none.</summary>
             public float TurfDryTintWeight;
+
+            /// <summary>ROUND 7. How far this species' ROOT-BLEND dry note is pulled back off the
+            /// ground's _TurfOchre toward its _MeadowGreen before it is written to
+            /// <c>_GroundDryColor</c>. 0 is round 6's behaviour — the raw ochre.
+            ///
+            /// WHY IT EXISTS. The round-6 critique measured the meadow at 88.8% straw-hue against
+            /// 4.3% green and called it "closer to Kena's bare DIRT than to Kena's grass". Traced
+            /// per species on this round's model, the straw is almost entirely the THATCH, which is
+            /// 52% of the meadow's pixels and whose lit hue median sits at 58.6 degrees: the mat is
+            /// 84% root-blend over 92% of its card, and the root blend interpolates to _TurfOchre,
+            /// which is the ground shader's SCOURED-BARE colour. So the largest population in the
+            /// frame was, by measurement, wearing bare earth.
+            ///
+            /// The species' own doc already forbids exactly this — "the mat's own dry is dead blade
+            /// in a green mat, NOT bare earth; bare earth is the scuff species" — and
+            /// <see cref="TurfDryTintWeight"/> applies that rule to the mat's DRY POLE. This applies
+            /// the same rule to the ROOT BLEND, which is the path it was never applied to and which
+            /// carries far more of the mat. The scuff species keeps 0: trodden ground really is
+            /// bare earth, and one palette should read two honest ways.</summary>
+            public float RootDryGreenPull;
 
             public float DryBias;
             public float HueVariation;
@@ -1761,8 +1887,8 @@ namespace Tarrock.Editor
             material.SetFloat("_ShadeFillStrength", 1.0f);
             // The sun bleach, at the same setting as the meadow — the law is about light, not about
             // which prototype the light happens to land on.
-            material.SetFloat("_SunBleach", 0.50f);
-            material.SetFloat("_BleachStart", 0.28f);
+            material.SetFloat("_SunBleach", 0.45f);
+            material.SetFloat("_BleachStart", 0.06f);
             material.SetColor("_BleachTint", SunBleachTint);
             material.SetFloat("_SkyOcclusionRoot", 0.55f);
             material.enableInstancing = true;

@@ -31,12 +31,12 @@ namespace Tarrock.Editor
         // TerrainRegionGenerator.Lighting.cs (a different builder's file) references HazeLinear by
         // name; renaming them belongs in the same change as that reference.
         //
-        // ONE PLACE STILL DISAGREES, and it is a real mismatch rather than a naming one — flagged
-        // here rather than fixed because the write lives in Lighting.cs: RenderSettings.fogColor is
-        // written as (…).gamma, which Unity then gamma-decodes, so the FOG lands on HazeLinear read
-        // as LINEAR (0.90, 0.85, 0.74) while the sky's own haze lands on its sRGB decode
-        // (0.787, 0.694, 0.513). The two are meant to be the one value that far ridges die into;
-        // they are 20 sRGB levels and a hue apart (fog R−B +0.074 sRGB against haze's +0.16).
+        // THAT ONE MISMATCH IS FIXED IN ROUND 7. It was real rather than a naming slip:
+        // RenderSettings.fogColor was written as (…).gamma, which Unity then gamma-decodes, so the
+        // FOG landed on HazeLinear read as LINEAR while the sky's own haze landed on its sRGB
+        // decode — 20 sRGB levels and 22 points of R−B apart, on the one value that is supposed to
+        // be where every far ridge dies. Both are now written from FarFieldLinear below and both
+        // decode it the same way. See that property and Lighting.cs §the fog colour.
         //
         // WHY THESE NUMBERS (2026-07-31 look pass, against Assets/Screenshots/wave2_*). Measured
         // off wave2_knoll: the whole visible sky moved eight sRGB levels from frame top to horizon
@@ -46,23 +46,57 @@ namespace Tarrock.Editor
         // structure (0.92 → 0.58 linear) inside the band that is actually on screen. Reference
         // board: fable-03, fable-04, animation-04.
         // -------------------------------------------------------------------------------------
-        private static readonly Color SkyHorizonLinear = new Color(0.92f, 0.82f, 0.62f);
-        private static readonly Color SkyMidLinear = new Color(0.58f, 0.62f, 0.69f);
-        private static readonly Color SkyZenithLinear = new Color(0.20f, 0.32f, 0.54f);
+        // ROUND 7 — TWO SKIES IN ONE FRAME, which is what the reference board actually has and
+        // what round 6 averaged away. Measured on the board with this round's own implementation
+        // (scratchpad round7/sky-warmth/ref_sky.py): the sun-side plates (fable-01, fable-04) run
+        // HSL saturation 0.29-0.49 at R−B +47..+60, and the anti-sun plates (fable-06,
+        // animation-04) run 0.28-0.45 at R−B −45..−47. Ours ran 0.16 at R−B +3 — the mean of the
+        // two, which is grey. So the horizon goes properly GOLD, the mid band stops being a cream
+        // and becomes a real cool BLUE, and the zenith deepens; the bearing terms below then decide
+        // which of the two any given part of the sky is looking at.
+        // (The critic's "fable-01 S 0.66" is not chased: that plate is a forest interior measured
+        // through canopy. Measured on its actual sky patch it is S 0.489 — inside this target.)
+        private static readonly Color SkyHorizonLinear = new Color(1.00f, 0.80f, 0.46f);
+        private static readonly Color SkyMidLinear = new Color(0.40f, 0.51f, 0.75f);
+        private static readonly Color SkyZenithLinear = new Color(0.15f, 0.29f, 0.60f);
 
         // Below the horizon the Cliff has NO ground: it has the cloud sea (world.md §The Cliff).
         // Fog, the sky's lower hemisphere and the deck's far field all land on this one luminous
         // value — which is what lets distant rim rock die INTO the deck instead of silhouetting
         // against it. The old fog colour was a duller tan than the deck it sat in front of, so
         // every far ridge stayed a hard dark shape on a white plane.
-        private static readonly Color HazeLinear = new Color(0.90f, 0.85f, 0.74f);
-        private static readonly Color SunGlowLinear = new Color(1.00f, 0.84f, 0.58f);
+        //
+        // ROUND 7 UNIFIES IT WITH THE FOG, which is the round-6 critique's ninth finding: the fog
+        // and the sky's own haze were 20 sRGB levels and a hue apart (modelled through the graded
+        // chain: fog sRGB (213, 210, 198), R−B +15; sky haze (208, 199, 171), R−B +37) while being
+        // documented as the one value far ridges die into. The mismatch was a CONVENTION bug —
+        // Lighting.cs wrote fogColor as (…).gamma, so the fog landed on this triple read as LINEAR
+        // while the sky landed on its sRGB decode.
+        //
+        // Unified ONTO THE FOG'S VALUE, not the sky's, for two reasons. It is the cooler of the two,
+        // and re-warming the far plane is the last thing a round that has to keep cloud shadows cool
+        // needs (§the vault washes below). And it is the number the other round-7 builders are
+        // working against right now: expressed this way the fog's shader-side colour does not move
+        // by a bit, so nothing on the ground has to be re-solved for it. The triple is therefore
+        // solved backwards from that requirement — g2l(lerp(this, FarCoolLinear, FarCoolShare))
+        // must equal round 6's fog (0.864, 0.840, 0.776) linear — and the one place both are now
+        // written from is FarFieldLinear below.
+        private static readonly Color HazeLinear = new Color(0.992f, 0.958f, 0.888f);
+        private static readonly Color SunGlowLinear = new Color(1.00f, 0.82f, 0.52f);
 
-        private const float SkyMidHeight = 0.44f;      // sin(elev) where the cream band is reached
+        /// <summary>THE far field: the single value the exponential fog, the sky's lower hemisphere
+        /// and the cloud deck's far fade all land on. RenderSettings.fogColor (Lighting.cs) and the
+        /// sky materials' _HazeColor are both written from THIS, so the round-6 finding that they
+        /// were 20 sRGB levels and a hue apart cannot recur: there is one expression now, and both
+        /// consumers gamma-decode it identically (Material.SetColor and RenderSettings.fogColor
+        /// both convert a plain Color to linear in this project's linear colour space).</summary>
+        private static Color FarFieldLinear => Color.Lerp(HazeLinear, FarCoolLinear, FarCoolShare);
+
+        private const float SkyMidHeight = 0.32f;      // sin(elev) where the cool band is reached
         private const float SkyHazeDepth = 0.09f;      // sin(elev) over which gold gives way to haze
         private const float SkyGlowFalloff = 7f;
-        private const float SkyGlowBroad = 0.22f;
-        private const float SkyGlowBroadPower = 8f;
+        private const float SkyGlowBroad = 0.30f;
+        private const float SkyGlowBroadPower = 5f;
         private const float SkyGlowCore = 0.55f;       // over 1 at the sun: the blaze blooms, locally
         private const float SkyGlowCorePower = 120f;
         // ROUND 5 — THE SUN'S BEARING, which round 4's sky did not have. The proof is v8's column
@@ -86,9 +120,23 @@ namespace Tarrock.Editor
         // so its lean runs the other way, which is the point). It stops short of the plates' +43
         // deliberately: those are 60°-lens paintings whose horizon is the brightest thing in frame,
         // and this frame has a lit cloud sea under the horizon doing that job instead.
-        private const float SkyBearingRise = 0.45f;
+        //
+        // ROUND 7 TREBLES THE RISE AND RESHAPES THE TILT, and the second half is the one that
+        // mattered. Round 5's lean is LINEAR in (1 − bearing): a tilt steep enough to pull a real
+        // blue down at 130° off the sun has already spent most of itself at 60°, and 60-70° off is
+        // where v1, v3 and v4 all look — so round 6's sky was cool everywhere the camera actually
+        // pointed and gold only in a lobe nobody sees. SkyGradient.hlsl now raises (1 − bearing) to
+        // TARROCK_BEARING_TILT_POWER, which spends the steepening past 90° and hands the mid angles
+        // back to the horizon gold; TARROCK_BEARING_FALL slows the wash's death with height at the
+        // same time. Modelled through the full graded chain at elevation 6°, R−B by angle off the
+        // sun (round 6 → round 7):
+        //       0°  +65 → +79      55°  +36 → +54      110°   +7 → −34
+        //      30°  +64 → +71      70°   +7 → +36      130°   −6 → −56
+        // ...and the anti-sun end holds its blue at −75 with HSL saturation 0.33 against round 6's
+        // −14 at 0.07, which is the board's −45..−47 / 0.28-0.45 passed rather than missed.
+        private const float SkyBearingRise = 1.15f;
         private const float SkyBearingPower = 1.3f;
-        private const float SkyBearingTilt = 3.2f;
+        private const float SkyBearingTilt = 5.2f;
         private const float SkyBandCount = 7f;         // the painted-plate terrace, not a smooth ramp
         private const float SkyBandStrength = 0.30f;
         private const float SkyBandSoftness = 0.22f;
@@ -170,7 +218,12 @@ namespace Tarrock.Editor
         //     width (thickness reads as darkness), so the hero anchors the frame and the 8° wisps
         //     stay light without anything being hand-flagged.
         // -------------------------------------------------------------------------------------
-        private static readonly Color VaultCloudLitLinear = new Color(1.02f, 0.97f, 0.87f);
+        // ROUND 7 takes the last of the gold out of the crown and gives it to the LIGHT instead
+        // (SkyGradient.hlsl §THE DISC, ON THE LIT WASHES ONLY). White stays in the light — the
+        // board's law and round 6's one real win — so the painted crown is near-neutral and the
+        // warmth arrives as a term the sun's bearing controls, which is also why it can no longer
+        // be inverted by a grade.
+        private static readonly Color VaultCloudLitLinear = new Color(1.03f, 0.98f, 0.88f);
         // The middle wash. Down from round 2's (0.62,0.66,0.78): at that value the "shaded" side of
         // a mass was lighter than the low sky band it was drawn over, so the masses had no dark
         // side at all — they were a bright shape on a bright ground with a slightly brighter shape
@@ -181,7 +234,13 @@ namespace Tarrock.Editor
         // §THE WASH IS AIR, which stopped the additive dawn wash from being laid over the masses.
         // With that wash gone the shaded washes are finally free to be the colour they are painted,
         // so this is where the blue-slate the round-5 critique asked for actually gets authored.
-        private static readonly Color VaultCloudShadeLinear = new Color(0.48f, 0.56f, 0.74f);
+        // ROUND 7 pulls the violet out of it, (0.48, 0.56, 0.74) → (0.505, 0.560, 0.685). Round 6
+        // authored the body as a genuinely BLUE paint and then removed the only warm term acting on
+        // it, and the two together are the hue-260 cold flip the round-6 critics found on v1 (mass
+        // hue 253°, 73.2% of its pixels in the blue band — a slate roof, not cloud at dawn). The
+        // body is a cool GREY now; the blue that carries the storybook law lives one wash below it,
+        // in the shadow core, where the board puts it.
+        private static readonly Color VaultCloudShadeLinear = new Color(0.505f, 0.560f, 0.685f);
         // THE ANCHOR. Cool, not neutral: at dawn a cloud's underside is lit by sky, and the whole
         // region's grade is warm light on cool shadow (BuildLighting). Grey here would read as
         // dirt on the plate.
@@ -201,7 +260,14 @@ namespace Tarrock.Editor
         // Not pushed to the plate's −59: this is a dawn cumulus 44° off a 12° sun, and past about
         // −40 the shaded flank stops reading as cloud and starts reading as a bruise (rendered and
         // looked at, not assumed).
-        private static readonly Color VaultCloudShadowLinear = new Color(0.16f, 0.225f, 0.425f);
+        // ROUND 7, (0.16, 0.225, 0.425) → (0.145, 0.205, 0.415): a little deeper, and it has to
+        // be, because the dawn wash above it trebled. Measured over each mass's own coverage through
+        // the full grade, darkest-quintile R−B (round 6 → round 7): v3 hero −24.1 → −8.8, v4 anchor
+        // −41.4 → −48.0, v1 mass −28.6 → −13.3. The one mass that stays warm is the low 14° veil at
+        // bearing 36° (+28.9 → +17.7), which hangs INSIDE the horizon gold band at 4.5° of elevation
+        // and is 12% transparent; its crown-to-shadow spread still opens from 5.0 to 19.6 points,
+        // i.e. the law holds on it even where the absolute sign cannot.
+        private static readonly Color VaultCloudShadowLinear = new Color(0.145f, 0.205f, 0.415f);
         private const float VaultCloudBase = 0.22f;      // flat base, in half widths below centre
         // Crisper than round 2's 0.055. On the hero that is 0.030 × 20° = 0.6° ≈ 11 px of edge
         // ramp, which is a painted edge; 0.055 was 0.7° on a 13° mass and, combined with the
@@ -242,7 +308,7 @@ namespace Tarrock.Editor
             target.SetColor("_HorizonColor", SkyHorizonLinear);
             target.SetColor("_MidColor", SkyMidLinear);
             target.SetColor("_ZenithColor", SkyZenithLinear);
-            target.SetColor("_HazeColor", HazeLinear);
+            target.SetColor("_HazeColor", FarFieldLinear);
             target.SetColor("_SunGlowColor", SunGlowLinear);
             target.SetVector("_SunDirection", new Vector4(sun.x, sun.y, sun.z, 0f));
             target.SetFloat("_MidHeight", SkyMidHeight);
@@ -311,10 +377,17 @@ namespace Tarrock.Editor
             // it. v4's frame has had no value under mid-grey in the whole upper half for four
             // rounds; this is where it comes from.
             target.SetVector("_VaultCloud0", VaultCloud(-44f, 12.0f, 20.0f, 0.94f));
-            target.SetVector("_VaultCloud1", VaultCloud(26f, 7.5f, 9.0f, 0.70f));
+            target.SetVector("_VaultCloud1", VaultCloud(26f, 7.5f, 11.0f, 0.82f));
             target.SetVector("_VaultCloud2", VaultCloud(-98f, 26.0f, 26.0f, 0.24f));
             target.SetVector("_VaultCloud3", VaultCloud(105f, 13.5f, 21.0f, 0.88f));
-            target.SetVector("_VaultCloud4", VaultCloud(64f, 4.5f, 11.0f, 0.62f));
+            // ROUND 7 THICKENS 1 AND 4. Both were thin enough to be half sky (opacity 0.70 and
+            // 0.62) and narrow enough to earn almost none of the shader's thickness-weighted belly,
+            // so with round 7's much warmer sky behind them they photographed as warm veils rather
+            // than as masses — mass 4's darkest quintile measured +28.9 R−B in round 6, warmer than
+            // its own crown, which is the round-6 critique's fifth finding in one number. At 14°
+            // and 0.88 mass 4 takes the full belly (the weight is saturate((halfWidth − 6)/8)) and
+            // only 12% of the sky behind it reaches the eye.
+            target.SetVector("_VaultCloud4", VaultCloud(64f, 4.5f, 14.0f, 0.88f));
             target.SetColor("_VaultCloudLit", VaultCloudLitLinear);
             target.SetColor("_VaultCloudShade", VaultCloudShadeLinear);
             target.SetColor("_VaultCloudShadow", VaultCloudShadowLinear);
@@ -444,8 +517,8 @@ namespace Tarrock.Editor
             // non-[HDR]) Color property treats the value as sRGB and converts it to linear on
             // upload, so what the shader receives is s2l(x), not x. That is not a bug to fix here:
             // every one of these numbers was solved against a capture through that conversion, and
-            // RenderSettings.fogColor is written as HazeLinear.gamma precisely so the SAME
-            // conversion round-trips it back to a true linear (0.90, 0.85, 0.74). Modelling the
+            // RenderSettings.fogColor takes the SAME conversion (round 7 — see FarFieldLinear),
+            // so the fog and this deck are one number again. Modelling the
             // chain the other way reproduces neither capture; modelling it this way predicts v3's
             // deck maximum at 217 against a measured 217.7 and v4's far-bank floor at 134.8
             // against a measured 130.1.

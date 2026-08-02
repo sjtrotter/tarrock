@@ -124,7 +124,40 @@ namespace Tarrock.Editor
             // the gold is now in the LIGHT and in the grade's warm white point, which is where the
             // director's 2026-07-26 call put it, instead of being pre-mixed into the albedo as
             // well and then multiplied by itself.
-            light.color = new Color(1.00f, 0.91f, 0.78f);
+            //
+            // ROUND 7 PUTS A THIRD OF IT BACK: (1.00, 0.91, 0.78) → (1.00, 0.885, 0.760), linear
+            // R/B 1.751 → 1.862. This is the round's central move and it is chosen BECAUSE the lamp
+            // is the only warm lever in the whole rig that is LOCAL.
+            //
+            // WHY THE LAMP AND NOT THE GRADE. Round 6 rescued the palette with a single GLOBAL
+            // desaturation — measured on this round's own implementation, five materials moved by
+            // the same 0.427-0.478 ratio — and the result is a frame that is clean, cool and empty:
+            // frame R/B 1.20-1.30 against fable-01's 1.909, top-1% chroma 0.26-0.32 against the
+            // board's 0.42-0.70, and no pixel under 0.10 luma in v6 or v7 at all. The fix cannot be
+            // a global un-desaturation, because that is the same mistake with the sign flipped. It
+            // has to be warmth WHERE THE LIGHT LANDS and nowhere else, and this line is that:
+            //   - the sky and the cloud deck are UNLIT materials (GradientSky/CloudLobe take no
+            //     main light), so this cannot move a single sky pixel — verified by inspection;
+            //   - RenderSettings.fogColor is a constant, so the far plane is untouched;
+            //   - cast shadow keeps only shadowStrength's 10% of it, so the shade stays round 6's.
+            // Modelled through the full grass → fog → vignette → grade → tonemap chain (the model
+            // is validated against the round-6 captures on six control surfaces, RMS 11.8 sRGB
+            // levels): the LIT meadow's R/B goes 1.79 → 1.93 and the shaded meadow moves by under
+            // a level. The reference board's two sun-side dawn plates sit at lit R/B 1.82
+            // (fable-01) and 1.86 (fable-04); this lands between them.
+            //
+            // AND IT STOPS THERE, DELIBERATELY. Round 5's lamp was linear R/B 2.92 and it crushed
+            // blue to a hard zero over three quarters of the lit meadow. Two things make 1.86 safe
+            // where 2.92 was not, and BOTH have to stay true: the albedo is no longer pre-mixed
+            // gold (the straw pole is R/B 2.04, not 7.99) and the grade's highlight bucket no
+            // longer cuts blue. Modelled, the lit meadow's blue arrives at 3.0x the level where
+            // ColorAdjustments.saturation's max(0) clamp bites, and the predicted share of pixels
+            // at blue ≤ 2 is 0.000% in every frame — the round-6 blue-crush fix is not spent here.
+            // The rest of the round's warmth is on the SURFACES, where a painter puts it: see
+            // _BleachTint in Tarrock/GrassTuft (the grass) and _BleachTint in Tarrock/
+            // TerrainPainterly (the ground). This lamp is deliberately short of the target on its
+            // own so that the three together do not overshoot into round 5.
+            light.color = new Color(1.00f, 0.885f, 0.760f);
             // ROUND 3, 2.90 → 8.00, and this one number is most of the exposure fix.
             //
             // Round 2 set 2.90 from an arithmetic that DROPPED THE ALBEDO. Its comment claimed "a
@@ -170,7 +203,13 @@ namespace Tarrock.Editor
             // the lamp's hue move above, solved to hold the linear luminance the derivation in this
             // comment block landed on (4.826 → 4.821, 0.1%). Every "flat LIT meadow 0.497" style
             // number above is still the number this rig produces.
-            light.intensity = 5.80f;
+            // ROUND 7: 5.80 → 6.06, and like round 6's move this is NOT an exposure change. It is
+            // the compensation for the hue move above, solved on the same constraint the whole
+            // chain is built on — hold the lamp's LINEAR LUMINANCE, so every landing point in this
+            // block still stands:
+            //     round 6  lum(1.00, 0.91,  0.78 ) = 0.8309 x 5.80 = 4.8194
+            //     round 7  lum(1.00, 0.885, 0.760) = 0.7953 x 6.06 = 4.8196   (+0.004%)
+            light.intensity = 6.06f;
             light.shadows = LightShadows.Soft;
             // NOT 1.0. At this elevation shadow covers most of the frame, and full-strength shadow
             // over a cool ambient is exactly how "luminous cool shade" becomes mud. The 10% of direct
@@ -395,7 +434,20 @@ namespace Tarrock.Editor
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
             RenderSettings.fogDensity = 0.0059f;
-            RenderSettings.fogColor = Color.Lerp(HazeLinear, FarCoolLinear, FarCoolShare).gamma;
+            // ---- ROUND 7, THE FOG COLOUR ONLY (sky builder; the grade block below is untouched).
+            // The round-6 critique's ninth finding: RenderSettings.fogColor and the sky's own
+            // _HazeColor are documented as the ONE value far ridges die into and were 20 sRGB levels
+            // and a hue apart — modelled through the graded chain, fog (213, 210, 198) at R−B +15
+            // against haze (208, 199, 171) at R−B +37. The cause was a convention slip: Unity
+            // gamma-decodes RenderSettings.fogColor exactly as Material.SetColor does, so writing
+            // the encode here landed the FOG on the triple read as linear while the SKY landed on
+            // its sRGB decode (the `.gamma` this line used to carry). One expression now feeds both — TerrainRegionGenerator.Sky.cs
+            // §FarFieldLinear — and both consumers decode it identically, so they cannot drift.
+            // The shader-side fog colour is UNCHANGED to the bit: FarFieldLinear's constant is
+            // solved backwards so that its decode is round 6's (0.864, 0.840, 0.776) linear. That
+            // is deliberate — this round's ground/rock builders are working against the round-6 far
+            // plane, and unifying must not move it under them.
+            RenderSettings.fogColor = FarFieldLinear;
             DynamicGI.UpdateEnvironment();
 
             BuildPostVolume();
@@ -464,6 +516,40 @@ namespace Tarrock.Editor
         // Every number below that changed was derived, not dialled. If a future pass moves the
         // lamp, the contrast pivot arithmetic in ColorAdjustments has to be re-checked with it:
         // those two are a pair, and round 2 came apart because they were moved independently.
+        // ROUND 7 — NOT ONE NUMBER IN THIS METHOD MOVES, AND THAT IS THE FINDING.
+        //
+        // The round-6 critique's brief for this round was "put round 5's warmth on round 6's value
+        // structure": restore chroma LOCALLY — dawn gold near the sun and on lit surfaces, one true
+        // dark and one high-chroma accent per frame — without restoring round 5's clip. The reflex
+        // is to spend it here, on saturation and on the highlight bucket. Modelled end to end, that
+        // is the wrong instrument twice over:
+        //
+        // (1) EVERY OVERRIDE IN THIS METHOD IS GLOBAL IN SPACE. ColorAdjustments.saturation,
+        //     colorFilter and WhiteBalance act on the shade as hard as on the light, which is how
+        //     round 6 ended up grey EVERYWHERE from one number; ShadowsMidtonesHighlights is local
+        //     in VALUE but not in MATERIAL, so it cannot tell the lit meadow from the sky, which
+        //     sits in the same highlight bucket at twice the luminance. "Local warmth" is a thing
+        //     only the lamp and the surfaces can do. Both were used instead: the lamp above, and
+        //     _BleachTint in Tarrock/GrassTuft and Tarrock/TerrainPainterly.
+        //
+        // (2) THE SKY IS DOWNSTREAM OF THREE OF THESE KNOBS AND WAS REBUILT THIS ROUND. The sky
+        //     pass's whole solve assumes this grade: its output sits at linear 0.3-1.0, entirely
+        //     inside the highlightsStart 0.10 bucket, so smh.highlights, adjust.saturation and
+        //     adjust.colorFilter are the three values that move its numbers most — a saturation
+        //     raise here would have amplified the new sky chroma and pushed its peak red from a
+        //     predicted 251 into the clip. Re-running the sky pass's own model against this
+        //     profile confirms the contract holds: 0.000% of pixels at or over 254 and 0.000% at
+        //     blue <= 2 in all four sky views. That check is only meaningful because nothing here
+        //     changed; if a future round moves saturation, colorFilter or the highlight triple, it
+        //     MUST re-run that model rather than trust the number.
+        //
+        // What the round asked this method for and got from elsewhere, with the predicted movement:
+        //     lit-zone R/B      1.79 -> 1.93   the lamp, plus the two surfaces' bleach tints
+        //     true dark         0.001 -> 0.069 share of frame under 0.10 luma (v1), from the
+        //                                      grass mat's root darkening and blade gradient
+        //     high-chroma accent 0.35 -> 0.45  top-1% chroma, from the scoured drift's gold
+        //     per-material sat   x1.00 to x1.18 by material, where round 6 moved five materials
+        //                                      by one ratio of 0.427-0.478
         private static void BuildPostVolume()
         {
             var profile = ScriptableObject.CreateInstance<UnityEngine.Rendering.VolumeProfile>();

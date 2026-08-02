@@ -140,7 +140,7 @@ Shader "Tarrock/GrassTuft"
         // At 1.0 the model puts shaded mat at 0.296 of lit luminance and shadowed detail at 0.501
         // of lit — both inside the reference band — and drops shaded saturation from 0.906 to 0.826
         // on the way, which is the same move the references make (their shade is cool, not grey).
-        _ShadeFill ("Shade Fill (dawn sky dome)", Color) = (0.42, 0.52, 0.72, 1)
+        _ShadeFill ("Shade Fill (dawn sky dome)", Color) = (0.43, 0.52, 0.71, 1)
         _ShadeFillStrength ("Shade Fill Strength", Range(0, 2)) = 1.0
 
         // THE SUN BLEACH (round 6) — WHITE IN THE LIGHT, COLOUR IN THE SHADOWS.
@@ -171,12 +171,42 @@ Shader "Tarrock/GrassTuft"
         // multiply drives it NEGATIVE and URP's max(0) clamps it to a hard zero — which is
         // exactly what produced round 5's median blue of 0 at saturation 1.000 over 75.9% of the
         // lit meadow. See TerrainRegionGenerator.Lighting.cs for the full chain.
-        _SunBleach ("Sun Bleach (chroma removed at full beam)", Range(0, 1)) = 0.5
-        _BleachStart ("Sun Bleach Start (light reach)", Range(0, 1)) = 0.28
+        //
+        // ROUND 7 — THE CONTROL WAS DEAD, AND THAT IS WHY ROUND 6's LAW NEVER REACHED THE PICTURE.
+        // `smoothstep(_BleachStart, 1, lightReach)` with _BleachStart 0.28, against a rig where
+        // flat sunlit grass arrives at lightReach = wrapped(sin 12 deg) = (0.2079 + 0.55)/1.55 =
+        // 0.489. That evaluates to 0.204, so the effective bleach on the meadow the player walks
+        // through was 0.50 x 0.204 = 0.102 — a fifth of the number this property reads as, and the
+        // same dead-control bug the ground pass found independently in Tarrock/TerrainPainterly.
+        // _BleachStart 0.06 puts the knee below the rig instead of above it: the same flat lit
+        // grass now evaluates to 0.435 and the effective bleach is 0.196, roughly double round 6's,
+        // while a blade square to the beam still gets the full amount. The amount itself comes DOWN
+        // 0.50 -> 0.45 so the two changes together are a measured increase rather than a doubling:
+        // modelled, the effective bleach on flat lit meadow goes 0.102 -> 0.196.
+        //
+        // WHY THE AMOUNT IS CAPPED, and this is the round's sharpest trade. The bleach draws every
+        // lit albedo toward ONE colour, so it does not only remove chroma — it removes chroma
+        // VARIETY, and the meadow's variety is the whole point of the five-species chord. Modelled
+        // on the round-6 captures' own measurement code, running the bleach at 0.62 collapses the
+        // lit meadow's hue spread so far that the green-band share of saturated meadow pixels falls
+        // from 0.38 to 0.19 — the meadow stops being green, which is the one thing canon names it
+        // (art-audio.md, "wind-scoured green"). At 0.45 it holds at 0.27 with the law still
+        // strengthened. The lit end pales; it does not go monochrome.
+        _SunBleach ("Sun Bleach (chroma removed at full beam)", Range(0, 1)) = 0.45
+        _BleachStart ("Sun Bleach Start (light reach)", Range(0, 1)) = 0.06
         // A near-colourless cream, NOT white: the light is a dawn light and the bleach should read
         // as sunlight sitting on the blade, not as a grey wash. Normalised to luminance 1 in Frag,
         // so the numbers here are a HUE, not a level — changing them cannot change the exposure.
-        _BleachTint ("Sun Bleach Tint (normalised to luma 1)", Color) = (0.98, 0.96, 0.94, 1)
+        // ROUND 7 MAKES IT A DAWN, not a grey wash: (0.98, 0.96, 0.94) -> (1.00, 0.95, 0.86).
+        // Round 6 wrote "a near-colourless cream, NOT white" and then authored a colour whose
+        // linear R/B is 1.09 — which is white, to within a rounding. That put the storybook law
+        // and the colour script in opposition: every stroke of "white in the light" was also a
+        // stroke AGAINST "pale dawn gold", because the thing the lit blade was being drawn toward
+        // had no dawn in it. At (1.00, 0.95, 0.86) the target is linear R/B 1.44 — the light's own
+        // colour, softened — so bleaching a blade now moves it toward the DAWN rather than toward
+        // neutral, and the two rules pull the same way. Still normalised by its own luma in Frag,
+        // so this cannot change the exposure by construction, only the hue it bleaches toward.
+        _BleachTint ("Sun Bleach Tint (normalised to luma 1)", Color) = (1.00, 0.95, 0.86, 1)
 
         // Sky occlusion down the blade. The fill above would be a flat wash on its own, and a flat
         // wash is the round-3 failure with the lights turned up. The sky is ABOVE the mat, so a

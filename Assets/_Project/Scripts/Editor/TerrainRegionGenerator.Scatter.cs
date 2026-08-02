@@ -370,6 +370,63 @@ namespace Tarrock.Editor
         private const float RockRingJog = 0.045f;
         private const float RockRingJogAnchor = 0.075f;   // the two framing masses take more
 
+        // (d) SPALL — ROUND 7, and it is the answer to "the dark jamb carries one TENTH the surface
+        //     detail of any near mass on the board". Measured with a gradient detail metric (mean
+        //     |Δ sRGB luma| per pixel at 1 px and 3 px, run identically on our captures and on the
+        //     board): round5/v8's jamb 0.0046, round6/v8's jamb 0.0011, board near masses 0.0115
+        //     (fable-06's left mass) to 0.0267 (fable-05's near bank). Round 6 DARKENED the jamb to
+        //     sRGB 0.12 and thereby destroyed 76% of the detail it had, because detail measured in
+        //     absolute luma scales with the value of the surface carrying it: the rock material's
+        //     dabs and flecks are multiplicative, so a 17% mark on a 0.12 surface is a 0.015 mark and
+        //     a 0.005 gradient. The value is not up for negotiation (it is a round-6 win), so the
+        //     detail has to come from somewhere that does not need it: GEOMETRY.
+        //
+        //     A quad of the two framing masses is now subdivided into steps² sub-quads, each with its
+        //     own facet value, and the INTERIOR grid vertices are displaced along the face normal.
+        //     Three properties make this safe rather than noise:
+        //       - THE BOUNDARY NEVER MOVES. Only interior vertices take relief, so every quad's
+        //         outline is byte-for-byte what it was: the silhouette round 6 rebuilt (eight rings,
+        //         seven sides, no straight segment longer than a seventh of the height) is untouched,
+        //         the seams between quads stay watertight, and the projected AREA — and so the mass's
+        //         weight in the frame — is unchanged.
+        //       - THE VALUE DOES NOT MOVE. The relief is written as a SLOPE budget rather than as a
+        //         depth: a sub-facet's tilt is at most atan(RockSpallSlope) = 11.9° whatever the
+        //         subdivision, because the amplitude is divided by the step count. The jamb's
+        //         camera-facing faces sit at N·L −0.43…−0.73 against a _ShadeWrap of 0.22; 11.9° of
+        //         tilt moves N·L by at most sin 11.9° = 0.21, so no sub-facet crosses the wrap
+        //         threshold and no key light leaks onto a mass whose whole job is to be at ambient.
+        //         Modelled through the fitted transfer, the jamb's mean sRGB luma moves 0.1409 →
+        //         0.1386 across this change: it holds its round-6 value.
+        //       - IT IS THE TRUE THING. A broken face is not a plane. A hillside's shed block spalls,
+        //         and the relief this puts on it is exactly what fable-06's flanking masses carry:
+        //         their separation from the pass behind them is bedding detail, not blackness.
+        //     Only the framing masses take it. The scatter's stones are read at tens of pixels, where
+        //     a subdivision is 25× the triangles for nothing.
+        //
+        //     AND THE HONEST LIMIT, written down because the next round should not spend itself
+        //     here: this closes only part of the gap. Rendered through the fitted transfer and
+        //     measured with the same metric, the jamb's MESH-BORNE detail goes 0.00013 → 0.00041,
+        //     while the round-6 capture measures 0.00155 — i.e. the detail in the picture is already
+        //     mostly the material's marks, not the mesh's facets, and it is bounded by the surface's
+        //     own value: for a multiplicative mark of relative contrast c on a surface at luma Y,
+        //     the absolute gradient is ≈ 0.455·c·Y. The board's dark near masses carry c ≈ 8-12% per
+        //     pixel-pair (fable-05 0.0267 on a 0.283 mean, fable-07 0.0147 on 0.182, fable-01 0.0237
+        //     on 0.195); ours carries 1.3%. Six to nine times the mark contrast is a MATERIAL
+        //     decision and it lives in RockPainterly.shader, not here. What this file can do it has
+        //     done: 3× the mesh detail, and a near mass whose value (0.237) is 2.0× the jamb's, so
+        //     the same marks land at twice the absolute contrast on the frame's other framing mass.
+        private const int RockSpallSteps = 5;
+        private const float RockSpallSlope = 0.21f;   // tan of the steepest sub-facet tilt: 11.9°
+
+        /// <summary>Per-facet value wander, as a ± fraction of <see cref="RockFacetMean"/>. The
+        /// family's own 0.13 reproduces the 0.86 + 0.26·hash the whole scatter has always used, to
+        /// the bit. The two framing masses take 0.29 — the SAME MEAN, so no value moves, and 2.2× the
+        /// spread, because a mass read at 250 000 pixels needs its facets to differ from each other
+        /// and a mass read at 200 does not.</summary>
+        private const float RockFacetMean = 0.99f;
+        private const float RockFacetSpread = 0.13f;
+        private const float RockFacetSpreadAnchor = 0.29f;
+
         /// <summary>
         /// (c) VALUE PER VARIANT, and it is the round-6 headline. The near mass rendered at sRGB
         /// luma 0.545 against a ≤ 0.20 target — measured on gauntlet/round5/v8, not modelled — and
@@ -547,16 +604,60 @@ namespace Tarrock.Editor
             // to the sun. It is a SINGLE hull, not the round-5 split block, because two
             // interpenetrating lobes at this size are the boolean seam the critique names.
             //
-            // WHAT THE MODEL PREDICTS, measured facet by facet against the sun vector and weighted
-            // by area turned to the lens: mean `lit` = 0.081, against 0.629 for the round-5 mass and
-            // 0.105 for the jamb that renders at 0.107. Carried through the round-6 chain from the
-            // two measured control surfaces, that is sRGB luma ≈ 0.13 — and 0.19 on the pessimistic
-            // reading where the model's mean `lit` is out by 2×. Against a midground the same chain
-            // puts at 0.548, the near mass is darker by 0.41 and by a ratio of 4:1. Scale 7.55 and
-            // squash (1.00, 0.18) hold the projected area at 27.5 m², i.e. exactly the round-5
-            // mass's coverage, which is the other half of the job: a framing mass that goes dark by
-            // losing two thirds of its area has not framed anything.
-            new RockAnchor(198.60f, 78.60f, 7.55f, NearMassVariant, 80f),
+            // ROUND 7 MOVED IT, AND THE REASON IS THE WHOLE ROUND. Everything above is sound
+            // reasoning about a stone that IS NOT IN THE PICTURE.
+            //
+            // THE MEASUREMENT, and it is a geometric fact, not a judgement. v8's lens sits at
+            // (200, 84) and aims at the knoll at (150, 58), so its axis runs bearing 242.5° and its
+            // horizontal half-angle is atan(tan 25° × 16/9) = 39.66°: the frame spans bearings
+            // 202.9°…282.2°. The round-6 mass stands at (198.60, 78.60) — bearing 194.5° from the
+            // lens — and every corner of it, projected through the real frustum against the real
+            // heightfield, lands off the LEFT edge except one base corner at bearing 230.7°, which
+            // is 3.6 m below the lens at 2.4 m and therefore far below a frame whose bottom edge sits
+            // 3.5° ABOVE the horizontal. Rasterised: ZERO pixels. Round 6 re-yawed it, re-profiled
+            // it, thinned it to 0.18 and gave it a value scalar, and not one of those decisions ever
+            // reached the picture. (The re-yaw DID reach the jamb below, which is why that half of
+            // round 6 measured and this half did not.) The same fact explains why v8's near field
+            // measures BRIGHTER than its midground: ray-marched against the heightfield, the nearest
+            // TERRAIN v8 can see is 16.7 m away, so the frame has no near field at all on the left —
+            // the 12-22 m bowl rim is doing the job, lit, at sRGB luma 0.558 against a 25-70 m
+            // midground of 0.503.
+            //
+            // WHERE IT GOES: bearing 230° from the lens at 7.5 m — (194.26, 79.18) — which is inside
+            // the frame by 27° and puts the mass across u −1.000…−0.456, rows 474-1079: it crops the
+            // LEFT edge and the BOTTOM edge, holds 11.51% of the frame (the jamb opposite holds
+            // 12.72%, so the two read as a pair rather than as a wall and a chip), tops out above
+            // the frame's own mid-line, and stops 157 px short of the crown tor at x 679 — the
+            // shoulder still reads summit → tree → cut → slabs → tor with nothing of this mass in
+            // it, and the tree's own isolation is untouched (measured on the round-6 capture and on
+            // the predicted round-7 composite: the same 107 px of clear sky to its left).
+            // Its nearest surface is 6.0 m from the lens and its footprint clears the jamb's by
+            // 0.8 m — they do not touch, which is the round-6 boolean-seam rule.
+            //
+            // AND IT IS NOT BLACK, WHICH IS A REVERSAL OF ROUND 6 AND IS ARGUED FROM THE BOARD.
+            // Near-mass separation is DARKNESS in most of the board, but in the three plates nearest
+            // this frame's problem — fable-05, fable-06 (the named scale for this vantage: a pass
+            // flanked by rock several times the figure's height) and fable-07 — the near masses are
+            // MID-VALUE and separate by detail and by a value STEP across a clean edge. Measured on
+            // those plates, near-mass mean sRGB luma runs 0.18-0.69, never the 0.12 round 6 drove
+            // the jamb to. So the yaw is pinned at 88° rather than 80°: the broad strike face turns
+            // its normal to bearing 88°, 116° off the disc, so N·L = −0.43 against a _ShadeWrap of
+            // 0.22 and it takes NO key at all — while the slab's north END, 1.2 m wide and turned
+            // 52° from the lens, takes a full key and reads as one lit plane against it. Through the
+            // pipeline transfer fitted on this frame's own rock facets (see the round-7 note on
+            // RockSpallSteps for the fit), that is: mean 0.238, 10th percentile 0.095, 90th 0.355,
+            // against a midground the same frame measures at 0.503 and a jamb it measures at 0.120.
+            // Darker than the midground by 0.26 and twice the jamb's value, with 0.26 of range
+            // inside it — the two flat values and one boundary art-bible.md asks for, and NOT the
+            // black card the critique named. Depth-banded across the whole frame (near = anything
+            // inside 22 m, mid = 25-70 m, both read off a ray-march of the finished heightfield),
+            // near − mid goes +0.040 in round 5 and +0.055 in round 6 to −0.061 here: the near field
+            // stops being the brightest thing in the picture.
+            // Scale 11.5 with squash (0.55, 0.18) — 7.1 m along the strike, 2.3 m through, 7.3 m
+            // proud on 11.5° ground. The mass grows and the plan SHORTENS because a 7.55 m wall
+            // running north from here would have gone through the jamb; this is the same slab, stood
+            // on the same joint, cut to a length the composition can hold.
+            new RockAnchor(194.26f, 79.18f, 11.5f, NearMassVariant, 88f),
 
             // ...and OPPOSITE it, the round-4 addition: v8's dark near mass, on the RIGHT.
             //
@@ -1157,19 +1258,24 @@ namespace Tarrock.Editor
                         squashZ *= 0.30f;
                         break;
 
-                    // THE NEAR MASS is a WALL, and its proportions are load-bearing in both senses.
-                    // The hash wander is dropped for these two — a stone whose exact thickness is
-                    // the difference between a dark frame and a lit one is not left to a dice roll.
-                    // Thin on local Z because that is the axis the broad faces are built on, and the
-                    // broad face is the strike face the yaw is turning away from the sun; the
-                    // remaining lit sliver is the wall's north END, whose share of the projected
-                    // area is what the thickness ratio buys down. Measured facet by facet: 0.30
-                    // leaves mean `lit` at 0.114, 0.24 at 0.105, 0.18 at 0.081 and 0.12 at 0.004.
-                    // 0.18 is chosen off the knee — past it the wall stops being a slab a scarp
-                    // could shed and starts being a sheet of card, which is the very read the jamb
-                    // was just rebuilt to lose.
+                    // THE NEAR MASS is a SLAB ON EDGE, and its proportions are load-bearing in both
+                    // senses. The hash wander is dropped for these two — a stone whose exact
+                    // thickness is the difference between a dark frame and a lit one is not left to
+                    // a dice roll. Thin on local Z because that is the axis the broad faces are
+                    // built on, and the broad face is the strike face the yaw turns away from the
+                    // sun; the lit sliver that remains is the slab's north END, and its share of the
+                    // projected area is what the thickness ratio sets. Measured facet by facet in
+                    // round 6: 0.30 leaves mean `lit` at 0.114, 0.24 at 0.105, 0.18 at 0.081.
+                    // ROUND 7 SHORTENS THE PLAN, 1.00 → 0.55, and KEEPS 0.18. At the anchor's new
+                    // station the mass is 27° inside the frame instead of 8° outside it, and a slab
+                    // 0.56 × 11.5 = 6.4 m from its centre would have run its north end through the
+                    // jamb 5.8 m away — the boolean seam round 6 spent two anchors removing. 0.55
+                    // gives a 7.1 m strike face against a 2.3 m thickness (a 3:1 slab, which is what
+                    // a joint set sheds) and holds the footprint 0.8 m clear of the jamb's.
+                    // The lit end is NO LONGER something to buy down: see the anchor — it is the one
+                    // lit plane that keeps this mass from reading as the jamb's black card.
                     case NearMassVariant:
-                        squashX = 1.00f;
+                        squashX = 0.55f;
                         squashZ = 0.18f;
                         break;
 
@@ -1244,9 +1350,8 @@ namespace Tarrock.Editor
 
             // Round 6: the jog is stronger on the two framing masses, which are the stones whose
             // outlines are read at hundreds of pixels rather than tens.
-            float ringJog = variant == NearMassVariant || variant == BrokenJambVariant
-                ? RockRingJogAnchor
-                : RockRingJog;
+            bool framing = variant == NearMassVariant || variant == BrokenJambVariant;
+            float ringJog = framing ? RockRingJogAnchor : RockRingJog;
             int lastRing = ringHeight.Length - 1;
 
             Vector3 RingPoint(int ring, int side)
@@ -1286,7 +1391,13 @@ namespace Tarrock.Editor
             // the mesh rather than left to an AO the pipeline does not run at this scale.
             Color FacetColour(int ring, int side, float centreHeight)
             {
-                float v = 0.86f + 0.26f * Hash21(side * 3.1f + ring * 7.7f, variant * 5.3f + 2.1f);
+                return FacetTone((side * 3.1f) + (ring * 7.7f), centreHeight);
+            }
+
+            Color FacetTone(float key, float centreHeight)
+            {
+                float spread = framing ? RockFacetSpreadAnchor : RockFacetSpread;
+                float v = (RockFacetMean - spread) + (2f * spread * Hash21(key, variant * 5.3f + 2.1f));
                 float bury = Mathf.Lerp(0.52f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(centreHeight)));
                 // RockValue is the round-6 per-variant value step (see its summary). It rides here,
                 // on the mesh, rather than on the material, for two reasons: the rock material is
@@ -1313,6 +1424,60 @@ namespace Tarrock.Editor
                 tris.AddRange(new[] { s, s + 2, s + 1, s, s + 3, s + 2 });
             }
 
+            // SPALL (round 7, framing masses only — see RockSpallSteps). The quad (a,b,c,d) runs
+            // a→b along the ring and a→d up it; the grid keeps that parameterisation, so every
+            // sub-quad is wound exactly as the quad it replaces and the facet normals stay outward.
+            void AddSpalledQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, int ring, int side, float mid)
+            {
+                // Outward normal of the quad: (v0,v1,v2) faces Cross(v1-v0, v2-v0) in Unity's
+                // convention (see AddCap), and the diagonals give the same side for the whole quad.
+                Vector3 face = Vector3.Cross(d - b, c - a);
+                if (RockSpallSteps <= 1 || face.sqrMagnitude < 1e-10f)
+                {
+                    AddQuad(a, b, c, d, FacetColour(ring, side, mid));
+                    return;
+                }
+
+                Vector3 normal = face.normalized;
+                // Amplitude off the SHORT edge, divided by the step count: a sub-facet's tilt is its
+                // displacement over its OWN width, so writing the budget as a slope keeps the tilt —
+                // and therefore the key-leak margin — independent of how finely the quad is cut.
+                float shortest = Mathf.Min(
+                    Mathf.Min((b - a).magnitude, (c - b).magnitude),
+                    Mathf.Min((d - c).magnitude, (a - d).magnitude));
+                float amplitude = shortest * (RockSpallSlope / RockSpallSteps);
+
+                Vector3 Grid(int i, int j)
+                {
+                    float u = i / (float)RockSpallSteps;
+                    float v = j / (float)RockSpallSteps;
+                    Vector3 p = Vector3.Lerp(Vector3.Lerp(a, b, u), Vector3.Lerp(d, c, u), v);
+
+                    // The boundary NEVER moves: the outline, the silhouette and the seam with the
+                    // neighbouring quad are byte-for-byte what they were before this pass existed.
+                    if (i == 0 || j == 0 || i == RockSpallSteps || j == RockSpallSteps)
+                    {
+                        return p;
+                    }
+
+                    float relief = (Hash21(
+                        (i * 3.7f) + (side * 11.3f) + (ring * 5.9f) + (variant * 2.7f),
+                        (j * 6.1f) + (side * 4.3f) + (ring * 9.7f)) - 0.5f) * 2f * amplitude;
+                    return p + (normal * relief);
+                }
+
+                for (int j = 0; j < RockSpallSteps; j++)
+                {
+                    for (int i = 0; i < RockSpallSteps; i++)
+                    {
+                        AddQuad(
+                            Grid(i, j), Grid(i + 1, j), Grid(i + 1, j + 1), Grid(i, j + 1),
+                            FacetTone(
+                                (side * 3.1f) + (ring * 7.7f) + (i * 1.9f) + (j * 13.1f), mid));
+                    }
+                }
+            }
+
             for (int lobeIndex = 0; lobeIndex < lobes.Length; lobeIndex++)
             {
                 lobe = lobes[lobeIndex];
@@ -1326,7 +1491,14 @@ namespace Tarrock.Editor
                         Vector3 c = RingPoint(ring + 1, next);
                         Vector3 d = RingPoint(ring + 1, side);
                         float mid = (ringHeight[ring] + ringHeight[ring + 1]) * 0.5f * lobe.Height;
-                        AddQuad(a, b, c, d, FacetColour(ring, side, mid));
+                        if (framing)
+                        {
+                            AddSpalledQuad(a, b, c, d, ring, side, mid);
+                        }
+                        else
+                        {
+                            AddQuad(a, b, c, d, FacetColour(ring, side, mid));
+                        }
                     }
                 }
 

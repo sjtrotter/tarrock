@@ -117,26 +117,26 @@ Shader "Tarrock/CloudLobe"
         // The sky description, identical to Tarrock/GradientSky's and Tarrock/CloudSea's. All
         // three are written from the same C# constants by TerrainRegionGenerator.ApplySkyDescription;
         // if they ever disagree, a lobe grows a halo where it resolves.
-        _HorizonColor ("Sky - horizon", Color) = (0.92, 0.82, 0.62, 1)
-        _MidColor ("Sky - low band", Color) = (0.58, 0.62, 0.69, 1)
-        _ZenithColor ("Sky - zenith", Color) = (0.20, 0.32, 0.54, 1)
-        _HazeColor ("Sky - haze below horizon", Color) = (0.90, 0.85, 0.74, 1)
-        _SunGlowColor ("Sky - blaze tint", Color) = (1.00, 0.84, 0.58, 1)
+        _HorizonColor ("Sky - horizon", Color) = (1.00, 0.80, 0.46, 1)
+        _MidColor ("Sky - low band", Color) = (0.40, 0.51, 0.75, 1)
+        _ZenithColor ("Sky - zenith", Color) = (0.15, 0.29, 0.60, 1)
+        _HazeColor ("Sky - haze below horizon", Color) = (0.94, 0.93, 0.89, 1)
+        _SunGlowColor ("Sky - blaze tint", Color) = (1.00, 0.82, 0.52, 1)
         _SunDirection ("Direction TO the sun (xyz)", Vector) = (-0.94, 0.276, -0.2, 0)
-        _MidHeight ("Sky - mid band height", Range(0.05, 0.95)) = 0.44
+        _MidHeight ("Sky - mid band height", Range(0.05, 0.95)) = 0.32
         _HazeDepth ("Sky - below-horizon fade depth", Range(0.01, 0.6)) = 0.09
         _GlowFalloff ("Sky - blaze falloff", Range(1, 30)) = 7
-        _GlowBroad ("Sky - blaze broad", Range(0, 2)) = 0.22
-        _GlowBroadPower ("Sky - blaze broad tightness", Range(1, 16)) = 8
+        _GlowBroad ("Sky - blaze broad", Range(0, 2)) = 0.30
+        _GlowBroadPower ("Sky - blaze broad tightness", Range(1, 16)) = 5
         _GlowCore ("Sky - blaze core", Range(0, 4)) = 0.55
         _GlowCorePower ("Sky - blaze core tightness", Range(8, 400)) = 120
         _BandCount ("Sky - painted bands", Range(2, 24)) = 7
         _BandStrength ("Sky - band strength", Range(0, 1)) = 0.30
         _BandSoftness ("Sky - band softness", Range(0.02, 0.5)) = 0.22
         _HorizonHeight ("Sky - horizon height", Range(-0.2, 0.2)) = 0.0
-        _BearingRise ("Sky - lean toward the sun", Range(0, 2)) = 0.45
+        _BearingRise ("Sky - lean toward the sun", Range(0, 2)) = 1.15
         _BearingPower ("Sky - lean tightness", Range(0.2, 6)) = 1.3
-        _BearingTilt ("Sky - anti-sun ramp steepening", Range(0, 6)) = 3.2
+        _BearingTilt ("Sky - anti-sun ramp steepening", Range(0, 6)) = 5.2
         _BankCrestColor ("Sky - bank lit crest", Color) = (1.02, 0.97, 0.87, 1)
         _BankShadeColor ("Sky - bank shaded body", Color) = (0.50, 0.53, 0.65, 1)
         _BankHeight ("Sky - bank mean crest height", Range(-0.05, 0.15)) = 0.020
@@ -150,13 +150,13 @@ Shader "Tarrock/CloudLobe"
         _BankGapStart ("Sky - bank gap window start", Range(0, 1)) = 0.36
         _BankGapEnd ("Sky - bank gap window end", Range(0, 1)) = 0.46
         _VaultCloud0 ("Sky - vault cloud 0", Vector) = (288, 12.0, 20.0, 0.94)
-        _VaultCloud1 ("Sky - vault cloud 1", Vector) = (358, 8.5, 8.0, 0.72)
+        _VaultCloud1 ("Sky - vault cloud 1", Vector) = (358, 7.5, 11.0, 0.82)
         _VaultCloud2 ("Sky - vault cloud 2", Vector) = (234, 25.0, 24.0, 0.26)
         _VaultCloud3 ("Sky - vault cloud 3", Vector) = (77, 10.5, 15.0, 0.82)
-        _VaultCloud4 ("Sky - vault cloud 4", Vector) = (40, 7.0, 11.0, 0.66)
-        _VaultCloudLit ("Sky - vault cloud lit", Color) = (1.02, 0.97, 0.87, 1)
-        _VaultCloudShade ("Sky - vault cloud shade", Color) = (0.52, 0.57, 0.71, 1)
-        _VaultCloudShadow ("Sky - vault cloud belly", Color) = (0.19, 0.23, 0.35, 1)
+        _VaultCloud4 ("Sky - vault cloud 4", Vector) = (36, 4.5, 14.0, 0.88)
+        _VaultCloudLit ("Sky - vault cloud lit", Color) = (1.03, 0.98, 0.88, 1)
+        _VaultCloudShade ("Sky - vault cloud shade", Color) = (0.505, 0.560, 0.685, 1)
+        _VaultCloudShadow ("Sky - vault cloud belly", Color) = (0.145, 0.205, 0.415, 1)
         _VaultCloudBase ("Sky - vault cloud flat base", Range(0.05, 0.6)) = 0.22
         _VaultCloudBaseLump ("Sky - vault cloud base wander", Range(0, 0.25)) = 0.075
         _VaultCloudSoftness ("Sky - vault cloud softness", Range(0.005, 0.3)) = 0.030
@@ -369,7 +369,11 @@ Shader "Tarrock/CloudLobe"
                       TarrockGradNoise(float2(azi * 3.4, lobeY * 5.2 + 11.0))
                     + TarrockGradNoise(float2(azi * toothFreq + 4.0, lobeY * toothFreq * 1.53 + 3.0))
                         * toothWeight
-                    + TarrockGradNoise(float2(azi * 19.0 + 9.0, lobeY * 29.0 + 7.0)) * 0.26;
+                    // ROUND 7 drops the finest octave from 19/29 to 11/17 for the same reason the
+                    // brush below drops: on a 615x300 mass the old one drew a feature every ~6 px,
+                    // which reads as a filter laid over the form rather than as the form's own
+                    // cauliflower.
+                    + TarrockGradNoise(float2(azi * 11.0 + 9.0, lobeY * 17.0 + 7.0)) * 0.26;
                 // ...and its TAILS ARE CAPPED before it moves the terrace. ROUND 6, and this is the
                 // dark-speck fix. `form` saturates at 1.0 over a lit crown, and with three washes
                 // the top boundary sits 1/6 below that, so any crumple minimum past −0.55 punches
@@ -416,12 +420,22 @@ Shader "Tarrock/CloudLobe"
                 // Nyquist so a 60 m mass close in gets the tooth and an 18 m nub at 400 m drops it
                 // rather than aliasing — the azimuth footprint is clamped because atan2's branch
                 // cut makes fwidth() meaningless on the one seam meridian.
+                // ROUND 7 — FEWER, LARGER, SOFTER MARKS. The round-6 critique of the cloud
+                // interiors was that the incident reads as an ORDERED DITHER rather than as
+                // painting, and on these masses it was literal: the azimuth of a lobe's normal
+                // sweeps about pi radians across ~615 px of silhouette, so 34 turns put a feature
+                // every 5.8 px and 78 turns every 2.5 px. Every frequency here drops to 0.4 of what
+                // it was (a mark every ~14 px and ~6 px instead), the Nyquist fades drop with them
+                // so the small masses still shed the fine octave rather than aliasing it, and the
+                // amplitude goes 0.30 -> 0.42 because a bigger mark carries more paint. Measured on
+                // the vault masses, which take the same change through the same brush: stroke blobs
+                // 1.7 per 10k px at 311 px each -> 0.8 per 10k at 682 px.
                 float foot = min(fwidth(azi), 0.05) + fwidth(lobeY);
-                float brush = TarrockGradNoise(float2(azi * 34.0 + 3.7, lobeY * 52.0 + 3.7))
-                                  * saturate(1.0 - foot * 44.0)
-                            + TarrockGradNoise(float2(azi * 78.0 + 21.3, lobeY * 120.0 + 21.3))
-                                  * 0.6 * saturate(1.0 - foot * 100.0);
-                color = max(color * (1.0 + brush * 0.30 * float3(1.22, 1.02, 0.80)), 0.0);
+                float brush = TarrockGradNoise(float2(azi * 14.0 + 3.7, lobeY * 21.0 + 3.7))
+                                  * saturate(1.0 - foot * 18.0)
+                            + TarrockGradNoise(float2(azi * 32.0 + 21.3, lobeY * 48.0 + 21.3))
+                                  * 0.6 * saturate(1.0 - foot * 41.0);
+                color = max(color * (1.0 + brush * 0.42 * float3(1.22, 1.02, 0.80)), 0.0);
 
                 // -------------------------------------------------------------------------------
                 // THE BASE, PAINTED. A cumulus base is dark because there is a great depth of cloud
@@ -451,6 +465,23 @@ Shader "Tarrock/CloudLobe"
                 float under = saturate(-normalWS.y);
                 float belly = saturate(depth * (1.0 + 0.45 * under)) * (1.0 - form * 0.30);
                 color = lerp(color, _LobeUnder.rgb, saturate(belly * thick) * _LobeUnderDepth);
+
+                // ROUND 7 — THE DISC, ON THE LIT WASHES ONLY. The same lighting rule the vault
+                // masses now carry (SkyGradient.hlsl, the constants are shared from there so the
+                // two rows of cloud cannot be lit by different suns), and it is the answer to the
+                // round-6 finding that a near mass came back WARMER in its shadow than in its own
+                // crown. That finding is really about the fog: exp-squared fog at density 0.0059
+                // mixes a warm haze into everything at range, so no paint on this shader can make a
+                // far shadow cool, and re-painting the washes to chase it (rounds 4 and 5 both
+                // tried) only moves the whole mass. What CAN be fixed is the relationship, and the
+                // relationship is a lighting one: warmth belongs where the form says the sun lands.
+                // Squaring the ramp's upper half puts it on the crown, a little on the half-lit
+                // body and none in the shade, and saturate(ndl) keeps the flank the disc faces the
+                // gold one — so crown-minus-shadow R-B opens instead of the shadow being repainted.
+                float litWash = saturate((form - _LobeMidPoint) / max(1.0 - _LobeMidPoint, 0.01));
+                color += _SunGlowColor.rgb * (TARROCK_CLOUD_SUNWARM * litWash * litWash
+                         * (TARROCK_CLOUD_SUNWARM_BASE
+                            + (1.0 - TARROCK_CLOUD_SUNWARM_BASE) * saturate(ndl)));
 
                 // The dawn rim: the silhouette edge on the sun side is the brightest thing a cloud
                 // has at this hour. Grazing angle × sunward, so it lights the rim and not the face.

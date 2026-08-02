@@ -82,6 +82,49 @@
 //     sideways and gave the mass no top and no bottom. The wash direction is now tilted up off the
 //     sun vector; the disc still decides which flank is gold.
 
+// 2026-08-01 ROUND 7 (against gauntlet/round6, all eight frames). Round 6 fixed round 5's clipping
+// with a GLOBAL desaturation and left the sky clean, cool and EMPTY: measured with this pass's own
+// implementation (scratchpad round7/sky-warmth/measure_sky.py), the eight frames' sky boxes lost
+// 25.6 sRGB points of R−B on average and their HSL saturation fell from 0.28 to 0.16, while the
+// reference board carries TWO skies at once — fable-01/04's sun side at S 0.29-0.49 / R−B +47..+60
+// and fable-06/animation-04's anti-sun side at S 0.28-0.45 / R−B −45..−47. Round 6 sat at the
+// average of the two, which is grey. Four changes here, and they are all one idea — PUT THE COLOUR
+// BACK LOCALLY, AS LIGHT, and leave the value structure round 6 bought alone:
+//
+//   * THE TILT LEARNS THE BEARING (TARROCK_BEARING_TILT_POWER). Round 5's tilt is linear in
+//     (1 − bearing), so steepening the anti-sun ramps enough to reach a real blue at 130° off the
+//     sun ALSO killed the gold at 55-70° off — and 55-70° is where six of the eight review frames
+//     look. Raising (1 − bearing) to a power leaves the mid angles nearly untilted and spends the
+//     whole steepening past 90°: modelled over the graded chain, 55°/el 6° goes R−B +36 → +54 while
+//     130°/el 13° goes −11 → −48.
+//   * THE DAWN WASH DIES SLOWER WITH HEIGHT (TARROCK_BEARING_FALL 2.2 → 1.5) and is stronger
+//     (bearingRise 0.45 → 1.15 at the C# end). Together they are the ~30 R−B points every round-6
+//     critic measured missing.
+//   * ...AND SO THE AIR-PATH BLOCK HAS TO TIGHTEN WITH IT (TARROCK_WASH_BLOCK 0.85 → 0.94). Round
+//     6's §THE WASH IS AIR left a sixth of the wash on the masses on purpose. At round 7's wash
+//     strength that sixth is 2.4× what it was, and it lands on the shadows: modelled, the v3 hero's
+//     darkest-quintile R−B comes out +7.2 at 0.85 and −8.8 at 0.94.
+//   * THE SUN LIGHTS THE LIT WASHES (TARROCK_CLOUD_SUNWARM). A cumulus crown is warm because the
+//     DISC is on it, not because the air in front of it glows — so the warmth that round 6 correctly
+//     took off the whole mass comes back only where the form says the sun reaches, weighted by how
+//     sunward the mass sits. That is what kills round 6's hue-260 cold flip (v1's mass: blue-band
+//     pixels 73.2% → 25.2%, lit-quintile R−B +20.3 → +33.5) without touching the shadow.
+//
+// The paper tooth is also re-scaled — see §THE PAPER TOOTH — because at 55 and 126 turns per half
+// width it was 8 px and 3.5 px on the hero, which is a dither, not a brush.
+
+// ---------------------------------------------------------------------------------------------
+// Round-7 constants. DELIBERATELY #defines and not material properties: the fill macro at the foot
+// of this file is expanded by three shaders, one of which (Tarrock/CloudSea) is another builder's
+// file this round, and a new uniform in the macro would fail to compile there. A constant costs
+// nothing and cannot drift between the three.
+// ---------------------------------------------------------------------------------------------
+#define TARROCK_BEARING_TILT_POWER 2.8   // how sharply the anti-sun ramp steepening turns on
+#define TARROCK_BEARING_FALL       1.5   // how fast the dawn wash dies with elevation
+#define TARROCK_WASH_BLOCK         0.94  // how much of the air-path wash a mass stands in front of
+#define TARROCK_CLOUD_SUNWARM      0.22  // the disc's own warmth, on the lit washes only
+#define TARROCK_CLOUD_SUNWARM_BASE 0.25  // ...of which this much survives round the anti-sun side
+
 // ---------------------------------------------------------------------------------------------
 // Noise. GRADIENT noise, not value noise: the 2026-07-26 terrain audit measured that value noise
 // with a Hermite fade puts a zero-derivative fold on every lattice edge, which is exactly the
@@ -395,10 +438,16 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
     // long slow one. A slow selector field (1.15 per half width — about one and a half cycles across
     // a mass) stretches the high octave between 6.6 and 16.0 and lightens it as it gets finer, so
     // the tooth pitch runs from ~68 px to ~28 px along a single boundary on the hero.
+    // ROUND 7 DROPS EVERY ONE OF THESE FREQUENCIES BY A THIRD. The round-6 critique of the cloud
+    // interiors was that they read as an ORDERED DITHER rather than as painting, and the arithmetic
+    // agrees: on the v3 hero (half width 20°, 448 px of half width at the gameplay lens) the tooth
+    // ran 4.6-16.0 turns per half width, i.e. features 28-97 px, and the paper tooth below ran 8 px.
+    // A hand's mark on a 900 px cloud is bigger than that. Measured through the full grade on the v3
+    // hero, coverage-masked: stroke blobs 1.71 per 10k px at 311 px each → 0.79 per 10k at 682 px.
     float toothSel = TarrockGradNoise01(pc * 1.15 + spec.x * 0.31);
-    float toothFreq = 6.6 + 9.4 * toothSel;
+    float toothFreq = 4.6 + 6.4 * toothSel;
     float toothWeight = 0.30 + 0.34 * (1.0 - toothSel);
-    float crumple = TarrockGradNoise(pc * 4.3 + spec.x)
+    float crumple = TarrockGradNoise(pc * 3.4 + spec.x)
                   + TarrockGradNoise(pc * toothFreq + spec.y * 3.1) * toothWeight;
     float scallop = crumple * sky.cloudLump;
 
@@ -536,10 +585,14 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
     // absolute pixels as the 20° hero, and both drop it rather than alias when they get small.
     // Measured, v3 hero through the full grade: flat fraction 90.0% → 47.5%, median gradient
     // 0.08 → 1.06, against the reference's 22.6% / 1.68.
+    // ROUND 7: 55 AND 126 TURNS ARE A DITHER, NOT A BRUSH — see §the tooth scale above. 22 and 46
+    // put the two octaves at 20 px and 10 px on the hero instead of 8 px and 3.5 px, and the
+    // amplitude goes 0.30 → 0.42 because a bigger mark carries more paint. The Nyquist fades are
+    // unchanged in form, so a 9° wisp still drops the fine octave rather than aliasing it.
     float foot = 2.0 * pixelAngle / halfW;
-    float brush = TarrockGradNoise(pc * 55.0 + 3.7) * saturate(1.0 - foot * 55.0)
-                + TarrockGradNoise(pc * 126.5 + 21.3) * 0.6 * saturate(1.0 - foot * 126.5);
-    color = max(color * (1.0 + brush * 0.30 * float3(1.22, 1.02, 0.80)), 0.0);
+    float brush = TarrockGradNoise(pc * 22.0 + 3.7) * saturate(1.0 - foot * 22.0)
+                + TarrockGradNoise(pc * 46.0 + 21.3) * 0.6 * saturate(1.0 - foot * 46.0);
+    color = max(color * (1.0 + brush * 0.42 * float3(1.22, 1.02, 0.80)), 0.0);
 
     // THE DARK ANCHOR. Thickness reads as darkness: a 20°-wide cumulus at this hour is deep enough
     // that its base is the darkest value in the frame, and a 7° one is not. Deriving the weight
@@ -558,6 +611,32 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
     float thick = saturate((spec.z - 6.0) / 8.0) * saturate(spec.w * 1.15);
     float belly = (1.0 - smoothstep(-baseCut, baseCut + 0.34, pc.y)) * (1.0 - form * 0.62);
     color = lerp(color, sky.cloudShadow, saturate(belly * thick) * 0.95);
+
+    // ROUND 7 — THE DISC, ON THE LIT WASHES ONLY, AND IT IS A LIGHTING RULE RATHER THAN A PAINT JOB.
+    //
+    // Round 6 was right to stop the air-path wash falling on the masses (§THE WASH IS AIR) and wrong
+    // about what to do next: with that wash gone, NOTHING in this function knew the dawn existed, so
+    // the masses fell back on their painted washes and the two that sit well round the compass came
+    // out cold — v1's mass measured hue 253° with 73% of its pixels in the blue band, which is a
+    // slate roof, not a cloud at dawn. The air is not the only warm thing in the sky: the DISC is on
+    // the crowns, and unlike the air-path term it is a surface effect, so it belongs where the form
+    // says the light lands.
+    //
+    // Two weights, and both are the light rather than the artist:
+    //   * WHERE THE FORM IS LIT. `form` is already the three-wash ramp, so squaring its upper half
+    //     puts almost all of this on the crown, a little on the half-lit body and NONE in the shade
+    //     — which is the storybook law (warm light, cool shade) stated as an equation instead of as
+    //     two hand-picked colours that a later grade can invert.
+    //   * HOW SUNWARD THE MASS IS. A cumulus at the anti-sun still catches the dome, so the weight
+    //     floors at TARROCK_CLOUD_SUNWARM_BASE rather than reaching zero.
+    // Measured over each mass's own coverage through the full grade (round 6 → round 7):
+    //     v3 hero   lit quintile R−B +31.6 → +36.8,  dark quintile −24.1 → −8.8
+    //     v4 anchor lit           +29.3 → +32.9,  dark −41.4 → −48.0
+    //     v1 mass   lit           +20.3 → +33.5,  dark −28.6 → −13.3, blue-band 73.2% → 25.2%
+    float sunward = saturate(cos(TarrockWrapPi(azEl.x - sunAzEl.x)) * 0.5 + 0.5);
+    float litWash = saturate((form - 0.46) / 0.54);
+    color += sky.sunGlow * (TARROCK_CLOUD_SUNWARM * litWash * litWash
+             * (TARROCK_CLOUD_SUNWARM_BASE + (1.0 - TARROCK_CLOUD_SUNWARM_BASE) * sunward));
 
     // The dawn rim: the sunward edge of a cloud at this hour is the brightest thing in the vault.
     float rim = saturate(1.0 - abs(sd) / (soft * 4.0))
@@ -602,7 +681,14 @@ float3 TarrockSkyColor(float3 dir, TarrockSkyDesc sky)
     // brightest thing in frame, and this one has a cloud sea under it doing that job. Applied to
     // the ramp PARAMETER, so the terrace above picks the lean up and it reads as painted washes
     // leaning toward the dawn rather than as an airbrushed side-light.
-    float lean = 1.0 + sky.bearingTilt * (1.0 - bearing);
+    // ROUND 7 SHAPES THE TILT IN BEARING AS WELL AS SCALING IT. Round 5's lean is linear in
+    // (1 − bearing), and that one fact is why round 6 could not have both a gold dawn and a live
+    // blue: a tilt big enough to pull the zenith down at 130° off the sun has already pulled it
+    // most of the way down at 60°, and 60° is where v1, v3 and v4 all look. Raising (1 − bearing)
+    // to TARROCK_BEARING_TILT_POWER spends the steepening past 90° and leaves the mid angles to
+    // the horizon gold. Modelled through the graded chain at el 6°: 55° off goes R−B +36 → +54,
+    // 70° off +7 → +36, while 130° off goes −6 → −43 and the anti-sun holds at −75.
+    float lean = 1.0 + sky.bearingTilt * pow(1.0 - bearing, TARROCK_BEARING_TILT_POWER);
 
     float t = smoothstep(0.0, 1.0, saturate(h / max(sky.midHeight, 0.001) * lean));
     t = TarrockSoftBand(t, sky.bandCount, sky.bandStrength, sky.bandSoftness);
@@ -699,7 +785,7 @@ float3 TarrockSkyColor(float3 dir, TarrockSkyDesc sky)
     // hue slope d(R−B)/dL +0.128 → +0.538 — the reference plate (animation-04) runs +0.82.
     // The lit crown loses almost nothing: its own quintile only goes +35 → +44 R−B, because the
     // crown was never getting its warmth from the wash. The sky is untouched: cover is 0 there.
-    float washPath = 1.0 - covered * 0.85;
+    float washPath = 1.0 - covered * TARROCK_WASH_BLOCK;
     float sunDot = saturate(dot(v, sky.sunDir));
     float horizonGlow = exp(-abs(h) * sky.glowFalloff);
     float broad = pow(sunDot, max(sky.glowBroadPower, 1.0));
@@ -709,7 +795,7 @@ float3 TarrockSkyColor(float3 dir, TarrockSkyDesc sky)
     // ...and the BROAD BEARING WASH, over everything, dying with height the way an air-path
     // brightening does. This is the half of the lean that adds rather than takes: it is what makes
     // the sunward third of the frame the warm end instead of merely the less-blue end.
-    result += sky.sunGlow * (sky.bearingRise * bearing * exp(-saturate(h) * 2.2) * washPath);
+    result += sky.sunGlow * (sky.bearingRise * bearing * exp(-saturate(h) * TARROCK_BEARING_FALL) * washPath);
 
     return result;
 }
