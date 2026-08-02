@@ -80,3 +80,35 @@ thumb 21 mm long, ~13° abduction, no thenar wedge; finger/palm split finger-sho
 shoulder integration, thumb, finger/palm split) + the critic's three verification
 demands (arm-root vs socket circle with torso hidden, wrist roll printout, joint-centre
 coordinates).**
+
+---
+
+## Round 3 — arm fix round (2026-08-02)
+
+**Builder (Opus):** re-extracted the drawn silhouette (line-centre flood fill), then
+ran damped iterative solvers on the cage rings to the drawn targets. Elbow
+swell–neck–swell restored (worst station −0.3 mm vs drawn); axilla wedge closed to
+0.0 mm; shoulder saddle (−18 mm) → monotone within 3.7 mm; thumb −21 mm with thenar
+wedge; finger/palm split 0.877. Verifications: arm root 6.7 mm from the socket-locator
+centre (inside, 0.16 r); hand roll 0.52°; forward sweep pinned 4.26° total, living at
+the shoulder (4.11°). `Fool-v2-005.blend`.
+
+| Front overlay | Elbow zoom |
+|---|---|
+| ![front](renders/r3-front.png) | ![elbow](renders/r3-front-zoom-elbow.png) |
+| ![shoulder](renders/r3-front-zoom-shoulder.png) | ![3/4](renders/r3-three-quarter.png) |
+
+**Critic (Opus, fresh context):** 4 of 5 findings FIXED on the renders (elbow, axilla,
+shoulder silhouette, thumb); the split fix REGRESSED the hand — finger block roots
+~10 mm low, arriving as a hard dorsal ledge at the knuckle (was a 5.9 mm gradient, now
+9.8 mm step). Fresh eyes: arm depth pinched in plan exactly at the shoulder joint
+(local min where the deltoid should be widest); cranium modeled to the EAR line
+(~28 mm/side wider than the drawn skull) with no ear masses; top render was
+perspective, not ortho. **SEND BACK.**
+
+**Lead rulings:** inter-finger 5 mm slots are NOT a blocker (pipeline already merges
+hands separately at finer voxel); ears = bring cranium in to the skull line now, ears
+come at sculpt; deferral list corrected (hand residual is dorsal).
+
+**Round verdict: SEND BACK → Round 4 = final pre-merge fixes (finger-root ledge,
+shoulder plan pinch, cranium width, groin V, foot soles) + honest ortho re-renders.**
