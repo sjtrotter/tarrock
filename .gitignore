@@ -60,3 +60,4 @@ serviceaccount*.json
 .claude/*
 !.claude/gauntlet/
 !.claude/gauntlet-fool/
+!.claude/gauntlet-fool2/
