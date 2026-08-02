@@ -16,13 +16,26 @@ tree.
 
 ---
 
-## Round 9 — the owed order, the ribbons, the hero cloud `RUNNING`
+## Round 10 — the tree earns its frame `RUNNING`
 
-- **Knoll approach** (director playtest order): a walkable ≤30° ramp to the dead tree, slope-profiled for real.
-- **Gold ribbons**: identified at the asset level and killed — accepted only on pixel-diff evidence (four rounds is enough).
-- **Hero cloud**: silhouette rebuilt to the critic+Codex convergent prescription; nothing else in v8 moves.
-- **Terrain shade-fill**: the floor joins the grass's light model; warmth by gold multiplication, never blue subtraction.
-- Gate reform in force: every gate/anchor must be validated against the board first — a gate a reference plate fails is not a gate.
+- **The dead tree** (the Cliff's signature) rebuilt as a hero silhouette (~5% of v8, forking and tapering) with framing a
+  walking player can hold; the worn lane rerouted onto the new walkable shelf; a ninth west vantage added to review it.
+- **Highlights finally let go** — the board clips 0.3–16% white; we've been 75× under it for nine rounds.
+- **Cloud work moves to the right shader** (the hero cloud was `TarrockVaultCloud` in SkyGradient.hlsl all along); the
+  round-9 CloudLobe regression reverted.
+- Bug sweep: the black Fool in v1, the 110 px disc artifact, grass instancing seeded deterministic.
+
+## Round 9 — the knoll walks, the ribbons die, the gates get honest · commit `59e8ff5`
+
+![Round 9 v1](img/thumb-r9-v1-spawn-west.jpg) ![Round 9 v8](img/thumb-r9-v8-deadtree-skyline.jpg)
+
+**Won:** the four-round gold-ribbon bug killed at the geometric lever (2011 → 1 px); the director's knoll order
+discharged for real — a spiral shelf at 21.6° max slope, trunk reachable from spawn, verified against the heightfield.
+**Learned:** board-validating the gates *first* invalidated most of the round's own targets — four rounds had chased
+numbers the reference board doesn't support. And the discoveries that shape round 10: three rounds of cloud work hit
+the wrong shader; the highlights have never been allowed to reach white; the dead tree carries 116× less frame weight
+than a Fable landmark and can't be framed while walking. Codex: *"The shipped frames are composed through controlled
+omission and grouping. The build frames merely contain rendered objects."*
 
 ## Round 8 — materials and warm light · commit `7d5279d`
 
