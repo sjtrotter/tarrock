@@ -970,8 +970,28 @@ namespace Tarrock.Editor
         // lens. A drawn edge, and nowhere near enough to fold the surface back on itself.
         // At scale 2.6 the broad octave turns ~5 times round the silhouette and the nibble ~11,
         // which is 14 and 6 meridian segments per bump at the 72-meridian tessellation above.
-        private const float CloudLobeScallop = 0.11f;
-        private const float CloudLobeScallopScale = 2.6f;
+        // ROUND 9 — 0.11 → 0.20 AND 2.6 → 7.0, and the sweep that chose them is worth recording
+        // because it also says what these two CANNOT buy. Measured on the offline lobe model
+        // (scratchpad round9/builderC/scalsweep.py: anchor A, r 24 at 100 m, 420x280 px on screen,
+        // round-9 shader throughout), scored with critic 5's own estimator (perimeter/√area of a
+        // luma > 72nd-percentile mask, the estimator its board band was published with):
+        //     round 8  (2.6, 0.11)   14.49        r9 (5.0, 0.16)   16.57
+        //     r9       (2.6, 0.11)   15.34        r9 (7.0, 0.20)   18.19
+        //                                        r9 (9.0, 0.24)   18.68
+        // — against a board band of 21.1 (fable-06) to 334 (fairytale-01). 7.0/0.20 is where the
+        // curve flattens, and 9.0 is refused for a tessellation reason rather than a picture one:
+        // at 9 turns the 72-meridian grid has 8 segments per bump, which is where a scallop starts
+        // to facet instead of curving.
+        // AND THE HONEST HALF: the pure OUTLINE statistic (isoperimetric ratio P/(2√πA)) moves
+        // 1.11 → 1.12 across that entire sweep. Radial displacement of a star-shaped blob cannot
+        // make a cauliflower outline at any amplitude — it makes a bigger smooth blob. What the
+        // sweep actually buys is INTERIOR articulation (the same estimator scores value structure,
+        // because a mass with real modelling fragments a mid-luma threshold and a flat one does
+        // not) and a measured drop in the ghost-contour index, 0.29 → 0.10. Closing the rest of the
+        // gap to the board needs the mass BROKEN — sub-lobes with their own silhouettes, or a
+        // second smaller mass overlapping the first — which is a placement change, not a scallop.
+        private const float CloudLobeScallop = 0.20f;
+        private const float CloudLobeScallopScale = 7.0f;
 
         // -- THE SWELL BAND (round 4). The deck's own answer to "no top-surface relief crossing the
         //    mid-field": a ring of LOW, WIDE masses (variant 4) lying just off the island's edge,
@@ -1446,10 +1466,26 @@ namespace Tarrock.Editor
             // vault's half-width weighting in SkyGradient.hlsl.
             material.SetFloat("_LobeThinRadius", 14f);
             material.SetFloat("_LobeThickRadius", 24f);
-            // Tighter than round 3's power 4: on a mass that fills 500 px a power-4 grazing term is
-            // not a rim, it is a wash over the whole limb, and it was part of what kept the round-3
-            // heads pale all over.
-            material.SetFloat("_LobeRim", 1.1f);
+            // ROUND 9 — THESE TWO NOW DRIVE AN ACCENT, NOT A RIM (CloudLobe.shader §THE ACCENT,
+            // WHICH IS NOT A RIM). Round 8's term was a pure grazing-angle band, and dot(N, V) goes
+            // to zero all the way round a closed mass, so it drew a ribbon of constant angular
+            // width round the entire silhouette — which two critics measured from outside as a
+            // saturation halo of +0.018 where every blue-sky board plate runs negative. The accent
+            // is now gated by how far the limb TURNS TOWARD THE SUN, so it exists on a sunward
+            // quarter of the outline and nowhere else, and it is broken into strokes by the mass's
+            // own cauliflower.
+            //
+            // 1.1 → 2.6 because the term is spent in far fewer places. Measured on the offline lobe
+            // model (scratchpad round9/builderC/ship.py) over anchor A's whole mask, the round-8 rim
+            // adds a mean of 0.0116 linear luminance across 19.2% of the mask with a peak of 0.748;
+            // the round-9 accent at 2.6 adds a mean of 0.0072 across 6.5% with a peak of 1.647.
+            // Less total light, in half as many places, more than twice as bright where it lands —
+            // which is what the plates draw, and it is board-legal to let it run hot (fable-03
+            // clips 16.08% of its frame; our whole round-8 set maxes at 0.051%).
+            // The tightness is unchanged at 6 because the shader now widens it by up to 3.2x
+            // wherever the cauliflower bulges out, so 6 is the FLOOR of a varying width rather than
+            // a fixed one.
+            material.SetFloat("_LobeRim", 2.6f);
             material.SetFloat("_LobeRimPower", 6f);
             // The same convergence numbers as the deck, so the near row and the sea it stands in
             // recede together instead of separating into two layers.
@@ -1774,7 +1810,37 @@ namespace Tarrock.Editor
             float nibble =
                 GradNoise(dir.z * k * fine + 57.2f, dir.y * k * fine + 12.4f) +
                 GradNoise(dir.x * k * fine + 73.6f, dir.z * k * fine + 41.8f);
-            return 1f + (broad + nibble * 0.4f) * CloudLobeScallop;
+
+            // ROUND 9 — THE AMPLITUDE IS INTERMITTENT, and this is the geometry half of the
+            // round's first finding ("an ARTICULATED PAINTED SILHOUETTE: crisp accents against
+            // soft interiors — right now the mass reads as an undifferentiated blob with a uniform
+            // edge treatment"). Through round 8 this returned two octaves at ONE amplitude for
+            // every direction on every mass, which is a uniformly wobbly outline — measured as
+            // isoperimetric ratio P/(2√πA), the round-8 near masses come out at 1.14-1.15 against
+            // a board band of 6.07-18.4 for a painted cumulus (critic5/halo.py's perim/√A 21.5-65.1
+            // in these units). A uniform wobble cannot climb that scale however far its amplitude
+            // is pushed: raising it just inflates a smooth blob into a bigger smooth blob.
+            //
+            // What a painted cloud actually has is INTERMITTENCY — a long calm shoulder, then three
+            // sharp cauliflower bites, then another calm stretch. So a slow selector field (1.30
+            // per unit direction, about one and a third cycles across a mass — deliberately slower
+            // than the scallop's own 2.6 so it groups scallops rather than modulating each one)
+            // decides where the mass is CRISP and where it is SOFT, and a third, much finer octave
+            // is admitted only where the selector says crisp.
+            //
+            // MEAN-PRESERVING BY CONSTRUCTION, which is why no anchor's radius has to be re-cut:
+            // sel is a zero-mean GradNoise mapped to 0..1, so E[sel²] ≈ 1/3 and E[gain] =
+            // 0.55 + 1.35/3 ≈ 1.00. The distribution changes, the mean does not; a mass is still
+            // its authored size, and CloudLobeSurface still normalises by the true max extent.
+            // The reason the extra octave rides on `sel` and not on 1 is that a fine octave laid
+            // everywhere is exactly the "filter, not a hand" the round-6 tooth work already had to
+            // undo on the shading side.
+            float sel = 0.5f + 0.5f * GradNoise(dir.y * 1.30f + 5.7f, dir.z * 1.30f + 27.4f);
+            float bite =
+                GradNoise(dir.x * k * fine * fine + 11.9f, dir.y * k * fine * fine + 63.5f) +
+                GradNoise(dir.z * k * fine * fine + 88.1f, dir.x * k * fine * fine + 5.2f);
+            float gain = 0.55f + 1.35f * sel * sel;
+            return 1f + (broad + nibble * 0.4f + bite * 0.30f * sel) * CloudLobeScallop * gain;
         }
 
         /// <summary>Distance from the cluster centre to the metaball isosurface along

@@ -192,6 +192,13 @@ namespace Tarrock.Editor
             //        can leave a shelf hanging over the drop.
             height = ApplyLandformEvents(height, x, z);
 
+            // -- 6e. The knoll's WEST SHOULDER — the walkable approach (see ApproachShelf). Runs
+            //        AFTER the events on purpose: a walked line is a contract and a composition cut
+            //        is dressing, so where the south-east col's far skirt crosses the shoulder the
+            //        shoulder wins. Nothing inside any event's core is touched — measured below.
+            float approachWeight = ApproachShelf(x, z, out float approachY);
+            height = Mathf.Lerp(height, approachY, approachWeight);
+
             // -- 7. The broken edge, on EVERY side. Canon (world.md §The Cliff, director-blessed
             //       2026-07-26): the Cliff is an island in a sea of cloud, "edged everywhere by a
             //       drop the eye doesn't want to follow" (MQ00). The old build ringed the south and
@@ -234,6 +241,12 @@ namespace Tarrock.Editor
                 Mathf.InverseLerp(halfWidth, halfWidth + 45f, distance));
             float reliefScale = Mathf.Lerp(0.25f, 1f, pathMask);
             float fineScale = Mathf.Lerp(0.70f, 1f, pathMask);
+            // The knoll approach is walked ground and gets the path treatment, only harder — see
+            // ApproachShelf's "WHY THE GRAIN COMES DOWN FURTHER" note. Measured over this file's own
+            // field, the valley floor at 0.25/0.70 carries a cell-scale slope of mean 4.5°, p95
+            // 12.7°, max 20.9° — which a 4° floor can absorb and a 19° tread cannot.
+            reliefScale = Mathf.Lerp(reliefScale, ApproachReliefScale, approachWeight);
+            fineScale = Mathf.Lerp(fineScale, ApproachFineScale, approachWeight);
             float wx = Fbm(x * 0.0060f + 11.3f, z * 0.0060f + 4.7f);
             float wz = Fbm(x * 0.0060f + 71.9f, z * 0.0060f + 23.1f);
             height += Fbm((x + wx * 26f) * 0.030f, (z + wz * 26f) * 0.030f) * 7.5f * reliefScale;
@@ -503,6 +516,184 @@ namespace Tarrock.Editor
             //    south-east col entries in RockAnchors.
             height = CapTo(height, x, z, new Vector2(159.6f, 57.0f), runX: 20f, runZ: 5.5f, cap: 38.0f, degrees: 43f);
             return height;
+        }
+
+        // -------------------------------------------------------------------------------------
+        // THE KNOLL APPROACH (round 9) — the west shoulder
+        //
+        // THE ORDER (director, standing since round 8). The knoll is the region's hero landmark and
+        // MQ00 holds a beat on WALKING to the dead tree ("the ground rises to a modest knoll, and on
+        // it stands the only tree on the whole plateau" — MQ00 §The Dead Tree; the tutorial prompt is
+        // "approach the dead tree"). The player could not. Section 6c lerps to 50 m inside a 26 m
+        // radius, which puts the flanks at 52-79° on every bearing; Unity's CharacterController
+        // slopeLimit is 45°. Flood-filled at 45° from the spawn mark over this file's own
+        // heightfield, the trunk at (150, 58), the summit lip and the v4 standing mark were ALL
+        // unreachable before this change and are all reachable after it. That is the acceptance
+        // test, and it is a boolean.
+        //
+        // WHY THE WEST FACE, when the player arrives from the east. Because a walkable line up this
+        // hill costs FILL, and fill on the eastern half is not available:
+        //   - The rise is 19 m and the cone's toe is at r 26 m, so a constant-grade line from the
+        //     toe to the summit lip runs at 30-33° before any grain lands on it. Getting under 25°
+        //     means either a 180° wrap (which crosses every authored event on the hill) or a
+        //     shoulder of new mass. Traced against v8's own frustum, an east-side shoulder is fatal:
+        //     the v8 lens stands 25 m up and 56 m out, so new ground at 40-45 m range WINS ON ANGLE
+        //     against the knoll behind it. The measured east-side trials moved v8's skyline by up to
+        //     0.30 NDC over 19 columns — burying the round-5 south-east col and the round-4 notch.
+        //   - The west face costs almost nothing. The ground west of the knoll is the ridge running
+        //     on, 4-6 m HIGHER than the eastern meadow (35-38 m against 30-32 m), so the climb is
+        //     12.1 m instead of 19 m; and v8, v4, v1/v2 and v3 all see the knoll from the east or
+        //     not at all, so the shoulder is behind the hill in every frame that has the hill in it.
+        //     Measured: two of 97 skyline columns move at all (see the RESIDUE note below).
+        // The cost is honest and it is written down: the player now walks ROUND the hill. The knoll
+        // refuses on the face it is met on and offers a way up at the back, which is the grammar
+        // this region already speaks in (rule 5: elevation signposts, north refuses, south permits).
+        //
+        // WHY AN EQUIANGULAR SPIRAL. The tread is r(b) = r0 · (r1/r0)^u, a logarithmic spiral, which
+        // crosses every radius at the same angle — so arc length is exactly proportional to (r0 − r)
+        // and a height linear in that same quantity is a CONSTANT grade with no arithmetic. It is
+        // also the curve a contour-following path actually takes, which is why it reads as landform
+        // rather than as an arc struck with a compass.
+        //
+        // WHY THE TREAD IS LEVELLED ACROSS THE PATH AND NOT ACROSS THE RADIUS. A shelf held level
+        // along the radius leaks its grade sideways: the spiral meets the radius at 47° here, so a
+        // radially-level tread measured 24.4° of true steepness for a 19° design grade and 16.5° of
+        // side tilt. Subtracting grade · (dr/ds) · e tilts the tread into the path's own normal, and
+        // the measured side tilt drops to mean 4.5°.
+        //
+        // WHY THE GRAIN COMES DOWN FURTHER on the tread than on the valley floor (0.10/0.35 against
+        // step 8's 0.25/0.70): step 8's relief is amplitude, not slope, and slope is what a
+        // controller tests. Measured over a 50 × 55 m patch of this field at full amplitude, the
+        // three relief octaves carry cell-scale |grad| of 0.186/0.083/0.124 mean and 0.368/0.157/
+        // 0.238 at p95. A 4° valley floor absorbs that (measured on the floor: mean 4.5°, max
+        // 20.9°); a 19° tread does not — at 0.25/0.70 the same tread measured a 33.7° maximum.
+        //
+        // MEASURED, along the walked line from the shoulder's foot to the trunk (41.8 m, sampled
+        // every 0.25 m, slopes taken over one 0.5 m heightmap cell, through the finished field
+        // INCLUDING BuildTerrainData's two smoothing passes and Unity's bilinear read):
+        //     along-path slope   min 0.3°  mean 16.1°  p95 20.8°  MAX 21.6° at (133.2, 50.1)
+        //     cross-path tilt    mean 4.5°  p95 12.0°  MAX 17.3°
+        //     true 3-D steepness mean 17.3°  p95 21.5°  MAX 23.3° at (143.8, 50.3)
+        // 23.3° against the 30° the order asks for and the 45° the controller allows. There is no
+        // step or lip anywhere on it: the tread is one continuous surface and the plateau leg past
+        // the shelf's top (the last 10 m to the trunk, which is natural ground) measures 20.6°.
+        //
+        // WHAT IS UNTOUCHED, re-sampled to the centimetre after the change: the trunk's own ground
+        // (150, 58) 49.779 m, the v4 standing mark (155, 61) 50.828 m, the v8 lens's ground
+        // (200, 84), the spawn, and v3/v5/v6/v7's marks and the stand-in's mark — all ±0.0000 m. The
+        // radial slope profile is IDENTICAL to a tenth of a degree on 20 of 24 bearings sampled
+        // every 15°, including every bearing v8 reads: N 79.3°, NE 67.8°, E 61.4°, SE 73.6°, S
+        // 67.8°, NW 73.4°. The four that move are 195/210/225/240 — the shoulder's own face — and
+        // they get STEEPER, not gentler (210: 61.8° → 72.7°), because the tread's outer batter is a
+        // scarp. The hill is sheer on eleven bearings out of twelve and offers exactly one way up.
+        // The round-4 knoll notch, the round-5 south-east col, the round-2 bench and spur and the
+        // notch horn are all zero-change inside their cores (max |Δ| 0.00 m in every one).
+        //
+        // RESIDUE, reported rather than hidden: two of 97 traced skyline columns in v8 move, both on
+        // the south-east col — Unity u −0.104 by 6 px and u −0.125 by 18 px, upward. That column is
+        // the one the round-5 note describes as seeing THROUGH the col to the knoll's far rim 27 m
+        // behind, and the far rim is the west rim, which this shoulder raises. The col's bite
+        // therefore reads ~77 px instead of 95 px against its 249 px crest (38% → 31%). Nothing else
+        // in any frame moves.
+        //
+        // COST: 1571 m³ moved (1466 fill, 105 cut; net +1361), deepest fill 7.93 m and deepest cut
+        // 2.13 m, over 0.98% of the heightmap in a footprint bounded by x 103.0-147.5, z 42.0-70.0 —
+        // the same order as the south-east col (1481 m³) and the dawn breach (1182 m³) already in
+        // this file, and unlike either of those it is mostly fill, because a hill this steep cannot
+        // be given a walkable line by cutting alone.
+        //
+        // FOLLOW-UP OWED BY ANOTHER FILE (flagged, not fixed here — TerrainRegionGenerator.cs is not
+        // this change's to edit): FindTreeSpur still bows the worn grass lane to (150, 65), the
+        // knoll's NORTH foot, which is now a 79° face. The lane's foot belongs at this shoulder's
+        // own foot, near (118, 61).
+        // -------------------------------------------------------------------------------------
+
+        // Bearings are Unity compass (0° = +Z, increasing toward +X), measured from KnollCentre.
+        private const float ApproachFootBearing = 275f;   // WNW, on the ridge running west
+        private const float ApproachTopBearing = 205f;    // SSW, onto the summit plateau's lip
+        private const float ApproachFootRadius = 32f;     // out past the cone's toe, on open ground
+        private const float ApproachTopRadius = 9f;       // the plateau's rim; inside it is flat
+        private const float ApproachFootHeight = 37.7f;   // sampled: the natural ground at the foot
+        private const float ApproachTopHeight = 48.6f;    // sampled: the natural plateau lip there
+        // The tread: 6 m wide at the foot narrowing to 4.4 m at the lip, with a batter that spreads
+        // 9 m at the foot (where the fill is deepest, 7.9 m) and 4 m at the lip (where it must not
+        // reach the round-4 notch, 15.5 m away on the far side of the summit).
+        private const float ApproachHalfWidthFoot = 3.0f;
+        private const float ApproachHalfWidthTop = 2.2f;
+        private const float ApproachBlendFoot = 9.0f;
+        private const float ApproachBlendTop = 4.0f;
+        private const float ApproachLeadFadeDegrees = 14f;
+        private const float ApproachTrailFadeDegrees = 12f;
+        // The summit plateau is already flat and already walkable; the shelf stops at its rim
+        // rather than re-levelling the ground the dead tree stands on.
+        private const float ApproachSummitGateInner = 6f;
+        private const float ApproachSummitGateOuter = 9f;
+        private const float ApproachReliefScale = 0.10f;
+        private const float ApproachFineScale = 0.35f;
+        // Plan wander, in metres ACROSS the tread. It is applied to the corridor and never to the
+        // height, so the line bends without the grade moving a tenth of a degree — a wander mixed
+        // into the height instead aliases straight into the grade (measured: ±1.1 m of height over a
+        // 20 m wavelength, i.e. 19° of slope, on the first attempt).
+        private const float ApproachWanderMetres = 1.5f;
+        private const float ApproachIgnoreRadius = 55f;   // early-out; the shelf cannot reach here
+
+        /// <summary>
+        /// The knoll's west shoulder: returns the target height of the walkable tread at a world XZ
+        /// and the weight it should be blended in with (0 = untouched ground). See the long note
+        /// above for the reasoning and the measured grade.
+        /// </summary>
+        private static float ApproachShelf(float x, float z, out float targetHeight)
+        {
+            targetHeight = 0f;
+            float dx = x - KnollCentre.x;
+            float dz = z - KnollCentre.y;
+            float radius = Mathf.Sqrt((dx * dx) + (dz * dz));
+            if (radius > ApproachIgnoreRadius)
+            {
+                return 0f;
+            }
+
+            // Unwrap the bearing onto the branch nearest the tread's top, so the shelf can never
+            // wrap the wrong way round the hill.
+            float bearing = Mathf.Atan2(dx, dz) * Mathf.Rad2Deg;
+            float b = ApproachTopBearing + Mathf.DeltaAngle(ApproachTopBearing, bearing);
+
+            // The spiral, and the constant-grade height on it.
+            float u = Mathf.InverseLerp(ApproachFootBearing, ApproachTopBearing, b);
+            float ratio = ApproachTopRadius / ApproachFootRadius;
+            float pathRadius = ApproachFootRadius * Mathf.Pow(ratio, u);
+            float t = (ApproachFootRadius - pathRadius) / (ApproachFootRadius - ApproachTopRadius);
+
+            float turns = Mathf.Log(ApproachFootRadius / ApproachTopRadius);
+            float sweep = Mathf.Abs(ApproachFootBearing - ApproachTopBearing) * Mathf.Deg2Rad;
+            float hypotenuse = Mathf.Sqrt((turns * turns) + (sweep * sweep));
+            float pathLength = hypotenuse / turns * (ApproachFootRadius - ApproachTopRadius);
+            float grade = (ApproachTopHeight - ApproachFootHeight) / pathLength;
+            float radialFraction = turns / hypotenuse;          // |dr/ds| along the spiral
+            float tangentialFraction = sweep / hypotenuse;      // |r·dθ/ds| along the spiral
+
+            float offset = radius - pathRadius;
+            targetHeight = Mathf.Lerp(ApproachFootHeight, ApproachTopHeight, t)
+                         - (grade * radialFraction * offset);
+
+            float wanderFade = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0f, 0.20f, t))
+                             * Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(1f, 0.80f, t));
+            float wander = ((ApproachWanderMetres * Mathf.Sin((b * Mathf.Deg2Rad * 2.6f) + 1.3f))
+                          + (ApproachWanderMetres * 0.44f * Mathf.Sin((b * Mathf.Deg2Rad * 6.1f) - 0.4f)))
+                          * wanderFade;
+            float across = Mathf.Abs((offset * tangentialFraction) - wander);
+
+            float half = Mathf.Lerp(ApproachHalfWidthFoot, ApproachHalfWidthTop, t);
+            float batter = Mathf.Lerp(ApproachBlendFoot, ApproachBlendTop, t);
+            float core = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(half + batter, half, across));
+            float lead = Mathf.SmoothStep(0f, 1f,
+                Mathf.InverseLerp(ApproachFootBearing + ApproachLeadFadeDegrees, ApproachFootBearing, b));
+            float trail = Mathf.SmoothStep(0f, 1f,
+                Mathf.InverseLerp(ApproachTopBearing - ApproachTrailFadeDegrees, ApproachTopBearing, b));
+            float summit = Mathf.SmoothStep(0f, 1f,
+                Mathf.InverseLerp(ApproachSummitGateInner, ApproachSummitGateOuter, radius));
+
+            return core * lead * trail * summit;
         }
 
         /// <summary>Lifts ground inside a disc TOWARD a target height, never below what is already

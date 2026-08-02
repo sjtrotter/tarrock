@@ -58,7 +58,7 @@ Material:
     - _LobeFormBias: -0.12
     - _LobeFormGain: 1.45
     - _LobeMidPoint: 0.46
-    - _LobeRim: 1.1
+    - _LobeRim: 2.6
     - _LobeRimPower: 6
     - _LobeSunWeight: 0.68
     - _LobeThickRadius: 24

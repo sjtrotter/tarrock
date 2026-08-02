@@ -1040,6 +1040,21 @@ namespace Tarrock.Editor
                 return false;   // the dead tree's own ground
             }
 
+            // THE WEST SHOULDER'S TREAD (round 9). Landform.cs §THE KNOLL APPROACH cuts the one
+            // walkable line to the dead tree — a 4.4-6 m tread at 23.3° maximum — and a boulder
+            // standing on a 5 m tread is not dressing, it is a closed route. Only stones big enough
+            // to CARRY A COLLIDER are turned away (PlaceRock's own 1 m threshold, the same crossover
+            // the travelled line's corridor above uses): ankle-high rubble may lie on a path, which
+            // is where rubble lies, and the shoulder would read as swept if it could not.
+            // The gate is the shelf's own blend weight rather than a second copy of the spiral
+            // geometry, so it can never drift from the landform it is protecting: > 0.5 is the
+            // tread plus the inner half of its batter — 6.1 m either side of the line at the foot,
+            // 3.6 m at the lip, which is the width a walked line needs kept clear.
+            if (scale >= 1.0f && ApproachShelf(x, z, out _) > 0.5f)
+            {
+                return false;   // the way up
+            }
+
             foreach (RockAnchor anchor in RockAnchors)
             {
                 // Scaled with the anchor too: an anchor is a composition and the scatter must not

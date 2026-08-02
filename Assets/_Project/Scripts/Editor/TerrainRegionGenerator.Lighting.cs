@@ -17,6 +17,39 @@ namespace Tarrock.Editor
         private static readonly Color FarCoolLinear = new Color(0.72f, 0.80f, 0.92f);
         private const float FarCoolShare = 0.20f;
 
+        // THE GROUND'S OWN FAR FIELD (round 9). LINEAR, same convention as everything above.
+        //
+        // The scene fog dies into FarFieldLinear — Sky.cs's value, the CLOUD SEA's pale dawn gold —
+        // and that is correct for the deck and for the sky's lower hemisphere. It is not correct for
+        // GROUND. art-audio.md §Region color scripts gives the Cliff "pale dawn gold, wind-scoured
+        // green": the gold belongs to the light and the air, the green to the land, and running the
+        // land's aerial perspective into a near-white gold (linear (0.864, 0.840, 0.776), luminance
+        // 0.84) gilds every hillside past thirty metres. A round-8 critic measured the consequence
+        // on v4's hillside — shadow saturation 0.099 → 0.408 and R−B +46.9, from fog alone. What a
+        // distant hillside is actually veiled by at dawn is SCATTERED SKYLIGHT: cooler than the
+        // deck, and dimmer than it.
+        //
+        // So the ground takes a far field of its own, DERIVED from FarFieldLinear rather than
+        // restated, so that when the sky builder moves the far plane the ground moves with it and
+        // the two cannot silently drift (that drift is exactly what the round-6 critique caught
+        // between the fog and the haze). Only Tarrock/TerrainPainterly consumes it; the sky, the
+        // cloud deck and every other surface keep RenderSettings.fogColor unchanged to the bit.
+        //
+        // THE SHARE IS THE WHOLE ARGUMENT, and it is deliberately not 1.0. A far ridge dying INTO
+        // the deck instead of silhouetting against it is a standing contract between this file's fog
+        // and Sky.cs's deck (see the fog block below). At 0.72 the ground's far field lands at
+        // linear (0.660, 0.696, 0.750), luminance 0.692 against the deck's 0.840 and R−B −0.091
+        // against the deck's +0.088: cool instead of gold, and one-fifth of a stop down, which reads
+        // as haze rather than as a cut-out. Take it further and the ridges start to silhouette.
+        private static readonly Color GroundFarCoolLinear = new Color(0.58f, 0.64f, 0.74f);
+        private const float GroundFarCoolShare = 0.72f;
+        // 1.0 = the ground's fog builds at exactly the scene's own density; below 1 it builds more
+        // slowly, which de-gilds the near-mid band while the far plane still saturates. Left at 1
+        // because the round-9 model says the gilding complaint is answered by the COLOUR alone —
+        // the near-mass darks the jamb gate measures sit 3-10 m from camera and carry under 1% fog,
+        // so a density change buys nothing there and only costs the far-ridge contract.
+        private const float GroundFogScale = 1.0f;
+
         private static void BuildLighting()
         {
             // FROZEN DAWN (canon: art-audio.md §Region color scripts gives the Cliff "pale dawn
@@ -543,6 +576,38 @@ namespace Tarrock.Editor
             // is deliberate — this round's ground/rock builders are working against the round-6 far
             // plane, and unifying must not move it under them.
             RenderSettings.fogColor = FarFieldLinear;
+
+            // ---- ROUND 9, THE GROUND'S FAR FIELD (ground/light builder; the block above and the
+            // grade below are untouched). The argument and the numbers are at §GroundFarCoolLinear.
+            //
+            // WHY IT IS WRITTEN HERE AND NOT LEFT TO A SHADER DEFAULT. This is an ATMOSPHERE number
+            // — it is derived from the same FarFieldLinear the fog is, by the same decode — and the
+            // atmosphere's numbers live in this file. Tarrock/TerrainPainterly carries a default
+            // equal to FarFieldLinear's own encode so that an unwritten material renders exactly as
+            // it did in round 8; this line is what makes the ground's far field actually differ.
+            //
+            // THE TWO CONVERSIONS ARE NOT DECORATION. FarFieldLinear holds a triple whose DECODE is
+            // the linear far field (Sky.cs solves the constant backwards for that), so `.linear`
+            // reads it, the lerp happens in linear where a colour mix means what it says, and
+            // `.gamma` re-encodes it because Material.SetColor is gamma-decoded on the way in — the
+            // same convention this file's round-7 fog note sets out. Get either wrong and the ground
+            // recedes into a colour nobody chose.
+            Color groundFar = Color.Lerp(FarFieldLinear.linear, GroundFarCoolLinear, GroundFarCoolShare);
+            var terrainMaterial = AssetDatabase.LoadAssetAtPath<Material>(TerrainMaterialPath);
+            if (terrainMaterial != null && terrainMaterial.HasProperty("_GroundFarColor"))
+            {
+                terrainMaterial.SetColor("_GroundFarColor", groundFar.gamma);
+                terrainMaterial.SetFloat("_GroundFogScale", GroundFogScale);
+                EditorUtility.SetDirty(terrainMaterial);
+            }
+            else if (terrainMaterial == null)
+            {
+                // Generate() builds the terrain material before it calls this method, so a null here
+                // means the order changed and the ground silently kept the deck's gold. Say so.
+                Debug.LogWarning($"[Tarrock] {TerrainMaterialPath} not found when writing the ground " +
+                                 "far field; the ground will recede into RenderSettings.fogColor.");
+            }
+
             DynamicGI.UpdateEnvironment();
 
             BuildPostVolume();

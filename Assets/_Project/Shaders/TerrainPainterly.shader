@@ -512,6 +512,106 @@ Shader "Tarrock/TerrainPainterly"
         _SunBleach ("Sun Bleach (chroma removed at full beam)", Range(0, 1)) = 0.5
         _BleachStart ("Sun Bleach Start (light reach)", Range(0, 1)) = 0.28
         _BleachTint ("Sun Bleach Tint (normalised to luma 1)", Color) = (0.98, 0.96, 0.94, 1)
+
+        // -- ROUND 9: THE SHADE FILL, AND THE LEVEL IT IS PAID FOR WITH -------------------------
+        //
+        // WHAT WAS MISSING. Tarrock/GrassTuft has carried a cool additive shade fill since round 5
+        // (_ShadeFill / _ShadeFillStrength, gated on how little of the beam reaches the surface).
+        // This shader had NO fill term at all: its shade was `SampleSH` times `_ShadowTint` and
+        // nothing else, so grass shadows cooled toward a dawn sky dome and the ground they sat on
+        // did not. TerrainRegionGenerator.Lighting.cs said so in its own source (the round-8 note
+        // at the cast-shadow block: "the ground does not, and the ground is not this round's file
+        // to change"). This is that change. Same mechanism, same knee, same property names, so a
+        // future round can tune ground and grass against each other by reading one pair of numbers.
+        //
+        // WHY THE FILL IS BLUER THAN THE GRASS'S (0.44, 0.54, 0.70) against (0.50, 0.55, 0.68).
+        // The two shaders do not multiply it by the same thing. GrassTuft's round-8 note records
+        // that its fill IS the shaded read — a turned-away blade keeps almost no direct term — and
+        // that a bluer fill took its deepest shadow to hue 110°, cyan, which the colour law
+        // forbids. Here the fill is multiplied by an OLIVE ground albedo (the meadow family is
+        // linear (0.105, 0.130, 0.046), R/B 2.28) and then by _ShadowTint, so the same triple
+        // arrives on screen warmed back by more than a factor of two. Terrain can carry a cool the
+        // grass cannot, and it needs to: the shade band measured 50-64° of hue in round 8 — olive —
+        // against a colour law that asks for cool-clean.
+        //   THIS IS THE ONE NUMBER THE DIRECTOR'S HUE CALL LANDS ON. The gauntlet lead has the
+        //   shade-hue direction open (the reference board is bimodal: all eight Fable plates put
+        //   shade REDDER than light, Ghibli puts it 131° cooler). Retarget the hue here and nowhere
+        //   else — everything downstream of this triple is measurement, not authorship.
+        //   AND THERE IS A WALL, MEASURED. A first pass tried (0.42, 0.50, 0.74) at strength 0.25.
+        //   Modelled on v5-ground-close — the one frame that is almost entirely terrain in deep
+        //   shade — that fill drove BLUE above GREEN in the shade ambient, and once B > G the hue
+        //   leaves the yellow arc altogether: the shade band landed at hue 357° (magenta) and the
+        //   frame's hue split went −5.4 → −43.4, past the far end of the Fable band (−33.1). The
+        //   triple below has its green closer to its blue for that reason (B/G 1.79 against 2.42),
+        //   and it lands v5 at hue 32.6 and split −8.4 — a real cool, and no flip.
+        _ShadeFill ("Shade Fill (dawn sky dome)", Color) = (0.44, 0.54, 0.70, 1)
+        _ShadeFillStrength ("Shade Fill Strength", Range(0, 2)) = 0.18
+        // The knee is GrassTuft's 0.35 verbatim and for its reason: a surface only a third reached
+        // by the beam already reads as shade, and running the fill in over the whole terminator
+        // instead of its last sliver is what stops the boundary snapping into a visible line.
+        _ShadeFillKnee ("Shade Fill Knee (light reach)", Range(0.05, 1)) = 0.35
+        //
+        // _ShadeDeepen — THE LEVEL, AND THE TRAP THIS PROPERTY EXISTS TO AVOID. An additive fill
+        // RAISES the shade, and round 9's validated gate says our near-ground masses are already
+        // too LIGHT, not too dark: jambG_L_p05 (5th-percentile luma over ground-mask pixels in the
+        // bottom 40% of rows) measured v4 0.331 / v3 0.304 / v6 0.249 against a Fable ceiling of
+        // 0.2218 and a Fable median of 0.099. So the fill here has to buy CHROMA and not LEVEL, and
+        // this is what pays for it: the ambient term is scaled down by the same shadeMix the fill is
+        // gated on, so the two land on exactly the same population and the net level does not move.
+        // The companion floor says there is room — the mean blue of that darkest 5% runs 10.0-45.5
+        // against a Fable floor of 6.2, so the dark end can lose level without being crushed.
+        //
+        // WHY THE AMBIENT AND NOT THE SHADOW STRENGTH. The lamp's shadowStrength is the obvious
+        // lever and it is deliberately NOT used: it is entangled with the foreground tussock
+        // measurement another builder is working against this round, and it moves cast shadow only.
+        // The lift this gate is measuring is in the AMBIENT tier — it is on every shaded face,
+        // cast-shadowed or merely turned away — so the ambient is where it is taken out.
+        //
+        // WHY 0.66 AND NOT LESS, and this is the round-9 measurement that decided the whole edit.
+        // The model recovers, per pixel, the light reach of the population the jamb gate actually
+        // scores — the darkest 5% of near ground. On v1/v2/v5/v7/v8 it is at light reach 0.01-0.06:
+        // real deep shade, which this lever reaches at full strength. On v6 it is 0.22. On v3 and
+        // v4 — THE TWO FRAMES THAT FAIL THE GATE — it is 0.60 and 0.64, which is to say their
+        // darkest near ground is SUNLIT ground. There is nothing shaded in their near field for a
+        // shade lever to darken. So a deep cut here would take level out of the five frames that
+        // already pass (v5 is at 0.064 against a Fable band starting at 0.071 — it is the frame
+        // with the least room, not the most) and would not touch the two that fail. 0.66 against a
+        // 0.18 fill is the LEVEL-NEUTRAL pair — deepen = 1 − strength·lum(fill)/lum(SampleSH), i.e.
+        // 1 − 0.18·0.2450/0.1308 = 0.663 — so the fill's luminance is paid for and nothing else is.
+        // v3 and v4 are a near-field composition finding, not a lighting one.
+        _ShadeDeepen ("Shade Deepen (ambient kept in full shade)", Range(0.15, 1)) = 0.66
+
+        // -- ROUND 9: THE GROUND'S OWN FAR FIELD ------------------------------------------------
+        //
+        // The scene's RenderSettings.fogColor is FarFieldLinear (TerrainRegionGenerator.Sky.cs) —
+        // a pale dawn GOLD, linear (0.864, 0.840, 0.776), and it is the right colour for what it
+        // was chosen for: it is the CLOUD SEA's colour, and a far ridge dying into the deck instead
+        // of silhouetting against it is a standing contract between the fog and the sky.
+        //
+        // It is the wrong colour on GROUND. art-audio.md §Region color scripts gives the Cliff
+        // "pale dawn gold, wind-scoured green": the gold is the light and the sky, the green is the
+        // land. Running the land's aerial perspective into a near-white gold gilds it — a round-8
+        // critic measured the v4 hillside's shadow saturation going 0.099 -> 0.408 and its R−B +46.9
+        // purely from fog — and physically it is backwards, because what a distant hillside is
+        // veiled BY at dawn is scattered skylight, which is cool and dimmer than the deck.
+        //
+        // So the ground gets its own far field, written from Lighting.cs beside the fog it belongs
+        // to (SSOT: the atmosphere's numbers live there, not in a property sheet). The default here
+        // is FarFieldLinear's own encode to the bit, so an unwritten material is round-8-identical.
+        // THREE KNOWN COSTS, all deliberate and all cheap to reverse:
+        //   - Tarrock/RockPainterly keeps the global fog, so rock outcrops still recede into gold.
+        //     Mirror this pair there when that shader is next open.
+        //   - Tarrock/GrassTuft likewise, so between roughly 40 and 100 m the blades sit a little
+        //     warmer than the ground they grow out of. The gap is bounded and small — fog runs 5%
+        //     at 40 m and 25% at 100 m, which is at most linear (0.05, 0.04, 0.01) of difference —
+        //     and past that band the tuft density has faded out anyway. Mirror it there too; the
+        //     grass files were another builder's this round.
+        //   - a far ridge now dies into something dimmer than the deck, so it silhouettes slightly
+        //     where it used to dissolve. _GroundFogScale is the dial for that: below 1 the ground's
+        //     fog builds more slowly with distance, so the near-mid band de-gilds while the far
+        //     plane still saturates.
+        _GroundFarColor ("Ground Far Field", Color) = (0.938, 0.926, 0.895, 1)
+        _GroundFogScale ("Ground Fog Scale (1 = the scene's own fog)", Range(0.2, 2)) = 1.0
     }
 
     SubShader
@@ -644,6 +744,12 @@ Shader "Tarrock/TerrainPainterly"
             float _SunBleach;
             float _BleachStart;
             float4 _BleachTint;
+            float4 _ShadeFill;
+            float _ShadeFillStrength;
+            float _ShadeFillKnee;
+            float _ShadeDeepen;
+            float4 _GroundFarColor;
+            float _GroundFogScale;
         CBUFFER_END
 
         // The penumbra tap ring (see the Frag lighting block). Unit offsets in the light's own frame:
@@ -2117,6 +2223,32 @@ Shader "Tarrock/TerrainPainterly"
                 float lit = wrapped * atten;
                 float3 direct = mainLight.color * lit;
                 float3 ambient = max(SampleSH(shadingNormalWS) * _AmbientBoost, _AmbientFloor.rgb);
+
+                // -- ROUND 9: THE SHADE FILL, PAID FOR IN LEVEL --------------------------------
+                // See the property block for what this is and why the triple is bluer than
+                // Tarrock/GrassTuft's. What is written here is the ORDER, and the order is the
+                // whole point: the deepen and the fill are gated on the SAME shadeMix, so they land
+                // on exactly the same pixels and the fill's luminance is taken back out of the
+                // surface it is added to. Modelled through the frag + fog + the full URP post chain
+                // against the round-8 captures (the model reproduces round-8 ground pixels to a
+                // median 2.6-6.7 sRGB code values), the shade tier's ambient goes
+                //     linear (0.106, 0.131, 0.200) luma 0.1308   round 8
+                //  -> linear (0.099, 0.132, 0.213) luma 0.1305   round 9  (-0.2%, R/B 0.53 -> 0.47)
+                // i.e. red down, blue UP, luminance held. A pure chroma trade, which is what the
+                // round-9 gate requires: near-ground darks may not get BRIGHTER (jambG_L_p05
+                // ceiling 0.2218) and may not get crushed either (mean blue of the darkest 5%
+                // floor 5.5, ours 10.0-45.5 — and the fill is the channel that protects it).
+                //
+                // NOTE ON _AmbientFloor: the deepen is applied AFTER the max(), so the floor is no
+                // longer the last word on how dark ambient can get. That is intended and it is not
+                // a behaviour change in practice — Lighting.cs records that the floor decodes to
+                // linear (0.010, 0.012, 0.017) against a SampleSH that arrives at (0.106, 0.131,
+                // 0.200), so the max() has never once bitten on this scene. The fill is added after
+                // both, so the shade can no longer reach zero in blue whatever the deepen is set to.
+                float shadeMix = 1.0 - smoothstep(0.0, _ShadeFillKnee, lit);
+                ambient *= lerp(1.0, _ShadeDeepen, shadeMix);
+                ambient += _ShadeFill.rgb * (_ShadeFillStrength * shadeMix);
+
                 float3 shade = lerp(_ShadowTint.rgb, float3(1.0, 1.0, 1.0), saturate(lit));
 
 
@@ -2131,7 +2263,27 @@ Shader "Tarrock/TerrainPainterly"
                     bleach);
 
                 float3 color = albedo * (direct + ambient) * shade;
-                color = MixFog(color, input.fogCoord);
+
+                // -- ROUND 9: THE GROUND DIES INTO ITS OWN FAR FIELD, NOT THE DECK'S -----------
+                // MixFog() is `lerp(unity_FogColor, color, ComputeFogIntensity(fogCoord))`, and
+                // unity_FogColor is RenderSettings.fogColor, which is FarFieldLinear — the CLOUD
+                // SEA's pale dawn gold. Written out by hand here so the GROUND can take a different
+                // colour without touching the fog every other surface in the scene shares. See the
+                // property block for the argument; the number itself is written from
+                // TerrainRegionGenerator.Lighting.cs, beside the fog it is derived from.
+                //
+                // The keyword guard is not optional: ComputeFogIntensity returns 0 — not 1 — when
+                // no fog keyword is set, which would render the ground as flat far-field colour in
+                // any fog-off configuration. MixFog guards the whole lerp for exactly this reason.
+                // _GroundFogScale multiplies the FACTOR, not the distance, which is the same thing
+                // for FOG_EXP/FOG_EXP2 (the factor is linear in z) and a curve change for
+                // FOG_LINEAR; this project runs ExponentialSquared, so it is a density scale.
+                #if defined(FOG_LINEAR) || defined(FOG_EXP) || defined(FOG_EXP2)
+                    // saturate() because a scale above 1 can take FOG_LINEAR's intensity past 1,
+                    // where lerp would EXTRAPOLATE past the surface colour. FOG_EXP2 cannot.
+                    color = lerp(_GroundFarColor.rgb, color,
+                                 saturate(ComputeFogIntensity(input.fogCoord * _GroundFogScale)));
+                #endif
                 return half4(color, 1.0);
             }
             ENDHLSL

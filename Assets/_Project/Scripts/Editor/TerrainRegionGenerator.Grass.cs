@@ -1816,17 +1816,67 @@ namespace Tarrock.Editor
         // path is without a path texture.
         //
         // These are NOT more meadow. The meadow (BuildGrassDetails) is a 0.30 m terrain detail at
-        // 8 tufts per square metre; a tussock is a knee-high (0.57-0.93 m) clump placed one at a
+        // 8 tufts per square metre; a tussock is a knee-high (0.33-0.50 m) clump placed one at a
         // time where the valley floor meets its banks. They share Tarrock/GrassTuft — the same
         // combing, the same bound-state baseline sway, so the two populations move as one meadow —
         // but carry their own drier material, so the banks read gold against the green floor at
         // dawn. They are deliberately NOT marked static: static batching hands the shader an
         // identity matrix, and Tarrock/GrassTuft reads its per-instance vertical scale off that
-        // matrix, so batching would comb a 0.93 m clump as if it were 0.60 m.
+        // matrix, so batching would comb a 0.50 m clump as if it were 0.33 m.
+        //
+        // ROUND 9 — THE GOLD RIBBONS ARE A HEIGHT BUG, NOT A COLOUR BUG.
+        //
+        // THE FINDING, and this is the first round it was traced rather than guessed. The five gold
+        // ribbons in v7's foreground shadow are five upper blade arcs of ONE clump, at
+        // (200.93, 24.04, 92.94), 2.36 m from the v7 lens. Round 8 cut this material's albedo by
+        // 1.69x and the ribbons stayed, because albedo was never the reason they were bright: they
+        // are GENUINELY IN THE SUN while the ground under them is genuinely in shade.
+        //
+        // MEASURED, by ray-marching this generator's own heightfield (a numpy port of
+        // TerrainRegionGenerator.Landform.SampleHeight plus BuildTerrainData's two smoothing
+        // passes;
+        // it reproduces the knoll summit at 49.779 m against the 49.78 m that file's own comments
+        // record) along the sun's bearing. SunEuler (12, 152) gives a to-sun vector of
+        // (-0.4592, 0.2079, 0.8637): 12.00° up, bearing 332°. From that clump:
+        //     tip height above the clump origin      0.00 m   0.20 m   0.29 m   0.60 m   0.88 m
+        //     horizon toward the sun                 12.42°   12.13°   11.99°   11.56°   11.16°
+        //     verdict                                SHADOW   SHADOW   SUNLIT   SUNLIT   SUNLIT
+        // The occluder is 37.4 m away and clears the sun's disc by 0.42° — this clump stands
+        // exactly on a shadow terminator. Everything above 0.29 m is lit; everything below it is
+        // not. At the round-8 height the tip reached 0.878 m, so 67% of the clump's blade length
+        // stood in the beam and 33% in the dark, which is precisely what the captures show: a few
+        // bright arcs with no visible plant under them.
+        //
+        // THE MODEL WAS CONTROLLED, because a shadow model that only explains the bright ones
+        // explains nothing. Nineteen tussocks fall inside v7's frame within 45 m. The ray-march
+        // calls four of them fully shadowed — at 17.6, 25.4, 28.3 and 35.0 m, all of them north of
+        // the lens where the valley's north wall is nearer — and those four measure 0.042-0.076
+        // top-2% linear luminance in the round-8 capture with ZERO gold pixels between them. It
+        // calls the other fifteen lit, and all fifteen measure 0.17-0.78 with 274-25 095 gold
+        // pixels apiece. Nineteen for nineteen, no misses either way.
+        //
+        // THE FIX IS THE HEIGHT, and it is a fix this file owed anyway. The comment above has said
+        // "knee-high" since it was written and the numbers delivered 0.57-0.93 m. A knee on a
+        // human-scale Fool (art-bible.md §Production standards > Characters > Scale: the
+        // player is human-scale at 1.7 m) is about 0.48 m; 0.93 m is mid-thigh. These were
+        // spires standing in a meadow whose common species top out at 0.42 m
+        // (the rare bent reaches 0.62 m and is capped at one per cell precisely so it cannot become
+        // the meadow). A wind-scoured clifftop bank is a clump WITHIN the field, not a stand above
+        // it — and a clump within the field cannot poke a tip through a shadow line the field
+        // itself cannot reach.
+        // 0.75 -> 0.46 puts tips at 0.33-0.50 m: knee-high as the doc has always claimed, 1.1-1.8x
+        // the common meadow species instead of 2-3x. Against the traced 0.29 m clearance at the
+        // hero clump the lit blade length goes 0.586 m -> 0.181 m (-69%), and the clump at 8.3 m —
+        // the frame's other gold offender, 25 095 gold pixels — drops from 30% lit to entirely
+        // shadowed, because its clearance there is 0.62 m and nothing on it now reaches that.
+        // WHAT THIS COSTS, stated plainly: the midground texture these clumps were added for (the
+        // round-2 finding) comes partly from their height, and this spends some of it. The honest
+        // answer to midground texture at this scale is coarseness and density, not spires; whether
+        // the bank needs more clumps to hold that read is a call for a capture, not for this edit.
         // -------------------------------------------------------------------------------------
         private const int TussockVariants = 3;
         private const float TussockCell = 4f;
-        private const float TussockHeight = 0.75f;
+        private const float TussockHeight = 0.46f;
         private const int TussockBlades = 9;
 
         private static void BuildTussocks(TerrainData terrainData)
@@ -1885,6 +1935,18 @@ namespace Tarrock.Editor
             // drier and paler than the field by about half a stop instead of by a stop and a half.
             // This material also SAT OUT ROUND 7 while every species in the table above took a
             // round-7 correction, which is the other half of why it drifted out of family.
+            //
+            // ROUND 9 DELIBERATELY DOES NOT TOUCH THESE TWO COLOURS, and that is a decision rather
+            // than an omission. Round 8's cut landed — the ribbon pixels really did fall 0.629 to
+            // 0.372, a 1.69x drop — and the ribbons stayed, because the ribbons are lit and their
+            // surround is not (the ray-march in the header above: 12.42° of horizon against a
+            // 12.00°
+            // sun, so the tips clear the terminator and the ground does not). No albedo number
+            // reachable from here closes a lit-against-shadowed gap: doing it by paint alone would
+            // need the pole taken to roughly a twentieth, which would make the same clump black in
+            // the open meadow twelve metres away, where these same clumps are correctly gold.
+            // The blend-weighted argument above is sound and settled; re-cutting it a second time
+            // would only make the round-9 result impossible to attribute. The height is the fix.
             material.SetColor("_BaseColor", new Color(0.34f, 0.40f, 0.24f));
             material.SetColor("_DryColor", new Color(0.48f, 0.47f, 0.31f));
             material.SetFloat("_DryBias", 0.32f);
@@ -2015,9 +2077,16 @@ namespace Tarrock.Editor
                     go.transform.position = new Vector3(x, ground - 0.04f, z);
                     go.transform.rotation = Quaternion.Euler(0f, spinRoll * 360f, 0f);
                     // The mesh's tallest blade reaches 0.8 x TussockHeight once its droop is
-                    // applied, so this range puts a clump between 0.57 and 0.93 m: knee-high, two
-                    // to three times the meadow tuft, which is the whole point of it.
-                    go.transform.localScale = Vector3.one * (0.95f + 0.60f * sizeRoll);
+                    // applied, so this range puts a clump between 0.33 and 0.50 m: knee-high on a
+                    // 1.7 m Fool (art-bible.md §Production standards > Characters > Scale),
+                    // one to two times the common meadow species.
+                    // ROUND 9: 0.95 + 0.60 -> 0.90 + 0.45, narrowed as well as lowered. The SPREAD
+                    // was the other half of the problem — 0.95-1.55 is a 63% swing, so the bank's
+                    // tallest clumps stood 63% above its shortest and it was always the top of that
+                    // range that broke a shadow line. 0.90-1.35 is 50%, still enough that no two
+                    // clumps read as the same prop. See the height finding in the header above:
+                    // this and TussockHeight are one change and neither is meaningful alone.
+                    go.transform.localScale = Vector3.one * (0.90f + 0.45f * sizeRoll);
                     int variant = Mathf.Clamp(Mathf.FloorToInt(variantRoll * TussockVariants), 0, TussockVariants - 1);
                     go.AddComponent<MeshFilter>().sharedMesh = meshes[variant];
                     var renderer = go.AddComponent<MeshRenderer>();
@@ -2100,8 +2169,22 @@ namespace Tarrock.Editor
             // is the storybook law backwards. Vertex colours are raw linear multipliers (no sRGB
             // decode on this path), so (1.05, 0.98, 0.66) was multiplying the dry tint by a further
             // 1.59 in R/B at the tip of every blade.
+            //
+            // ROUND 9 — AND THE TIP IS BROUGHT INTO THE MEADOW'S FAMILY, which round 6 did not
+            // finish. BuildTuftMesh (see baseCol/tipCol there) uses tip (1.00, 0.99, 0.93) and a
+            // per-blade value of Lerp(0.88, 1.0, roll) — mean 0.94, peak 1.00. This file used tip
+            // (1.05, 1.03, 0.96) and 0.88 + 0.24 * roll — mean 1.00, peak 1.12. Multiplied out, a
+            // tussock's brightest blade tip carried a 1.153 luminance multiplier against the
+            // meadow's 0.988: 17% brighter than the field it edges, and warmer (R/B 1.094 against
+            // 1.075), applied to exactly the pixels a viewer's eye lands on first. That is the same
+            // out-of-family drift the round-8 albedo note found in this material's colours, one
+            // level down in the data, and it is corrected the same way — by copying the meadow's
+            // numbers rather than by choosing new ones. Peak tip multiplier 1.153 -> 0.988 (-14%),
+            // mean 1.029 -> 0.928 (-10%). The meadow's Pow(t, 0.85) gradient is deliberately NOT
+            // copied: that curve reaches the tip colour sooner, which would give back what this
+            // takes away.
             var baseCol = new Color(0.33f, 0.37f, 0.26f);
-            var tipCol = new Color(1.05f, 1.03f, 0.96f);
+            var tipCol = new Color(1.00f, 0.99f, 0.93f);
             const int Segments = 3;
 
             for (int blade = 0; blade < TussockBlades; blade++)
@@ -2119,7 +2202,11 @@ namespace Tarrock.Editor
                 float reach = bladeHeight * (0.26f + 0.34f * spread);
                 float halfWidth = 0.028f * (0.7f + 0.6f * widthRoll);
                 float rootRadius = 0.035f + 0.05f * spread;
-                float value = 0.88f + 0.24f * valueRoll;
+                // ROUND 9: 0.88 + 0.24 * roll -> Lerp(0.88, 1.0, roll), the meadow's own convention
+                // (BuildTuftMesh). The old form was centred on 1.00 and peaked at 1.12, so a blade
+                // could be brightened above its own albedo; a per-blade value variation should only
+                // ever take value away, never add it. See the note above tipCol.
+                float value = Mathf.Lerp(0.88f, 1f, valueRoll);
 
                 int strip = verts.Count;
                 for (int seg = 0; seg <= Segments; seg++)
