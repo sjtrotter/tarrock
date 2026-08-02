@@ -688,6 +688,14 @@ namespace Tarrock.Editor
                 // Height/width noise over a few metres, so neighbouring tufts differ but a whole
                 // hollow can still run short or tall together.
                 noiseSpread = 0.28f,
+                // THE PLACEMENT SEED, and it is a content fact, not a roll: DetailPrototype.noiseSeed
+                // is documented as "the random seed value for detail object placement", and until
+                // round 10 this rig never set it. Read straight out of the serialized TerrainData,
+                // all six layers carried noiseSeed 0 — the struct default, which is a seed nobody
+                // chose. Every species now names its own, once, in the table below, so that
+                // regenerating the region puts the same tuft in the same place and a round-to-round
+                // pixel diff shows CHANGES instead of a re-rolled meadow.
+                noiseSeed = species.ScatterSeed,
                 // Tilt with the ground rather than standing plumb on a slope — grass grows out of
                 // the hillside. Never full strength: fully aligned tufts on a steep band look felled.
                 alignToGround = species.AlignToGround,
@@ -1068,6 +1076,7 @@ namespace Tarrock.Editor
                 PrefabPath = TuftPrefabPath,
                 Seed = 0f,
                 DitherOffset = 2.5f,
+                ScatterSeed = 40213,
                 MaxPerCell = 3,
                 Blades = 5,
                 Rows = 4,
@@ -1154,6 +1163,7 @@ namespace Tarrock.Editor
                 PrefabPath = TerrainDataDir + "/GrassTuftStraw.prefab",
                 Seed = 11.3f,
                 DitherOffset = 7.9f,
+                ScatterSeed = 40231,
                 MaxPerCell = 2,
                 Blades = 3,
                 Rows = 4,
@@ -1233,6 +1243,7 @@ namespace Tarrock.Editor
                 PrefabPath = TerrainDataDir + "/GrassTuftSedge.prefab",
                 Seed = 23.7f,
                 DitherOffset = 13.1f,
+                ScatterSeed = 40237,
                 MaxPerCell = 2,
                 Blades = 7,
                 Rows = 4,
@@ -1331,6 +1342,7 @@ namespace Tarrock.Editor
                 PrefabPath = TerrainDataDir + "/GrassTuftBent.prefab",
                 Seed = 41.9f,
                 DitherOffset = 19.3f,
+                ScatterSeed = 40289,
                 MaxPerCell = 1,
                 Blades = 2,
                 Rows = 4,
@@ -1438,6 +1450,7 @@ namespace Tarrock.Editor
                 PrefabPath = TerrainDataDir + "/GrassThatch.prefab",
                 Seed = 67.1f,
                 DitherOffset = 29.7f,
+                ScatterSeed = 40343,
                 MaxPerCell = 3,
                 // 34 cards, not 24 and not 44. 24 was a spoke pattern; 44 was priced without
                 // checking the bill (132 tris a mat against a layer that covers the whole meadow).
@@ -1562,6 +1575,7 @@ namespace Tarrock.Editor
                 PrefabPath = TerrainDataDir + "/GroundScuff.prefab",
                 Seed = 83.9f,
                 DitherOffset = 37.3f,
+                ScatterSeed = 40351,
                 MaxPerCell = 3,
                 Blades = 8,
                 Rows = 3,
@@ -1656,6 +1670,13 @@ namespace Tarrock.Editor
             /// <summary>Offsets the density dither, so the four layers do not land in the same
             /// cells and cancel each other's clumping out.</summary>
             public float DitherOffset;
+
+            /// <summary>Seeds Unity's own detail-instance placement (DetailPrototype.noiseSeed).
+            /// A FIXED number per species, chosen once and never re-rolled: it is what makes the
+            /// scattered meadow reproducible from one generation to the next. Distinct per species
+            /// for the same reason <see cref="Seed"/> and <see cref="DitherOffset"/> are — two
+            /// layers on one seed would land their instances on top of each other.</summary>
+            public int ScatterSeed;
 
             public int MaxPerCell;
 

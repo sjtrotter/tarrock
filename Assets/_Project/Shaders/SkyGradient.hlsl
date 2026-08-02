@@ -113,6 +113,33 @@
 // The paper tooth is also re-scaled — see §THE PAPER TOOTH — because at 55 and 126 turns per half
 // width it was 8 px and 3.5 px on the hero, which is a dither, not a brush.
 
+// 2026-08-02 ROUND 10 (against gauntlet/round9). THE VAULT CLOUD, AND THIS IS THE FILE THE LAST
+// THREE ROUNDS OF CLOUD WORK SHOULD HAVE BEEN IN. Rounds 7, 8 and 9 all spent their cloud budget
+// on CloudLobe.shader — the near masses standing on the deck — while every mass the critics were
+// actually measuring is drawn HERE. The proof is geometric: v8 is shot from (200, 23.6, 84)
+// looking UP, its axis 25-31° above the horizontal, so the elevation-0 horizon falls on row 719 of
+// 720 and no CloudLobe mass (they all sit on the deck at world y = 11, below the camera) can appear
+// in that frame at all. The hero every critic scored is a TarrockVaultCloud.
+//
+// A cross-model blind judge, given the round-9 plate cold: "a stack of semi-transparent volumes
+// with muddy overlap, blue contamination, and no coherent light-facing or shadow-facing planes."
+// Critic 2 converged independently. Four changes, all below, and each one is a separate sentence
+// of that finding answered:
+//
+//   * SEMI-TRANSPARENT VOLUMES → an opaque core with a veiled edge (§THE INTERIOR IS OPAQUE).
+//     spec.w multiplied a mass's whole coverage, so 4-18% of whatever stood behind every cumulus
+//     showed through its solid middle.
+//   * NO COHERENT PLANES → the mass-scale light plane (§AND THE WHOLE MASS HAS A LIT SIDE AND A
+//     SHADOW SIDE). The per-lobe terminator answers a local question and gives every lobe on the
+//     far side of a mass its own crown; nothing in the function knew which flank of the MASS faced
+//     the dawn.
+//   * BLUE CONTAMINATION and the concentric halo → §TARROCK_CLOUD_SKYFILL, which was laying
+//     1.20 × sky.mid on a constant-width band round the entire silhouette and, on the shadow wash,
+//     replacing a colour four times its own size. Both the where and the how much are fixed.
+//   * CLOUDS DARKER THAN THEIR SKY → the belly stops replacing the underside (TARROCK_CLOUD_BELLY)
+//     and the authored washes are re-solved at the C# end. Board: cloud luminance 0.877 against a
+//     sky of 0.715. Round 9, same estimator, v3: 0.545 against 0.660 — inverted.
+
 // ---------------------------------------------------------------------------------------------
 // Round-7 constants. DELIBERATELY #defines and not material properties: the fill macro at the foot
 // of this file is expanded by three shaders, one of which (Tarrock/CloudSea) is another builder's
@@ -163,7 +190,32 @@
 // elevation, where v8's protected anti-sun sky lives, exp(−h · 4) is 0.06 and the term is gone.
 // It damps the additive dawn wash by the same factor and for the same reason — the air-path
 // glow is the thing that was keeping the anti-sun horizon warm.
-#define TARROCK_CLOUD_SKYFILL      1.20  // the DOME's light on the shaded washes: the cool half
+// 2026-08-02 ROUND 10 (against gauntlet/round9, the reference board, and a cross-model blind
+// judge). Five constants, and they are one prescription: the vault masses must stop being a stack
+// of even, semi-transparent, blue-rimmed volumes and become ONE cumulus with a lit side, a shadow
+// side, and a silhouette instead of an outline. See §TarrockVaultCloud for each term's own note.
+//   TARROCK_CLOUD_PLANE / _GAIN    the mass-scale light plane: the lit and shadow flanks
+//   TARROCK_CLOUD_SKYFILL 1.20→0.30 the dome as a FILL, not as a replacement shade colour
+//   TARROCK_CLOUD_SKY_DEPTH/_BREAK  ...landing on a flank rather than on a concentric band
+//   TARROCK_CLOUD_BELLY   0.95→0.60 the belly stops driving the underside to the shadow triple
+// The cool half of the storybook law moves out of this additive term and into the authored
+// shade/shadow triples (TerrainRegionGenerator.Sky.cs §THE VAULT CLOUD COLOURS), because a term
+// four times the size of the colour it is added to is not a light source, it is a repaint.
+//
+// TARROCK_HORIZON_ANTI_POWER IS DELIBERATELY NOT TOUCHED, and it was tested rather than assumed:
+// at the new SkyBearingPower the anti-sun horizon is already fully cooled, so lowering the power
+// to 1.6 or 1.2 buys 0.2-1.0 points of bright-sky-mass on v3 and nothing measurable anywhere else
+// (modelled: v3 35.81% / 34.77% / 35.4%, bluest −86.3 / −86.6 / −86.3). It would cool the band
+// straddling the horizon at MID angles, which is the one place the deck's far field and
+// Lighting.cs's constant fog colour are contracted to agree (§ROUND 8, the seam). A point of a
+// gate v3 fails anyway is not worth re-opening a closed seam for.
+#define TARROCK_CLOUD_PLANE        0.45  // how much of `form` is the MASS's plane, not the lobe's
+#define TARROCK_CLOUD_PLANE_GAIN   0.55  // ...and how fast that plane sweeps, per half width
+#define TARROCK_CLOUD_SKYFILL      0.30  // the DOME's light on the shaded washes: the cool half
+#define TARROCK_CLOUD_SKY_DEPTH    3.0   // ...fading IN over this many coverage-fade widths
+#define TARROCK_CLOUD_SKY_BREAK    0.45  // ...and broken this far by the mass's own crumple
+#define TARROCK_CLOUD_BELLY        0.60  // how far the big masses' base is driven to the shadow
+#define TARROCK_CLOUD_RIM          0.45  // the dawn rim on the sunward edge
 #define TARROCK_HORIZON_ANTI       1.00  // how far the horizon band cools at the anti-sun
 #define TARROCK_HORIZON_ANTI_POWER 2.5   // ...spent past 90° off the sun, like the tilt
 #define TARROCK_HORIZON_ANTI_FALL  4.0   // ...and gone by the time the sky is a zenith
@@ -501,7 +553,20 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
     float sd = TarrockCumulusField(pc, style) + scallop;
 
     float soft = max(sky.cloudSoftness, 1e-3);
-    float cover = (1.0 - smoothstep(-soft, soft, sd)) * saturate(spec.w);
+    float coverRaw = 1.0 - smoothstep(-soft, soft, sd);
+
+    // ROUND 10 — THE INTERIOR IS OPAQUE; spec.w IS AN EDGE VEIL. The cross-model blind judge's
+    // first sentence about our sky was "a stack of semi-transparent volumes with muddy overlap",
+    // and that was literal arithmetic rather than an impression: spec.w (0.82-0.96 on the five
+    // shipped masses) multiplied the WHOLE of a mass's coverage, so 4-18% of whatever stood
+    // behind every cumulus — sky, bank, or another cumulus — showed through its solid core. A
+    // cumulus is opaque in its middle; what a painter varies is how fast its EDGE gives out.
+    // So the veil is applied where a veil belongs: `core` is 1 a couple of fade-widths inside the
+    // silhouette and 0 at it, and spec.w now decides only how much of the outer fade survives.
+    // The mass's authored opacity therefore still reads (a 0.82 mass has a softer, more open rim
+    // than a 0.96 one) while overlap becomes occlusion instead of a blend.
+    float core = 1.0 - smoothstep(-soft * 5.0, -soft * 1.5, sd);
+    float cover = coverRaw * (saturate(spec.w) + (1.0 - saturate(spec.w)) * core);
     if (cover <= 0.0)
     {
         return float4(0.0, 0.0, 0.0, 0.0);
@@ -541,6 +606,38 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
     float crown = 1.0 - smoothstep(-soft * 2.0, soft * 2.0,
         TarrockCumulusField(pc - wash * 0.62, style) + scallop);
     float form = (lit + crown) * 0.5;
+
+    // ROUND 10 — AND THE WHOLE MASS HAS A LIT SIDE AND A SHADOW SIDE. This is the second half of
+    // the cross-model judge's finding — "no coherent light-facing or shadow-facing planes" — and
+    // critic 2 converged on it independently.
+    //
+    // WHY THE PER-LOBE TERMINATOR ALONE CANNOT SUPPLY ONE. `form` above is built by stepping the
+    // alphabet toward the sun twice, so it answers a LOCAL question: does this pixel's own lobe
+    // face the dawn. Round 3 added it for a good reason (round 2's single ramp photographed as
+    // one soft blob) and it works — but the answer is the same on the far side of the mass as on
+    // the near side, because every lobe gets its own crown and its own underflank. Six lobes with
+    // six little terminators, and no lobe knows it is at the back. The result is a mass with an
+    // even, all-over articulation, which is exactly what "a viewer cannot name the lit side" means
+    // and exactly what the v8 capture shows.
+    //
+    // A painted cumulus is lit at MASS scale first and lobe scale second. `plane` is that: how far
+    // along the light direction a pixel sits inside the mass, measured in the mass's own frame, so
+    // it runs 0 on the anti-sun flank to 1 on the sunward one across the whole silhouette
+    // regardless of which lobe a pixel belongs to. Mixed rather than multiplied, so the lobe
+    // terminators survive as modelling ON the planes instead of being replaced by a gradient.
+    // AND THE TERRACE TURNS IT INTO EDGES RATHER THAN A GRADIENT. Round 6 chose count 2 because
+    // `form` then took exactly three values and count 2's boundaries (0.25 and 0.75) sit as far
+    // from those plateaus as they can. With the plane mixed in, form is continuous across a mass,
+    // so those same two boundaries are each crossed once — two mass-scale terminator arcs, both
+    // wandering with the cauliflower because the crumple still offsets the ramp parameter. Three
+    // flat washes and two nameable edges between them is the storybook cumulus, and it is what
+    // the round-6 terrace was always for; it had nothing at mass scale to quantise until now.
+    //
+    // The gain is set so the sweep spends itself across the alphabet's own extent: the field runs
+    // to ±1.25 half-widths in x and −0.85..+1.05 in y, so 0.55 per half-width puts plane 0 and 1
+    // just inside the two flanks and leaves no dead saturated cap on either.
+    float plane = saturate(dot(pc, wash) * TARROCK_CLOUD_PLANE_GAIN + 0.5);
+    form = lerp(form, plane, TARROCK_CLOUD_PLANE);
 
     // ROUND 5 — THE POSTERIZED THREE-BAND RAMP, and it is the round-4 critique's headline finding:
     // "cloud interiors are single smooth ramps, 2-5x below reference interior contrast; the v4
@@ -675,8 +772,16 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
     // is cut so the 11-15° masses that fill the review frames actually qualify: 6° earns none,
     // 14° earns all of it.
     float thick = saturate((spec.z - 6.0) / 8.0) * saturate(spec.w * 1.15);
+    // ROUND 10: 0.95 → TARROCK_CLOUD_BELLY (0.60). At 0.95 this does not deepen the base, it
+    // REPLACES it — the underside of every hero mass arrived at the shadow triple almost exactly,
+    // whatever the three washes above had painted, so the mass's darkest region was a flat card
+    // with no modelling in it. It also fought the round's fourth finding directly: measured on the
+    // board, cloud luminance runs 0.877 against a sky of 0.715, and ours was INVERTED at 0.545
+    // against 0.660 — no daylight cumulus is darker than the sky behind it. The dark anchor the
+    // round-5 note argues for survives (the shadow triple is still the bottom third of the ramp,
+    // and this term still deepens the big masses' bases), it simply stops being the whole belly.
     float belly = (1.0 - smoothstep(-baseCut, baseCut + 0.34, pc.y)) * (1.0 - form * 0.62);
-    color = lerp(color, sky.cloudShadow, saturate(belly * thick) * 0.95);
+    color = lerp(color, sky.cloudShadow, saturate(belly * thick) * TARROCK_CLOUD_BELLY);
 
     // ROUND 7 — THE DISC, ON THE LIT WASHES ONLY, AND IT IS A LIGHTING RULE RATHER THAN A PAINT JOB.
     //
@@ -712,8 +817,43 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
     // sources instead of as two painted triples that a grade can invert.
     // sky.mid, not sky.zenith: a mass at 12-30° of elevation sees mostly the pale low sky, and
     // the zenith-tinted version rendered as a royal-blue cut-out (see §TARROCK_CLOUD_SKYFILL).
+    //
+    // ROUND 10 — THE DOME'S LIGHT LANDS ON A FLANK, NOT ON A RING, AND IT LANDS AT A QUARTER OF
+    // ITS ROUND-8 STRENGTH. Round 8 was right that an unlit flank of a cumulus is sky light and
+    // not "the sun, minus". It was wrong twice about where and how much, and both errors are
+    // visible in the round-9 v8 capture as one thing: a wide, even, pale-blue annulus round the
+    // entire silhouette, so the mass has an OUTLINE instead of a silhouette.
+    //
+    //   * WHERE. `form` is built from stepped copies of the alphabet, so it falls to 0 everywhere
+    //     the stepped fields have slipped off the pixel — which is the whole rim, all the way
+    //     round. (1 − form)² therefore reached 1 on a band of near-constant width round the
+    //     silhouette and laid 1.20 × sky.mid = (0.160, 0.268, 0.627) linear on it. That is a
+    //     constant-width rim; it is merely cool instead of warm. Round 9 eliminated the two
+    //     alternative explanations by measurement — removing the grazing rim term entirely leaves
+    //     halo_S at +0.0200 against +0.0207, and disabling the post-stack bloom gives +0.0200
+    //     against +0.0196 — and the sign of the halo flipped in the exact round this line was
+    //     added: round 6 −0.019, round 7 −0.038, round 8 +0.018, against a blue-sky board band of
+    //     −0.032 (bilibin) to −0.176 (wolfwalkers-02).
+    //     `interior` is the fix, and it is the mass's own signed field: −sd/soft is how deep into
+    //     the silhouette a pixel sits in units of the coverage fade, so the weight is 0 AT the
+    //     outline and 1 three fade-widths in. The dome's light now dies into the edge instead of
+    //     peaking on it. Broken by the same crumple that breaks the silhouette, so what is left is
+    //     articulated rather than even — the one-noise-family rule, applied to the cool half.
+    //     The mass-scale plane above kills the same band a second, independent way: with `plane`
+    //     mixed into `form`, the sunward rim is no longer at form 0, so (1 − form)² is small there
+    //     by construction rather than by weighting.
+    //   * HOW MUCH. 1.20 × sky.mid on a shadow authored at linear (0.011, 0.024, 0.165) does not
+    //     tint the shade, it REPLACES it: the deepest wash arrived at (0.171, 0.292, 0.792) — a
+    //     bright royal blue, more saturated and MORE luminous than the shade above it, which is
+    //     the "blue contamination" the blind judge named and the reason our masses measure bluer
+    //     than the sky they hang in. The cool half of the law now lives where a painter puts it —
+    //     in the authored shade and shadow triples (Sky.cs §THE VAULT CLOUD COLOURS, re-solved
+    //     this round) — and this term is back to being what its name says: a fill.
     float shadeWash = 1.0 - form;
-    color += sky.mid * (TARROCK_CLOUD_SKYFILL * shadeWash * shadeWash);
+    float interior = saturate(-sd / (soft * TARROCK_CLOUD_SKY_DEPTH));
+    interior *= saturate((1.0 - TARROCK_CLOUD_SKY_BREAK)
+                         + TARROCK_CLOUD_SKY_BREAK * 2.0 * (0.5 + 0.5 * crumple));
+    color += sky.mid * (TARROCK_CLOUD_SKYFILL * shadeWash * shadeWash * interior);
 
     // §THE TOOTH GOES ON LAST (round 8). It used to multiply the painted washes and then have
     // the disc's warmth added over the top, so wherever the light term was large the tooth was
@@ -733,9 +873,14 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
     color = max(color * (1.0 + brush * 0.55 * float3(1.22, 1.02, 0.80)), 0.0);
 
     // The dawn rim: the sunward edge of a cloud at this hour is the brightest thing in the vault.
+    // It is NOT the halo — round 9 removed it entirely on the offline model and halo_S moved
+    // 0.0207 → 0.0200, i.e. not at all (§TARROCK_CLOUD_SKYFILL). It is gated by the sunward dot,
+    // so it lives on a quarter of the outline rather than round it. ROUND 10 trims 0.55 → 0.45
+    // only because the washes underneath it are three-quarters of a stop brighter this round, so
+    // the same absolute rim is a larger share of a smaller step.
     float rim = saturate(1.0 - abs(sd) / (soft * 4.0))
               * saturate(dot(normalize(pc + float2(1e-5, 1e-5)), toSun));
-    color += sky.sunGlow * rim * 0.55;
+    color += sky.sunGlow * rim * TARROCK_CLOUD_RIM;
 
     return float4(color, cover);
 }

@@ -12,7 +12,7 @@ namespace Tarrock.EditorTools
     using UnityEngine.Rendering.Universal;
 
     /// <summary>
-    /// The Gauntlet screenshot rig: eight FIXED vantages on <c>TerrainProto.unity</c>, rendered at
+    /// The Gauntlet screenshot rig: nine FIXED vantages on <c>TerrainProto.unity</c>, rendered at
     /// 1920×1080 (16:9) with post-processing on, so every look round is judged against the same
     /// frames and only the ART changes between rounds.
     ///
@@ -157,7 +157,27 @@ namespace Tarrock.EditorTools
         private const float KnollZ = 58f;
         private const float KnollTreeCrownLift = 6f;   // aim above the summit: the crown, not the roots
 
+        // The west shoulder's foot (round 9's approach shelf, Landform.cs §THE KNOLL APPROACH:
+        // ApproachFootBearing 275°, ApproachFootRadius 32 m from KnollCentre). DERIVED there,
+        // restated here for the same reason SpawnX/KnollX are — those constants are private to the
+        // generator. If the shelf's bearing or radius move, move these with them and say so.
+        private const float ShelfFootX = 118.12f;
+        private const float ShelfFootZ = 60.79f;
+        // Eleven metres up the tread from the foot, on the spiral's own centreline: the mark the
+        // stand-in walks to in v9. Sampled from the shipped spiral, not eyeballed.
+        private const float ShelfWalkX = 125.22f;
+        private const float ShelfWalkZ = 52.74f;
+        // Three metres above the trunk's ground, which is where the v9 lens is aimed. NOT the
+        // crown lift v8 uses: v9 stands 37 m out and 12 m BELOW the tree, so aiming at the crown
+        // would pitch the lens up past the shelf the shot exists to show. See the vantage.
+        private const float ShelfAimLift = 3f;
+
         private const float StandInGroundClearance = 0.02f; // matches the installer's grounded spawn
+
+        // Discarded renders before the first vantage is shot. See WarmUpRenderer for the
+        // measurement; two rather than one because the residency this covers is an upload with a
+        // time slice (QualitySettings.asyncUploadTimeSlice, 2 ms), not a single blocking load.
+        private const int WarmUpPasses = 2;
 
         private const int ExitSuccess = 0;
         private const int ExitCaptureFailed = 1;
@@ -167,8 +187,9 @@ namespace Tarrock.EditorTools
         private const float GroundProbeLength = 800f;
 
         /// <summary>
-        /// The eight review frames. Order is the order they are shot and the order they read in:
-        /// the opening frame first, the region's claims next, the ground and the meadow last.
+        /// The nine review frames. Order is the order they are shot and the order they read in:
+        /// the opening frame first, the region's claims next, the ground and the meadow, and last
+        /// (round 10) the walk up the west shoulder to the tree.
         /// </summary>
         private static readonly Vantage[] Vantages =
         {
@@ -238,6 +259,34 @@ namespace Tarrock.EditorTools
             Vantage.LookingAt(
                 "v8-deadtree-skyline", cameraX: 200f, cameraZ: 84f, eyeHeight: 1.6f,
                 targetX: KnollX, targetZ: KnollZ, targetLift: KnollTreeCrownLift, fieldOfView: 50f),
+
+            // v9 — THE WALK UP. Round 9 cut the one walkable line to the dead tree (the west
+            // shoulder's spiral tread) and shipped it without a single frame looking at it; this is
+            // that frame. The lens is the gameplay rig — pivot on the tread at the shelf's FOOT,
+            // seat 5.39 m behind it and 3.11 m above its ground, 55° — so what it shows is what a
+            // walking player sees, and the stand-in is planted eleven metres up the tread ahead of
+            // him so the shot reviews the WALK and not the back of a head.
+            //
+            // WHY THE FOOT, and it is arithmetic, not taste. The rig fixes the player's own head
+            // 14.7° BELOW the lens's horizontal (1.41 m under the seat, 5.39 m in front of it:
+            // atan(1.41/5.39)). From the shelf's foot the crown of the 21.6 m tree standing on the
+            // 12.1 m knoll sits 39.3° ABOVE it. 39.3 + 14.7 = 54.0° against a 55° lens. Walked up
+            // the tread that sum is 54.4° at 5 m, 55.7° at 10 m, 60.1° at 20 m and 68.8° at the
+            // top: ONLY THE FIRST ~8 METRES OF THE SHELF can hold both the walking figure and the
+            // whole tree in one frame, and this mark is the start of that stretch — which is also
+            // the first metre of shelf a player arriving on the lane actually stands on.
+            //
+            // AND WHAT THIS FRAME EXPOSES, which the round-runner should read as a finding and not
+            // as a composition choice: at the rig's RESTING tilt (16° down, so the frame tops out
+            // 11.5° up) the crown sits 27.8° above the top edge from this very mark, and the
+            // knoll's own summit 2.0° above it. A player who never touches the right stick cannot
+            // see the tree he is being told to approach from anywhere on this shelf — nor the hill
+            // it stands on. That is a camera-rig question, not a landform one, and it is owed an
+            // answer; this frame is here so it is asked against a picture instead of a hunch.
+            Vantage.ThirdPersonLookingAt(
+                    "v9-shelf-west", pivotX: ShelfFootX, pivotZ: ShelfFootZ,
+                    targetX: KnollX, targetZ: KnollZ, targetLift: ShelfAimLift)
+                .WithStandIn(ShelfWalkX, ShelfWalkZ, yawDegrees: 78f),
         };
 
         // -------------------------------------------------------------------------------------
@@ -312,7 +361,7 @@ namespace Tarrock.EditorTools
             }
 
             // A regenerate that bailed early (e.g. a shader still compiling) leaves a scene with no
-            // Terrain in it — catch that here rather than shipping eight photographs of the sky.
+            // Terrain in it — catch that here rather than shipping nine photographs of the sky.
             if (UnityEngine.Object.FindAnyObjectByType<Terrain>() == null)
             {
                 Debug.LogError(
@@ -429,6 +478,7 @@ namespace Tarrock.EditorTools
                 Shader.SetGlobalFloat(WindStrengthId, CaptureWindStrength);
                 SettleParticles(particles);
                 Physics.SyncTransforms();
+                WarmUpRenderer(camera, standIn, standInPosition, standInRotation);
 
                 foreach (Vantage vantage in Vantages)
                 {
@@ -470,6 +520,83 @@ namespace Tarrock.EditorTools
             }
 
             return written;
+        }
+
+        /// <summary>
+        /// Renders the first vantage into a throwaway target and discards it, before the shoot
+        /// proper starts.
+        ///
+        /// THE BUG THIS EXISTS FOR, measured in round 10 and present in every round since round 1:
+        /// v1-spawn-west photographs the stand-in Fool as a featureless dark shape, while
+        /// v2-spawn-side — the SAME object, the SAME world position, the SAME sun, the same 6.2 m
+        /// from a camera orbited about the same pivot — photographs him with the KayKit atlas on:
+        /// green hood, brown leathers, boots. It is not lighting and it is not a second object.
+        /// Both frames' figures stand the same height on the same scanlines (hood top at y 518 and
+        /// y 514 of 1080, ~280 px tall, at identical camera height and range), so it is one model
+        /// seen from two bearings. What differs is the ALBEDO, and it differs in a way lighting
+        /// cannot produce: in v1 the whole model carries ONE flat colour with no material
+        /// boundaries anywhere on it, and that colour's linear chroma (R/G 1.32, B/G 0.77) is the
+        /// MEAN OF rogue_texture.png itself (R/G 1.49, B/G 0.75), where v2 and v6 measure R/G
+        /// 0.36-0.40 — the actual swatches. A model that samples its whole 1024² atlas as a single
+        /// averaged colour is a model drawn before that atlas's mips were resident on the GPU.
+        ///
+        /// v1 is simply the first frame this rig has ever rendered in the session — and the shoot
+        /// runs immediately after PinPcQuality, which is called with applyExpensiveChanges: true.
+        /// So the fix is to spend a frame nobody looks at. It costs one 1920×1080 render, touches
+        /// no scene state that the loop does not set again a line later, and writes no file.
+        ///
+        /// IF THE ROUND-10 CAPTURE STILL SHOWS A FLAT FOOL IN v1, this hypothesis is wrong and the
+        /// remaining candidate is view-dependent: measure the same chroma test on v1 and v2 again
+        /// (round10/builderB/hue1.py). Legitimate mip selection is already ruled out — a 280 px
+        /// model on a 1024² atlas resolves mip 0-2, never the 1×1 top.
+        /// </summary>
+        private static void WarmUpRenderer(
+            Camera camera, Transform standIn, Vector3 spawnPosition, Quaternion spawnRotation)
+        {
+            if (Vantages.Length == 0)
+            {
+                return;
+            }
+
+            Vantage first = Vantages[0];
+            PlaceStandIn(standIn, first, spawnPosition, spawnRotation);
+            WriteBendGlobals(standIn, first);
+            PlaceCamera(camera, first);
+
+            var descriptor = new RenderTextureDescriptor(CaptureWidth, CaptureHeight)
+            {
+                colorFormat = RenderTextureFormat.ARGBHalf,
+                depthBufferBits = 24,
+                msaaSamples = Mathf.Max(1, QualitySettings.antiAliasing),
+                sRGB = false,
+                useMipMap = false,
+                autoGenerateMips = false,
+            };
+
+            RenderTexture previousTarget = camera.targetTexture;
+            var warmUp = new RenderTexture(descriptor);
+            try
+            {
+                if (!warmUp.Create())
+                {
+                    Debug.LogWarning(
+                        $"{LogPrefix} Could not create the warm-up target; the first vantage may " +
+                        "photograph textures that are not resident yet (the flat-Fool bug).");
+                    return;
+                }
+
+                camera.targetTexture = warmUp;
+                for (int pass = 0; pass < WarmUpPasses; pass++)
+                {
+                    camera.Render();
+                }
+            }
+            finally
+            {
+                camera.targetTexture = previousTarget;
+                warmUp.Release();
+                UnityEngine.Object.DestroyImmediate(warmUp);
+            }
         }
 
         /// <summary>
@@ -954,6 +1081,39 @@ namespace Tarrock.EditorTools
                     name, cameraXz, pivotXz, height,
                     aimsAtTarget: true, targetXz: pivotXz, targetLift: CameraPivotHeight,
                     yawDegrees, pitchDegrees: CameraTiltDegrees, fieldOfView,
+                    movesStandIn: false, standInXz: Vector2.zero, standInYawDegrees: 0f);
+            }
+
+            /// <summary>
+            /// The gameplay rig's SEAT, with the lens free to aim. Same geometry as
+            /// <see cref="ThirdPerson"/> — the camera sits <c>CameraOrbitRadius·cos(tilt)</c> behind
+            /// the pivot at <c>CameraPivotHeight + CameraOrbitRadius·sin(tilt)</c> above the PIVOT'S
+            /// ground, and the player faces what he is looking at, so the yaw is derived from the
+            /// target rather than typed — but it aims at a world point instead of at the player's
+            /// own head. That is not a cheat: 16° is the orbit camera's RESTING tilt, not a stop,
+            /// and a player looking up at a landmark is holding the stick. Anchoring the height at
+            /// the pivot (not at the camera's own XZ) is what keeps the framing when the shot stands
+            /// on a slope, which is the whole reason ThirdPerson does it.
+            /// </summary>
+            public static Vantage ThirdPersonLookingAt(
+                string name, float pivotX, float pivotZ, float targetX, float targetZ, float targetLift,
+                float fieldOfView = GameplayFieldOfView)
+            {
+                var pivotXz = new Vector2(pivotX, pivotZ);
+                var targetXz = new Vector2(targetX, targetZ);
+                Vector2 toTarget = targetXz - pivotXz;
+                float yawDegrees = Mathf.Atan2(toTarget.x, toTarget.y) * Mathf.Rad2Deg;
+                float yawRadians = yawDegrees * Mathf.Deg2Rad;
+                var forward = new Vector2(Mathf.Sin(yawRadians), Mathf.Cos(yawRadians));
+
+                float tiltRadians = CameraTiltDegrees * Mathf.Deg2Rad;
+                Vector2 cameraXz = pivotXz - (forward * (CameraOrbitRadius * Mathf.Cos(tiltRadians)));
+                float height = CameraPivotHeight + (CameraOrbitRadius * Mathf.Sin(tiltRadians));
+
+                return new Vantage(
+                    name, cameraXz, pivotXz, height,
+                    aimsAtTarget: true, targetXz, targetLift,
+                    yawDegrees, pitchDegrees: 0f, fieldOfView,
                     movesStandIn: false, standInXz: Vector2.zero, standInYawDegrees: 0f);
             }
 

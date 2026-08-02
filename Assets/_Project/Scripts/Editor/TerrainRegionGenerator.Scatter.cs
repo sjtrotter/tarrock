@@ -21,6 +21,44 @@ namespace Tarrock.Editor
         // field into a destination (rule 5, the landmark clause). Deterministic bare-branch mesh —
         // no leaves; the leaves' mid-fall moment is a later held-breath dressing pass. It leans
         // west, wind-combed toward the light and the leap.
+        //
+        // ROUND-10 REBUILD — WHY THE TREE IS TWICE AS TALL, EIGHTEEN TIMES THE FOOTPRINT,
+        // AND HALF THE BRIGHTNESS.
+        //
+        // MEASURED, on disk, with round-9 critic 5's own estimator (scratchpad/round9/critic5/
+        // tree2.py, the tree-above-the-crest footprint in v8-deadtree-skyline):
+        //     round7/v8   995 px = 0.048% of frame   Michelson contrast 0.612
+        //     round8/v8  1177 px = 0.057%            0.394
+        //     round9/v8  1186 px = 0.057%            0.397
+        // The same estimator run on the reference board's own single-landmark plates:
+        //     fable-03-windmill-sunburst           6.625% of frame
+        //     fairytale-01-bilibin-redsun-rider    7.964%
+        //     animation-04-ghibli-totoro-hillside 12.502%
+        // A factor of 116 against the windmill, with the contrast FALLING round on round while
+        // everything else in the frame improved. The region's signature was a twig.
+        //
+        // WHY IT WAS A TWIG, and it is not mainly the height. At v8's lens the knoll's own crest
+        // cuts the tree ~5.0 m up the trunk, so only the top 5.7 m of an 11 m tree was ever
+        // against sky, and that 5.7 m was nine straight prisms averaging TWO PIXELS wide. A limb
+        // two pixels wide is optically half sky: the shipped bark's core reads L 0.135 in
+        // round9/v8 (the p05 of its own pixels), but the estimator measured L 0.275, because
+        // most of what it was measuring was antialiasing. THE CONTRAST LOSS WAS A COVERAGE
+        // PROBLEM, not a colour problem, and no amount of darkening the material would have
+        // fixed it while the limbs stayed one pixel wide.
+        //
+        // WHAT CHANGED. (1) A designed 38-bough tree at 21.6 m with a 19.9 x 19.6 m crown,
+        // authored in true metres — a veteran oak, which is what "the one tree on the whole
+        // plateau" has to be to read as one. (2) Curved boughs, six-sided cross-sections and a
+        // t^0.72 taper: a four-sided prism shows two facets against the sky and aliases into a
+        // staircase. (3) Bark _BaseColor 0.63x darker. (4) The crown's reach measured NORTH-SOUTH
+        // rather than east-west, because v8 sights the knoll on bearing 242.5° and a metre of
+        // north-south reach buys 0.886 of frame width against 0.46 for a metre of east-west.
+        //
+        // PREDICTED for round 10, from the offline model in scratchpad/round10/builderH
+        // (predict.py composites the new silhouette into the real round-9 v8 frame and re-runs
+        // the estimator): 1.03% of frame, bbox 16.4%W x 36.6%H, Michelson 0.600. That is x18 on
+        // footprint and the contrast back above round 7's, and it is still not 5%: see the note
+        // on BuildDeadTreeMesh for the arithmetic on why 5% cannot be had from v8's fixed mark.
         private static void BuildDeadTree()
         {
             Physics.SyncTransforms();
@@ -50,48 +88,153 @@ namespace Tarrock.Editor
                 bark.shader = foliage;
             }
 
-            bark.SetColor("_BaseColor", new Color(0.23f, 0.19f, 0.16f)); // weathered near-black bark
-            bark.SetFloat("_SwayAmplitude", 0.02f);
-            bark.SetFloat("_FlutterAmplitude", 0.004f);
+            // 0.63x the round-9 colour (0.23, 0.19, 0.16). Measured: the shipped bark's core reads
+            // L 0.135 in round9/v8, and a display frame is sRGB-encoded, so the predicted core is
+            // 0.135 * 0.63^(1/2.2) = 0.109 — dark enough to hold a silhouette against a 0.64 sky
+            // without going to black, which no bark on this board's plates does.
+            bark.SetColor("_BaseColor", new Color(0.145f, 0.118f, 0.098f)); // weathered near-black bark
+            // Sway amplitudes divided by ~13 with the tree's height multiplied by 2: Tarrock/
+            // FoliageWind masks by pow(metres above the pivot, 1.5), so a 21.6 m crown is a 100x
+            // lever on the same number an 11 m one was a 36x lever on. The tip excursion when the
+            // region eventually unbinds is ~0.15 m, which is a creak; 0.02 would have been 2 m,
+            // which is a gale in a dead tree. While the Cliff is bound both are multiplied by a
+            // global wind strength of 0 and nothing moves at all.
+            bark.SetFloat("_SwayAmplitude", 0.0015f);
+            bark.SetFloat("_FlutterAmplitude", 0.0003f);
             EditorUtility.SetDirty(bark);
 
             var tree = new GameObject("DeadTree");
             tree.transform.position = hit.point;
-            // ~11 m overall: the landmark must CREST the knoll from the spawn frame 70 m away —
-            // an 8 m tree read as a twig at that range.
-            tree.transform.localScale = Vector3.one * 1.35f;
+            // Authored at TRUE METRES, so scale is 1: the round-9 mesh was an 8 m drawing scaled
+            // 1.35x, which meant every radius in the table lied about its own thickness and the
+            // collider had to be reasoned about in two units at once.
+            tree.transform.localScale = Vector3.one;
             var filter = tree.AddComponent<MeshFilter>();
             filter.sharedMesh = mesh;
             var renderer = tree.AddComponent<MeshRenderer>();
             renderer.sharedMaterial = bark;
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
-            // Trunk collider only — branches are visual. Sized to the mesh's ~0.5 m trunk.
+            // Trunk collider only — branches are visual. Sized to the bole the table actually
+            // builds: 1.15 m radius at the foot tapering to 0.47 m at 10.4 m, so a 0.90 m capsule
+            // over that span is inside the wood at the bottom and a little proud at the top, which
+            // is the right way round for something the player must not walk through.
             var trunkCollider = tree.AddComponent<CapsuleCollider>();
-            trunkCollider.center = new Vector3(0f, 2.6f, 0f);
-            trunkCollider.height = 5.2f;
-            trunkCollider.radius = 0.32f;
+            trunkCollider.center = new Vector3(-0.25f, 5.20f, 0.10f);
+            trunkCollider.height = 10.4f;
+            trunkCollider.radius = 0.90f;
         }
 
-        /// <summary>One gnarled bare tree, ~8 m: a kinked leaning trunk and seven tapered limbs,
-        /// each limb an 8-vert tapered prism appended to one mesh. Hardcoded (art-directed), not
-        /// randomised — the landmark should be a drawing, not a dice roll.</summary>
+        /// <summary>One gnarled bare tree, 21.6 m tall with a 19.9 x 19.6 m crown: 38 hand-placed
+        /// boughs, each a CURVED tapering limb built from six-sided prisms. Hardcoded
+        /// (art-directed), not randomised — the landmark should be a drawing, not a dice roll.
+        /// </summary>
+        /// <remarks>
+        /// THE TABLE IS THE DESIGN. Every line below is a chosen line in space with a job in the
+        /// silhouette, and the order is bole → roots → primaries → secondaries → twigs, which is
+        /// also the order of decreasing radius. The offline model that measured this design keeps
+        /// the identical table (scratchpad/round10/builderH/hero.py); csharp_check.py parses this
+        /// method and fails if the two ever differ.
+        ///
+        /// HOW BIG A LANDMARK v8 CAN PHYSICALLY HOLD, since the round's target was "roughly 5% of
+        /// frame" and this tree delivers ~1%. v8 stands 56.4 m out on a fixed mark with a 50°
+        /// vertical lens, which puts 17.9 px on a metre. A bare tree's silhouette fills about 0.17
+        /// of its own bounding box (measured on this mesh; the board's windmill fills 0.61 of its
+        /// box because a tower and four sails are a solid). 5% of 1920x1080 is 103,680 px, so at
+        /// fill 0.17 the bounding box would have to be 610,000 px — 780 x 780 px — which at 17.9
+        /// px/m is a tree 44 m wide and 44 m tall. There is no dead oak that size and there is no
+        /// knoll on the Cliff that would carry one. The two honest routes to a windmill-weight
+        /// landmark are a closer mark for v8 (its camera is frozen for round-on-round comparison)
+        /// or a landmark with mass rather than branches, and neither is this file's to take.
+        /// What IS delivered: 0.057% → ~1.03% of frame, and a bounding box of 36.6% of frame
+        /// HEIGHT against the windmill's 24.2%.
+        /// </remarks>
         private static Mesh BuildDeadTreeMesh()
         {
             var verts = new List<Vector3>();
             var cols = new List<Color>();
             var tris = new List<int>();
 
-            // Limbs as (base, tip, baseRadius, tipRadius). The trunk is three stacked segments
-            // with a westward lean and a kink; branches fork high, biased west.
-            AddLimb(verts, cols, tris, new Vector3(0f, 0f, 0f), new Vector3(-0.25f, 2.2f, 0.05f), 0.50f, 0.36f);
-            AddLimb(verts, cols, tris, new Vector3(-0.25f, 2.1f, 0.05f), new Vector3(-0.75f, 4.3f, -0.10f), 0.36f, 0.24f);
-            AddLimb(verts, cols, tris, new Vector3(-0.75f, 4.2f, -0.10f), new Vector3(-0.95f, 5.6f, 0.05f), 0.24f, 0.10f);
-            AddLimb(verts, cols, tris, new Vector3(-0.85f, 5.4f, 0.00f), new Vector3(-2.6f, 7.6f, 0.5f), 0.13f, 0.03f);  // crown W
-            AddLimb(verts, cols, tris, new Vector3(-0.80f, 5.2f, 0.00f), new Vector3(0.6f, 7.9f, -0.4f), 0.12f, 0.03f);  // crown E
-            AddLimb(verts, cols, tris, new Vector3(-0.60f, 4.6f, -0.05f), new Vector3(-2.9f, 5.9f, -1.6f), 0.11f, 0.03f); // mid SW
-            AddLimb(verts, cols, tris, new Vector3(-0.55f, 4.4f, 0.00f), new Vector3(-1.9f, 5.3f, 1.9f), 0.10f, 0.03f);   // mid NW
-            AddLimb(verts, cols, tris, new Vector3(-0.35f, 3.0f, 0.00f), new Vector3(1.4f, 3.6f, 0.9f), 0.09f, 0.025f);   // low E
-            AddLimb(verts, cols, tris, new Vector3(-0.15f, 1.6f, 0.00f), new Vector3(0.9f, 1.9f, -0.7f), 0.08f, 0.03f);   // the stub
+            // ---- THE BOLE: two lengths, kinked, leaning west toward the light and the leap ----
+            AddBough(verts, cols, tris, new Vector3(0.00f, 0.00f, 0.00f), new Vector3(-0.42f, 5.90f, 0.24f),
+                new Vector3(-0.30f, 0.00f, 0.14f), 1.150f, 0.820f, 5, 0.00f); // trunk-foot
+            AddBough(verts, cols, tris, new Vector3(-0.42f, 5.70f, 0.24f), new Vector3(-1.15f, 10.40f, -0.14f),
+                new Vector3(-0.26f, 0.00f, -0.30f), 0.820f, 0.470f, 5, 0.05f); // trunk-head
+            // ---- three buttress roots: what plants a bole this heavy in the dead ground ----
+            AddBough(verts, cols, tris, new Vector3(-0.10f, 0.55f, 0.07f), new Vector3(-1.85f, 0.02f, -0.47f),
+                new Vector3(-0.20f, -0.25f, 0.00f), 0.500f, 0.180f, 3, 0.00f); // root-w
+            AddBough(verts, cols, tris, new Vector3(0.08f, 0.60f, -0.07f), new Vector3(1.35f, 0.02f, 1.76f),
+                new Vector3(0.15f, -0.30f, 0.27f), 0.460f, 0.170f, 3, 0.00f); // root-ne
+            AddBough(verts, cols, tris, new Vector3(0.05f, 0.50f, -0.14f), new Vector3(1.05f, 0.02f, -2.09f),
+                new Vector3(0.20f, -0.22f, -0.20f), 0.420f, 0.160f, 3, 0.00f); // root-se
+            // ---- FIVE PRIMARIES, each with a job in the outline ------------------------------
+            AddBough(verts, cols, tris, new Vector3(-0.50f, 6.30f, 0.16f), new Vector3(-7.10f, 12.90f, 1.62f),
+                new Vector3(-1.40f, 1.90f, 0.41f), 0.675f, 0.163f, 6, 0.35f); // P1-west
+            AddBough(verts, cols, tris, new Vector3(-0.42f, 7.05f, -0.11f), new Vector3(5.90f, 12.10f, -2.16f),
+                new Vector3(1.10f, 1.55f, -0.61f), 0.587f, 0.150f, 6, 0.35f); // P2-east
+            AddBough(verts, cols, tris, new Vector3(-0.72f, 8.30f, 0.07f), new Vector3(-3.60f, 15.10f, 7.02f),
+                new Vector3(-0.60f, 1.40f, 1.49f), 0.512f, 0.138f, 6, 0.40f); // P3-north
+            AddBough(verts, cols, tris, new Vector3(-0.86f, 9.10f, -0.08f), new Vector3(2.40f, 15.30f, -5.94f),
+                new Vector3(0.30f, 1.30f, -1.22f), 0.463f, 0.125f, 6, 0.40f); // P4-south
+            AddBough(verts, cols, tris, new Vector3(-1.15f, 10.20f, -0.14f), new Vector3(-2.35f, 18.90f, 0.94f),
+                new Vector3(-0.75f, 0.70f, 0.41f), 0.525f, 0.138f, 6, 0.45f); // P5-leader
+            AddBough(verts, cols, tris, new Vector3(-0.62f, 7.70f, 0.11f), new Vector3(-3.30f, 8.30f, -3.92f),
+                new Vector3(-0.35f, 0.55f, -0.47f), 0.438f, 0.300f, 4, 0.20f); // P6-snapped
+            // ---- SECONDARIES: two or three off each primary, forking up and out --------------
+            AddBough(verts, cols, tris, new Vector3(-3.10f, 9.20f, 0.74f), new Vector3(-6.90f, 15.60f, 0.14f),
+                new Vector3(-0.70f, 1.20f, -0.47f), 0.275f, 0.088f, 5, 0.60f); // S1a
+            AddBough(verts, cols, tris, new Vector3(-4.60f, 10.70f, 1.08f), new Vector3(-5.90f, 16.90f, 3.92f),
+                new Vector3(-0.35f, 1.05f, 0.74f), 0.237f, 0.075f, 5, 0.65f); // S1b
+            AddBough(verts, cols, tris, new Vector3(-5.60f, 11.80f, 1.35f), new Vector3(-9.20f, 14.40f, 0.27f),
+                new Vector3(-0.55f, 0.95f, -0.41f), 0.200f, 0.062f, 4, 0.70f); // S1c
+            AddBough(verts, cols, tris, new Vector3(2.60f, 9.60f, -1.01f), new Vector3(6.10f, 15.90f, -0.54f),
+                new Vector3(0.70f, 1.15f, 0.41f), 0.263f, 0.088f, 5, 0.60f); // S2a
+            AddBough(verts, cols, tris, new Vector3(4.10f, 10.90f, -1.49f), new Vector3(4.60f, 16.60f, -4.86f),
+                new Vector3(0.35f, 1.00f, -0.74f), 0.225f, 0.075f, 5, 0.65f); // S2b
+            AddBough(verts, cols, tris, new Vector3(5.00f, 11.50f, -1.82f), new Vector3(8.60f, 13.60f, -0.27f),
+                new Vector3(0.55f, 0.85f, 0.47f), 0.188f, 0.062f, 4, 0.70f); // S2c
+            AddBough(verts, cols, tris, new Vector3(-2.20f, 11.40f, 3.17f), new Vector3(-4.30f, 17.20f, 5.54f),
+                new Vector3(-0.40f, 1.10f, 0.74f), 0.237f, 0.075f, 5, 0.65f); // S3a
+            AddBough(verts, cols, tris, new Vector3(-3.05f, 13.30f, 5.27f), new Vector3(-1.30f, 17.60f, 8.91f),
+                new Vector3(0.35f, 0.95f, 0.81f), 0.200f, 0.062f, 4, 0.70f); // S3b
+            AddBough(verts, cols, tris, new Vector3(0.65f, 11.80f, -2.70f), new Vector3(2.90f, 17.40f, -4.19f),
+                new Vector3(0.35f, 1.05f, -0.61f), 0.225f, 0.075f, 5, 0.65f); // S4a
+            AddBough(verts, cols, tris, new Vector3(1.70f, 13.60f, -4.59f), new Vector3(0.20f, 17.10f, -7.97f),
+                new Vector3(-0.30f, 0.85f, -0.74f), 0.188f, 0.062f, 4, 0.70f); // S4b
+            AddBough(verts, cols, tris, new Vector3(-1.75f, 13.60f, 0.20f), new Vector3(-4.70f, 18.20f, -2.16f),
+                new Vector3(-0.55f, 0.95f, -0.47f), 0.263f, 0.075f, 5, 0.70f); // S5a
+            AddBough(verts, cols, tris, new Vector3(-2.05f, 15.60f, 0.47f), new Vector3(0.60f, 19.60f, -0.94f),
+                new Vector3(0.50f, 0.85f, -0.27f), 0.237f, 0.062f, 5, 0.72f); // S5b
+            AddBough(verts, cols, tris, new Vector3(-2.25f, 17.40f, 0.74f), new Vector3(-3.90f, 20.90f, 2.43f),
+                new Vector3(-0.35f, 0.60f, 0.47f), 0.188f, 0.050f, 4, 0.80f); // S5c
+            // ---- TWIGS: the outline's teeth. Short, clawing, and never parallel ---------------
+            AddBough(verts, cols, tris, new Vector3(-6.30f, 14.20f, 0.41f), new Vector3(-8.70f, 17.10f, 1.22f),
+                new Vector3(-0.30f, 0.45f, 0.27f), 0.112f, 0.037f, 3, 0.90f); // T1
+            AddBough(verts, cols, tris, new Vector3(-5.55f, 15.90f, 2.84f), new Vector3(-6.60f, 19.20f, 4.59f),
+                new Vector3(-0.20f, 0.40f, 0.34f), 0.100f, 0.037f, 3, 0.90f); // T2
+            AddBough(verts, cols, tris, new Vector3(-8.10f, 14.80f, 0.20f), new Vector3(-10.20f, 16.20f, -1.49f),
+                new Vector3(-0.25f, 0.35f, -0.27f), 0.088f, 0.025f, 3, 1.00f); // T3
+            AddBough(verts, cols, tris, new Vector3(5.30f, 14.60f, -0.94f), new Vector3(7.60f, 17.80f, -1.89f),
+                new Vector3(0.30f, 0.45f, -0.27f), 0.112f, 0.037f, 3, 0.90f); // T4
+            AddBough(verts, cols, tris, new Vector3(4.45f, 15.10f, -3.92f), new Vector3(5.10f, 18.60f, -6.21f),
+                new Vector3(0.20f, 0.40f, -0.41f), 0.100f, 0.037f, 3, 0.90f); // T5
+            AddBough(verts, cols, tris, new Vector3(7.60f, 13.20f, -0.41f), new Vector3(9.70f, 15.10f, 1.35f),
+                new Vector3(0.25f, 0.35f, 0.34f), 0.088f, 0.025f, 3, 1.00f); // T6
+            AddBough(verts, cols, tris, new Vector3(-3.60f, 15.90f, 4.59f), new Vector3(-5.20f, 19.10f, 7.16f),
+                new Vector3(-0.25f, 0.40f, 0.47f), 0.100f, 0.037f, 3, 0.90f); // T7
+            AddBough(verts, cols, tris, new Vector3(-2.30f, 16.60f, 7.29f), new Vector3(-2.90f, 18.90f, 10.26f),
+                new Vector3(-0.15f, 0.35f, 0.54f), 0.088f, 0.025f, 3, 1.00f); // T8
+            AddBough(verts, cols, tris, new Vector3(2.10f, 16.10f, -3.71f), new Vector3(3.60f, 19.40f, -5.27f),
+                new Vector3(0.25f, 0.40f, -0.34f), 0.100f, 0.037f, 3, 0.90f); // T9
+            AddBough(verts, cols, tris, new Vector3(1.10f, 15.60f, -6.21f), new Vector3(1.60f, 18.10f, -9.32f),
+                new Vector3(0.15f, 0.35f, -0.47f), 0.088f, 0.025f, 3, 1.00f); // T10
+            AddBough(verts, cols, tris, new Vector3(-3.60f, 16.60f, -0.94f), new Vector3(-6.20f, 19.00f, -3.24f),
+                new Vector3(-0.30f, 0.40f, -0.34f), 0.100f, 0.037f, 3, 0.90f); // T11
+            AddBough(verts, cols, tris, new Vector3(-0.60f, 18.30f, -0.54f), new Vector3(1.90f, 20.40f, -2.16f),
+                new Vector3(0.25f, 0.35f, -0.27f), 0.088f, 0.025f, 3, 1.00f); // T12
+            AddBough(verts, cols, tris, new Vector3(-2.95f, 19.40f, 1.42f), new Vector3(-4.60f, 21.40f, 3.51f),
+                new Vector3(-0.20f, 0.30f, 0.34f), 0.075f, 0.025f, 3, 1.00f); // T13
+            AddBough(verts, cols, tris, new Vector3(-2.30f, 18.90f, 0.94f), new Vector3(-1.20f, 21.60f, -0.81f),
+                new Vector3(0.15f, 0.30f, -0.27f), 0.075f, 0.025f, 3, 1.00f); // T14
 
             var mesh = new Mesh { name = "DeadTree" };
             mesh.SetVertices(verts);
@@ -102,39 +245,76 @@ namespace Tarrock.Editor
             return mesh;
         }
 
+        /// <summary>A limb: a quadratic Bezier from <paramref name="baseP"/> to
+        /// <paramref name="tipP"/>, bowed by <paramref name="bend"/> at its middle control point
+        /// and built from <paramref name="segments"/> tapered prisms. A STRAIGHT limb is what made
+        /// the round-9 tree read as scaffolding; a bough that bows is what reads as drawn.</summary>
+        private static void AddBough(
+            List<Vector3> verts, List<Color> cols, List<int> tris,
+            Vector3 baseP, Vector3 tipP, Vector3 bend, float baseR, float tipR, int segments, float sway)
+        {
+            Vector3 mid = ((baseP + tipP) * 0.5f) + bend;
+            Vector3 previous = baseP;
+            float previousR = baseR;
+            for (int i = 1; i <= segments; i++)
+            {
+                float t = i / (float)segments;
+                float u = 1f - t;
+                Vector3 point = (u * u * baseP) + (2f * t * u * mid) + (t * t * tipP);
+                // Radius on t^0.72, not t: a limb keeps its mass and then thins fast, which is the
+                // difference between a bough and a cone at 56 m.
+                float radius = Mathf.Lerp(baseR, tipR, Mathf.Pow(t, 0.72f));
+                AddLimb(verts, cols, tris, previous, point, previousR, radius, sway);
+                previous = point;
+                previousR = radius;
+            }
+        }
+
+        /// <summary>One tapered prism between two points. SIX-sided: a four-sided prism shows two
+        /// facets to any viewer and its silhouette is a pair of straight lines that alias into a
+        /// staircase against a bright sky, which is exactly what round 7-9's tree did.</summary>
         private static void AddLimb(
             List<Vector3> verts, List<Color> cols, List<int> tris,
-            Vector3 baseP, Vector3 tipP, float baseR, float tipR)
+            Vector3 baseP, Vector3 tipP, float baseR, float tipR, float sway)
         {
             Vector3 axis = (tipP - baseP).normalized;
             Vector3 side = Vector3.Cross(axis, Mathf.Abs(axis.y) > 0.9f ? Vector3.forward : Vector3.up).normalized;
             Vector3 side2 = Vector3.Cross(axis, side);
             int start = verts.Count;
 
-            // Square cross-sections (low-poly woodcut read — visual pillar 2's confident edges).
-            for (int corner = 0; corner < 4; corner++)
+            // Tarrock/FoliageWind reads the vertex colour's ALPHA and nothing else off it (it is
+            // the wind mask, multiplied by the world-height ramp), so the rgb here is documentation
+            // and the alpha is the only channel that does anything. Round 9 wrote 0.9/1.1 greys
+            // with the comment "tips catch the light"; they never did, and the alpha it left at 1
+            // meant the bole was as free to sway as the twigs.
+            for (int corner = 0; corner < LimbSides; corner++)
             {
-                float a = (corner + 0.5f) * Mathf.PI * 0.5f;
-                Vector3 dir = side * Mathf.Cos(a) + side2 * Mathf.Sin(a);
-                verts.Add(baseP + dir * baseR);
-                cols.Add(new Color(0.9f, 0.9f, 0.9f));   // base slightly darker via tint below
-                verts.Add(tipP + dir * tipR);
-                cols.Add(new Color(1.1f, 1.05f, 1.0f));  // tips catch the light
+                float a = (corner + 0.5f) * Mathf.PI * 2f / LimbSides;
+                Vector3 dir = (side * Mathf.Cos(a)) + (side2 * Mathf.Sin(a));
+                verts.Add(baseP + (dir * baseR));
+                cols.Add(new Color(0.5f, 0.5f, 0.5f, sway));
+                verts.Add(tipP + (dir * tipR));
+                cols.Add(new Color(0.5f, 0.5f, 0.5f, sway));
             }
 
-            for (int corner = 0; corner < 4; corner++)
+            for (int corner = 0; corner < LimbSides; corner++)
             {
-                int b0 = start + corner * 2;
+                int b0 = start + (corner * 2);
                 int t0 = b0 + 1;
-                int b1 = start + ((corner + 1) % 4) * 2;
+                int b1 = start + (((corner + 1) % LimbSides) * 2);
                 int t1 = b1 + 1;
                 tris.AddRange(new[] { b0, t0, b1, b1, t0, t1 });
             }
 
-            // Cap the tip.
-            int tip0 = start + 1;
-            tris.AddRange(new[] { tip0, start + 5, start + 3, tip0, start + 7, start + 5 });
+            // Cap the tip with a fan, so a blunt limb (the snapped bough) is closed.
+            for (int corner = 1; corner < LimbSides - 1; corner++)
+            {
+                tris.AddRange(new[] { start + 1, start + ((corner + 1) * 2) + 1, start + (corner * 2) + 1 });
+            }
         }
+
+        /// <summary>Cross-section corners on every limb of the dead tree. See AddLimb.</summary>
+        private const int LimbSides = 6;
 
         // Suspended motes — "the one particulate allowed while bound: dust/pollen hanging nearly
         // motionless in light — stasis made visible, not weather" (art-audio.md §The world-state

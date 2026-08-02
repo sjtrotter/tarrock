@@ -56,8 +56,29 @@ namespace Tarrock.Editor
         // which of the two any given part of the sky is looking at.
         // (The critic's "fable-01 S 0.66" is not chased: that plate is a forest interior measured
         // through canopy. Measured on its actual sky patch it is S 0.489 — inside this target.)
+        // ROUND 10 DEEPENS THE MID BAND, (0.40, 0.51, 0.75) → (0.24, 0.36, 0.74), and it is the
+        // paint half of this round's sky change (the light half is SkyBearingPower below). Two
+        // board-validated gates were failing on the same fact — our sky is not blue enough and is
+        // too bright — and both are this band, because at the gameplay pitches the mid band is most
+        // of the visible vault:
+        //     bluest bare sky R−B   board fable-06 −168.6, totoro −121.8;  round 9 v3 −39.7
+        //     bright sky-mass share board ceiling 26.7% (fable-04);        round 9 v3 53.4%
+        // The band keeps its blue-green ratio (it is the same hue, two values down and more
+        // saturated), so the "two skies in one frame" structure round 7 built is untouched — what
+        // changes is how far the cool sky is allowed to fall on the side of the frame away from the
+        // dawn. The gold band and the far field are NOT moved: SkyHorizonLinear feeds FarFieldLinear,
+        // which is a standing contract with Lighting.cs's fogColor, and "pale dawn gold" is the
+        // Cliff's palette (art-audio.md §Region color scripts).
+        // WHY THIS DEPTH AND NOT ONE STOP LESS. (0.30, 0.42, 0.74) was tried first, everything else
+        // held equal; measured on the round-9 capture through the sky model's own delta
+        // (scratchpad round10/builderS/sweep3.log and finalrun.log), (0.30…) → (0.24…) moves
+        //     bluest bare sky R−B   v3 −85.7 → −97.9   v4 −96.9 → −112.0   v8 −102.0 → −110.8
+        //     bright sky-mass       v3 37.4 → 35.2%    v4 20.0 → 19.5%     v8 17.2 → 13.6%
+        // for 0.014 of luminance on v1's sky (0.599 → 0.585), v1 being the frame furthest along
+        // the "keep the dawn" side of the trade. Nothing else in the eight moves by more than half
+        // a point, so the deeper band is bought almost entirely off the anti-sun vault.
         private static readonly Color SkyHorizonLinear = new Color(1.00f, 0.80f, 0.46f);
-        private static readonly Color SkyMidLinear = new Color(0.40f, 0.51f, 0.75f);
+        private static readonly Color SkyMidLinear = new Color(0.24f, 0.36f, 0.74f);
         private static readonly Color SkyZenithLinear = new Color(0.15f, 0.29f, 0.60f);
 
         // Below the horizon the Cliff has NO ground: it has the cloud sea (world.md §The Cliff).
@@ -184,8 +205,33 @@ namespace Tarrock.Editor
         //      30°  +64 → +71      70°   +7 → +36      130°   −6 → −56
         // ...and the anti-sun end holds its blue at −75 with HSL saturation 0.33 against round 6's
         // −14 at 0.07, which is the board's −45..−47 / 0.28-0.45 passed rather than missed.
+        // ROUND 10 TIGHTENS THE BEARING COSINE, 1.3 → 3.0, and it is the single strongest lever
+        // this file has on the two board-validated gates the round-9 capture failed. It is chosen
+        // over lowering SkyBearingRise (which would cool the sun side too) precisely BECAUSE it is
+        // surgical: `bearing` is pow(saturate(dot·0.5 + 0.5), this), so raising the exponent leaves
+        // the dawn's own quarter of the compass almost exactly where round 7 put it and spends the
+        // whole change on the angles away from it.
+        //     angle off the sun    0°     19°     55°     64°    109°    130°
+        //     bearing, power 1.3   1.000  0.965   0.727   0.647   0.245   0.129
+        //     bearing, power 3.0   1.000  0.921   0.481   0.372   0.038   0.011
+        // and everything downstream reads it: the elevation ramps' `lean` steepens off-sun (so the
+        // cool mid and the zenith come DOWN that side of the sky), `anti` cools the horizon band
+        // off-sun, and the additive dawn wash — the term that was holding the anti-sun sky at
+        // R−B −40 instead of −120 — falls away with it.
+        // Modelled on the round-9 capture with the sky model's own delta (scratchpad
+        // round10/builderS/predict.py; the control reproduces round 9's gate numbers exactly), this
+        // change together with the mid band above and the vault work:
+        //     view   bright-sky-mass 53.4→35.2 (v3)  28.7→19.5 (v4)  29.5→13.6 (v8)
+        //     bluest bare sky R−B    −39.7→−97.9     −63.9→−112.0    −65.8→−110.8
+        // ...and critic 5's own halo estimator on the v8 hero, which is the series this round was
+        // set to reverse: round 6 −0.019, round 7 −0.038, round 8 +0.018, round 9 +0.016,
+        // round 10 −0.043, against a blue-sky board band of −0.008 (totoro) to −0.048 (fable-08).
+        // WHAT IT COSTS, stated: v1 and v2 are the frames closest to the sun's bearing and they are
+        // the least affected, but v1's sky does lose ~0.10 of luminance. See §the round-10 note in
+        // the gauntlet report — this is the one interaction with the grade builder's white-point
+        // pass, and it is a real one.
         private const float SkyBearingRise = 1.15f;
-        private const float SkyBearingPower = 1.3f;
+        private const float SkyBearingPower = 3.0f;
         private const float SkyBearingTilt = 5.2f;
         private const float SkyBandCount = 7f;         // the painted-plate terrace, not a smooth ramp
         private const float SkyBandStrength = 0.30f;
@@ -273,7 +319,45 @@ namespace Tarrock.Editor
         // board's law and round 6's one real win — so the painted crown is near-neutral and the
         // warmth arrives as a term the sun's bearing controls, which is also why it can no longer
         // be inverted by a grade.
-        private static readonly Color VaultCloudLitLinear = new Color(1.03f, 0.98f, 0.88f);
+        // -------------------------------------------------------------------------------------
+        // THE VAULT CLOUD COLOURS — RE-SOLVED IN ROUND 10, and the three of them move together
+        // because they are one finding. Two independent judges (critic 2, and a cross-model blind
+        // judge given the round-9 plate cold) said the masses read as muddy translucent volumes
+        // with blue contamination; the gate that states it as arithmetic is the fourth one:
+        //
+        //     board            cloud luminance 0.877   against a sky of 0.715
+        //     round 9, v3      cloud luminance 0.545   against a sky of 0.660     INVERTED
+        //
+        // No daylight cumulus is darker than the sky behind it, and ours were — by 0.115 where the
+        // board is ahead by 0.162. That is the single most alien thing about them, and it is not a
+        // grade problem: it is these three triples plus two terms in SkyGradient.hlsl that were
+        // spending a cumulus's whole value range below the sky's.
+        //
+        // WHY THE ROUND-8 TRIPLES ARE THE WAY THEY ARE, so this is a correction and not an erasure.
+        // Round 8 added TARROCK_CLOUD_SKYFILL — the dome's light on the shaded washes — at 1.20 ×
+        // sky.mid, i.e. +(0.160, 0.268, 0.627) linear. Against a shadow authored at (0.011, 0.024,
+        // 0.165) linear that is not a fill, it is a REPLACEMENT: the deepest wash arrived at
+        // (0.171, 0.292, 0.792), a bright royal blue. The painted triples were then pulled down and
+        // blued to sit under it, which is why the shade and shadow below read as slate. With the
+        // fill cut to 0.30 and gated to the mass's interior (SkyGradient.hlsl, this round), the
+        // paint has to carry the cool half of the law again — so it is authored as a painter would:
+        // a LIGHT cool grey for the body and a deeper cool grey-blue for the underside, both well
+        // above the sky's own value.
+        //
+        // TARGETS, from the board through the round-9 gate estimator (margin.py route B):
+        //     fable-06   cloud lit L 255.0  shadow L 198.0  shadow R−B −64.5
+        //     totoro     cloud lit L 210.3  shadow L 147.6  shadow R−B −78.2
+        //     round 9 v3 cloud lit L 180.2  shadow L 111.8  shadow R−B −20.2
+        // The shadow keeps MORE hue than the board's lit end and less than its bluest sky, which is
+        // what makes the MARGIN gate (cloud shadow warmer than the bluest bare sky) passable at the
+        // same time as a genuinely blue sky: the two ends move apart instead of together.
+        //
+        // AND THE DARK ANCHOR IS NOT ABANDONED. Round 3's note above asks for one and it is right to;
+        // it simply must not be the whole cloud. The shadow triple is still the bottom third of the
+        // ramp and the belly still deepens the big masses' bases (TARROCK_CLOUD_BELLY), so the hero
+        // still carries the darkest value in the vault — it is now the darkest value of a bright
+        // object rather than a dark object in a bright sky.
+        private static readonly Color VaultCloudLitLinear = new Color(1.03f, 0.99f, 0.90f);
         // The middle wash. Down from round 2's (0.62,0.66,0.78): at that value the "shaded" side of
         // a mass was lighter than the low sky band it was drawn over, so the masses had no dark
         // side at all — they were a bright shape on a bright ground with a slightly brighter shape
@@ -296,7 +380,12 @@ namespace Tarrock.Editor
         // the dome (SkyGradient.hlsl §TARROCK_CLOUD_SKYFILL), the body is free to be the cool paint
         // it should have been all along — the LIGHT now decides which flank is warm, so a blue body
         // can no longer flip a mass cold the way round 6's did.
-        private static readonly Color VaultCloudShadeLinear = new Color(0.440f, 0.525f, 0.760f);
+        // ROUND 10, (0.440, 0.525, 0.760) → see §THE VAULT CLOUD COLOURS above. The body of a
+        // storybook cumulus is a LIGHT cool grey — the shaded side of a white object under a blue
+        // dome — not a mid slate. Round 8's value is what a body has to be when a term four times
+        // its size is about to be added on top of it; with that term cut to a fill, this is the
+        // paint again.
+        private static readonly Color VaultCloudShadeLinear = new Color(0.660f, 0.710f, 0.840f);
         // THE ANCHOR. Cool, not neutral: at dawn a cloud's underside is lit by sky, and the whole
         // region's grade is warm light on cool shadow (BuildLighting). Grey here would read as
         // dirt on the plate.
@@ -329,7 +418,13 @@ namespace Tarrock.Editor
         // the graded chain, the dark-to-lit R−B swing (round 7 → round 8):
         //     v3 hero 23.9 → 55.7      v4 anchor 25.4 → 100.1      v8 hero 8.7 → 76.7
         // against the board's animation-04 at 91.6 by the same estimator.
-        private static readonly Color VaultCloudShadowLinear = new Color(0.105f, 0.170f, 0.440f);
+        // ROUND 10, (0.105, 0.170, 0.440) → see §THE VAULT CLOUD COLOURS above. Same correction,
+        // one wash deeper: the underside of a cumulus at this hour is sky-lit, so it is cool and it
+        // is DIM, but the board's own shadow ends sit at sRGB luminance 148 (totoro) and 198
+        // (fable-06) — nowhere near a value that grades to 0.51. It keeps its hue lead (R−B −0.26
+        // authored, against the shade's −0.18) so the mass still swings cool-to-warm from base to
+        // crown, which is the law round 8 was right about even where its magnitudes were not.
+        private static readonly Color VaultCloudShadowLinear = new Color(0.400f, 0.470f, 0.660f);
         private const float VaultCloudBase = 0.22f;      // flat base, in half widths below centre
         // Crisper than round 2's 0.055. On the hero that is 0.030 × 20° = 0.6° ≈ 11 px of edge
         // ramp, which is a painted edge; 0.055 was 0.7° on a 13° mass and, combined with the
@@ -970,28 +1065,48 @@ namespace Tarrock.Editor
         // lens. A drawn edge, and nowhere near enough to fold the surface back on itself.
         // At scale 2.6 the broad octave turns ~5 times round the silhouette and the nibble ~11,
         // which is 14 and 6 meridian segments per bump at the 72-meridian tessellation above.
-        // ROUND 9 — 0.11 → 0.20 AND 2.6 → 7.0, and the sweep that chose them is worth recording
-        // because it also says what these two CANNOT buy. Measured on the offline lobe model
-        // (scratchpad round9/builderC/scalsweep.py: anchor A, r 24 at 100 m, 420x280 px on screen,
-        // round-9 shader throughout), scored with critic 5's own estimator (perimeter/√area of a
-        // luma > 72nd-percentile mask, the estimator its board band was published with):
-        //     round 8  (2.6, 0.11)   14.49        r9 (5.0, 0.16)   16.57
-        //     r9       (2.6, 0.11)   15.34        r9 (7.0, 0.20)   18.19
-        //                                        r9 (9.0, 0.24)   18.68
-        // — against a board band of 21.1 (fable-06) to 334 (fairytale-01). 7.0/0.20 is where the
-        // curve flattens, and 9.0 is refused for a tessellation reason rather than a picture one:
-        // at 9 turns the 72-meridian grid has 8 segments per bump, which is where a scallop starts
-        // to facet instead of curving.
-        // AND THE HONEST HALF: the pure OUTLINE statistic (isoperimetric ratio P/(2√πA)) moves
-        // 1.11 → 1.12 across that entire sweep. Radial displacement of a star-shaped blob cannot
-        // make a cauliflower outline at any amplitude — it makes a bigger smooth blob. What the
-        // sweep actually buys is INTERIOR articulation (the same estimator scores value structure,
-        // because a mass with real modelling fragments a mid-luma threshold and a flat one does
-        // not) and a measured drop in the ghost-contour index, 0.29 → 0.10. Closing the rest of the
-        // gap to the board needs the mass BROKEN — sub-lobes with their own silhouettes, or a
-        // second smaller mass overlapping the first — which is a placement change, not a scallop.
-        private const float CloudLobeScallop = 0.20f;
-        private const float CloudLobeScallopScale = 7.0f;
+        // ROUND 10 REVERTS ROUND 9's (7.0, 0.20) + `bite` OCTAVE TO (2.6, 0.11), and it is reverted
+        // for a reason that is INDEPENDENT of the CloudLobe.shader revert it travels with: the
+        // round-9 scallop is past the sampling limit of the mesh that carries it.
+        //
+        // THE ARITHMETIC THE ROUND-9 NOTE ABOVE GOT WRONG BY A FACTOR OF TWO. A GradNoise argument
+        // dir.x·k sweeps −k → +k → −k once round the equator, so the field completes 2k cycles per
+        // revolution, not k. Against the 72-meridian grid (Nyquist 36 turns), measured verbatim off
+        // this file's own CloudLobeScallopFactor (scratchpad round10/builderS/facetmesh.py):
+        //     round 8, k 2.6   broad  5.2 turns (13.9 verts/bump)   nibble 11.2 ( 6.4 verts/bump)
+        //     round 9, k 7.0   broad 14.0 turns ( 5.1 verts/bump)   nibble 30.1 ( 2.4 verts/bump)
+        //                      bite  64.7 turns ( 1.1 verts/bump)   <-- 1.8x OVER Nyquist
+        // The `bite` octave cannot be represented at all; what the mesh draws in its place is alias.
+        // Reconstructing the equator ring against a 4x-density evaluation of the same field, the
+        // round-8 scallop loses 78% of its own std between vertices and the round-9 one loses 138% —
+        // i.e. round 9's mesh carries less of the intended shape than none of it would.
+        //
+        // Round 4 already wrote this rule down at §CloudLobeMeridians — "a displaced silhouette at
+        // that spacing is a polygon, which is the one thing this pass must not add" — and raised the
+        // tessellation from 48x26 to 72x40 to honour it. Round 9 broke it from the other side, by
+        // raising the displacement's frequency instead of the mesh's.
+        //
+        // AND THAT IS FACETING, MEASURED. Angle between adjacent quad normals round a unit mass,
+        // scallop only: smooth blob 3.9° mean / 5.0° p95; round 8 13.6° / 29.1°; round 9 51.1° /
+        // 101.0° / 135.5° max. A 101° p95 dihedral is a crumpled paper ball, and it is exactly
+        // critic 2's round-9 finding ("faceted the lobes") stated in degrees.
+        //
+        // WHY THE ROUND-9 SWEEP COULD NOT SEE IT. It scored with critic 5's perimeter/√area of a
+        // luma-threshold mask — an estimator that REWARDS fragmentation. Faceted normals fragment
+        // a luma threshold, so the score rose (14.49 → 18.19) while the picture got worse. That is
+        // the round-5 trap ("failed on the picture while passing on the metric") repeated: a
+        // silhouette statistic cannot arbitrate a shading artefact.
+        //
+        // WHAT ACTUALLY BUYS THE ARTICULATION, deferred rather than dropped: the round-9 note's own
+        // honest half is right — radial displacement of a star-shaped blob makes a bigger smooth
+        // blob at any amplitude (isoperimetric ratio 1.11 → 1.12 across its whole sweep). The mass
+        // has to be BROKEN — sub-lobes with their own silhouettes, or a second smaller mass
+        // overlapping the first — which is a placement change, or the mesh has to be retessellated
+        // to afford the frequency. Both are bigger than a constant.
+        // At scale 2.6 the broad octave turns ~5 times round the silhouette and the nibble ~11,
+        // which is 14 and 6 meridian segments per bump at the 72-meridian tessellation above.
+        private const float CloudLobeScallop = 0.11f;
+        private const float CloudLobeScallopScale = 2.6f;
 
         // -- THE SWELL BAND (round 4). The deck's own answer to "no top-surface relief crossing the
         //    mid-field": a ring of LOW, WIDE masses (variant 4) lying just off the island's edge,
@@ -1466,26 +1581,18 @@ namespace Tarrock.Editor
             // vault's half-width weighting in SkyGradient.hlsl.
             material.SetFloat("_LobeThinRadius", 14f);
             material.SetFloat("_LobeThickRadius", 24f);
-            // ROUND 9 — THESE TWO NOW DRIVE AN ACCENT, NOT A RIM (CloudLobe.shader §THE ACCENT,
-            // WHICH IS NOT A RIM). Round 8's term was a pure grazing-angle band, and dot(N, V) goes
-            // to zero all the way round a closed mass, so it drew a ribbon of constant angular
-            // width round the entire silhouette — which two critics measured from outside as a
-            // saturation halo of +0.018 where every blue-sky board plate runs negative. The accent
-            // is now gated by how far the limb TURNS TOWARD THE SUN, so it exists on a sunward
-            // quarter of the outline and nowhere else, and it is broken into strokes by the mass's
-            // own cauliflower.
-            //
-            // 1.1 → 2.6 because the term is spent in far fewer places. Measured on the offline lobe
-            // model (scratchpad round9/builderC/ship.py) over anchor A's whole mask, the round-8 rim
-            // adds a mean of 0.0116 linear luminance across 19.2% of the mask with a peak of 0.748;
-            // the round-9 accent at 2.6 adds a mean of 0.0072 across 6.5% with a peak of 1.647.
-            // Less total light, in half as many places, more than twice as bright where it lands —
-            // which is what the plates draw, and it is board-legal to let it run hot (fable-03
-            // clips 16.08% of its frame; our whole round-8 set maxes at 0.051%).
-            // The tightness is unchanged at 6 because the shader now widens it by up to 3.2x
-            // wherever the cauliflower bulges out, so 6 is the FLOOR of a varying width rather than
-            // a fixed one.
-            material.SetFloat("_LobeRim", 2.6f);
+            // Tighter than round 3's power 4: on a mass that fills 500 px a power-4 grazing term is
+            // not a rim, it is a wash over the whole limb, and it was part of what kept the round-3
+            // heads pale all over.
+            // ROUND 10 REVERTS 2.6 → 1.1 WITH THE SHADER, AND THIS ONE IS NOT OPTIONAL. Round 9
+            // raised the strength because its accent spent itself on a sunward quarter of the limb
+            // instead of round the whole of it (CloudLobe.shader §THE ACCENT, WHICH IS NOT A RIM,
+            // reverted this round). The round-8 shader that is back in the tree multiplies
+            // _SunGlowColor · pow(1 − |N·V|, 6) · saturate(N·L) by this number, and pow(1 − |N·V|)
+            // is a constant-width band round the ENTIRE silhouette — so leaving 2.6 in place would
+            // have shipped the halo term the round-9 note above was written to remove, at 2.4x its
+            // round-8 strength. A half-revert here is strictly worse than either whole.
+            material.SetFloat("_LobeRim", 1.1f);
             material.SetFloat("_LobeRimPower", 6f);
             // The same convergence numbers as the deck, so the near row and the sea it stands in
             // recede together instead of separating into two layers.
@@ -1811,36 +1918,16 @@ namespace Tarrock.Editor
                 GradNoise(dir.z * k * fine + 57.2f, dir.y * k * fine + 12.4f) +
                 GradNoise(dir.x * k * fine + 73.6f, dir.z * k * fine + 41.8f);
 
-            // ROUND 9 — THE AMPLITUDE IS INTERMITTENT, and this is the geometry half of the
-            // round's first finding ("an ARTICULATED PAINTED SILHOUETTE: crisp accents against
-            // soft interiors — right now the mass reads as an undifferentiated blob with a uniform
-            // edge treatment"). Through round 8 this returned two octaves at ONE amplitude for
-            // every direction on every mass, which is a uniformly wobbly outline — measured as
-            // isoperimetric ratio P/(2√πA), the round-8 near masses come out at 1.14-1.15 against
-            // a board band of 6.07-18.4 for a painted cumulus (critic5/halo.py's perim/√A 21.5-65.1
-            // in these units). A uniform wobble cannot climb that scale however far its amplitude
-            // is pushed: raising it just inflates a smooth blob into a bigger smooth blob.
+            // ROUND 10 REMOVES ROUND 9's INTERMITTENT `bite` OCTAVE. It ran at 2·k·2.15² = 64.7
+            // turns per revolution against this mesh's 36-turn Nyquist — 1.1 vertices per bump —
+            // so it never reached the picture as a bite; it reached it as alias, and the alias is
+            // the faceting critic 2 measured. See §CloudLobeScallop above for the numbers and for
+            // why the round-9 estimator scored it as an improvement.
             //
-            // What a painted cloud actually has is INTERMITTENCY — a long calm shoulder, then three
-            // sharp cauliflower bites, then another calm stretch. So a slow selector field (1.30
-            // per unit direction, about one and a third cycles across a mass — deliberately slower
-            // than the scallop's own 2.6 so it groups scallops rather than modulating each one)
-            // decides where the mass is CRISP and where it is SOFT, and a third, much finer octave
-            // is admitted only where the selector says crisp.
-            //
-            // MEAN-PRESERVING BY CONSTRUCTION, which is why no anchor's radius has to be re-cut:
-            // sel is a zero-mean GradNoise mapped to 0..1, so E[sel²] ≈ 1/3 and E[gain] =
-            // 0.55 + 1.35/3 ≈ 1.00. The distribution changes, the mean does not; a mass is still
-            // its authored size, and CloudLobeSurface still normalises by the true max extent.
-            // The reason the extra octave rides on `sel` and not on 1 is that a fine octave laid
-            // everywhere is exactly the "filter, not a hand" the round-6 tooth work already had to
-            // undo on the shading side.
-            float sel = 0.5f + 0.5f * GradNoise(dir.y * 1.30f + 5.7f, dir.z * 1.30f + 27.4f);
-            float bite =
-                GradNoise(dir.x * k * fine * fine + 11.9f, dir.y * k * fine * fine + 63.5f) +
-                GradNoise(dir.z * k * fine * fine + 88.1f, dir.x * k * fine * fine + 5.2f);
-            float gain = 0.55f + 1.35f * sel * sel;
-            return 1f + (broad + nibble * 0.4f + bite * 0.30f * sel) * CloudLobeScallop * gain;
+            // ANY future fine octave here has to be checked against 72 meridians / 40 parallels
+            // FIRST, not against a screen-space model: lobe.py evaluates this per pixel, so it can
+            // reproduce a frequency the shipped mesh cannot carry.
+            return 1f + (broad + nibble * 0.4f) * CloudLobeScallop;
         }
 
         /// <summary>Distance from the cluster centre to the metaball isosurface along

@@ -70,36 +70,6 @@ Shader "Tarrock/CloudLobe"
     //      already in unity_ObjectToWorld, and reading it there survives instancing.
     // The terrace stays, because storybook cloud is washes — but four of them at 0.55 over 0.22 of
     // softness, which is the sky's own brush, not a stencil.
-    //
-    // ROUND 9 (2026-08-02, against gauntlet/round8 and the reference board). Three changes, all of
-    // them one finding: this row was drawing an EVEN mass — even outline, even edge, even interior.
-    //   1. §ONE NOISE FAMILY. The silhouette/tooth term and the paint term used two unrelated sets
-    //      of frequencies, so the edge and the interior were drawn by different hands. One ladder
-    //      now, sampled once, shared — and the crumple's finest octave finally gets the Nyquist
-    //      fade the brush always had.
-    //   2. §THE ACCENT, WHICH IS NOT A RIM. A pow(1 − |N·V|) band is constant-width by
-    //      construction, because N·V goes to zero all the way round a closed mass. The accent is
-    //      now gated by how far the limb turns toward the sun, widened by the mass's own
-    //      cauliflower, and broken into strokes by it. Measured on the offline lobe model: mean
-    //      added luminance 0.0116 → 0.0072 linear, carried by 19.2% → 6.5% of a mass, peak
-    //      0.748 → 1.647.
-    //   3. The mesh's scallop becomes INTERMITTENT (TerrainRegionGenerator.Sky.cs
-    //      §CloudLobeScallopFactor) — calm shoulders and crisp bites instead of one amplitude
-    //      everywhere.
-    // Scored with critic 5's own estimator on the near hero of v3 (perimeter/√area of a
-    // luma > 72nd-percentile mask): 14.48 → 18.18, against a board band of 21.1–334. Ghost-contour
-    // index 0.29 → 0.10 on that mass and 0.67 → 0.24 on the second. VERIFIED OFFLINE, not in
-    // Unity: scratchpad round9/builderC/lobe.py ports this whole file, and val2.py shows it
-    // reproducing round-8 lobe pixels to a mean of 11–31 sRGB levels with the hue within 6.
-    //
-    // WHAT ROUND 9 STILL DOES NOT TAKE, and it is now the top of the list rather than a deferral:
-    // the DOME term (SkyGradient.hlsl §TARROCK_CLOUD_SKYFILL). The round-8 note below refused it
-    // because "the offline model this round is solved against covers the skybox, not the lobe
-    // meshes". That model now exists. These masses still read as STONE — opaque, hard-terminated,
-    // with a near-black base — and the cool sky light on their shaded flanks is the missing half
-    // of the storybook law. It is not taken here only because it needs _LobeShade, _LobeMid and
-    // _LobeUnder re-solved against it, which is a second variable and this round already spends
-    // its one.
     Properties
     {
         // ROUND 5: THREE named washes, not two plus a belly. See the fragment's §THE THREE-BAND
@@ -149,20 +119,8 @@ Shader "Tarrock/CloudLobe"
         // roll drives it.
         _LobeThinRadius ("Lobe - no base below (m)", Float) = 14.0
         _LobeThickRadius ("Lobe - full base above (m)", Float) = 24.0
-        // ROUND 9: these two now drive THE ACCENT, not a rim — see the fragment's §THE ACCENT,
-        // WHICH IS NOT A RIM. _LobeRimPower is the accent's BASE tightness, which the mass's own
-        // cauliflower then widens by up to 3.2x where a lobe bulges into the light; _LobeRim is its
-        // strength where it actually lands, which is a small sunward fraction of the limb rather
-        // than the whole of it. The strength therefore goes UP (1.1 -> 2.6) while the total light
-        // this term adds to a mass goes DOWN: measured on the model over anchor A's whole mask,
-        // mean added luminance 0.0116 -> 0.0072 linear, the pixels that carry any of it fall from
-        // 19.2% of the mask to 6.5%, and the PEAK goes 0.748 -> 1.647. That is the trade the board
-        // plates draw — a few genuinely
-        // bright marks instead of an even wash — and it is board-legal to let those marks run hot:
-        // fable-03 clips 16.08% of its frame, fable-06 3.83%, and our whole round-8 set maxes at
-        // 0.051%, so a locally clipped sunlit crown is 75x inside what the board does.
-        _LobeRim ("Lobe - dawn accent", Range(0, 4)) = 2.6
-        _LobeRimPower ("Lobe - dawn accent tightness", Range(1, 16)) = 6
+        _LobeRim ("Lobe - dawn rim", Range(0, 3)) = 1.1
+        _LobeRimPower ("Lobe - dawn rim tightness", Range(1, 16)) = 6
 
         _SkyBlendStart ("Sky blend start (m)", Float) = 430.0
         _SkyBlendEnd ("Sky blend end (m)", Float) = 820.0
@@ -411,36 +369,6 @@ Shader "Tarrock/CloudLobe"
                 // their rims — the same 1 : 0.45 proportion the vault's silhouette scallop uses.
                 // -------------------------------------------------------------------------------
                 float azi = atan2(normalWS.x, normalWS.z);
-
-                // -------------------------------------------------------------------------------
-                // ROUND 9 — ONE NOISE FAMILY, SAMPLED ONCE, AND IT IS THE ROUND'S SECOND FINDING.
-                //
-                // Through round 8 this shader drew its masses with TWO unrelated noise fields. The
-                // silhouette/tooth term sampled (3.4, 5.2), (toothFreq, toothFreq·1.53) and
-                // (11.0, 17.0); the brush term below sampled (4.5, 6.8), (14.0, 21.0) and
-                // (32.0, 48.0) — different frequencies, different lattice offsets, therefore
-                // different marks. Two critics converged on the picture that follows from that: the
-                // EDGE of a mass and its INTERIOR are drawn by different hands, so the interior's
-                // texture never resolves into the lobes the edge is describing, and the terminator
-                // has a texture on the lit side that does not continue onto the shadow side. A
-                // painter loads one brush and uses it for the contour and the modelling both.
-                //
-                // Four octaves on ONE ladder, sampled once and shared. Every frequency here is a
-                // round-8 frequency kept (n0, n1 and n2 are the old crumple's three octaves,
-                // unchanged to the third significant figure), so this is a UNIFICATION and not a
-                // re-tune: what changes is that the brush is now built from n0, n1 and n2 as well,
-                // plus one finer octave of the same family, instead of from three strangers.
-                // The 1.53 anisotropy in height is the family's own — it is what the round-6 tooth
-                // already used — and it is now carried by the shared coordinate rather than being
-                // re-derived per term.
-                //
-                // AND THE THIRD OCTAVE GETS THE NYQUIST FADE IT NEVER HAD. Round 8's crumple ran
-                // (11.0, 17.0) with no footprint fade at all while its brush faded every octave —
-                // so on the 18 m scatter nubs the wash boundaries aliased while the paint on them
-                // did not. One family, one fade schedule, and the small masses now shed edge detail
-                // and interior detail together, which is what makes them recede instead of sparkle.
-                // -------------------------------------------------------------------------------
-                float2 nuv = float2(azi, lobeY * 1.53);
                 // ROUND 6 — THE TOOTH SCALE VARIES, the same correction the vault masses take (see
                 // SkyGradient.hlsl §TarrockVaultCloud). A fixed high octave draws one tooth size
                 // along every wash boundary on every mass, which reads as a filter rather than as a
@@ -448,18 +376,15 @@ Shader "Tarrock/CloudLobe"
                 float toothSel = TarrockGradNoise01(float2(azi * 1.1, lobeY * 1.7 + 2.3));
                 float toothFreq = 5.6 + 8.0 * toothSel;
                 float toothWeight = 0.34 + 0.36 * (1.0 - toothSel);
-                // The footprint, measured once for the whole family. The azimuth footprint is
-                // clamped because atan2's branch cut makes fwidth() meaningless on the one seam
-                // meridian — the same guard the round-6 brush carried, now shared.
-                float foot = min(fwidth(azi), 0.05) + fwidth(lobeY);
-                float fade2 = saturate(1.0 - foot * 18.0);
-                float fade3 = saturate(1.0 - foot * 41.0);
-                float n0 = TarrockGradNoise(float2(nuv.x * 3.4, nuv.y * 3.4 + 11.0));
-                float n1 = TarrockGradNoise(float2(nuv.x * toothFreq + 4.0,
-                                                   nuv.y * toothFreq + 3.0));
-                float n2 = TarrockGradNoise(float2(nuv.x * 11.0 + 9.0, nuv.y * 11.0 + 7.0));
-                float n3 = TarrockGradNoise(float2(nuv.x * 26.0 + 21.3, nuv.y * 26.0 + 21.3));
-                float crumple = n0 + n1 * toothWeight + n2 * 0.26 * fade2;
+                float crumple =
+                      TarrockGradNoise(float2(azi * 3.4, lobeY * 5.2 + 11.0))
+                    + TarrockGradNoise(float2(azi * toothFreq + 4.0, lobeY * toothFreq * 1.53 + 3.0))
+                        * toothWeight
+                    // ROUND 7 drops the finest octave from 19/29 to 11/17 for the same reason the
+                    // brush below drops: on a 615x300 mass the old one drew a feature every ~6 px,
+                    // which reads as a filter laid over the form rather than as the form's own
+                    // cauliflower.
+                    + TarrockGradNoise(float2(azi * 11.0 + 9.0, lobeY * 17.0 + 7.0)) * 0.26;
                 // ...and its TAILS ARE CAPPED before it moves the terrace. ROUND 6, and this is the
                 // dark-speck fix. `form` saturates at 1.0 over a lit crown, and with three washes
                 // the top boundary sits 1/6 below that, so any crumple minimum past −0.55 punches
@@ -587,67 +512,22 @@ Shader "Tarrock/CloudLobe"
                 // laid on the paper takes it. The third octave is the middle tier of structure the
                 // round-7 critique measured missing (E16 3.2-5.8 against the board's 11.4-14.0),
                 // and the amplitude goes 0.42 → 0.55 to pay for it.
-                // ROUND 9 — and it is the SAME FOUR OCTAVES the crumple above is built from, which
-                // is the whole point (see §ONE NOISE FAMILY). n0 carries the loaded stroke, n1 is
-                // the mass's own tooth so a wash boundary and the paint inside it are made of one
-                // mark, n2 is the fine cauliflower, and n3 — one octave finer than anything the
-                // crumple uses — is the paper. The old brush's coarse octave sat at 4.5 against the
-                // crumple's 3.4: close enough to beat against it, far enough that the two never
-                // agreed on where a lobe was.
-                float brush = n0 * 1.4 + n1 * toothWeight + n2 * fade2 + n3 * 0.6 * fade3;
+                float foot = min(fwidth(azi), 0.05) + fwidth(lobeY);
+                float brush = TarrockGradNoise(float2(azi * 4.5 + 57.1, lobeY * 6.8 + 57.1)) * 1.4
+                            + TarrockGradNoise(float2(azi * 14.0 + 3.7, lobeY * 21.0 + 3.7))
+                                  * saturate(1.0 - foot * 18.0)
+                            + TarrockGradNoise(float2(azi * 32.0 + 21.3, lobeY * 48.0 + 21.3))
+                                  * 0.6 * saturate(1.0 - foot * 41.0);
                 color = max(color * (1.0 + brush * 0.55 * float3(1.22, 1.02, 0.80)), 0.0);
 
-                // -------------------------------------------------------------------------------
-                // ROUND 9 — THE ACCENT, WHICH IS NOT A RIM. The round's third finding, and the
-                // measurement behind it is unambiguous.
-                //
-                // What stood here was
-                //     grazing = pow(saturate(1 - abs(dot(N, V))), 6);  color += glow*grazing*ndl*1.1
-                // — a view-dependent term applied uniformly around the limb. dot(N, V) goes to zero
-                // ALL THE WAY ROUND a closed mass, so that draws a band of constant angular width
-                // round the entire silhouette and calls it a rim. Two independent critics measured
-                // what that looks like from outside: a saturation halo (+0.018 of S in the 5-10 px
-                // ring against the far field, where every blue-sky board plate runs NEGATIVE:
-                // totoro −0.008, fable-06 −0.041, fable-08 −0.048), and a silhouette that scores
-                // 13.7 on perimeter/√area against a board band of 21.5-65.1 — a mass with an even
-                // outline and an even edge, which is a decal, not a cloud.
-                //
-                // A painted cloud's bright edge is where the FORM TURNS TOWARD THE SUN. So the
-                // grazing term stays, but only to say WHERE a silhouette is; three things decide
-                // whether it lights up there, and none of them is the camera:
-                //
-                //   * TURN. limbDir is the surface's outward direction projected into the picture
-                //     plane — on the silhouette it is exactly the direction the outline is facing.
-                //     sunPlane is the sun in that same plane. Their dot is +1 on the sunward quarter
-                //     of the limb and negative on the anti-sun side, and the cube spends it fast, so
-                //     the accent lives on the sun's flank of a mass and nowhere else. This is the
-                //     term that makes the rim stop being constant-width: it is not width that varies
-                //     round the limb, it is EXISTENCE.
-                //   * WIDTH, from the mass's own cauliflower. Where the family's coarse octave
-                //     bulges outward the accent broadens; where it bites in, the exponent triples
-                //     and the accent narrows to nothing. Same field as the silhouette and the paint
-                //     (§ONE NOISE FAMILY), so the accent is wide exactly on the lobes that are
-                //     standing out into the light.
-                //   * STROKE. The accent is broken into marks by the same family again, so it runs
-                //     as a chain of catchlights along the sunward outline rather than as a ribbon
-                //     round it. This is the "crisp accents against soft interiors" the board plates
-                //     draw (fable-03's windmill cloud, animation-04's two banks) — the crispness is
-                //     LOCAL, and everything between the accents is left soft.
-                //
-                // saturate(ndl + 0.25) rather than saturate(ndl): a cumulus limb keeps a little
-                // light a few degrees past its own terminator, and with turn³ already gating the
-                // azimuth, the hard N·L cut was cutting the accent twice on the same meridian.
-                // -------------------------------------------------------------------------------
+                // The dawn rim: the silhouette edge on the sun side is the brightest thing a cloud
+                // has at this hour. Grazing angle × sunward, so it lights the rim and not the face.
+                // Tighter than round 3 (power 6, not 4): on a mass that fills 500 px a power-4
+                // grazing term is not a rim, it is a wash over the whole limb, and it was part of
+                // what kept the round-3 heads pale all over.
                 float3 viewDirWS = normalize(_WorldSpaceCameraPos - input.positionWS);
-                float ndv = dot(normalWS, viewDirWS);
-                float3 limbDir = normalize(normalWS - viewDirWS * ndv + 1e-5);
-                float3 sunPlane = normalize(sunDirWS - viewDirWS * dot(sunDirWS, viewDirWS) + 1e-5);
-                float turn = saturate(dot(limbDir, sunPlane));
-                float width = max(_LobeRimPower, 1.0) * (1.0 + 2.2 * saturate(0.5 - 0.5 * crumple));
-                float limb = pow(saturate(1.0 - abs(ndv)), width);
-                float stroke = saturate(0.15 + 1.45 * (0.5 + 0.5 * (crumple + brush * 0.35)));
-                float accent = limb * turn * turn * turn * stroke * saturate(ndl + 0.25);
-                color += _SunGlowColor.rgb * accent * _LobeRim;
+                float grazing = pow(saturate(1.0 - abs(dot(normalWS, viewDirWS))), max(_LobeRimPower, 1.0));
+                color += _SunGlowColor.rgb * grazing * saturate(ndl) * _LobeRim;
 
                 color = MixFog(color, input.fogCoord);
 

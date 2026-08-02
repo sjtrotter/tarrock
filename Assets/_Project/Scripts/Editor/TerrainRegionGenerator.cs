@@ -411,6 +411,52 @@ namespace Tarrock.Editor
         /// <summary>The spur off the valley drift up to the dead tree's knoll — the second worn path,
         /// and the one that says somebody used to come up here. Stops at the knoll's foot: the tree
         /// is a place you walk to, not a place with a road to it.</summary>
+        /// <remarks>
+        /// ROUND 10 — THE FOOT MOVED, AND THE LANE STOPPED BEING A DRAWN LINE.
+        ///
+        /// The round-9 shelf note (Landform.cs §THE KNOLL APPROACH) left this owed: "FindTreeSpur
+        /// still bows the worn grass lane to (150, 65), the knoll's NORTH foot, which is now a 79°
+        /// face. The lane's foot belongs at this shoulder's own foot, near (118, 61)." Both halves
+        /// of that are fixed here, and the second half turned out to matter more than the first.
+        ///
+        /// WHAT THE OLD LANE DID, measured over the shipped heightfield (the python port in
+        /// scratchpad/round9/builderK re-run by scratchpad/round10/builderH/lane.py, grade taken
+        /// over a 5 m span — a stride, because this terrain's own 1 m micro-relief runs to p90 58°
+        /// and a one-metre slope test calls every square metre of natural ground a cliff):
+        ///     old spur, junction (169, 91) -> (150, 65):  33.0 m walked, grade mean 38.2°,
+        ///     max 62.4°, and 45.1% of its length steeper than the CharacterController's 45° limit.
+        /// It was a worn path painted up a face nobody can climb, ending 7 m from the trunk ON TOP
+        /// of the knoll — i.e. it drew the arrival without drawing the climb.
+        ///
+        /// WHY A STRAIGHT BOW TO THE NEW FOOT WAS NOT THE FIX. Re-aimed at (118, 61) and left as a
+        /// single sine bow, the same construction measured mean 29.6°, max 77.5°, 43.9% over the
+        /// limit — WORSE, because the valley floor and the west ridge are 15 m apart in height and
+        /// a chord between them crosses whatever is in the way. A drawn line cannot avoid ground it
+        /// does not look at.
+        ///
+        /// SO THE LANE IS FOUND, the way FindValleyDrift's is. From the valley anchor nearest the
+        /// shelf's own foot it steps 3 m at a time toward that foot, and at each step takes the
+        /// heading whose cost per METRE OF PROGRESS is least, where cost is the step's own worst
+        /// grade (sub-sampled, not endpoint-to-endpoint, so a step cannot hop a lip for free) plus
+        /// a small penalty for turning. That is a traverse: it crosses a face obliquely, which is
+        /// what a worn path does and what a chord cannot. Three relaxation passes then slide each
+        /// anchor along the lane's own normal, on a 3 m leash, to the offset that lowers the worst
+        /// grade of the two segments it joins.
+        ///
+        /// MEASURED, the same way, on the line this method now returns:
+        ///     79.0 m walked, (164.0, 97.3) h 22.37 -> (118.1, 60.8) h 37.65
+        ///     5 m-span grade  mean 13.8°  p95 33.0°  MAX 34.6° at (159.5, 97.8)
+        ///     over 45°: 0.0% of the line.  over 30°: 7.4%.
+        /// For reference an A* over the same field with the same cost finds 78.5 m at mean 11.0°,
+        /// max 40.1° — so the greedy walk is within 3° of the best line that exists, at a fraction
+        /// of the code. The lane's steepest point is now in the VALLEY, not on the hill.
+        ///
+        /// The heights come from SampleHeight rather than from the finished TerrainData, because
+        /// this method's signature is the one BuildGrassDetails calls and the analytic field is
+        /// already in scope. Checked: the same walk driven by the smoothed, bilinear-sampled grid
+        /// lands within 0.7° of these figures (82.2 m, mean 12.8°, max 33.9°), which is well inside
+        /// the width of the lane it paints.
+        /// </remarks>
         private static Vector2[] FindTreeSpur(Vector2[] valleyDrift)
         {
             if (valleyDrift.Length == 0)
@@ -418,12 +464,19 @@ namespace Tarrock.Editor
                 return new Vector2[0];
             }
 
-            // Leave the valley at whichever anchor is closest to the knoll.
+            // The destination is DERIVED from the shelf, never typed twice: if the approach's
+            // bearing or radius ever move, the lane's foot moves with them.
+            float footRadians = ApproachFootBearing * Mathf.Deg2Rad;
+            Vector2 foot = KnollCentre
+                         + (new Vector2(Mathf.Sin(footRadians), Mathf.Cos(footRadians)) * ApproachFootRadius);
+
+            // Leave the valley at whichever anchor is closest to THE SHELF'S FOOT. (It used to be
+            // the anchor closest to KnollCentre, which is what aimed the lane at the sheer face.)
             Vector2 junction = valleyDrift[0];
             float best = float.MaxValue;
             foreach (Vector2 anchor in valleyDrift)
             {
-                float d = Vector2.Distance(anchor, KnollCentre);
+                float d = Vector2.Distance(anchor, foot);
                 if (d < best)
                 {
                     best = d;
@@ -431,21 +484,165 @@ namespace Tarrock.Editor
                 }
             }
 
-            var foot = new Vector2(KnollCentre.x, KnollCentre.y + 7f);
-            Vector2 along = foot - junction;
-            var across = new Vector2(-along.y, along.x).normalized;
-
-            const int Steps = 6;
-            var spur = new Vector2[Steps + 1];
-            for (int i = 0; i <= Steps; i++)
+            var walked = new List<Vector2> { junction };
+            Vector2 current = junction;
+            float previousBearing = Bearing(foot - current);
+            for (int step = 0; step < SpurMaxSteps; step++)
             {
-                float t = i / (float)Steps;
-                // A single low-frequency bow, so the spur curves the way a trodden path curves
-                // rather than running straight at the tree like a survey peg line.
-                spur[i] = junction + (along * t) + (across * (3.4f * Mathf.Sin(t * Mathf.PI)));
+                Vector2 toGoal = foot - current;
+                float remaining = toGoal.magnitude;
+                if (remaining <= SpurStepMetres)
+                {
+                    break;
+                }
+
+                float goalBearing = Bearing(toGoal);
+                float here = SampleHeight(current.x, current.y);
+                bool found = false;
+                Vector2 chosen = current;
+                float chosenBearing = goalBearing;
+                float bestCost = float.MaxValue;
+                for (int i = -SpurFanSteps; i <= SpurFanSteps; i++)
+                {
+                    float bearing = goalBearing + (i * (SpurFanDegrees / SpurFanSteps));
+                    float radians = bearing * Mathf.Deg2Rad;
+                    Vector2 candidate = current
+                                      + (new Vector2(Mathf.Sin(radians), Mathf.Cos(radians)) * SpurStepMetres);
+                    if (candidate.x < 0f || candidate.x > TerrainSize || candidate.y < 0f || candidate.y > TerrainSize)
+                    {
+                        continue;
+                    }
+
+                    float progress = remaining - Vector2.Distance(foot, candidate);
+                    if (progress < SpurMinProgressMetres)
+                    {
+                        continue;
+                    }
+
+                    float grade = WorstGrade(current, candidate, here);
+                    float turned = Mathf.Abs(Mathf.DeltaAngle(previousBearing, bearing));
+                    float cost = ((SpurStepMetres * (1f + (SpurClimbWeight * grade))) + (turned * SpurTurnWeight))
+                               / progress;
+                    if (cost < bestCost)
+                    {
+                        bestCost = cost;
+                        chosen = candidate;
+                        chosenBearing = bearing;
+                        found = true;
+                    }
+                }
+
+                if (!found)
+                {
+                    break;
+                }
+
+                current = chosen;
+                previousBearing = chosenBearing;
+                walked.Add(current);
             }
 
-            return spur;
+            walked.Add(foot);
+
+            // Relaxation: each interior anchor slides along the lane's own normal to the offset
+            // that lowers the worst grade of the two segments it joins, on a leash from where the
+            // walk put it so the lane cannot buy a gentle grade with meander (unleashed, the same
+            // three passes turned a 79 m route into a 140 m ribbon).
+            Vector2[] anchors = walked.ToArray();
+            Vector2[] relaxed = (Vector2[])anchors.Clone();
+            for (int pass = 0; pass < SpurRelaxPasses; pass++)
+            {
+                for (int i = 1; i < relaxed.Length - 1; i++)
+                {
+                    Vector2 tangent = relaxed[i + 1] - relaxed[i - 1];
+                    if (tangent.sqrMagnitude < 1e-8f)
+                    {
+                        continue;
+                    }
+
+                    var normal = new Vector2(-tangent.y, tangent.x);
+                    normal.Normalize();
+                    Vector2 pick = relaxed[i];
+                    float bestScore = float.MaxValue;
+                    for (int k = -SpurRelaxSteps; k <= SpurRelaxSteps; k++)
+                    {
+                        float offset = k * (SpurRelaxReachMetres / SpurRelaxSteps);
+                        Vector2 candidate = relaxed[i] + (normal * offset);
+                        float drift = Vector2.Distance(candidate, anchors[i]);
+                        if (drift > SpurRelaxLeashMetres)
+                        {
+                            continue;
+                        }
+
+                        if (candidate.x < 0f || candidate.x > TerrainSize || candidate.y < 0f || candidate.y > TerrainSize)
+                        {
+                            continue;
+                        }
+
+                        float score = Mathf.Max(
+                            WorstGrade(relaxed[i - 1], candidate, SampleHeight(relaxed[i - 1].x, relaxed[i - 1].y)),
+                            WorstGrade(candidate, relaxed[i + 1], SampleHeight(candidate.x, candidate.y)))
+                            + (SpurRelaxStraightPull * drift);
+                        if (score < bestScore)
+                        {
+                            bestScore = score;
+                            pick = candidate;
+                        }
+                    }
+
+                    relaxed[i] = pick;
+                }
+            }
+
+            return relaxed;
+        }
+
+        // The found lane's constants. Step and fan set how finely it can traverse; the climb weight
+        // is how many metres of walking a metre of climbing is worth to it (14 is what stopped the
+        // walk taking the first face it met without making it refuse to gain height at all).
+        private const float SpurStepMetres = 3f;
+        private const float SpurFanDegrees = 72f;
+        private const int SpurFanSteps = 18;              // 4° candidates either side of the goal
+        private const float SpurClimbWeight = 14f;
+        private const float SpurTurnWeight = 0.05f;
+        private const float SpurMinProgressMetres = 0.5f;
+        private const int SpurMaxSteps = 90;
+        private const int SpurGradeSubdivisions = 4;
+        private const int SpurRelaxPasses = 3;
+        private const int SpurRelaxSteps = 12;
+        private const float SpurRelaxReachMetres = 1.5f;
+        private const float SpurRelaxLeashMetres = 3f;
+        private const float SpurRelaxStraightPull = 0.06f;
+
+        /// <summary>Unity compass bearing (0° = +Z, increasing toward +X) of an XZ vector.</summary>
+        private static float Bearing(Vector2 v)
+        {
+            return Mathf.Atan2(v.x, v.y) * Mathf.Rad2Deg;
+        }
+
+        /// <summary>The steepest rise-over-run found ANYWHERE along a step, sub-sampled. Taking the
+        /// grade between a step's endpoints instead lets a 3 m step straddle a 2 m lip and report
+        /// nothing, which is how a lane ends up drawn over a bank.</summary>
+        private static float WorstGrade(Vector2 from, Vector2 to, float fromHeight)
+        {
+            float length = Vector2.Distance(from, to);
+            if (length < 1e-4f)
+            {
+                return 0f;
+            }
+
+            float run = length / SpurGradeSubdivisions;
+            float previous = fromHeight;
+            float worst = 0f;
+            for (int i = 1; i <= SpurGradeSubdivisions; i++)
+            {
+                Vector2 p = Vector2.Lerp(from, to, i / (float)SpurGradeSubdivisions);
+                float h = SampleHeight(p.x, p.y);
+                worst = Mathf.Max(worst, Mathf.Abs(h - previous) / run);
+                previous = h;
+            }
+
+            return worst;
         }
 
         /// <summary>Shortest distance in metres from a world XZ point to a polyline.</summary>

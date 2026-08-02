@@ -733,6 +733,16 @@ namespace Tarrock.Editor
         //     0.000% → 0.58% from the lamp and the two surface tints alone. A saturation raise here
         //     would have moved the sky's chroma up alongside the ground's and left the share where
         //     it was.
+        //
+        // ROUND 10 — NUMBERS DO MOVE HERE, FOR THE FIRST TIME SINCE ROUND 6, AND THE ROUND-7/8
+        // ARGUMENT IS NOT BEING OVERRULED. Read what that argument actually forbids: overrides that
+        // are GLOBAL IN SPACE, spent on a warmth that belongs to the lamp and the surfaces. It is
+        // still right, and nothing global moves this round. What moves is the one override in this
+        // method that is BOUNDED BELOW — ShadowsMidtonesHighlights' highlight bucket — and it moves
+        // its threshold ABOVE the whole picture so that below it the multiplier is exactly (1,1,1)
+        // and every pixel is bit-identical to round 9. See the block at smh.highlights for the
+        // measurement; the summary is that the round-9 frames sit 1.2x to 1.5x short of white in RED
+        // and 3.8x to 11.7x short in BLUE, so what stops the light arriving is not the level.
         private static void BuildPostVolume()
         {
             var profile = ScriptableObject.CreateInstance<UnityEngine.Rendering.VolumeProfile>();
@@ -854,11 +864,109 @@ namespace Tarrock.Editor
             // The actual desaturation of the lit end is done at the surface, where a painter does
             // it — see _SunBleach in Tarrock/GrassTuft.
             smh.shadows.Override(new Vector4(0.971f, 0.992f, 1.064f, 0f));    // → (0.94, 0.98, 1.15) cool shade
-            smh.highlights.Override(new Vector4(1.022f, 1.013f, 1.004f, 0f)); // → (1.05, 1.03, 1.01) pale light
+            //
+            // ROUND 10 — LET THE LIGHT ARRIVE AT WHITE. The highlight bucket is re-aimed: it stops
+            // being a whisper of warmth laid over the top two thirds of the picture and becomes a
+            // white point that only the brightest few per cent of the frame ever reaches.
+            //
+            // (0) THE WALL, and it is arithmetic. URP's Neutral tonemapper is
+            //         ws = 1 / NeutralCurve(5.3);   display = NeutralCurve(x·ws)·ws
+            //     so a channel displays 255 only once its POST-GRADE LINEAR value reaches
+            //     5.3/ws = 4.0354. Nine rounds of this scene have never put anything there. Measured
+            //     by inverting the round-9 captures back through this exact chain (the inverse
+            //     reproduces the source PNGs to a mean 0.0002 code values, and reproduces critic 1's
+            //     published r9_core.json jamb and bright-sky-mass figures to four decimals on all
+            //     eight views), the brightest 1% of each frame arrives at post-grade linear:
+            //         v1 (2.993, 1.625, 0.344)   v3 (3.006, 2.033, 0.912)
+            //         v6 (3.374, 2.338, 1.059)   v8 (2.897, 2.069, 1.025)
+            //     RED is a factor of 1.2-1.5 short of the wall. BLUE is a factor of 3.8-11.7 short.
+            //
+            // (1) SO THE LEVEL WAS NEVER THE PROBLEM, and this was tested before anything was
+            //     changed. Driving the OLD bucket's level up until v3 put 4.50% of the frame into
+            //     clip still produced 0.0000% true white on every view — because clip is the MAX
+            //     channel reaching 255 and white is the MIN channel reaching 255, and ours are three
+            //     to nine times apart. Round 8 already ships 0.051% of v6 at clip with 0.000% white.
+            //     We have been clipping red into a gold ceiling and calling it "nearly white".
+            //
+            // (2) THE BOARD AGREES, AND IT DOES NOT AGREE ABOUT BRIGHTNESS. Measured over all 20
+            //     reference plates, white share is NOT predicted by how bright the plate is:
+            //     fable-04 is among the brightest on the board (Lp50 0.467, sky median 0.533) and
+            //     carries 0.000% white. What predicts it is the SATURATION OF THE TOP 1%. Every
+            //     plate whose top 1% runs saturation ≤ 0.114 carries white — kena-01 0.114→0.123%,
+            //     kena-02 0.046→0.165%, kena-03 0.022→0.212%, fable-06 0.000→1.050%, fable-03
+            //     0.000→9.972%. Every plate at ≥ 0.145 carries ≤ 0.005% no matter how bright it is.
+            //     Round 9 runs 0.153 (v8) to 0.389 (v1) — outside the white-carrying envelope on
+            //     every single view. A painted highlight goes PALE on the way to white; ours goes
+            //     more golden, because the bucket below used to ADD 4.9% red and 0.9% blue at the
+            //     top. The round-6 comment above says "the highlight bucket stops adding chroma";
+            //     a triple with red above blue at the top does not stop adding chroma, it adds it.
+            //
+            // (3) WHAT THIS BUCKET CAN DO THAT NOTHING ELSE IN THIS METHOD CAN. Every other override
+            //     here is a global multiply in some form — postExposure, contrast, colorFilter,
+            //     LiftGammaGain's gain and gamma, saturation — and all of them move the jamb, which
+            //     rounds 5-9 paid for and which is locked. This bucket is the one that is BOUNDED
+            //     BELOW: under highlightsStart its multiplier is exactly (1,1,1). URP declares
+            //     highlightsStart/End as MinFloatParameter(x, 0f) — a floor of 0 and no ceiling
+            //     (Runtime/Overrides/ShadowsMidtonesHighlights.cs lines 148/154) — so the threshold
+            //     can be placed ABOVE the sky plateau instead of under the meadow. It is set in
+            //     SMH-STAGE LUMINANCE (post white-balance, post LogC contrast, post colour filter),
+            //     and on round 9 the population above 1.40 is 0.57% of frame (v5) to 10.69% (v3),
+            //     and it is sky, cloud crown and sun-square rock in every view.
+            //
+            // (4) THE TRIPLE IS A SOLVE, NOT A DIAL. Authored through Mathf.LinearToGammaSpace as
+            //     this block's convention requires, so source and resolved multiplier agree:
+            //         (1.1267, 1.3226, 2.0010)  →  ×(1.30, 1.85, 4.60)
+            //     It is weighted to the DEFICIENT channel, which is what turns a gold top end white
+            //     rather than a brighter gold: at the bucket's full strength v6's top 1% goes
+            //     (3.374, 2.338, 1.059) → (4.39, 4.33, 4.87) and at the strength that population
+            //     actually collects (h = 0.90) → (4.30, 4.13, 4.48). Either way all three channels
+            //     are past 4.0354, which is the whole point. HUE SAFETY, checked first, because a
+            //     blue-weighted multiplier would wreck anything cool it caught: of the pixels above
+            //     SMH-stage luminance 1.40, the share that is already blue-dominant is 0.0000% on
+            //     six views and 0.0012% on the worst (v2), and the population's mean R/B is 2.37
+            //     (v8) to 5.86 (v1). There is nothing cool up there to turn blue. Frame-wide, the
+            //     share of pixels with B more than 8 code values over R rises on NO view: it falls
+            //     on seven (v7 by 0.063 points, the largest) and is unmoved on v5.
+            //
+            // (5) MIDTONES TAKE OVER THE WARM WHISPER, and this is not decoration. Lifting
+            //     highlightsStart to 1.40 drops the entire ground, the lit meadow and the lower sky
+            //     out of the highlight bucket and into the MIDTONE bucket, whose triple was identity
+            //     — so without this line the picture would silently lose round 6's warmth exactly
+            //     where round 8 spent a round putting it (modelled: lit-band R/B −2.1%, and v1's
+            //     signed locality falls 0.0271 → −0.0006, i.e. the "warmth is carried by the light
+            //     term" statistic crosses zero). Handing midtones the triple the highlight bucket
+            //     used to carry gives that band back its multiplier, and the ramp then reads gold →
+            //     pale gold → white as luminance climbs, which is the hue-moves-with-the-value
+            //     argument this whole override is built on, finally carried to the top.
+            //
+            // PREDICTED, all eight views, whole-frame, against round 9 (true white = all three
+            // channels ≥ 254.5, the board's own definition):
+            //     true white   v6 0.536%  v7 0.421%  v8 0.115%  v3 0.092%  v5 0.068%
+            //                  v2 0.007%  v1 0.004%  v4 0.000%          (round 9: 0.000% on all 8)
+            //     top-1% sat   0.153-0.389 → 0.004-0.218; seven of eight now inside the board's
+            //                  ≤ 0.114 white-carrying envelope, v1 the holdout at 0.218
+            //     clip/white   v6 2.1, v7 2.2, v8 4.2 — the board's white-carrying plates run
+            //                  1.6 (kena-02) to 4.2 (kena-01)
+            //     Lp99         +0.000 (v5, which has no sky) to +0.057 (v3); the board's bright
+            //                  plates run 0.953 (fairytale-01) to 1.000 (fable-03, fable-06)
+            //     jamb p05     EXACTLY unmoved on v1/v2/v5/v7 (the four whose near-dark is anywhere
+            //                  near the 0.22 ceiling: 0.0879 / 0.0966 / 0.0627 / 0.1126). +0.0003 to
+            //                  +0.0043 on v3/v4/v6/v8, whose near-ground darkest 5% already sits at
+            //                  0.21-0.33 and is lit ground, not dark structure; that movement is the
+            //                  midtone triple's, not the highlight bucket's.
+            //     bright sky   +0.0000 to +0.0042 of frame. The gate is measured at display luma
+            //                  0.50, which is SMH-stage 0.24 — three quarters of a decade under this
+            //                  bucket's threshold — so nothing crosses it from below.
+            // v1, v2 and v4 cannot be taken to white from this method at any setting worth shipping:
+            // their bucket population runs R/B 4.4-5.9 against v6's 3.06, so the deficit is in what
+            // the render delivers, not in what the grade does with it. That belongs to the lamp and
+            // the two _BleachTints, not here.
+            smh.midtones.Override(new Vector4(1.022f, 1.013f, 1.004f, 0f));   // → (1.049, 1.029, 1.009) the old whisper
+            smh.highlights.Override(new Vector4(1.1267f, 1.3226f, 2.0010f, 0f)); // → (1.30, 1.85, 4.60) converge on white
             smh.shadowsStart.Override(0f);
             smh.shadowsEnd.Override(0.10f);
-            smh.highlightsStart.Override(0.10f);
-            smh.highlightsEnd.Override(0.30f);
+            smh.highlightsStart.Override(1.40f);
+            smh.highlightsEnd.Override(2.40f);
 
             // THE FLOOR — and in round 2 this was the toe, and the toe is what ate the picture.
             //

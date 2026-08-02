@@ -602,10 +602,26 @@ namespace Tarrock.Editor
         // this file, and unlike either of those it is mostly fill, because a hill this steep cannot
         // be given a walkable line by cutting alone.
         //
-        // FOLLOW-UP OWED BY ANOTHER FILE (flagged, not fixed here — TerrainRegionGenerator.cs is not
-        // this change's to edit): FindTreeSpur still bows the worn grass lane to (150, 65), the
-        // knoll's NORTH foot, which is now a 79° face. The lane's foot belongs at this shoulder's
-        // own foot, near (118, 61).
+        // FOLLOW-UP OWED BY ANOTHER FILE — PAID, ROUND 10. It read: "FindTreeSpur still bows the
+        // worn grass lane to (150, 65), the knoll's NORTH foot, which is now a 79° face. The lane's
+        // foot belongs at this shoulder's own foot, near (118, 61)." It does now, and the lane no
+        // longer bows at all — it is FOUND, the way FindValleyDrift's line is, because a drawn
+        // chord to the new foot measured WORSE than the old one (77.5° maximum against 62.4°): the
+        // valley floor and this ridge are 15 m apart in height and a straight line between them
+        // crosses whatever is in the way. The reasoning and the measured grades are on
+        // TerrainRegionGenerator.FindTreeSpur; the number that matters here is that the lane and
+        // this shelf now share an endpoint, DERIVED from ApproachFootBearing/ApproachFootRadius
+        // rather than typed twice, so moving the shelf moves the path that feeds it.
+        //
+        // WHAT THE SHELF STILL OWES, measured in round 10 and not fixable in this file. The shelf is
+        // walkable and the tree at the top of it is not FRAMEABLE from it at the capture rig's
+        // resting tilt. GauntletCapture's third-person rig seats the lens 3.11 m above the pivot's
+        // ground and 5.39 m behind it at 16° of down-tilt with a 55° vertical lens, so the top edge
+        // of a resting frame is 11.5° above the horizontal. From this shelf's foot the knoll's own
+        // summit subtends 13.5° and the dead tree's crown 39.3°: at rest, a player walking up here
+        // cannot see either. That is a camera question (the orbit rig's pitch is the player's, and
+        // 16° is a resting tilt rather than a stop) and it is now photographed rather than assumed —
+        // see the v9-shelf-west vantage, which stands on this tread's foot and says so in its note.
         // -------------------------------------------------------------------------------------
 
         // Bearings are Unity compass (0° = +Z, increasing toward +X), measured from KnollCentre.

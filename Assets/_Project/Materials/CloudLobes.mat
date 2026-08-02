@@ -38,7 +38,7 @@ Material:
     - _BankLumpScale: 5
     - _BankRelief: 0.045
     - _BankRimWidth: 0.006
-    - _BearingPower: 1.3
+    - _BearingPower: 3
     - _BearingRise: 1.15
     - _BearingTilt: 5.2
     - _GlowBroad: 0.3
@@ -58,7 +58,7 @@ Material:
     - _LobeFormBias: -0.12
     - _LobeFormGain: 1.45
     - _LobeMidPoint: 0.46
-    - _LobeRim: 2.6
+    - _LobeRim: 1.1
     - _LobeRimPower: 6
     - _LobeSunWeight: 0.68
     - _LobeThickRadius: 24
@@ -82,7 +82,7 @@ Material:
     - _LobeMid: {r: 0.57, g: 0.6, b: 0.7, a: 1}
     - _LobeShade: {r: 0.22, g: 0.27, b: 0.43, a: 1}
     - _LobeUnder: {r: 0.13, g: 0.18, b: 0.33, a: 1}
-    - _MidColor: {r: 0.4, g: 0.51, b: 0.75, a: 1}
+    - _MidColor: {r: 0.24, g: 0.36, b: 0.74, a: 1}
     - _SunDirection: {r: -0.4592125, g: 0.2079117, b: 0.8636531, a: 0}
     - _SunGlowColor: {r: 1, g: 0.82, b: 0.52, a: 1}
     - _VaultCloud0: {r: 288, g: 12, b: 20, a: 0.94}
@@ -90,9 +90,9 @@ Material:
     - _VaultCloud2: {r: 234, g: 29, b: 19, a: 0.93}
     - _VaultCloud3: {r: 77, g: 13.5, b: 21, a: 0.88}
     - _VaultCloud4: {r: 36, g: 6.5, b: 15.5, a: 0.96}
-    - _VaultCloudLit: {r: 1.03, g: 0.98, b: 0.88, a: 1}
-    - _VaultCloudShade: {r: 0.44, g: 0.525, b: 0.76, a: 1}
-    - _VaultCloudShadow: {r: 0.105, g: 0.17, b: 0.44, a: 1}
+    - _VaultCloudLit: {r: 1.03, g: 0.99, b: 0.9, a: 1}
+    - _VaultCloudShade: {r: 0.66, g: 0.71, b: 0.84, a: 1}
+    - _VaultCloudShadow: {r: 0.4, g: 0.47, b: 0.66, a: 1}
     - _ZenithColor: {r: 0.15, g: 0.29, b: 0.6, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -31,13 +31,13 @@ Material:
     m_Floats:
     - _AlphaClip: 0
     - _Cutoff: 0.5
-    - _FlutterAmplitude: 0.004
+    - _FlutterAmplitude: 0.0003
     - _FlutterFrequency: 5.5
     - _HeightMaskExponent: 1.5
     - _HeightMaskStart: 0.05
-    - _SwayAmplitude: 0.02
+    - _SwayAmplitude: 0.0015
     - _SwayFrequency: 1.1
     m_Colors:
-    - _BaseColor: {r: 0.23, g: 0.19, b: 0.16, a: 1}
+    - _BaseColor: {r: 0.145, g: 0.118, b: 0.098, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
