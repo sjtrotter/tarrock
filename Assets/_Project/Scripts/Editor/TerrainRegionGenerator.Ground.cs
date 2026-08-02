@@ -120,6 +120,42 @@ namespace Tarrock.Editor
         internal const float MarkValueSpread = 0.36f;
         internal const float MarkDensitySpread = 0.045f;
 
+        // -- THE PAINT RECIPE, ROUND 8 -----------------------------------------------------------
+        // SHARED SURFACE, declared once and consumed twice, on the same rule as the mark frame
+        // above: the hillside's stone and a boulder that fell off it must be made of the same
+        // paint. What changed this round, and why, is in Tarrock/TerrainPainterly's ROUND-8 header
+        // — the short version is that rounds 6 and 7 differ almost entirely by the footprint gate,
+        // which makes them two points on one curve, and solving that curve says the mark width,
+        // the 1-4 px energy, the density variation and the material-spectrum sameness were four
+        // views of one number.
+        //
+        // CUT PLANES. The stone vocabulary: a flat tone per polygonal cell, band-limited to
+        // 45-500 px so a facet is only ever drawn while it is legible AS a facet. The terrain's
+        // ladder is 12 / 40 / 131 cm and the props' is 9 / 30 / 98 — one step finer, because a
+        // boulder and a broken jamb are read from closer than a cliff, which is the same reason
+        // every other number in BuildRockMaterial sits one step below BuildTerrainMaterial's.
+        internal const float FacetRatio = 3.30f;
+        internal const float FacetScaleTerrain = 0.12f;
+        internal const float FacetScaleProp = 0.09f;
+        internal const float FacetAmountTerrain = 0.20f;
+        internal const float FacetAmountProp = 0.22f;
+
+        // REST. "The artist leaves areas at rest" is canon (art-bible brush economy) and round 7
+        // had none of it: the share of 16 px patches whose fine energy falls under 40% of the local
+        // median measured 0.000 on three of eleven surfaces, because a procedural field covers one
+        // hundred per cent of a surface at constant density. The low tail of this field multiplies
+        // every mark amount to zero; the field itself, mean-centred, is the broad soft FORM SHADOW
+        // the reference plates block in before they lay a mark. The thresholds are set against the
+        // field's own distribution (two value-noise octaves, mean 0.5, sigma ~0.10): 0.33 leaves
+        // about a twentieth of the surface completely bare and 0.45 has about a sixth of it
+        // thinned, which is a painter's proportion and not a texture's.
+        internal const float RestRatio = 3.2f;
+        internal const float RestScaleMeadow = 0.75f;
+        internal const float RestScaleRock = 0.30f;
+        internal const float RestLow = 0.33f;
+        internal const float RestHigh = 0.45f;
+        internal const float FormShadow = 0.055f;
+
         // -- THE SUN BLEACH (round 7) -----------------------------------------------------------
         // These three were sitting at their SHADER DEFAULTS through round 6 — never written by the
         // generator, invisible in the diff, and therefore hidden state of exactly the kind this
@@ -188,9 +224,14 @@ namespace Tarrock.Editor
             material.SetFloat("_MeadowMacroScale", 38f);
             material.SetFloat("_MeadowHueScale", 21f);
             material.SetFloat("_MeadowDabScale", 6f);
-            material.SetFloat("_MeadowGrainScale", 0.34f);
             material.SetFloat("_MeadowDabWarp", 0.55f);
-            material.SetFloat("_MeadowDabEdge", 0.10f);
+            // ROUND 8 — THE CONCENTRIC FAMILY, CUT TO A QUARTER. TkDabShaped's .x is the F1
+            // distance to the cell centre, so this and _MeadowClumpEdge below (and the turf blob
+            // inside the shader) were drawing three sets of nested RINGS on the ground. Rings
+            // around scattered centres is the marbled curl the round-7 critique read. The clump
+            // BOUNDARY win of round 4 is carried by the per-cell flat TONE, whose step at the cell
+            // wall is the boundary; only the vignette inside each cell goes.
+            material.SetFloat("_MeadowDabEdge", 0.025f);
             // ROUND-4: the brushmark family's shape spread, now feeding the legible-mark scales
             // only (see the constants' own header). The rock material no longer takes these — its
             // jittered-cell band was the finer of the two and round 5 removed it.
@@ -199,8 +240,9 @@ namespace Tarrock.Editor
             material.SetFloat("_MeadowStrawAmount", 0.85f);
             material.SetFloat("_MeadowScuffAmount", 0.55f);
             material.SetFloat("_MeadowCoolAmount", 0.70f);
-            material.SetFloat("_MeadowFineStraw", 0.28f);
-            material.SetFloat("_MeadowGrain", 0.13f);
+            // Re-pointed onto the 16 cm rung now that the 5 cm one is retired, at roughly half the
+            // amount: a 16 cm mark carrying 0.28 of straw is a patch of it, not a strand.
+            material.SetFloat("_MeadowFineStraw", 0.16f);
             // _DetailFadeStart/_DetailFadeRange now gate only the CAVITY term. Round 4 hung every
             // fine term off them, and the round-5 measurement is what that cost: mid-distance
             // mottle fell from round 3's 19.6% relative amplitude to 12.7%, and the far hill sat at
@@ -273,13 +315,21 @@ namespace Tarrock.Editor
             // Modelled through lighting, fog and the Neutral tonemap at the wall's fitted footprint
             // (4 x 3 mm a pixel): lit relative amplitude 6.8 -> 9.9 per cent against the round-6
             // critique's >= 10 target, blob coverage 0.201 -> 0.059.
-            material.SetFloat("_RockGrainAmount", 0.80f);
-            material.SetFloat("_RockFleckGrit", 0.88f);
-            material.SetFloat("_RockFleckFine", 0.88f);
-            material.SetFloat("_RockFleckMid", 0.80f);
-            material.SetFloat("_RockFleckCoarse", 0.50f);
-            material.SetFloat("_RockFleckLight", 0.78f);
-            material.SetFloat("_RockFleckLightMid", 0.44f);
+            // ROUND 8. The 2.4 cm dark rung and the 3.8 cm light rung are RETIRED: under round
+            // 7's footprint both drew at the sampling grid on every stone in every frame, and a
+            // threshold-mark band two pixels wide is hash, not grit. It is most of why this branch
+            // measured 6.4-17.9 of 1-4 px energy against a reference band of 2.0-5.1. The
+            // continuous amount drops hard for the same reason — it was the fibre carrier — and
+            // the register both vacate is filled by CUT PLANES, which are a different KIND of
+            // mark. The 56 cm patch band comes back UP (0.50 -> 0.62) because with the fine rungs
+            // gone it is no longer competing for the eye and it is the band a weathered face reads
+            // its patchiness from; round 7's thinning was aimed at leopard spots that the facets
+            // now out-argue at a scale the eye reads as structure rather than as blotch.
+            material.SetFloat("_RockGrainAmount", 0.34f);
+            material.SetFloat("_RockFleckFine", 0.60f);
+            material.SetFloat("_RockFleckMid", 0.72f);
+            material.SetFloat("_RockFleckCoarse", 0.62f);
+            material.SetFloat("_RockFleckLightMid", 0.50f);
 
             // MEADOW, pushed harder than rock on purpose. Near turf measured 9.5% against reference
             // plates at 17.8 (fable-08), 28.8 (fable-01) and 36.7 (fable-07), and the critique's
@@ -293,12 +343,45 @@ namespace Tarrock.Editor
             // 8-25 m — there was nothing. The ladder is now 5 / 16 / 56 / 210 cm plus a 7.5 cm
             // LIGHT band, and _MeadowFleckStand is the 2.1 m rung that _MeadowFleckCoarse used to
             // be (the name follows the wavelength, so the four read in order).
-            material.SetFloat("_MeadowDetailAmount", 0.72f);
-            material.SetFloat("_MeadowFleckFine", 0.88f);
-            material.SetFloat("_MeadowFleckMid", 0.84f);
-            material.SetFloat("_MeadowFleckCoarse", 0.78f);
+            // ROUND 8. The 5 cm litter rung and the 0.34 m micro grain are RETIRED and the pale
+            // band moves 7.5 -> 24 cm; what is left is 16 / 56 / 210 cm dark plus 24 cm light. The
+            // micro grain is the purest example of the rest_frac finding in the file — an
+            // unthresholded field covering the whole surface at constant density — and nothing
+            // replaces it, because the finding is that a surface does not need tooth everywhere.
+            // The continuous amount falls 0.72 -> 0.46 for an arithmetic reason and not a taste
+            // one: the octave gate now switches off the two finest octaves, and a weighted mean of
+            // FEWER decorrelated octaves has HIGHER variance (the shipped stack's weights give
+            // sigma 0.150 of the field's range at four octaves and 0.206 at two), so holding 0.72
+            // would have pushed the mid-band grain index out of the board band it already sits in.
+            material.SetFloat("_MeadowDetailAmount", 0.46f);
+            material.SetFloat("_MeadowFleckMid", 0.62f);
+            material.SetFloat("_MeadowFleckCoarse", 0.70f);
             material.SetFloat("_MeadowFleckStand", 0.72f);
-            material.SetFloat("_MeadowFleckLight", 0.58f);
+            material.SetFloat("_MeadowFleckLight", 0.52f);
+
+            // CUT PLANES, REST and the KNOLL (round 8; constants at the top of this file).
+            material.SetFloat("_FacetBaseScale", FacetScaleTerrain);
+            material.SetFloat("_FacetRatio", FacetRatio);
+            material.SetFloat("_FacetAmount", FacetAmountTerrain);
+            material.SetFloat("_RestMeadowScale", RestScaleMeadow);
+            material.SetFloat("_RestRockScale", RestScaleRock);
+            material.SetFloat("_RestRatio", RestRatio);
+            material.SetFloat("_RestLow", RestLow);
+            material.SetFloat("_RestHigh", RestHigh);
+            material.SetFloat("_FormShadow", FormShadow);
+            // THE KNOLL'S OWN TREATMENT. It read as felt because it wore the valley floor's field
+            // on a hill. Landform step 6c caps the summit at 50 m against _HeightHigh 48, so
+            // heightT saturates on the knoll and reaches nothing the player walks on in the bowl:
+            // the handle is a LANDFORM property, not an object reference, which is why it belongs
+            // in the material and not in a per-object override. Upland ground is wind-scoured —
+            // "the high ground is drier and more wind-scoured, not brighter" is already this
+            // shader's own rule — so the marks grow by up to 2.1x and about a quarter
+            // more of it is left bare (0.24: at 0.35 the modelled summit lost 65% of its mark
+            // amplitude against the floor's 40%, which is scoured past bare and into empty). Nothing here touches hue: the gold is still in the light.
+            material.SetFloat("_UplandStart", 0.62f);
+            material.SetFloat("_UplandEnd", 0.95f);
+            material.SetFloat("_UplandSize", 1.10f);
+            material.SetFloat("_UplandRest", 0.24f);
 
             // THE CLUMP OCTAVE (round 4) — the band that carries the ground from 40 m to the
             // horizon, where round 3 had nothing but smooth fbm and the hills read as olive
@@ -308,7 +391,7 @@ namespace Tarrock.Editor
             material.SetFloat("_MeadowClumpScale", 16f);
             material.SetFloat("_MeadowClumpWarp", 0.85f);
             material.SetFloat("_MeadowClumpAmount", 0.90f);
-            material.SetFloat("_MeadowClumpEdge", 0.11f);
+            material.SetFloat("_MeadowClumpEdge", 0.028f);
 
             // Turf — the layer the tuft fields grow out of (shared constants above). GREEN family
             // now; the ochre is a scour PATCH rather than half of the base ramp.
@@ -574,16 +657,31 @@ namespace Tarrock.Editor
             // spots on 11.5% of the frame, which their brief rightly says would be worse than the
             // flat card. What IS added is the one rung the close end was missing: a sub-centimetre
             // dark/light pair, which the octave gate switches off everywhere it is not wanted.
+            //
+            // ROUND 8 REVERSES THE FOLLOW-UP DIRECTLY ABOVE, and says why. That pass added an
+            // 8 mm / 1.25 cm pair because the geometric-mean footprint finally admitted it on a
+            // raked mass. The geometry was right and the remedy was not: what a raked mass needs
+            // is a mark that stays legible ON SCREEN, and an 8 mm world mark is five pixels across
+            // only while the face is square on. Measured across rounds 6 and 7 those rungs are a
+            // large part of why every stone in the frame drew its finest mark at the same two
+            // pixels — which is the material-sameness finding, because one mark width for every
+            // surface is one material for every surface. Four rungs go (8 mm, 1.25 cm, 1.6 cm,
+            // 2.6 cm); the 45-500 px CUT PLANES take the register they occupied, and they take it
+            // with a different kind of mark rather than a smaller one of the same.
             material.SetFloat("_DetailBaseScale", 0.32f);
-            material.SetFloat("_RockGrainAmount", 0.80f);
-            material.SetFloat("_RockFleckTooth", 0.88f);
-            material.SetFloat("_RockFleckToothLight", 0.72f);
-            material.SetFloat("_RockFleckGrit", 0.88f);
-            material.SetFloat("_RockFleckFine", 0.88f);
-            material.SetFloat("_RockFleckMid", 0.80f);
-            material.SetFloat("_RockFleckCoarse", 0.50f);
-            material.SetFloat("_RockFleckLight", 0.78f);
-            material.SetFloat("_RockFleckLightMid", 0.44f);
+            material.SetFloat("_RockGrainAmount", 0.30f);
+            material.SetFloat("_RockFleckFine", 0.58f);
+            material.SetFloat("_RockFleckMid", 0.72f);
+            material.SetFloat("_RockFleckCoarse", 0.62f);
+            material.SetFloat("_RockFleckLightMid", 0.50f);
+            material.SetFloat("_FacetBaseScale", FacetScaleProp);
+            material.SetFloat("_FacetRatio", FacetRatio);
+            material.SetFloat("_FacetAmount", FacetAmountProp);
+            material.SetFloat("_RestScale", RestScaleRock);
+            material.SetFloat("_RestRatio", RestRatio);
+            material.SetFloat("_RestLow", RestLow);
+            material.SetFloat("_RestHigh", RestHigh);
+            material.SetFloat("_FormShadow", FormShadow);
 
             // The mark frame, IDENTICAL to the terrain's — one hand, one direction, one family of
             // brush widths across the whole region (constants at the top of this file).

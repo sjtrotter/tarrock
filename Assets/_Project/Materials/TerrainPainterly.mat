@@ -52,6 +52,10 @@ Material:
     - _DetailBaseScale: 0.42
     - _DetailFadeRange: 28
     - _DetailFadeStart: 10
+    - _FacetAmount: 0.2
+    - _FacetBaseScale: 0.12
+    - _FacetRatio: 3.3
+    - _FormShadow: 0.055
     - _HeightHigh: 48
     - _HeightLow: 8
     - _MarkAniso: 2.2
@@ -62,25 +66,25 @@ Material:
     - _MarkTurnSpread: 1.15
     - _MarkValueSpread: 0.36
     - _MeadowClumpAmount: 0.9
-    - _MeadowClumpEdge: 0.11
+    - _MeadowClumpEdge: 0.028
     - _MeadowClumpScale: 16
     - _MeadowClumpWarp: 0.85
     - _MeadowCoolAmount: 0.7
     - _MeadowDabAniso: 0.55
-    - _MeadowDabEdge: 0.1
+    - _MeadowDabEdge: 0.025
     - _MeadowDabScale: 6
     - _MeadowDabSize: 0.45
     - _MeadowDabWarp: 0.55
-    - _MeadowDetailAmount: 0.72
+    - _MeadowDetailAmount: 0.46
     - _MeadowDetailScale: 0.72
     - _MeadowFineScale: 0.95
-    - _MeadowFineStraw: 0.28
+    - _MeadowFineStraw: 0.16
     - _MeadowFineTone: 0.16
     - _MeadowFineWarp: 0.45
-    - _MeadowFleckCoarse: 0.78
+    - _MeadowFleckCoarse: 0.7
     - _MeadowFleckFine: 0.88
-    - _MeadowFleckLight: 0.58
-    - _MeadowFleckMid: 0.84
+    - _MeadowFleckLight: 0.52
+    - _MeadowFleckMid: 0.62
     - _MeadowFleckStand: 0.72
     - _MeadowGrain: 0.13
     - _MeadowGrainScale: 0.34
@@ -92,17 +96,22 @@ Material:
     - _NormalDetailFadeStart: 45
     - _NormalDetailHeight: 0.3
     - _NormalDetailStrength: 1
+    - _RestHigh: 0.45
+    - _RestLow: 0.33
+    - _RestMeadowScale: 0.75
+    - _RestRatio: 3.2
+    - _RestRockScale: 0.3
     - _RockBedTint: 0.55
     - _RockDabEdge: 0.14
     - _RockDabScale: 0.62
     - _RockDabTone: 0.2
-    - _RockFleckCoarse: 0.5
-    - _RockFleckFine: 0.88
+    - _RockFleckCoarse: 0.62
+    - _RockFleckFine: 0.6
     - _RockFleckGrit: 0.88
     - _RockFleckLight: 0.78
-    - _RockFleckLightMid: 0.44
-    - _RockFleckMid: 0.8
-    - _RockGrainAmount: 0.8
+    - _RockFleckLightMid: 0.5
+    - _RockFleckMid: 0.72
+    - _RockGrainAmount: 0.34
     - _RockLichenAmount: 0.4
     - _RockMottleScale: 6.5
     - _RockNormalBoost: 2.2
@@ -129,6 +138,10 @@ Material:
     - _TurfScourAmount: 0.85
     - _TurfScourScale: 9.5
     - _TurfSteepMax: 24
+    - _UplandEnd: 0.95
+    - _UplandRest: 0.24
+    - _UplandSize: 1.1
+    - _UplandStart: 0.62
     m_Colors:
     - _AmbientFloor: {r: 0.1, g: 0.11, b: 0.15, a: 1}
     - _BeddingDip: {r: 0.06, g: 0, b: -0.045, a: 0}

@@ -44,6 +44,10 @@ Material:
     - _CavityDarken: 0.3
     - _CavityScale: 0.55
     - _DetailBaseScale: 0.32
+    - _FacetAmount: 0.22
+    - _FacetBaseScale: 0.09
+    - _FacetRatio: 3.3
+    - _FormShadow: 0.055
     - _FormationTint: 0.55
     - _MarkAniso: 2.2
     - _MarkDensitySpread: 0.045
@@ -54,6 +58,10 @@ Material:
     - _MarkValueSpread: 0.36
     - _MossAmount: 0.42
     - _MossStart: 0.28
+    - _RestHigh: 0.45
+    - _RestLow: 0.33
+    - _RestRatio: 3.2
+    - _RestScale: 0.3
     - _RockContrast: 1.8
     - _RockDabAniso: 0.55
     - _RockDabFadeRange: 10
@@ -63,15 +71,15 @@ Material:
     - _RockDabTone: 0.17
     - _RockDetailAmount: 0.13
     - _RockDetailScale: 0.32
-    - _RockFleckCoarse: 0.5
-    - _RockFleckFine: 0.88
+    - _RockFleckCoarse: 0.62
+    - _RockFleckFine: 0.58
     - _RockFleckGrit: 0.88
     - _RockFleckLight: 0.78
-    - _RockFleckLightMid: 0.44
-    - _RockFleckMid: 0.8
+    - _RockFleckLightMid: 0.5
+    - _RockFleckMid: 0.72
     - _RockFleckTooth: 0.88
     - _RockFleckToothLight: 0.72
-    - _RockGrainAmount: 0.8
+    - _RockGrainAmount: 0.3
     - _RockVariation: 1.5
     - _ShadeWrap: 0.22
     - _StrataScale: 0.55

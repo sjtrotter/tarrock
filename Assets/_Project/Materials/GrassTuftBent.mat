@@ -25,7 +25,7 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _AmbientBoost: 1.05
+    - _AmbientBoost: 0.75
     - _BaseBlend: 0.62
     - _BaseBlendHeight: 0.5
     - _BendCoreShare: 0.375
@@ -51,7 +51,7 @@ Material:
     - _RingRimWidth: 0.16
     - _RootDarken: 0.86
     - _ShadeFillStrength: 1
-    - _ShadeWrap: 0.55
+    - _ShadeWrap: 0.36
     - _SkyOcclusionRoot: 0.7
     - _SunBleach: 0.45
     - _SwaySpeed: 0.85
@@ -66,12 +66,12 @@ Material:
     - _WindResponse: 1
     m_Colors:
     - _BaseColor: {r: 0.42, g: 0.57, b: 0.31, a: 1}
-    - _BleachTint: {r: 1, g: 0.95, b: 0.86, a: 1}
+    - _BleachTint: {r: 1, g: 0.94, b: 0.8, a: 1}
     - _CoolColor: {r: 0.33, g: 0.48, b: 0.4, a: 1}
     - _DryColor: {r: 0.9, g: 0.78, b: 0.36, a: 1}
     - _GroundColor: {r: 0.23599996, g: 0.29899994, b: 0.21049997, a: 1}
     - _GroundDryColor: {r: 0.40499997, g: 0.42999995, b: 0.30999997, a: 1}
-    - _ShadeFill: {r: 0.43, g: 0.52, b: 0.71, a: 1}
+    - _ShadeFill: {r: 0.5, g: 0.55, b: 0.68, a: 1}
     - _WindAxis: {r: 1, g: 0.35, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

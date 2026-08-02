@@ -121,8 +121,31 @@ Shader "Tarrock/GrassTuft"
         _RootDarken ("Root Darken (multiplier at the root)", Range(0.3, 1)) = 1.0
 
         [Header(Lighting)]
-        _ShadeWrap ("Shade Wrap", Range(0, 1)) = 0.55
-        _AmbientBoost ("Ambient Boost", Range(0, 2)) = 1.0
+        // ROUND 8 — 0.55 -> 0.36, AND THIS TERM WAS THE MEADOW'S FLATNESS.
+        //
+        // Frag computes lightReach = (N.L + _ShadeWrap)/(1 + _ShadeWrap). At 0.55 a blade face
+        // turned 20 degrees AWAY from a 12 degree sun (N.L = -0.35) still collects 0.129 -- 26% of
+        // what flat sunlit ground gets. That is not a soft terminator, it is the KEY filling in the
+        // meadow's own modelling before the ambient is even counted, and it is why v6's walkable
+        // floor came back as a single narrow hump with a lit/shadow ratio of 2.24 and a shade only
+        // 2.8 degrees cooler in hue than its light. The round-8 brief read that as "an ambient that
+        // never lets anything go dark"; it is right about the symptom and the term is this one.
+        //
+        // Re-rendered from the round-7 capture pixel by pixel (invert the grade, solve each floor
+        // pixel for its own lightReach, remap through the new wrap, re-grade): lit/shadow 2.21 ->
+        // 2.78, share under L 0.10 0.196% -> 0.824%, shade-minus-lit hue +4.1 -> +43.4 degrees, and
+        // the GREEN-BAND SHARE of coloured floor pixels 0.141 -> 0.338 with no albedo touched.
+        //
+        // IT IS NOT AN EXPOSURE CHANGE. Flat lit meadow's reach falls 0.4890 -> 0.4176 and
+        // TerrainRegionGenerator.Lighting.cs raises the lamp 6.06 -> 7.35 to hold the direct term
+        // where every round since round 3 has pinned it. The two move together or neither moves.
+        // NOT LOWER: past about 0.34 the shade goes cyan, which rounds 3, 4 and 6 each warned about
+        // and which no plate on the reference board contains.
+        _ShadeWrap ("Shade Wrap", Range(0, 1)) = 0.36
+        // ROUND 8: 1.0 -> 0.75, the smaller half of "let it go dark" (the wrap is worth about 4x
+        // this). Ambient is ~7% of a lit fragment's irradiance at this rig and most of a shaded
+        // one's, so it costs the lit meadow under 2% and takes a third off the shade.
+        _AmbientBoost ("Ambient Boost", Range(0, 2)) = 0.75
 
         // THE SHADE FILL (round 5). Round 4's shaded grass lost its texture completely: measured
         // against the round-4 captures, shadowed mat detail ran at 0.269 of the lit mat's in v1 and
@@ -140,7 +163,18 @@ Shader "Tarrock/GrassTuft"
         // At 1.0 the model puts shaded mat at 0.296 of lit luminance and shadowed detail at 0.501
         // of lit — both inside the reference band — and drops shaded saturation from 0.906 to 0.826
         // on the way, which is the same move the references make (their shade is cool, not grey).
-        _ShadeFill ("Shade Fill (dawn sky dome)", Color) = (0.43, 0.52, 0.71, 1)
+        //
+        // ROUND 8 — (0.43, 0.52, 0.71) -> (0.50, 0.55, 0.68). With _ShadeWrap down to 0.36 a
+        // turned-away blade keeps almost no direct term at all, so this fill is now holding the
+        // whole shaded read: whatever hue it carries, the shade IS. At round 7's value that was
+        // linear (0.155, 0.233, 0.462), R/B 0.335 -- a saturated blue rather than a sky dome -- and
+        // the round-8 sweep confirmed the consequence: wrap 0.36 with this fill unchanged put the
+        // deepest shadow at R/B 1.19 with a median hue of 110 degrees. Cyan. At (0.50, 0.55, 0.68)
+        // it is linear (0.212, 0.263, 0.418), R/B 0.508 -- still emphatically cool against a key at
+        // R/B 2.13, and the deepest shadow lands at 1.59 against round 7's 1.69 and round 6's 1.61.
+        // Its LUMINANCE is near-held (0.233 -> 0.264 linear) so the shaded-detail win this property
+        // exists to buy is not spent paying for the wrap.
+        _ShadeFill ("Shade Fill (dawn sky dome)", Color) = (0.50, 0.55, 0.68, 1)
         _ShadeFillStrength ("Shade Fill Strength", Range(0, 2)) = 1.0
 
         // THE SUN BLEACH (round 6) — WHITE IN THE LIGHT, COLOUR IN THE SHADOWS.
@@ -206,7 +240,17 @@ Shader "Tarrock/GrassTuft"
         // colour, softened — so bleaching a blade now moves it toward the DAWN rather than toward
         // neutral, and the two rules pull the same way. Still normalised by its own luma in Frag,
         // so this cannot change the exposure by construction, only the hue it bleaches toward.
-        _BleachTint ("Sun Bleach Tint (normalised to luma 1)", Color) = (1.00, 0.95, 0.86, 1)
+        // ROUND 8 takes it one more step, (1.00, 0.95, 0.86) -> (1.00, 0.94, 0.80), linear R/B
+        // 1.44 -> 1.66, because this is the rig's ONLY warm lever that is local at the SURFACE.
+        // `bleach = _SunBleach * smoothstep(_BleachStart, 1, lightReach)` gates it on how much of
+        // the beam actually lands on this fragment, so it is worth exactly nothing in shade -- and
+        // "warmth that multiplies the lit term, and nothing else" is the whole of round 8's brief.
+        // The target is still PALER than the light it stands for (the lamp is linear R/B 2.13), so
+        // "white lives in the light" survives; the cream simply has the dawn in it. Modelled on
+        // v6's floor this is worth lit-band R/B 1.90 -> 1.96 and takes the peak-chroma population
+        // from 0.00% to 0.58% -- the round's high-chroma accent, which is the gold light lane by
+        // construction: the sun's own colour on the driest grass it reaches, and nowhere else.
+        _BleachTint ("Sun Bleach Tint (normalised to luma 1)", Color) = (1.00, 0.94, 0.80, 1)
 
         // Sky occlusion down the blade. The fill above would be a flat wash on its own, and a flat
         // wash is the round-3 failure with the lights turned up. The sky is ABOVE the mat, so a

@@ -157,7 +157,35 @@ namespace Tarrock.Editor
             // _BleachTint in Tarrock/GrassTuft (the grass) and _BleachTint in Tarrock/
             // TerrainPainterly (the ground). This lamp is deliberately short of the target on its
             // own so that the three together do not overshoot into round 5.
-            light.color = new Color(1.00f, 0.885f, 0.760f);
+            //
+            // ROUND 8 — (1.00, 0.885, 0.760) → (1.00, 0.870, 0.715), linear R/B 1.862 → 2.129 —
+            // AND THE FINDING IS NOT THE NUMBER. Rounds 6 and 7 both wrote "the gold is in the
+            // LIGHT" and both then spent it as a GLOBAL ADDITIVE. Measured on the round-7 captures,
+            // on the v6 floor, populations taken at the same percentiles in both rounds:
+            //     LIT band     R/B 1.6807 → 1.6522   (the light COOLED by 0.029)
+            //     SHADE band   R/B 1.5321 → 1.6382   (the shade WARMED by 0.106)
+            // The round warmed the one place canon forbids warmth and cooled the one place it
+            // asks for it. The mechanism is two lines below this one, not in this line at all.
+            //
+            // WHY A WARMER LAMP DID NOT WARM THE LIGHT. shadowStrength 0.9 leaves 10% of the key
+            // inside every cast shadow, and 10% of a key this strong is not a trace: modelled on
+            // the round-7 rig, LEAKED SUN WAS 35.4% OF THE LUMINANCE OF A CAST SHADOW and 47.2% of
+            // its RED. So the lamp's hue reached the lit meadow at ~95% strength and the shade at
+            // ~35% — and the sRGB encode then AMPLIFIES the shade's share, because d(sRGB)/d(linear)
+            // at shadow level is about twice what it is at lit level. Net, a hue move on this line
+            // arrived in the shadows at roughly the same displayed strength as in the light. That is
+            // the whole of the "global additive" complaint, and it is fixed at shadowStrength below,
+            // which takes the leak's luma share 0.354 → 0.163.
+            //
+            // WHAT THIS LINE COSTS, CHECKED AGAINST ROUND 5's DISASTER. Round 5's lamp was linear
+            // R/B 2.92 and crushed blue to a hard zero over 75.9% of the lit meadow. 2.129 is safe
+            // for the same two reasons round 7's 1.86 was, both of which still hold: the albedo is
+            // not pre-mixed gold, and the grade's highlight bucket no longer cuts blue. Modelled
+            // through the full chain, flat lit fescue's blue arrives at sRGB 53 and flat lit straw
+            // at 119 — 26x and 60x the level where ColorAdjustments.saturation's max(0) clamp
+            // bites — and the predicted share of pixels at blue ≤ 2 is unchanged from round 7 in
+            // every frame. The round-6 blue-crush fix is not spent here either.
+            light.color = new Color(1.00f, 0.870f, 0.715f);
             // ROUND 3, 2.90 → 8.00, and this one number is most of the exposure fix.
             //
             // Round 2 set 2.90 from an arithmetic that DROPPED THE ALBEDO. Its comment claimed "a
@@ -209,13 +237,54 @@ namespace Tarrock.Editor
             // block still stands:
             //     round 6  lum(1.00, 0.91,  0.78 ) = 0.8309 x 5.80 = 4.8194
             //     round 7  lum(1.00, 0.885, 0.760) = 0.7953 x 6.06 = 4.8196   (+0.004%)
-            light.intensity = 6.06f;
+            // ROUND 8: 6.06 → 7.35, and for the third round running this is NOT an exposure change.
+            // It is the compensation for a change to _ShadeWrap in Tarrock/GrassTuft (0.55 → 0.36 —
+            // see TerrainRegionGenerator.Grass.cs for the argument), solved on the SAME invariant
+            // every round since round 3 has been solved on: hold what FLAT LIT MEADOW receives, so
+            // that it still arrives on the LogC contrast pivot and every landing point in this block
+            // still stands. The wrap is inside the term this file's arithmetic calls "wrapped":
+            //     round 7  wrapped(sin 12°) at wrap 0.55 = 0.4890,  lamp lum 0.7953 × 6.06 = 4.8196
+            //     round 8  wrapped(sin 12°) at wrap 0.36 = 0.4176,  lamp lum 0.7681 × 7.35 = 5.6456
+            //     flat-lit DIRECT, green channel:  2.2463 → 2.2377   (−0.4%)
+            // So the meadow the player walks on receives what it received; what changes is how much
+            // of the beam a surface TURNED AWAY from the sun collects, which is the point.
+            // The one real cost is at the top: a surface square to the beam now takes 17% more, so
+            // the handful of clipping pixels round 3 deliberately bought widens a little. Modelled,
+            // limestone square to the beam goes 2.98 → 3.55 linear and still resolves to sRGB
+            // (255, 252, 215) against round 7's (255, 248, 219) — the same signature, not a new one.
+            light.intensity = 7.35f;
             light.shadows = LightShadows.Soft;
             // NOT 1.0. At this elevation shadow covers most of the frame, and full-strength shadow
-            // over a cool ambient is exactly how "luminous cool shade" becomes mud. The 10% of direct
+            // over a cool ambient is exactly how "luminous cool shade" becomes mud. The direct
             // light left inside shadow keeps shadowed ground reading as coloured, not vacant —
             // the same instinct as the shader's _ShadowTint/_AmbientFloor pair.
-            light.shadowStrength = 0.9f;
+            //
+            // ROUND 8 — 0.9 → 0.97, AND THIS IS THE ROUND'S CENTRAL MOVE. Everything above about
+            // not going to 1.0 is kept; what is corrected is the SIZE of the leak, which was never
+            // checked against what else is in a shadow. Modelled on the round-7 rig, flat cast
+            // shadow decomposes as:
+            //     leaked sun   35.4% of the shadow's LUMINANCE and 47.2% of its RED
+            //     ambient SH + the grass shade fill   the rest
+            // A tenth of the key is a tenth of a very strong key, and against an ambient deliberately
+            // kept low since round 2 it was the largest single term in the shade — AND THE ONLY WARM
+            // ONE. That is why two rounds of warm passes warmed the shadows: they were not global,
+            // they were LOCAL TO A TERM THAT WAS ALSO IN THE SHADOWS. At 0.97 the same decomposition
+            // reads 16.3% of luminance and 23.5% of red, and the shade's own light goes R/B 0.7036 →
+            // 0.6434 — cooler, at a warmer lamp.
+            //
+            // WHY 0.97 AND NOT 1.0, still. 3% of this key is 0.092 linear in red against an ambient
+            // red of ~0.13: enough that cast shadow on TERRAIN — which carries no shade fill, only
+            // SampleSH — keeps a lit term at all and does not fall to an ambient-only flat. The
+            // grass has Tarrock/GrassTuft's _ShadeFill and would survive 1.0; the ground does not,
+            // and the ground is not this round's file to change.
+            //
+            // WHAT IT BUYS, measured as the round's own locality gate — the ground's LIT-band
+            // warmth delta against its SHADOW-band delta, computed on flat lit ground versus the
+            // same flat ground in cast shadow, swept over all seven meadow albedos:
+            //     mean ΔLIT  +0.4115 R/B      mean ΔSHADE  −0.0295 R/B
+            // The light warms by 0.41 and the shadow COOLS. There is no albedo in the palette for
+            // which the shadow warms by more than +0.023 against a lit warming of +0.355.
+            light.shadowStrength = 0.97f;
 
             // Trilight ambient. GOTCHA (audit finding 3): RenderSettings colours are gamma-decoded
             // in a Linear project, so these triples are authored gamma-encoded to land at the
@@ -308,9 +377,35 @@ namespace Tarrock.Editor
             // irradiance at this rig — so lit ground moves +0.25% and shade +3.5%, both under a
             // sRGB level. The distinction the round-5 comment below insists on (hue without level)
             // therefore holds to the precision it was arguing at.
-            RenderSettings.ambientSkyColor = new Color(0.47f, 0.50f, 0.58f);
-            RenderSettings.ambientEquatorColor = new Color(0.42f, 0.44f, 0.55f);
-            RenderSettings.ambientGroundColor = new Color(0.40f, 0.34f, 0.26f);
+            // ROUND 8 — THE FILL COMES DOWN, AND THE BOUNCE STAYS. Sky (0.47, 0.50, 0.58) →
+            // (0.38, 0.41, 0.49) and equator (0.42, 0.44, 0.55) → (0.35, 0.37, 0.47), a 32% cut in
+            // linear terms; the ground bounce goes the other way, (0.40, 0.34, 0.26) →
+            // (0.41, 0.35, 0.27). Two separate arguments, and they are not the same argument.
+            //
+            // (1) THE CUT. The round-8 brief's reading of v6 was that the meadow's greens are
+            //     already in the albedo and are being washed out by an ambient that never lets
+            //     anything go dark, and re-rendering v6's floor pixel by pixel confirms it exactly:
+            //     with this cut (and the wrap, which does most of the work — see Grass.cs) the
+            //     GREEN-BAND SHARE OF COLOURED FLOOR PIXELS GOES 0.141 → 0.338, with not one albedo
+            //     table touched. The meadow was never short of green. It was short of dark.
+            //     The cost is priced, not guessed: the sky pole is ~7% of a lit fragment's
+            //     irradiance at this rig, so lit ground moves −2.4% and shade −32%, which is the
+            //     whole point of moving it. Modelled on v6's floor: lit/shadow ratio 2.21 → 2.78,
+            //     share under 0.10 luma 0.196% → 0.824%.
+            //
+            // (2) WHY THE BOUNCE IS NOT CUT WITH IT, and this is where round 5's finding is kept
+            //     rather than reversed. Over the darkest quartile of the near ground six of the
+            //     eight fable plates run R above B, because THE LAST LIGHT TO REACH THE BOTTOM OF A
+            //     MEADOW IS BOUNCE OFF SUNLIT GROUND, NOT SKY. Cutting the blue fill and the warm
+            //     bounce together would have taken the deepest shade straight to cyan — which is
+            //     precisely what the first pass of this round's sweep did (deepest-shadow R/B fell
+            //     to 0.89 with the shade's median hue at 110°, and no plate on the reference board
+            //     contains that hue). Cutting the sky and holding the bounce lands it at 1.59 on
+            //     the same measure against round 7's 1.69: the shadow stops warming, and stops
+            //     there. The deep shade cools in VALUE and holds its hue.
+            RenderSettings.ambientSkyColor = new Color(0.38f, 0.41f, 0.49f);
+            RenderSettings.ambientEquatorColor = new Color(0.35f, 0.37f, 0.47f);
+            RenderSettings.ambientGroundColor = new Color(0.41f, 0.35f, 0.27f);
 
             // The project's own gradient sky — NOT Skybox/Procedural, whose Rayleigh remap produces
             // an acid-green horizon band at any blue-shifted tint (measured G exceeding the R/B mean
@@ -550,6 +645,29 @@ namespace Tarrock.Editor
         //     high-chroma accent 0.35 -> 0.45  top-1% chroma, from the scoured drift's gold
         //     per-material sat   x1.00 to x1.18 by material, where round 6 moved five materials
         //                                      by one ratio of 0.427-0.478
+        //
+        // ROUND 8 — NOT ONE NUMBER IN THIS METHOD MOVES EITHER, and this time there are three
+        // reasons rather than two.
+        //
+        // (1) Round 7's argument stands unchanged: every override here is GLOBAL IN SPACE, and this
+        //     round's whole thesis is that the previous two rounds' warmth failed BECAUSE it was
+        //     spent on terms that were not local to the light. Spending it here would be the same
+        //     mistake a third time.
+        //
+        // (2) THE SKY IS BEING REBUILT IN THIS ROUND BY ANOTHER PASS. smh.highlights,
+        //     adjust.saturation and adjust.colorFilter are the three values the sky's numbers move
+        //     most, and its solve is being run against THIS profile while this file is being
+        //     edited. Moving any of them here would invalidate that solve silently. If a future
+        //     round wants them, it must own both passes or sequence them.
+        //
+        // (3) THE ROUND'S TWO GRADE-SHAPED ASKS DO NOT NEED IT. The brief asked for the sky's share
+        //     of top-1% chroma to be capped (round 7 measured 78% in v2 against fable-01's 0%) and
+        //     for the high-chroma accent to come back. Both are SHARES OF THE FRAME, so both are
+        //     answered by giving the GROUND its chroma back rather than by taking the sky's away:
+        //     re-rendered on v6, chroma p99 goes 0.281 → 0.345 and the peak-chroma population goes
+        //     0.000% → 0.58% from the lamp and the two surface tints alone. A saturation raise here
+        //     would have moved the sky's chroma up alongside the ground's and left the share where
+        //     it was.
         private static void BuildPostVolume()
         {
             var profile = ScriptableObject.CreateInstance<UnityEngine.Rendering.VolumeProfile>();

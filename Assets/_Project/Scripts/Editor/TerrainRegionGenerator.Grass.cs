@@ -484,8 +484,46 @@ namespace Tarrock.Editor
             // ground rather than as a layer with depth in it.
             material.SetFloat("_RootDarken", species.RootDarken);
 
-            material.SetFloat("_ShadeWrap", 0.55f);
-            material.SetFloat("_AmbientBoost", 1.05f);
+            // ROUND 8 — THE WRAP, 0.55 → 0.36, AND THIS IS THE ONE NUMBER THAT FIXES v6.
+            //
+            // The round-8 brief's finding was "v6 is a LIGHT problem, not a colour problem: the
+            // greens are already in the albedo and are being washed out by an ambient that never
+            // lets anything go dark". Measured, that is right about the symptom and one word off
+            // about the cause. IT IS NOT THE AMBIENT. IT IS THE KEY, WRAPPED AROUND THE TERMINATOR.
+            //
+            // The shader computes lightReach = (N·L + w)/(1 + w). At w = 0.55, a blade face turned
+            // 20° AWAY from the sun (N·L = −0.35) still collects 0.129 — 26% of what flat sunlit
+            // ground gets. The meadow's own modelling was being filled back in by the lamp itself
+            // before the ambient was even counted, which is why v6's floor came back as a single
+            // narrow hump (round-7 floor luma p5 0.242, p95 0.570) with no shadow side to it at
+            // all: lit/shadow 2.24 and the shade only 2.8° cooler in hue than the light.
+            //
+            // Re-rendered pixel by pixel from the round-7 capture (invert the grade, solve each
+            // floor pixel for its own lightReach, remap the reach through the new wrap, re-grade):
+            //     lit/shadow ratio      2.21 → 2.78
+            //     share under L 0.10   0.196% → 0.824%
+            //     shade-minus-lit hue   +4.1° → +43.4°   (shade cooler, which is the board's law)
+            //     GREEN-BAND SHARE      0.141 → 0.338    with no albedo table touched
+            // That last line is the brief's own prediction landing: chase the light and the green
+            // comes back on its own.
+            //
+            // THE EXPOSURE IS NOT MOVED BY THIS. Flat lit meadow's reach falls 0.4890 → 0.4176, and
+            // TerrainRegionGenerator.Lighting.cs takes the lamp 6.06 → 7.35 to hold the DIRECT term
+            // exactly where every round since round 3 has pinned it (flat-lit green 2.2463 →
+            // 2.2377, −0.4%). The pair moves together or neither moves; see that file.
+            //
+            // WHY NOT FURTHER. The sweep ran to w = 0.26, and it keeps buying contrast — but past
+            // about 0.34 the shade goes CYAN (deepest-shadow R/B 0.89, shade median hue 110°),
+            // which is the one hue no plate on the reference board contains and which rounds 3, 4
+            // and 6 each warned about in turn. 0.36 is the last stop before that.
+            material.SetFloat("_ShadeWrap", 0.36f);
+            // ROUND 8: 1.05 → 0.75. The other half of "let it go dark", and much the smaller half —
+            // the wrap above is worth 4x this. Ambient is ~7% of a lit fragment's irradiance here
+            // and most of a shaded one's, so this costs the lit meadow under 2% and takes a third
+            // off the shade. It moves WITH the trilight cut in Lighting.cs rather than instead of
+            // it: this one is per-species and reaches only the grass, that one reaches the ground
+            // the grass stands in, and the mat has to darken with its floor or it detaches from it.
+            material.SetFloat("_AmbientBoost", 0.75f);
 
             // THE SHADE FILL (round 5) — the answer to "shadowed grass loses its texture entirely".
             //
@@ -974,7 +1012,21 @@ namespace Tarrock.Editor
         // enough: modelled, shaded meadow R/B goes 1.54 -> 1.60 while its luminance moves under
         // half a level. The reference board's own dawn plates run shade R/B 1.48 (fable-07) to
         // 2.02 (fable-01), so this is a step toward the band, not into it.
-        private static readonly Color ShadeFillColour = new Color(0.43f, 0.52f, 0.71f);
+        // ROUND 8 — (0.43, 0.52, 0.71) → (0.50, 0.55, 0.68), and it is the same correction as round
+        // 7's, finally taken far enough. The wrap change above removes most of the DIRECT term from
+        // a turned-away blade, which leaves this fill holding almost the whole shaded read — so
+        // whatever hue it carries, the shade now IS. At round 7's value that meant a saturated blue
+        // (linear (0.155, 0.233, 0.462), R/B 0.335), and the round-8 sweep confirmed it in the
+        // worst way: with the wrap at 0.36 and this fill unchanged, the deepest shadow came back at
+        // R/B 1.19 with a median hue of 110° — cyan, the one hue the board never contains.
+        // At (0.50, 0.55, 0.68) it is linear (0.212, 0.263, 0.418), R/B 0.508 — still emphatically
+        // cool against a key at R/B 2.13, still the dawn sky dome, but a dome and not a swatch of
+        // blue. Modelled on v6's floor the deepest shadow lands at R/B 1.59 against round 7's 1.69
+        // and round 6's 1.61: the shadow stops warming and returns to round-6-clean, which is what
+        // the round asked for, without crossing to the other side of it.
+        // Its LUMINANCE is deliberately near-held (linear 0.233 → 0.264, +13%) so the round-5
+        // shaded-detail win it exists to buy is not spent to pay for the wrap.
+        private static readonly Color ShadeFillColour = new Color(0.50f, 0.55f, 0.68f);
 
         // What the sun leaves on a blade it lands on square (round 6, the SUN BLEACH). A cream so
         // pale it is barely a colour — the point is that it is NOT the lamp's gold: gold on the
@@ -989,7 +1041,20 @@ namespace Tarrock.Editor
         // linear R/B 1.44 — the lamp's own colour, softened — so the storybook law and the colour
         // script now pull the same way instead of against each other. Luma-normalised in Frag, so
         // this is a HUE and cannot move the meadow's exposure.
-        private static readonly Color SunBleachTint = new Color(1.00f, 0.95f, 0.86f);
+        // ROUND 8 — (1.00, 0.95, 0.86) → (1.00, 0.94, 0.80), linear R/B 1.44 → 1.66. This is the
+        // SECOND local warm lever in the rig and the only one that is local at the SURFACE rather
+        // than in the lamp: `bleach = _SunBleach * smoothstep(_BleachStart, 1, lightReach)`, so it
+        // is gated on how much of the beam actually lands here and is worth exactly nothing in
+        // shade. Warmth that multiplies the lit term is the whole brief; this and the lamp are the
+        // two places the rig can express it.
+        // It is still PALER than the light it stands for (the lamp is linear R/B 2.13), so "white
+        // lives in the light" survives — the lit blade is drawn toward a cream, and the cream has
+        // dawn in it. What it buys, re-rendered on v6's floor: lit-band R/B 1.90 → 1.96 and the
+        // peak-chroma population 0.00% → 0.58%, which is the round's high-chroma accent and is
+        // canon-defensible by construction because it IS the gold light lane — the sun's own colour
+        // sitting on the driest grass it reaches, and nowhere the sun does not reach.
+        // Luma-normalised in Frag, so this is a HUE and cannot move the meadow's exposure.
+        private static readonly Color SunBleachTint = new Color(1.00f, 0.94f, 0.80f);
 
         private static readonly TuftSpecies[] Species =
         {
@@ -1797,14 +1862,42 @@ namespace Tarrock.Editor
             // Drier and duller than the meadow's tint: a bank tussock is the grass the wind got to.
             // ROUND 6: same correction as the meadow species — dry means DRY, not gold. The old
             // dry pole was linear (0.407, 0.290, 0.078), R/B 5.2.
-            material.SetColor("_BaseColor", new Color(0.40f, 0.44f, 0.28f));
-            material.SetColor("_DryColor", new Color(0.68f, 0.66f, 0.48f));
-            material.SetFloat("_DryBias", 0.40f);
+            //
+            // ROUND 8 — THE FOUR GOLD RIBBONS. The round-8 brief flagged four pale-gold blade shapes
+            // standing LIT inside v7's foreground shadow, unchanged for three rounds, and asked what
+            // they were. They are TUSSOCKS: four clumps at 2.3, 8.4, 14.3 and 15.1 m from the v7
+            // lens, and there is nothing legacy or unlit about them — this material, Tarrock/
+            // GrassTuft, the same shader the meadow uses, fully lit, receiving shadows.
+            //
+            // They read as lit inside a shadow for two reasons that compound, and BOTH are fixed
+            // this round:
+            //   (a) ALBEDO. This pole is linear (0.418, 0.392, 0.195), luminance 0.383 — against a
+            //       meadow whose blend-weighted albedo luminance is 0.119. A tussock was painted
+            //       THREE TIMES as bright as the field it edges, so in a shadow, where every blade
+            //       is multiplied by the same small number, it was the population that showed. A
+            //       bank tussock is drier than the meadow; it is not three times paler than it.
+            //   (b) THE LEAK. shadowStrength 0.9 left 35% of a cast shadow's luminance as leaked
+            //       sun (see TerrainRegionGenerator.Lighting.cs, round 8), and _ShadeWrap 0.50 on
+            //       a stand of near-vertical blades collected a lot of it. Both are corrected.
+            // Nothing is deleted: the clumps are the coarse edge of the meadow and they belong. The
+            // palette comes onto the meadow's own family — _BaseColor to linear luminance 0.119,
+            // which is the meadow's exactly, and the dry pole to 0.181, so the bank still reads
+            // drier and paler than the field by about half a stop instead of by a stop and a half.
+            // This material also SAT OUT ROUND 7 while every species in the table above took a
+            // round-7 correction, which is the other half of why it drifted out of family.
+            material.SetColor("_BaseColor", new Color(0.34f, 0.40f, 0.24f));
+            material.SetColor("_DryColor", new Color(0.48f, 0.47f, 0.31f));
+            material.SetFloat("_DryBias", 0.32f);
             material.SetFloat("_PatchScale", 18f);
             material.SetFloat("_TuftVariation", 0.5f);
             material.SetFloat("_ValueVariation", 0.16f);
-            material.SetFloat("_ShadeWrap", 0.50f);
-            material.SetFloat("_AmbientBoost", 1f);
+            // ROUND 8: 0.50 → 0.36 and 1.0 → 0.75, matching the meadow exactly. These two are not a
+            // tussock preference — they are how a surface answers the light, and a bank that answers
+            // the dawn differently from the field it edges is the same mistake as a bank combed on a
+            // different axis, which this builder has been guarding against since it was written. The
+            // argument for both numbers is in BuildTuftPrototype above; it applies here unchanged.
+            material.SetFloat("_ShadeWrap", 0.36f);
+            material.SetFloat("_AmbientBoost", 0.75f);
             // MUST match BuildTussockMesh's height: the shader turns its unitless height and sway
             // channels back into metres with this number.
             material.SetFloat("_TuftHeight", TussockHeight);

@@ -77,7 +77,18 @@ Shader "Tarrock/CloudLobe"
         // body between it and the crown. Authored in the same convention as every other colour in
         // this project: Material.SetColor treats a plain Color property as sRGB and converts it to
         // linear on upload, so these numbers are sRGB however the generator's constants are named.
-        _LobeLit ("Lobe - sunlit crown", Color) = (1.10, 1.01, 0.84, 1)
+        // ROUND 8, (1.10, 1.01, 0.84) → (0.885, 0.870, 0.779), and the crown does not move a level.
+        // TARROCK_CLOUD_SUNWARM goes 0.22 → 0.70 this round (SkyGradient.hlsl — the disc carries the
+        // warm half of the storybook law now, instead of it being pre-mixed into the paint), and
+        // this row shares that constant on purpose: the near masses and the vault masses cannot be
+        // lit by different suns. So the PAINT gives back exactly what the LIGHT gains —
+        //     round 7 crown = g2l(1.10,1.01,0.84) + 0.22·sunGlow = (1.448, 1.162, 0.723) linear
+        //     round 8 crown = g2l(0.885,0.870,0.779) + 0.70·sunGlow = (1.448, 1.162, 0.723) linear
+        // — which is "white in the light" stated properly: a near-neutral pigment with the dawn
+        // arriving as illumination, so a later grade can no longer invert it. The half-lit body
+        // gains the difference at a quarter weight (litWash² at form's middle plateau), which is
+        // the one place this row genuinely warms, and it warms toward the sun.
+        _LobeLit ("Lobe - sunlit crown", Color) = (0.885, 0.870, 0.779, 1)
         _LobeMid ("Lobe - body", Color) = (0.57, 0.60, 0.70, 1)
         _LobeShade ("Lobe - shadow core", Color) = (0.22, 0.27, 0.43, 1)
         _LobeUnder ("Lobe - belly", Color) = (0.13, 0.18, 0.33, 1)
@@ -430,12 +441,9 @@ Shader "Tarrock/CloudLobe"
                 // amplitude goes 0.30 -> 0.42 because a bigger mark carries more paint. Measured on
                 // the vault masses, which take the same change through the same brush: stroke blobs
                 // 1.7 per 10k px at 311 px each -> 0.8 per 10k at 682 px.
-                float foot = min(fwidth(azi), 0.05) + fwidth(lobeY);
-                float brush = TarrockGradNoise(float2(azi * 14.0 + 3.7, lobeY * 21.0 + 3.7))
-                                  * saturate(1.0 - foot * 18.0)
-                            + TarrockGradNoise(float2(azi * 32.0 + 21.3, lobeY * 48.0 + 21.3))
-                                  * 0.6 * saturate(1.0 - foot * 41.0);
-                color = max(color * (1.0 + brush * 0.42 * float3(1.22, 1.02, 0.80)), 0.0);
+                // ROUND 8 MOVES THE TOOTH AFTER THE LIGHT and gives it a coarse third octave — the
+                // same two changes the vault masses take, for the same reasons. See §THE TOOTH GOES
+                // ON LAST below, where it now runs.
 
                 // -------------------------------------------------------------------------------
                 // THE BASE, PAINTED. A cumulus base is dark because there is a great depth of cloud
@@ -482,6 +490,35 @@ Shader "Tarrock/CloudLobe"
                 color += _SunGlowColor.rgb * (TARROCK_CLOUD_SUNWARM * litWash * litWash
                          * (TARROCK_CLOUD_SUNWARM_BASE
                             + (1.0 - TARROCK_CLOUD_SUNWARM_BASE) * saturate(ndl)));
+
+                // WHAT THIS ROW DELIBERATELY DOES *NOT* TAKE FROM ROUND 8, and why it is a decision
+                // rather than an oversight: the vault masses gain a DOME term this round
+                // (SkyGradient.hlsl §TARROCK_CLOUD_SKYFILL — the sky's own light on the shaded
+                // washes, which is the cool half of the law). Carried onto the near row as authored,
+                // 1.20 × the sky's mid band is (0.160, 0.268, 0.627) linear against a shadow core
+                // that is painted at (0.040, 0.058, 0.150): it would make these lobes' shade FOUR
+                // TIMES lighter, and round 7's true dark on the near cloud sea is a protected win.
+                // Making it fit means re-solving _LobeShade, _LobeMid and _LobeUnder against a
+                // near-field mass seen through 30-70% fog, and that cannot be validated the way the
+                // vault masses can — the offline model this round is solved against covers the
+                // skybox, not the lobe meshes. It is the next round's work, with a capture to check
+                // it against. Until then this row keeps its painted shade and shares only the light
+                // it can be held to: the disc above, at a level the paint gives back exactly.
+
+                // §THE TOOTH GOES ON LAST (round 8). It used to multiply the washes and then have
+                // the disc's warmth added over the top, so wherever the light was strong the tooth
+                // was diluted — a textured core inside a smooth outer slab, which is half of what
+                // made the round-7 masses read as stacked cards. The tooth is the paper; everything
+                // laid on the paper takes it. The third octave is the middle tier of structure the
+                // round-7 critique measured missing (E16 3.2-5.8 against the board's 11.4-14.0),
+                // and the amplitude goes 0.42 → 0.55 to pay for it.
+                float foot = min(fwidth(azi), 0.05) + fwidth(lobeY);
+                float brush = TarrockGradNoise(float2(azi * 4.5 + 57.1, lobeY * 6.8 + 57.1)) * 1.4
+                            + TarrockGradNoise(float2(azi * 14.0 + 3.7, lobeY * 21.0 + 3.7))
+                                  * saturate(1.0 - foot * 18.0)
+                            + TarrockGradNoise(float2(azi * 32.0 + 21.3, lobeY * 48.0 + 21.3))
+                                  * 0.6 * saturate(1.0 - foot * 41.0);
+                color = max(color * (1.0 + brush * 0.55 * float3(1.22, 1.02, 0.80)), 0.0);
 
                 // The dawn rim: the silhouette edge on the sun side is the brightest thing a cloud
                 // has at this hour. Grazing angle × sunward, so it lights the rim and not the face.

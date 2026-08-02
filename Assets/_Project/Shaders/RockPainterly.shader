@@ -38,6 +38,28 @@ Shader "Tarrock/RockPainterly"
     // (BuildRockMesh emits per-quad normals so the stone reads as a few flat planes with confident
     // edges, art-bible.md). Do not add the ground's per-pixel shading normal here.
     //
+    // ROUND-8 PASS, in step with Tarrock/TerrainPainterly's. Read that shader's ROUND-8 header
+    // first; the finding, the arithmetic and the two-round measurement are there and are not
+    // restated. What lands here:
+    //   * kFootprintLean 0.72 and the 2.5/5.0 px window, so a mark on a stone is never narrower
+    //     than two and a half pixels.
+    //   * The FIBRE RUNGS RETIRED — 8 mm, 1.25 cm, 1.6 cm and 2.6 cm all went, four bands that
+    //     under round 7's footprint drew at the sampling grid on every stone in every frame.
+    //   * CUT PLANES (TkFacetTone) as the stone vocabulary: flat tone per polygonal cell,
+    //     band-limited to 45-500 px. This is the register the retired rungs occupied and it is a
+    //     different KIND of mark, which is the whole of the material-identity finding — a boulder
+    //     must be made of the same PAINT as the hillside and not of the same MARK as the grass.
+    //   * REST, off its own field, so a stone has passages the brush never reached.
+    // The mark frame is untouched to the bit: orientation variation is a protected round-7 win.
+    //
+    // NOTE ON THE ROUND-7 FOLLOW-UP THIS REVERSES. That pass added a sub-centimetre dark/light
+    // pair for the framing masses on the argument that "a close mass is a RAKED mass" and the
+    // geometric-mean gate finally admitted it. The argument was right about the geometry and wrong
+    // about the remedy: what a raked mass needs is a mark whose SIZE ON SCREEN stays legible, and
+    // an 8 mm world mark at the jamb's 1.5 mm a pixel is five pixels across only while the face is
+    // square on. The facets give that face a 60-200 px register instead, which is what the round-8
+    // brief asks for and what the reference board's near masses actually carry.
+    //
     // NO WIND. Rock does not move, bound or unbound, so this shader carries no sway and never reads
     // _TarrockWindStrength. (It is also therefore safe under static batching, which is what ate the
     // object-space foliage sway in commit 48712b9 — nothing here is object-space.)
@@ -70,24 +92,35 @@ Shader "Tarrock/RockPainterly"
         _DetailBaseScale ("Detail - base scale (m)", Float) = 0.45
         // ROUND 7 — effective amounts. The four `k*Gain` constants that used to multiply these
         // inside this file are retired (finding 5a); the generator writes the product.
-        _RockGrainAmount ("Detail - continuous amount", Range(0, 0.8)) = 0.80
-        // ROUND 7 FOLLOW-UP — THE SUB-CENTIMETRE RUNG, and it exists for the FRAMING MASSES.
-        // NEARMASS-FINISH's near mass and broken jamb are 6-7 m masses read from 1.7-13 m, and at
-        // 1.5 mm a pixel every rung this ladder had was 10 px or wider: a gradient operator, which
-        // is what "does it read as rock" is measured with, saw almost nothing. These two are 5-9 px
-        // at that footprint and are switched OFF by the octave gate the moment the footprint
-        // coarsens — modelled, they are byte-identical on the near mass at 9 m, on the raked jamb,
-        // and on a 1 m boulder at 12 m and 20 m, and they move a close FRONTAL face by ~24%.
-        _RockFleckTooth ("Detail - fleck 8 mm (tooth)", Range(0, 0.9)) = 0.88
-        _RockFleckToothLight ("Detail - LIGHT fleck 1.25 cm", Range(0, 0.9)) = 0.72
-        _RockFleckGrit ("Detail - fleck 1.6 cm (tooth)", Range(0, 0.9)) = 0.88
-        _RockFleckFine ("Detail - fleck 4 cm (grit)", Range(0, 0.9)) = 0.88
-        _RockFleckMid ("Detail - fleck 12 cm (weathering)", Range(0, 0.9)) = 0.80
-        _RockFleckCoarse ("Detail - fleck 40 cm (patches)", Range(0, 0.9)) = 0.50
-        // LIGHT marks — the second mark VALUE. Round 6 had one: dark. See the terrain shader's
-        // stone branch for the measurement that made this a finding.
-        _RockFleckLight ("Detail - LIGHT fleck 2.6 cm", Range(0, 0.9)) = 0.78
-        _RockFleckLightMid ("Detail - LIGHT fleck 10 cm", Range(0, 0.9)) = 0.44
+        _RockGrainAmount ("Detail - continuous amount", Range(0, 0.8)) = 0.30
+        // ROUND 8 — WHAT IS LEFT IS PITTING. Three dark bands and one pale, all of them coarser
+        // than three centimetres, because that is the finest a threshold-mark field can be drawn
+        // and still be a mark rather than a hash under the 2.5/5.0 px window. Pitting is a real
+        // and separate thing from a cut plane, so both are kept and neither is asked to do the
+        // other's job. The four retired rungs (8 mm, 1.25 cm, 1.6 cm, 2.6 cm) are gone from the
+        // CBUFFER and from the generator in the same change.
+        _RockFleckFine ("Detail - fleck 4 cm (grit)", Range(0, 0.9)) = 0.58
+        _RockFleckMid ("Detail - fleck 12 cm (weathering)", Range(0, 0.9)) = 0.72
+        _RockFleckCoarse ("Detail - fleck 40 cm (patches)", Range(0, 0.9)) = 0.62
+        // The LIGHT mark, the second mark VALUE (round 6's finding: this shader once had only
+        // dark). One band survives, at the pitting scale rather than the fibre scale.
+        _RockFleckLightMid ("Detail - LIGHT fleck 10 cm", Range(0, 0.9)) = 0.50
+
+        [Header(Facets    the stone vocabulary)]
+        // CUT PLANES. See Tarrock/TerrainPainterly's TkFacetTone for the construct and for why the
+        // per-cell TONE is safe where the per-cell DISTANCE is not. One step finer than the
+        // terrain's ladder, on the same reasoning every other number here is: a boulder and a jamb
+        // are read from closer than a cliff.
+        _FacetBaseScale ("Facet - finest cell (m)", Float) = 0.09
+        _FacetRatio ("Facet - rung ratio", Float) = 3.30
+        _FacetAmount ("Facet - value swing", Range(0, 0.5)) = 0.22
+
+        [Header(Rest    where the artist stopped)]
+        _RestScale ("Rest - fine octave (m)", Float) = 0.30
+        _RestRatio ("Rest - coarse octave multiple", Float) = 3.2
+        _RestLow ("Rest - fully at rest below", Range(0, 0.5)) = 0.33
+        _RestHigh ("Rest - fully worked above", Range(0, 0.8)) = 0.45
+        _FormShadow ("Form shadow - broad soft value swing", Range(0, 0.2)) = 0.05
 
         // -- THE MARK FRAME (round 7, finding 1). Identical construct and identical numbers to
         // Tarrock/TerrainPainterly's: a boulder must be painted by the same hand, in the same
@@ -180,14 +213,18 @@ Shader "Tarrock/RockPainterly"
             float _RockDetailAmount;
             float _DetailBaseScale;
             float _RockGrainAmount;
-            float _RockFleckTooth;
-            float _RockFleckToothLight;
-            float _RockFleckGrit;
             float _RockFleckFine;
             float _RockFleckMid;
             float _RockFleckCoarse;
-            float _RockFleckLight;
             float _RockFleckLightMid;
+            float _FacetBaseScale;
+            float _FacetRatio;
+            float _FacetAmount;
+            float _RestScale;
+            float _RestRatio;
+            float _RestLow;
+            float _RestHigh;
+            float _FormShadow;
             float _MarkAniso;
             float _MarkTurnScale;
             float _MarkTurnScaleFine;
@@ -343,8 +380,12 @@ Shader "Tarrock/RockPainterly"
         // every cell wall — a fold by another name, and modelled alone it measured an anisotropy of
         // 17.2. It is replaced by a non-folding turned fbm plus sparse mark bands, and distance is
         // handled per octave against the pixel footprint rather than by a camDist fade.
-        static const float kDetailPxLo = 1.6;
-        static const float kDetailPxHi = 3.2;
+        // ROUND 8 — the same window and the same footprint lean as the terrain's, for the same
+        // measured reason. The two recipes must agree; see Tarrock/TerrainPainterly's ROUND-8
+        // header for the derivation and for the r6/r7 numbers that fix both constants.
+        static const float kDetailPxLo = 2.5;
+        static const float kDetailPxHi = 5.0;
+        static const float kFootprintLean = 0.72;
 
         float TkOctaveWeight(float wavelengthM, float pixelM)
         {
@@ -554,6 +595,69 @@ Shader "Tarrock/RockPainterly"
         // with EDGES are now bought with sparse mark fields (TkFleckBand above), which have
         // real edges at low coverage and no crease network to draw.
 
+        // -- CHUNKY PLANAR FACETS (round 8) — the STONE vocabulary --------------------------------
+        // The winning cell's FLAT TONE and nothing else. The round-5 note above is right that a
+        // Worley F1 creases: that is the DISTANCE field, which is a radial gradient inside every
+        // cell — a ring and a crease network at once. The TONE is piecewise constant and its only
+        // discontinuity IS the cell wall, which is a perpendicular bisector: a straight edge
+        // between two flat values, i.e. a cut plane catching the rake. Aspect and size jitter are
+        // deliberately modest — a stretched cell is a stringy cell, and stringy is the fibre this
+        // term exists to replace.
+        float TkFacetTone(float2 p)
+        {
+            float2 cell = floor(p);
+            float2 f = p - cell;
+            float best = 8.0;
+            float tone = 0.0;
+
+            [unroll]
+            for (int y = -1; y <= 1; y++)
+            {
+                [unroll]
+                for (int x = -1; x <= 1; x++)
+                {
+                    float2 g = float2(x, y);
+                    float2 h = TkHash22(cell + g);
+                    float2 sj = TkHash22(cell + g + 37.19);
+                    float2 d = g + h - f;
+
+                    float sn, cs;
+                    sincos(sj.x * 6.2831853, sn, cs);
+                    float2 r = float2(d.x * cs - d.y * sn, d.x * sn + d.y * cs);
+                    float stretch = max(1.0 + 0.35 * (sj.y - 0.5) * 2.0, 0.25);
+                    r.x /= stretch;
+                    r.y *= stretch;
+                    float radius = max(1.0 + 0.40 * (frac(sj.x * 7.31 + sj.y * 3.17) - 0.5) * 2.0, 0.25);
+                    float sq = dot(r, r) / (radius * radius);
+
+                    tone = sq < best ? frac(h.x * 3.71 + h.y * 7.13) : tone;
+                    best = min(best, sq);
+                }
+            }
+            return tone;
+        }
+
+        // A facet is only legible AS a facet between about 45 and 500 px. This term has no soft
+        // edge to fade, so outside the window it is branched away rather than weighted down.
+        float TkFacetWindow(float lambdaM, float pixelM)
+        {
+            float n = lambdaM / max(pixelM, 1e-6);
+            return smoothstep(45.0, 90.0, n) * (1.0 - smoothstep(320.0, 560.0, n));
+        }
+
+        // -- REST (round 8) ------------------------------------------------------------------------
+        // .x is the WORKED weight (0 in the low tail: the artist stopped here); .y is the raw
+        // field, used mean-centred as the broad soft FORM SHADOW. A FILLED REGION below a
+        // threshold, never a band around a midpoint — see TkCavityPair's rule. Do not rewrite it
+        // as 1 - |2f - 1|; that draws a level set, and a level set of a smooth field is a worm.
+        float2 TkRestField(float2 p, float fineM, float ratio)
+        {
+            float a = TkValueNoise(p / max(fineM, 1e-3));
+            float b = TkValueNoise(p / max(fineM * ratio, 1e-3) + 37.7);
+            float f = 0.55 * a + 0.45 * b;
+            return float2(smoothstep(_RestLow, _RestHigh, f), f);
+        }
+
         float TkContrast(float x, float k)
         {
             return saturate((x - 0.5) * k + 0.5);
@@ -647,7 +751,12 @@ Shader "Tarrock/RockPainterly"
                 // resolves. The full argument, and the cost, are in Tarrock/TerrainPainterly.
                 float pixelMajor = max(max(length(ddx(positionWS)), length(ddy(positionWS))), 1e-5);
                 float pixelMinor = max(min(length(ddx(positionWS)), length(ddy(positionWS))), 1e-5);
-                float pixelM = sqrt(pixelMajor * pixelMinor);
+                // ROUND 8: minor^(1-lean) * major^lean. The geometric mean gave every surface in
+                // the frame the same mark width in pixels whatever its rake, which is what
+                // collapsed the material spectra together; 0.72 restores three quarters of the
+                // spread and is still strictly less undersampling along the major axis than what
+                // shipped in round 7.
+                float pixelM = pow(pixelMinor, 1.0 - kFootprintLean) * pow(pixelMajor, kFootprintLean);
 
                 // -- Mottle: the block's own patchiness. Contrast-pushed for the same reason the
                 //    ground's is — three octaves of value noise sit in a narrow band around the mean
@@ -740,11 +849,21 @@ Shader "Tarrock/RockPainterly"
                 // also cost less: four 3-D taps (32 hashes) where the triplanar was twelve 2-D taps
                 // (48), and six 3-D taps for the mark bands where the face frame took six 2-D.
                 TkMarkFrame markFrame = TkBuildMarkFrame(positionWS.xz);
+                // ROUND 8 — rest and form, before a mark is laid. Off the stone's own field, at
+                // its own scale, so a boulder and the turf it sits in do not share a rest pattern
+                // any more than they share a mark.
+                float2 restS = TkRestField(positionWS.xz + positionWS.y, _RestScale, _RestRatio);
+                float workedS = restS.x;
+                albedo *= 1.0 + (restS.y - 0.5) * 2.0 * _FormShadow;
+
                 float3 markPos = TkMarkSpace(positionWS, markFrame);
                 float rSize = max(markFrame.size, 0.35);
+                // The continuous field keeps its stretch (weathering runs along a bed, and the
+                // board's rock measures 0.27-0.55 coherence) and loses two thirds of its AMOUNT:
+                // it was the fibre carrier and the facets below are what stone is made of now.
                 float stoneDetail = TkDetailFbm3(markPos, _DetailBaseScale * rSize, pixelM);
                 albedo *= 1.0 + (stoneDetail - 0.5) * 2.0
-                    * TkMarkAmount(_RockGrainAmount, markFrame.value);
+                    * TkMarkAmount(_RockGrainAmount, markFrame.value) * workedS;
 
                 // THE LADDER IS RE-PITCHED (round 6, finding 4), on the same reasoning as the
                 // terrain's: round 5's finest rung fell under kDetailPxLo at the distances these
@@ -761,37 +880,40 @@ Shader "Tarrock/RockPainterly"
                 float2 sThrA = float2(0.46, 0.76) - markFrame.shift;
                 float2 sThrB = float2(0.50, 0.79) - markFrame.shift;
                 float2 sThrC = float2(0.56, 0.86) - markFrame.shift;
-                float2 sThrL = float2(0.52, 0.82) - markFrame.shift;
-                // The sub-centimetre pair. Dark and light together, because a single band at one
-                // value at this scale is how "one size, one value" got written into the round-6
-                // critique in the first place.
-                float2 stoneMicro = TkFleckBand3(markPos + 7.9, 0.0080 * rSize, 0.0132 * rSize,
-                    sThrA, TkMarkCoverage(0.140, markFrame.shift),
-                    TkMarkAmount(_RockFleckTooth, markFrame.value), pixelM);
-                float2 stoneMicroLight = TkFleckBand3(markPos + 23.7, 0.0125 * rSize, 0.0206 * rSize,
-                    sThrL, TkMarkCoverage(0.082, markFrame.shift),
-                    -TkMarkAmount(_RockFleckToothLight, markFrame.value), pixelM);
-                float2 stoneTooth = TkFleckBand3(markPos + 17.3, 0.016 * rSize, 0.027 * rSize,
-                    sThrA, TkMarkCoverage(0.140, markFrame.shift),
-                    TkMarkAmount(_RockFleckGrit, markFrame.value), pixelM);
                 float2 stoneFine = TkFleckBand3(markPos, 0.040 * rSize, 0.066 * rSize,
                     sThrA, TkMarkCoverage(0.140, markFrame.shift),
-                    TkMarkAmount(_RockFleckFine, markFrame.value), pixelM);
+                    TkMarkAmount(_RockFleckFine, markFrame.value) * workedS, pixelM);
                 float2 stoneMid = TkFleckBand3(markPos + 61.7, 0.120 * rSize, 0.198 * rSize,
                     sThrB, TkMarkCoverage(0.106, markFrame.shift),
-                    TkMarkAmount(_RockFleckMid, markFrame.value), pixelM);
+                    TkMarkAmount(_RockFleckMid, markFrame.value) * workedS, pixelM);
                 float2 stoneWide = TkFleckBand3(markPos + 193.1, 0.400 * rSize, 0.660 * rSize,
                     sThrC, TkMarkCoverage(0.062, markFrame.shift),
-                    TkMarkAmount(_RockFleckCoarse, markFrame.value), pixelM);
-                float2 stoneLight = TkFleckBand3(markPos + 331.1, 0.026 * rSize, 0.043 * rSize,
-                    sThrL, TkMarkCoverage(0.082, markFrame.shift),
-                    -TkMarkAmount(_RockFleckLight, markFrame.value), pixelM);
+                    TkMarkAmount(_RockFleckCoarse, markFrame.value) * workedS, pixelM);
                 float2 stoneLightMid = TkFleckBand3(markPos + 457.9, 0.100 * rSize, 0.165 * rSize,
                     sThrC, TkMarkCoverage(0.045, markFrame.shift),
-                    -TkMarkAmount(_RockFleckLightMid, markFrame.value), pixelM);
-                albedo *= stoneMicro.x * stoneMicroLight.x
-                    * stoneTooth.x * stoneFine.x * stoneMid.x * stoneWide.x
-                    * stoneLight.x * stoneLightMid.x;
+                    -TkMarkAmount(_RockFleckLightMid, markFrame.value) * workedS, pixelM);
+                albedo *= stoneFine.x * stoneMid.x * stoneWide.x * stoneLightMid.x;
+
+                // -- THE CUT PLANES (round 8) -------------------------------------------------
+                // Three rungs a factor _FacetRatio apart, each drawn only while it is between 45
+                // and 500 px, so the broken jamb at 1.7 m and a boulder at twenty both get facets
+                // and neither gets the other's. Flat tone per cell, mean 0.5, so the term is
+                // mean-preserving and cannot move the authored stone value. Deliberately NOT in
+                // the mark frame: a facet is a plane in the rock, not a stroke of the brush, and
+                // giving every term the strokes' frame is how one vocabulary became five.
+                float facetScale = _FacetBaseScale;
+                float2 facetUV = float2(dot(positionWS.xz, float2(0.8944, 0.4472)), positionWS.y);
+                [unroll]
+                for (int fi = 0; fi < 3; fi++)
+                {
+                    float fw = TkFacetWindow(facetScale, pixelM);
+                    if (fw > 0.002)
+                    {
+                        float ft = TkFacetTone(facetUV / facetScale + 13.1 * fi);
+                        albedo *= 1.0 + (ft - 0.5) * 2.0 * _FacetAmount * fw;
+                    }
+                    facetScale *= _FacetRatio;
+                }
 
                 // -- Moss on ledges: only where the face turns upward AND the hollows say damp, so
                 //    it lands in patches instead of coating every horizontal facet.
