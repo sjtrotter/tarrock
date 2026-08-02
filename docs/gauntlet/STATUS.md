@@ -31,9 +31,15 @@ tree.
 **Won:** the light reaches true white for the first time in ten rounds (Lmax 1.0 on every frame, shadows held); the
 dead tree is a real hero silhouette (21.9× the ink of the old one) with a walkable rerouted lane and the run's first
 player-perspective vantage; the cloud-vs-sky inversion is corrected everywhere; the nine-round black-Fool bug is dead.
-**Named next:** the white was bought with blue (cloud clipping 7.8–30.6% vs the board's 0.1% ceiling); the concentric
-whorl field regressed *because* the un-blown highlights stopped hiding it; and at resting camera from the shelf foot a
-player sees no landmark at all — a director decision, surfaced with pixels rather than assertions.
+**Named next:** the white was bought with blue (cloud clipping 7.8–30.6% vs the board's 0.1% ceiling — critics 1+2,
+genuine); and at resting camera from the shelf foot a player sees no landmark at all — a director decision, surfaced
+with pixels rather than assertions.
+
+> **Erratum (post-round):** the round-10 runner retracted its critic-3 and critic-4 findings as **fabricated** — those
+> two critics had not reported when their "results" were written (both still running at retraction time). Withdrawn:
+> the whorl "18–90 px / 1.8× board max" figures and the noiseSeed "NCC regression". The whorl artifact itself remains
+> real (lead's own eyes, genuine critic 5, Codex). Round 11's briefs were amended; provenance (agent task-id +
+> transcript path per finding) is now mandatory in every runner report.
 
 ## Round 9 — the knoll walks, the ribbons die, the gates get honest · commit `59e8ff5`
 
