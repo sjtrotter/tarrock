@@ -43,3 +43,20 @@ Assets/Screenshots/
 Screenshots/
 *.blend1
 Assets/Screenshots.meta
+
+# --- Secrets & machine-local state (never commit) ---
+.env
+.env.*
+*.pem
+*.key
+!*.key.meta
+id_rsa*
+*.keystore
+*.jks
+auth.json
+credentials*.json
+serviceaccount*.json
+# Claude/Codex session-local state — only the gauntlet charters are repo material
+.claude/*
+!.claude/gauntlet/
+!.claude/gauntlet-fool/
