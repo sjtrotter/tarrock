@@ -16,14 +16,24 @@ tree.
 
 ---
 
-## Round 10 — the tree earns its frame `RUNNING`
+## Round 11 — white without bleach, the whorl's last stand `QUEUED`
 
-- **The dead tree** (the Cliff's signature) rebuilt as a hero silhouette (~5% of v8, forking and tapering) with framing a
-  walking player can hold; the worn lane rerouted onto the new walkable shelf; a ninth west vantage added to review it.
-- **Highlights finally let go** — the board clips 0.3–16% white; we've been 75× under it for nine rounds.
-- **Cloud work moves to the right shader** (the hero cloud was `TarrockVaultCloud` in SkyGradient.hlsl all along); the
-  round-9 CloudLobe regression reverted.
-- Bug sweep: the black Fool in v1, the 110 px disc artifact, grass instancing seeded deterministic.
+- Rebalance the white: round 9's band was board-correct in colour and failed to reach the wall; round 10 reached the
+  wall and bleached it (blue clips first on 7 of 9 frames). Merge the two.
+- The concentric whorl field, precisely located at last (18–90 px, 1.8× the board max) — killed at that specific term.
+- Revert the noiseSeed rescramble; polish the tree's bark material.
+- **Awaiting a director ruling** on how a resting camera gets to see the tree (look-at nudge / default tilt / proportions).
+
+## Round 10 — the tree earns its frame · commit `cf733bd`
+
+![Round 10 v9](img/thumb-r10-v9-shelf-west.jpg) ![Round 10 v8](img/thumb-r10-v8-deadtree-skyline.jpg)
+
+**Won:** the light reaches true white for the first time in ten rounds (Lmax 1.0 on every frame, shadows held); the
+dead tree is a real hero silhouette (21.9× the ink of the old one) with a walkable rerouted lane and the run's first
+player-perspective vantage; the cloud-vs-sky inversion is corrected everywhere; the nine-round black-Fool bug is dead.
+**Named next:** the white was bought with blue (cloud clipping 7.8–30.6% vs the board's 0.1% ceiling); the concentric
+whorl field regressed *because* the un-blown highlights stopped hiding it; and at resting camera from the shelf foot a
+player sees no landmark at all — a director decision, surfaced with pixels rather than assertions.
 
 ## Round 9 — the knoll walks, the ribbons die, the gates get honest · commit `59e8ff5`
 
