@@ -16,13 +16,24 @@ tree.
 
 ---
 
-## Round 15 — the hierarchy round `QUEUED`
+## Round 16 — light on the tree, the cloud owned `QUEUED`
 
-- The frame learns to read tree-first: a warm key behind the ridge (the sky carries 75% of the hero frame's chroma and
-  has never been art-directed), dressing subordinated, the dead nudge marker wired so the reveal finally fires.
-- Rock coverage (not amplitude): 43% of hero stone renders under 3 LSB vs the board's <12%.
-- The three false repo comments corrected (code and capture must agree — project rule).
+- The signature finally gets lit: cast shadow and a warm rim on the dead tree (29k pixels at median Y 12.78, untouched
+  through fifteen rounds — both judges' converged mechanism: "a dark near mass the key light is not allowed to reach").
+- The cloud gets an owner at last — four consecutive judges have named it the hero frame's decisive tell.
+- Rock coverage properly scoped (v5: 96.2% of stone under 3 LSB vs the board's 5.8%).
 
+## Round 15 — the hierarchy round · commit `5e0ae33`
+
+![Round 15 v9](img/thumb-r15-v9-shelf-west.jpg) ![Round 15 v8](img/thumb-r15-v8-deadtree-skyline.jpg)
+
+**Won:** the camera nudge lives (marker wired and parented, non-null in the scene, 73/73 tests — issue #1 closed); the
+v9 silhouette-step prediction landed within 1.4%; the three false comments are corrected; and the blind verdicts are
+now proven chrome-free (the board plates' HUDs were removed — the ranking didn't move).
+**Learned:** the SKY-KEY builder refuted its own brief by measurement (the knoll occludes the horizon in the hero
+frame — the specified key was a no-op there) and rebuilt against the real band; the grass trim regressed and was
+surgically reverted at commit. Fourth identical blind verdict (4/5/6, hero last), now with the sharpest possible
+diagnosis: the tree itself has never been lit. Round 16 exists to light it.
 ## Round 14 — contrast budgeting · commit `bdbfd81`
 
 ![Round 14 v9](img/thumb-r14-v9-shelf-west.jpg) ![Round 14 v1](img/thumb-r14-v1-spawn-west.jpg)
