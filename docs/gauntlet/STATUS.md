@@ -16,16 +16,25 @@ tree.
 
 ---
 
-## Round 13 — the spawn bowl, the pedestal, the deck `QUEUED`
+## Round 14 — contrast budgeting `QUEUED`
 
-- The opening frame joins the meadow win (spawn-bowl cover, the lagging tussock material, pressed grass under the
-  Fool on every vantage).
-- The shadow pedestal traded properly: v5's broken ground mask fixed first, the chroma route (hold blue, drop R/G
-  toward the board's −13.8), fog reverted to 1.0, and the grass/terrain wrap discontinuity healed.
-- The deck's real gap: 72% of it is one code value — painted variation, not more geometry.
-- **Camera/proportions ruling sharpened for the director:** v8 needs 4.0× the tree's screen area to enter the board
-  band; v9 needs nothing (hero already out-weighs flanks 1.6:1, better than any board plate).
+- One owner for the whole frame's chroma: mute the set dressing toward the board, fix the verdigris bowl grass back to
+  wind-scoured green, restore a real accent ratio. (Codex's mechanism, two rounds running: "contrast budgeting and
+  compositional authorship.")
+- The rocks stop being untextured primitives — the blind judge's first-named tell, and ours to fix.
+- The unowned white horizon keyline (three rounds frozen at full amplitude) gets an owner; the capture rig stops
+  silently rewriting the scene; the Fool-exclusion mask is re-fit.
 
+## Round 13 — the spawn bowl joins the board · commit `7a982f1`
+
+![Round 13 v1](img/thumb-r13-v1-spawn-west.jpg) ![Round 13 v6](img/thumb-r13-v6-meadow-scale.jpg)
+
+**Won:** the opening frame — v1/v2 near-field cover lands inside the board band for the first time (frames in band
+2/9 → 4/9); the ground mask that had been reading 3.6% ground on a 95%-ground frame is rebuilt and double-confirmed;
+the deck's flat-value fraction fell 74.9% → 18.5%. **The honest baseline:** the first dedicated blind judge and Codex,
+independently and in identical order, rank all three board plates above all three of ours — and name the same next
+blockers: untextured rocks, the horizon keyline, a chroma floor twice the board's. Two targets retired on evidence
+(sh_BR, water-analogy deck metrics); three more instruments condemned (#10–12).
 ## Round 12 — the meadow reaches the board · commit `47f924c`
 
 ![Round 12 v6](img/thumb-r12-v6-meadow-scale.jpg) ![Round 12 v9](img/thumb-r12-v9-shelf-west.jpg)
