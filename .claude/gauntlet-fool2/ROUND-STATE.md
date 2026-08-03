@@ -102,6 +102,18 @@ Run started: 2026-08-02. Lead: Fable (this file is the resume point).
 - Critic's measured RMS map (r12): upper arm 2.03 · abdomen 4.33 · PSIS 5.16 ·
   clavicles 6.16 · belt 8.94 · costal arch 9.74 (reads as scored line).
 
+## DIRECTOR RULING — issue #2 (2026-08-03, applied + closed)
+
+- **Option A as stated: belt logged as debt, Pass-2 CLOSED** on chain head
+  Fool-v2-016.blend. The ±3 mm silhouette gate stays as-is (no regional ±7 mm
+  opening). Debt register now: posterior belt line (z 1.03–1.10 back), front
+  garment-class line (z≈1.264), arm relief. The clothing layers cover the belt
+  region in-game; debts re-judged at the whole-figure gates (Pass-3 / dressed).
+- **Issue convention (director order, same comment): every future issue body
+  links the relevant STATUS.md section directly** for quick reference. Both
+  gauntlet sessions share the tracker — sign bodies "Gauntlet v2 lead"; never
+  act on rulings addressed to the other session.
+
 ## DIRECTOR CHANNEL (order 2026-08-03 — charter §Director channel)
 
 Director-only decisions (canon, unsettled quality-vs-scope, hard blockers): open a
@@ -169,8 +181,8 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
   gate to ±7 mm). Second garment-class line found on the FRONT at z≈1.264.
 - **Lead verdict: 016c promoted as chain Fool-v2-016.blend** (strict
   improvement, guards green; workdir 016/016b were unpromoted phase
-  candidates). Pass-2 gate closure PENDING issue #2 ruling. GUI reloaded to
-  chain head.
+  candidates). Pass-2 gate CLOSED by director ruling issue #2 (Option A —
+  see DIRECTOR RULING section). GUI reloaded to chain head.
 
 ## Method lessons (Round 13, paid for)
 

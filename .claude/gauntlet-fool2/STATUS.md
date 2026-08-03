@@ -21,9 +21,9 @@ being re-run, and run tooling now lives in the repo under
 
 | Stage | Status |
 |---|---|
-| References & blockout | in progress (body done; arms/hands/neck next) |
-| Merge & sculpt | — |
-| Head sculpt | — |
+| References & blockout | DONE (r1–r4) |
+| Merge & sculpt | Pass 1 + Pass 2 DONE (r5–r13; Pass-2 closed by director ruling #2, debts logged); Pass-3 creases deferred |
+| Head sculpt | in progress (Round 14) |
 | Retopo (head, body) | — |
 | Rigging | — |
 | Hair | — |
@@ -430,8 +430,15 @@ rather than being explained away. The presence work is not finished; what change
 is that we now know its mechanism.
 
 **Round verdict: LANDED — chain advances to `Fool-v2-016.blend` (Phase D
-candidate promoted; guards green; best-integrated torso of the run). Pass-2 gate
-closure pending the director's belt ruling on issue #2; arm-relief debt logged
-per the 7fab0ad pre-commitment. Standing process changes from this round: run
-tooling now lives in the repo (`tooling/`), and sculpt gates are geometry-space
-plus mandatory builder eyes-on — render-RMS scalars are retired.**
+candidate promoted; guards green; best-integrated torso of the run). Standing
+process changes from this round: run tooling now lives in the repo
+(`tooling/`), and sculpt gates are geometry-space plus mandatory builder
+eyes-on — render-RMS scalars are retired.**
+
+**Director ruling (issue #2, 2026-08-03): Option A — Pass-2 is CLOSED.** The
+posterior belt line, the front garment-class line (z≈1.264), and arm relief are
+logged debts, re-judged at the whole-figure gates; the ±3 mm silhouette gate
+stands. (The belt region lives under the Fool's clothing layers in-game.) Next:
+**Round 14 — the head sculpt** (cranium/jaw refinement, brow, open eye sockets
+with separate rig-ready eyeballs — spec r=35 mm, IPD 86 mm, eye Z 1.571 m —
+nose, ears, mouth band, neck integration, manubrium debt).
