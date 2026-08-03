@@ -37,18 +37,69 @@ namespace Tarrock.Editor
         //
         // THE SHARE IS THE WHOLE ARGUMENT, and it is deliberately not 1.0. A far ridge dying INTO
         // the deck instead of silhouetting against it is a standing contract between this file's fog
-        // and Sky.cs's deck (see the fog block below). At 0.72 the ground's far field lands at
-        // linear (0.660, 0.696, 0.750), luminance 0.692 against the deck's 0.840 and R−B −0.091
-        // against the deck's +0.088: cool instead of gold, and one-fifth of a stop down, which reads
-        // as haze rather than as a cut-out. Take it further and the ridges start to silhouette.
+        // and Sky.cs's deck (see the fog block below). Take it further and the ridges silhouette.
+        //
+        // ROUND 12 — THE NUMBERS IN THIS BLOCK WERE STALE AND ARE CORRECTED. Round 9 wrote that at
+        // 0.72 the ground's far field lands at linear (0.660, 0.696, 0.750), luminance 0.692, R−B
+        // −0.091 against the deck's +0.088 — "cool instead of gold". That was true of round 6's
+        // FarFieldLinear, whose decode was (0.864, 0.840, 0.776). ROUND 8 REDEFINED FarFieldLinear
+        // as the sky's own horizon band (Sky.cs §FarFieldLinear) and its decode is now
+        // (1.000, 0.761, 0.371) — a dawn gold, not a haze. The DERIVATION is unchanged and did its
+        // job: the ground still moved with the sky. The published triple did not. Recomputed from
+        // Sky.cs's own constants, and checked against what the generator actually wrote into
+        // Assets/_Project/Materials/TerrainPainterly.mat (_GroundFarColor 0.85300547, 0.839991,
+        // 0.8190204, which Unity gamma-decodes to the same numbers to seven places):
+        //     scene fog  linear (1.000, 0.761, 0.371)  luminance 0.784  R−B +0.629
+        //     ground far linear (0.698, 0.674, 0.637)  luminance 0.676  R−B +0.061
+        // So the ground's far field is one-fifth of a stop down on the deck, as documented, and it
+        // is 0.568 COOLER THAN THE DECK — but it is not cool in absolute terms; it is very slightly
+        // warm. The round-9 contract ("cooler than the deck, and dimmer than it") holds. The
+        // sentence "R−B −0.091" did not, and is withdrawn rather than chased: moving the share to
+        // restore a NEGATIVE R−B needs 0.91, which breaks the far-ridge contract this block exists
+        // to protect. If a future round wants the recession properly cool, HazeLinear and the deck
+        // must move with it, and that is a change to Sky.cs.
         private static readonly Color GroundFarCoolLinear = new Color(0.58f, 0.64f, 0.74f);
         private const float GroundFarCoolShare = 0.72f;
         // 1.0 = the ground's fog builds at exactly the scene's own density; below 1 it builds more
-        // slowly, which de-gilds the near-mid band while the far plane still saturates. Left at 1
-        // because the round-9 model says the gilding complaint is answered by the COLOUR alone —
-        // the near-mass darks the jamb gate measures sit 3-10 m from camera and carry under 1% fog,
-        // so a density change buys nothing there and only costs the far-ridge contract.
-        private const float GroundFogScale = 1.0f;
+        // slowly, above 1 faster. Round 9 left it at 1 because the gilding complaint was answered by
+        // the COLOUR alone.
+        //
+        // ROUND 12 — 1.0 → 1.5, AND IT IS THE MID BAND THAT ASKED FOR IT. The round-11 critique put
+        // a value inversion on v4-knoll-east: distant material darker than near material. Banding
+        // that frame by screen row inside metrics.masks()'s ground mask does NOT reproduce it (the
+        // ramp rises, far/near 1.364 against fable-01's 1.523) — because that mask classifies v4's
+        // big mid-distance landform as SKY and excludes it. Measured instead on hand-placed boxes on
+        // the native frame, the inversion is real and it is that landform:
+        //     near meadow 3-12 m   0.434      mid DARK mass 45-80 m   0.392   <- darker than near
+        //     near-mid    15-30 m  0.488      far ridge lit 90-140 m  0.733
+        //     mid lit     35-60 m  0.678
+        // and the dark mass reads saturation 0.139 / R−B +16.2 against the near meadow's 0.473 /
+        // +59.4, i.e. it is a shadow-side face that the aerial perspective has not yet reached.
+        //
+        // AT 60 m THE GROUND TAKES 11.8% OF ITS FAR FIELD AND THAT IS THE WHOLE PROBLEM. Exp² is
+        // flat near zero, which is why this region uses it (see the fog block below) — but the same
+        // flatness leaves the 45-80 m band unlifted while the board lifts it. The scale multiplies
+        // the FACTOR, so at exp² it is a density scale and it acts where the curve has already
+        // started, not near the camera. Fraction of the far field mixed in, by range:
+        //        3 m  0.03% → 0.07%       35 m   4.2% → 9.2%      140 m  49.5% → 78.5%
+        //       10 m  0.35% → 0.78%       60 m  11.8% → 24.6%     200 m  75.2% → 95.6%
+        // The near-mass darks the round-9 jamb gate measures sit 3-10 m out and move by under one
+        // part in a hundred, which is why this is the lever and the density is not: RenderSettings
+        // .fogDensity is shared with the sky, the deck and every rock, and the eight cloud-lobe
+        // anchors below are placed against it.
+        //
+        // PREDICTED, modelled per pixel on the round-11 capture through the shipped chain (the model
+        // reproduces v4's five ground zones to ±0.002 sRGB luma at the shipped settings), together
+        // with the shipped _ShadeWrap of 0.22:
+        //     near 3-12 m    0.435 → 0.331        mid DARK 45-80 m   0.392 → 0.445
+        //     near-mid 15-30 0.488 → 0.417        far ridge 90-140 m 0.733 → 0.729
+        //     mid lit 35-60  0.678 → 0.671
+        // i.e. the dark mass stops being darker than the near ground (that gap goes −0.043 → +0.113)
+        // and the worst downward step in the ramp goes −0.285 → −0.226, against fable-06's own
+        // mid-frame dip of −0.073 and fable-08's −0.124. The trade is real and is the round-2 one: haze doing
+        // work value should do. It is bounded to the 35-140 m band by the curve, and the lit slope
+        // at 35-60 m is modelled as moving 0.678 → 0.671, so what the haze takes is the DARKS.
+        private const float GroundFogScale = 1.5f;
 
         private static void BuildLighting()
         {
@@ -1004,12 +1055,39 @@ namespace Tarrock.Editor
             //     four. It now opens at 2.90, above all four.
             //
             // (3) 2.90 AND 3.80 ARE LUT SAMPLES, AND NO PREVIOUS ROUND MODELLED THIS. URP does not
-            //     run this grade per pixel. With m_ColorGradingLutSize 32
-            //     (Assets/Settings/PC_RPAsset.asset) it bakes the whole of ColorGrade() — this
-            //     smoothstep included — into a 32-cube indexed in LogC and trilinearly
-            //     interpolates it (Shaders/PostProcessing/LutBuilderHdr.shader; Common.hlsl's
-            //     ApplyLut2D). Samples are 1/31 LogC apart, which near the top of this picture is
+            //     run this grade per pixel. It bakes the whole of ColorGrade() — this smoothstep
+            //     included — into a cube indexed in LogC and trilinearly interpolates it
+            //     (Shaders/PostProcessing/LutBuilderHdr.shader; Common.hlsl's ApplyLut2D).
+            //
+            //     ROUND 12 RAISED m_ColorGradingLutSize 32 → 64 ON THE PC ASSET ONLY
+            //     (Assets/Settings/PC_RPAsset.asset; the capture rig pins quality level "PC",
+            //     GauntletCapture.cs:70, which QualitySettings.asset binds to that asset).
+            //     Assets/Settings/Mobile_RPAsset.asset is a SEPARATE file on a separate quality
+            //     level and is deliberately left at 32 in LDR mode — mobile's ceiling is lower and
+            //     this scene is not captured there. The cost is the LUT strip: size² wide by size
+            //     tall at R16G16B16A16_SFloat, so 1024×32 = 0.250 MiB → 4096×64 = 2.000 MiB, i.e.
+            //     +1.75 MiB of render-target memory, rebuilt once a frame.
+            //
+            //     WHAT IT BOUGHT, MEASURED, AND IT IS NOT WHAT WAS HOPED FOR. Pushed through both
+            //     cubes on the drift-corrected round-9 inversions with THIS grade unchanged:
+            //         true white   0.0000% → 0.0000% on all eight views (no change on any)
+            //         vault R−B    median 43.89 → 43.87   (−0.02, i.e. 0.05%)
+            //         vault clip   0.0% → 0.0%            Lmax median 0.9577 → 0.9576
+            //     The four frames that carry no white at 32 still carry none at 64: their brightest
+            //     pixels are at 2.97 / 2.48 / 2.76 / 2.99 and the bucket opens at 2.90, so the grid
+            //     was never what was stopping them. What 64 actually buys is AUTHORABILITY — at 32
+            //     there is no threshold available between 2.0642 and 2.8012, and at 64 there is
+            //     (2.1773, 2.5302, 2.9402). Lowering highlightsStart is a separate, unlanded change.
+            //
+            //     THE SAMPLE GRIDS. At 32 samples are 1/31 LogC apart, which near the top of this
+            //     picture is
             //         j=20  linear 2.0642     j=21  2.8012     j=22  3.8002
+            //     and at 64 they are 1/63 apart:
+            //         j=41  2.1773   j=42  2.5302   j=43  2.9402   j=44  3.4164   j=45  3.9694
+            //     The paragraph below describes the 32-cube the round-11 numbers were solved on and
+            //     is kept because it is the argument for 2.90 and 3.80; under the 64-cube the
+            //     bucket's foot lands at 2.5302 rather than 2.8012 and the measurements above are
+            //     what that is worth in practice.
             //     A ramp that begins between two samples is NOT what the frame gets: both ends
             //     fall in one cell, the LUT holds w=0 at the lower sample and w=1 at the upper,
             //     and the hardware draws a straight line across the whole cell — so a threshold

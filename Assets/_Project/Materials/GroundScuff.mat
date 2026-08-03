@@ -53,7 +53,7 @@ Material:
     - _ShadeFillStrength: 1
     - _ShadeWrap: 0.36
     - _SkyOcclusionRoot: 0.38
-    - _SunBleach: 0.45
+    - _SunBleach: 0.3
     - _SwaySpeed: 0.85
     - _SwayStrength: 0
     - _SwayWavelength: 14

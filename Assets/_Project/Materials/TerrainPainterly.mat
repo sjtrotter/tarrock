@@ -56,7 +56,7 @@ Material:
     - _FacetBaseScale: 0.12
     - _FacetRatio: 3.3
     - _FormShadow: 0.055
-    - _GroundFogScale: 1
+    - _GroundFogScale: 1.5
     - _HeightHigh: 48
     - _HeightLow: 8
     - _MarkAnchorPitch: 11
@@ -120,7 +120,7 @@ Material:
     - _ShadeDeepen: 0.66
     - _ShadeFillKnee: 0.35
     - _ShadeFillStrength: 0.18
-    - _ShadeWrap: 0.4
+    - _ShadeWrap: 0.22
     - _ShadowPenumbra: 1
     - _SlopeEnd: 0.35721236
     - _SlopeJitter: 0.13

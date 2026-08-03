@@ -644,7 +644,8 @@ namespace Tarrock.Editor
         // of the footprint, runs ±1.7 m through the first 120 m of open sea, ±4.3 m from 120-300 m
         // and ±4.9 m beyond, with an overall standard deviation of 1.96 m against round 3's 0.9.
         // The deepest trough anywhere is −5.46 m, which still clears the shallowest lobe hang
-        // (8.55 m — see CloudLobeSinkMin) by 3.1 m, so no head can be caught floating.
+        // (11.07 m at round 12's floors — see CloudLobeSinkMin) by 5.61 m, so no head can be caught
+        // floating. Round 4's floor left 3.1 m here; raising the sinks only ever widens this.
         //     What that relief is worth on screen: from v3 the eye stands 6.3 m over the deck, so a
         // 1.5 m crest at 80 m lifts the surface from −4.50° to −3.43° — 21 px of the gameplay lens —
         // and a 4 m crest at 200 m lifts it from −1.80° to −0.66°, 22 px. The near sea gets a
@@ -1016,9 +1017,10 @@ namespace Tarrock.Editor
         //
         // WHAT KEEPS THEM HONEST. Nothing is placed inside the terrain footprint (0-256 m in both
         // axes); the scatter's inner radius clears the footprint's farthest corner outright. Every
-        // mass hangs at least (sink + 0.391) × radius BELOW the deck, which for the smallest head
-        // the scatter can roll (18 m) is 9.2 m against a worst-case billow of 7 m — so no head can
-        // ever be caught floating with a lit gap under it. Nothing casts a shadow: the sun is 7°
+        // mass hangs at least (sink + 0.355) × radius BELOW the deck, which at round 12's floors is
+        // 11.07 m for the smallest head the far scatter can roll (18 m at sink 0.26) and 13.13 m for
+        // the smallest swell (26 m at sink 0.15), against a worst-case billow of 7 m — so no head
+        // can ever be caught floating with a lit gap under it. Nothing casts a shadow: the sun is 7°
         // up, so a 200 m cloud would throw a 1.6 km bar across the island. Nothing moves: the
         // region is BOUND (art-audio.md §The world-state is the art direction).
         // -------------------------------------------------------------------------------------
@@ -1028,6 +1030,10 @@ namespace Tarrock.Editor
         // that answers "the deck has no top-surface relief crossing the mid-field"), the SHOULDERED
         // ANVIL (the near hero, asymmetric enough that it cannot read as a dumpling), and the NUB.
         private const int CloudLobeVariants = 7;
+        // The low swell (CloudLobeShape case 4). Named because its crown is the shallowest in the
+        // shape set (+0.426) and the waterline rules therefore have to single it out — see
+        // CloudLobeSwellSinkMin and the per-shape floor in PlaceCloudLobe.
+        private const int CloudLobeSwellVariant = 4;
         // 72 × 40 rather than 48 × 26. The silhouette now carries a cauliflower displacement (see
         // BuildCloudLobeMesh §THE SCALLOP), and at round-3's tessellation a 24 m mass 100 m away
         // put 20 screen pixels on each meridian segment — a displaced silhouette at that spacing is
@@ -1046,12 +1052,56 @@ namespace Tarrock.Editor
         // same-altitude". The floor is the safety rule round 3 derived and it
         // still holds. The shallowest-keeled mass is the new swell, which reaches 0.355 of its radius
         // below its own centre, so at sink s a mass hangs (s + 0.355) × radius under the deck, and
-        // the deck's billow can drop CloudBillowAmplitude (7 m) beneath the level. At the floor of
-        // 0.12 and the far scatter's smallest radius of 18 m that is 8.55 m of hang against a 7 m
-        // trough — 1.55 m of margin, so no head can be caught floating with a lit gap under it, from
-        // any camera, at any of the sizes the rolls can produce.
-        private const float CloudLobeSinkMin = 0.12f;
+        // the deck's billow can drop CloudBillowAmplitude (7 m) beneath the level. At the round-4
+        // floor of 0.12 and the far scatter's smallest radius of 18 m that is 8.55 m of hang against
+        // a 7 m trough — 1.55 m of margin, so no head can be caught floating with a lit gap under
+        // it, from any camera, at any of the sizes the rolls can produce.
+        //
+        // ROUND 12 RAISES THE FLOOR 0.12 → 0.26, AND THE REASON IS THE WATERLINE, MEASURED. Round
+        // 11's critic read the deck as "shallow water with rock islets, not cumulus"; the board
+        // model is soft billowed bases SITTING IN the deck. Two numbers say the same thing, and
+        // both are functions of sink alone:
+        //
+        //   CONTACT ANGLE — the angle at which a mass's surface meets the deck plane. The mesh is
+        //   normalised into a unit ball, so a mass cut at height s×radius above its own centre
+        //   meets the plane at 90° − asin(s). At the round-4 floor that is 83.1°: a sea stack
+        //   rising vertically out of water, which is exactly the read the critic named. At 0.26 it
+        //   is 74.9°, and the surface is leaning out over its own base the way a cumulus does.
+        //
+        //   ASPECT — crown height proud of the deck over half-width at the waterline. For a mass of
+        //   crown +c (this file's own measured extents; see CloudLobeShape) that is
+        //   (c − s) / halfWidth. The shouldered anvil (variant 5, crown +0.670, 1.56 × 0.97) at the
+        //   round-4 hero sink of 0.14 gives 0.530 / 0.485 = 1.09 across its narrow axis — TALLER
+        //   than it is half-wide, which is a rock. At 0.28 it is 0.80. MEASURED ON THE ROUND-11
+        //   PICTURE, the near mass in v3 stands 70 rows proud on an 80-row half-width — aspect
+        //   0.875 — and √((1−s)/(1+s)) inverts that to s ≈ 0.14, i.e. the frame and this table
+        //   agree to two decimal places (scratchpad round12/builder4/BAND_v3-rim-west.jpg).
+        //
+        // THE CEILING DID NOT MOVE, and that is a constraint, not an omission. The far scatter can
+        // draw variant 4, whose crown is only +0.426 — the shallowest crown in the shape set. At a
+        // sink past ~0.40 that shape's crown is UNDER the deck, which is a failure mode this file
+        // has no rule for (the safety rule below guards the keel, not the crown). 0.34 keeps every
+        // variant proud: at the worst case, variant 4 at the ceiling on the far scatter's smallest
+        // radius, the crown still stands (0.426 − 0.34) × 18 = 1.5 m out of the sea.
+        //
+        // AND THE SAFETY MARGIN ONLY IMPROVES, re-derived at the new floor: (0.26 + 0.355) × 18 =
+        // 11.07 m of hang against the same 7 m trough — 4.07 m of margin where round 4 had 1.55 m.
+        private const float CloudLobeSinkMin = 0.26f;
         private const float CloudLobeSinkMax = 0.34f;
+        // THE SWELL BAND KEEPS ITS OWN FLOOR, and it must. Variant 4 is the low swell: crown +0.426
+        // where the anvil's is +0.670, so the same sink number means something completely different
+        // to it. It is ALREADY the billowed base this pass is asking the rest of the region to
+        // become — at its own floor its aspect is (0.426 − 0.15) / 0.49 = 0.56 across its short axis
+        // and 0.28 along its long one — and it is the only top-surface relief crossing the deck's
+        // middle distance, which is the one thing standing between v3 and an unbroken flat sheet.
+        // Sinking it further to satisfy a floor derived for the tall variants would delete the
+        // region's answer to the critic in order to satisfy the critic. These two values are round
+        // 4's swell band verbatim (it read CloudLobeSinkMin + 0.03 and 0.26); they are written out
+        // here so the swell band no longer moves when the tall variants' floor does.
+        // Its own safety margin, at its own floor and its own smallest radius: (0.15 + 0.355) × 26
+        // = 13.13 m of hang against the 7 m trough — 6.13 m, the widest in the region.
+        private const float CloudLobeSwellSinkMin = 0.15f;
+        private const float CloudLobeSwellSinkMax = 0.26f;
         // THE SCALLOP. A metaball cluster has a vector-smooth silhouette, and a vector-smooth
         // silhouette is the one thing storybook cloud never has — Wolfwalkers and fable-03 both draw
         // cumulus as a chain of scallops, and the round-3 capture's big near mass reads as a dome
@@ -1228,9 +1278,52 @@ namespace Tarrock.Editor
         //       F      v4      170   0.57        40
         //       H     v8/v1    251   0.30        14      silhouette
         //
-        // AND THEY NO LONGER SHARE ONE ALTITUDE. Sink is per-anchor now (0.10-0.32 of radius), so
-        // the masses stand at genuinely different heights out of the sea — the other half of the
-        // critic's "same-size same-altitude" reading.
+        // AND THEY NO LONGER SHARE ONE ALTITUDE. Sink is per-anchor now, so the masses stand at
+        // genuinely different heights out of the sea — the other half of the critic's "same-size
+        // same-altitude" reading.
+        //
+        // ROUND 12 RAISES EVERY ONE OF THEM INTO [0.26, 0.34]. The round-4/5 row ran 0.10-0.32 and
+        // its shallow end is the islet the round-11 critic read: at 0.10-0.14 a mass meets the deck
+        // at 83-84° and stands taller than its own half-width. The order is preserved — the anchor
+        // that stood highest still stands highest — but the whole row now sits IN the sea rather
+        // than ON it. Crown heights are (crown − sink) × radius using this file's own measured
+        // extents, so they can be checked:
+        //
+        // Old sinks are quoted as the region actually BUILT them, i.e. after PlaceCloudLobe's
+        // clamp — which is why G's column starts at 0.12 and not at the 0.10 in its own row.
+        //
+        //     anchor  var  R    sink 4/5 → 12   contact °    crown proud (m)   visible cap area
+        //       G      5   30    0.12 → 0.27    83.1 → 74.3   16.5 → 12.0       ×0.78
+        //       E      1   28    0.12 → 0.26    83.1 → 74.9      —              ×0.79
+        //       B      5   24    0.14 → 0.28    82.0 → 73.7   12.7 →  9.4       ×0.79
+        //       D      2   24    0.18 → 0.30    79.6 → 72.5      —              ×0.81
+        //       H      2   34    0.22 → 0.30    77.3 → 72.5      —              ×0.86
+        //       A      0   25    0.24 → 0.32    76.1 → 71.3      —              ×0.86
+        //       F      0   26    0.26 → 0.33    74.9 → 70.7      —              ×0.87
+        //       C      3   20    0.32 → 0.34    71.3 → 70.1      —              ×0.96
+        //
+        // Row mean: ×0.841, i.e. the anchors give up 15.9% of their cloud area. The far scatter's
+        // mean sink goes 0.193 → 0.287 for ×0.847; the swell band does not move at all.
+        //
+        // Crown heights are quoted only for variant 5, whose extents this file has measured
+        // (+0.670 / −0.381 at §CloudLobeShape case 5). The other five arrangements' crowns have
+        // never been written down, which is a real gap: without them the metres a sink buys can be
+        // derived for two of the seven shapes and no more. TBD, and it is one editor-side print of
+        // each variant's normalised bounds, not a design question.
+        //
+        // The visible-cap column is the fraction of screen area each mass keeps, from the segment
+        // of its own projected disc standing above the waterline — area ∝ arccos(s) − s√(1−s²).
+        // The row costs 4-22% of its cloud area, and it is spent on the waterline read. THE FIRST
+        // STEP IS THE EFFICIENT ONE, which is why this pass takes it and stops: 0.12 → 0.26 buys
+        // 8.2° of contact angle for 21% of the area, and 0.26 → 0.40 would buy the next 8.5° for
+        // another 22% — so a second, deeper pass costs the same again and should not be taken
+        // blind. Whether the deck wants it is a question for a capture, not for this file.
+        //
+        // G's authored sink WAS 0.10, which is under the round-4 floor of 0.12 and was silently
+        // clamped by PlaceCloudLobe — so the comment below it ("stands HIGH (sink 0.10)") described
+        // a mass the region never built. It stands highest here on its crown in METRES (12.0 m,
+        // the tallest in the row) rather than on the shallowest sink, which is what "stands HIGH"
+        // was always trying to say.
         private static readonly CloudLobeAnchor[] CloudLobeAnchors =
         {
             // -- B, and it is the one that does the work: v3's hero, and the frame's dark anchor at
@@ -1241,7 +1334,7 @@ namespace Tarrock.Editor
             //    its crown on row ≈343 and its waterline on row ≈520, so it still cuts the far
             //    bank's crest band and the left-hand island silhouettes' feet. Near cloud in front
             //    of far land is the only sentence in the frame that says "sea".
-            new CloudLobeAnchor(-64f, 93f, 24f, 5, 0.14f),
+            new CloudLobeAnchor(-64f, 93f, 24f, 5, 0.28f),
 
             // -- A: the broad low bank behind and right of B, at 185 m and u +0.15. Sunk deeper
             //    (0.24) than B so its crown sits visibly lower — the row's second altitude.
@@ -1257,7 +1350,7 @@ namespace Tarrock.Editor
             //    mass of unchanged size grows 34% on screen, which would take A from 63% of B's
             //    angular width to 85% and cost B its place as the hero. 25 m at 138 m is 76%, and
             //    it is still above _LobeThickRadius (24 m), so A keeps the full deep base.
-            new CloudLobeAnchor(-112.3f, 152.2f, 25f, 0, 0.24f),
+            new CloudLobeAnchor(-112.3f, 152.2f, 25f, 0, 0.32f),
 
             // -- D: the answering mass at u +0.67, so the right of frame is not left to the vault
             //    alone. Drawn out along the wind axis (mass 2) and at 200 m.
@@ -1265,27 +1358,30 @@ namespace Tarrock.Editor
             //    ROUND 5 PULLS IT IN on the same rule: (25, 138) + 0.746 × (−173, +100) =
             //    (−104.1, 212.6), 149.1 m out on the unchanged bearing. Crown-to-base 15.7 → 33.1.
             //    Radius 26 → 24, which is exactly _LobeThickRadius, so D also keeps its full base.
-            new CloudLobeAnchor(-104.1f, 212.6f, 24f, 2, 0.18f),
+            new CloudLobeAnchor(-104.1f, 212.6f, 24f, 2, 0.30f),
 
             // -- C: the small far head at 300 m, u −0.19 — clearly BEHIND B and A, which is where
             //    the row's depth comes from. Nine points of internal value at that range and no
             //    pretence otherwise: it is a silhouette, sunk almost to its shoulders (0.32).
-            new CloudLobeAnchor(-268f, 76f, 20f, 3, 0.32f),
+            new CloudLobeAnchor(-268f, 76f, 20f, 3, 0.34f),
 
             // -- v4's row, east and north-east of the island, standing in the cream gap that round 3
             //    named. E is the near tower filling the col at u +0.23 from 138 m, nearer than the
             //    mid-distance ridge behind it — so it occludes that ridge's foot rather than peering
-            //    over its shoulder. G crops the right edge at u +0.98 and stands HIGH (sink 0.10);
-            //    F answers low on the left at u −0.51 and sits DEEP (0.26). Three masses, three
-            //    sizes, three altitudes, and a gap of open sea between each pair.
-            new CloudLobeAnchor(288f, 96f, 28f, 1, 0.12f),
-            new CloudLobeAnchor(314f, 18f, 30f, 5, 0.10f),
-            new CloudLobeAnchor(259f, 195f, 26f, 0, 0.26f),
+            //    over its shoulder. G crops the right edge at u +0.98 and stands HIGH (crown 12.0 m,
+            //    the tallest in the row); F answers low on the left at u −0.51 and sits DEEP (0.33).
+            //    Three masses, three sizes, three altitudes, and a gap of open sea between each
+            //    pair. ROUND 12 raised all three — see the sink table above the anchor array; E and
+            //    G were the two shallowest masses in the region and so the two that read hardest as
+            //    islets.
+            new CloudLobeAnchor(288f, 96f, 28f, 1, 0.26f),
+            new CloudLobeAnchor(314f, 18f, 30f, 5, 0.27f),
+            new CloudLobeAnchor(259f, 195f, 26f, 0, 0.33f),
 
             // -- H: south-west of the island, behind the knoll. Not for v3 or v4 — it is what v8's
             //    backlit dead tree gets to be silhouetted against once the eye follows the ridge
             //    down, and what v1's left edge sees past the south wall.
-            new CloudLobeAnchor(60f, -124f, 34f, 2, 0.22f),
+            new CloudLobeAnchor(60f, -124f, 34f, 2, 0.30f),
         };
 
         /// <summary>The cumulus heads standing out of the deck. Real geometry, because occlusion is
@@ -1377,9 +1473,12 @@ namespace Tarrock.Editor
 
                 // A NARROWER sink range than the far scatter's: a swell already stands only 3-11 m
                 // proud, and the deck's own billow now reaches 5.5 m, so a swell sunk past ~0.26
-                // would simply be swallowed by the sea it is meant to shape.
-                float sink = Mathf.Lerp(CloudLobeSinkMin + 0.03f, 0.26f, sinkRoll);
-                PlaceCloudLobe(parent, meshes, material, x, z, radius, 4, spinRoll, sink);
+                // would simply be swallowed by the sea it is meant to shape. ROUND 12: the same two
+                // numbers, but taken from the swell band's own constants rather than from the tall
+                // variants' floor — see CloudLobeSwellSinkMin for why one floor cannot serve both.
+                float sink = Mathf.Lerp(CloudLobeSwellSinkMin, CloudLobeSwellSinkMax, sinkRoll);
+                PlaceCloudLobe(
+                    parent, meshes, material, x, z, radius, CloudLobeSwellVariant, spinRoll, sink);
                 placed.Add(new Vector3(x, z, radius));
                 built++;
             }
@@ -1612,7 +1711,14 @@ namespace Tarrock.Editor
             go.transform.SetParent(parent, worldPositionStays: false);
             // Clamped, not trusted: the sink is what guarantees a mass hangs far enough under the
             // deck that the billow can never open a lit gap beneath it (see CloudLobeSinkMin).
-            sink = Mathf.Clamp(sink, CloudLobeSinkMin, CloudLobeSinkMax);
+            // ROUND 12: the floor is per-shape, because the shape set's crowns run +0.426 (the low
+            // swell) to +0.670 (the anvil) and one fraction-of-radius floor therefore means a
+            // billowed base to one and a submerged nothing to the other. Both floors are derived
+            // against the same 7 m billow trough and both carry more margin than round 4's.
+            float sinkFloor = variant == CloudLobeSwellVariant
+                ? CloudLobeSwellSinkMin
+                : CloudLobeSinkMin;
+            sink = Mathf.Clamp(sink, sinkFloor, CloudLobeSinkMax);
             go.transform.position = new Vector3(x, CloudDeckLevel - radius * sink, z);
             // Yaw only. A cumulus has an up; rolling one puts its flat base in the air.
             go.transform.rotation = Quaternion.Euler(0f, spinRoll * 360f, 0f);
@@ -1810,8 +1916,8 @@ namespace Tarrock.Editor
                     // lifted, so it lies ACROSS a frame rather than standing in it. Measured after
                     // normalisation: crown +0.426, keel −0.355, 1.97 long by 0.98 across — height
                     // 0.40 of width, which is a swell on the sea. At the swell band's shallowest
-                    // roll (sink 0.18) a 40 m swell stands (0.426 − 0.18) × 40 ≈ 9.8 m proud and at
-                    // its deepest (0.34) only 3.4 m; 10 m of cloud at 150 m subtends 3.8°
+                    // roll (sink 0.15) a 40 m swell stands (0.426 − 0.15) × 40 ≈ 11.0 m proud and at
+                    // its deepest (0.26) 6.6 m; 10 m of cloud at 150 m subtends 3.8°
                     // — 75 px of the gameplay lens, in front of everything behind it.
                     // The lobe RADII are large (0.44-0.70) on purpose: a lone Wyvill lobe of radius
                     // r has its 0.42 isosurface at only 0.50 r, so a chain built from small lobes

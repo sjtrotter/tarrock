@@ -30,14 +30,20 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaClip: 0
+    - _AmbientBoost: 1
+    - _BrushSoftness: 0.35
+    - _BrushSteps: 0
     - _Cutoff: 0.5
     - _FlutterAmplitude: 0.0003
     - _FlutterFrequency: 5.5
     - _HeightMaskExponent: 1.5
     - _HeightMaskStart: 0.05
+    - _ShadeWrap: 0
     - _SwayAmplitude: 0.0015
     - _SwayFrequency: 1.1
     m_Colors:
-    - _BaseColor: {r: 0.145, g: 0.118, b: 0.098, a: 1}
+    - _BaseColor: {r: 0.07, g: 0.048, b: 0.03, a: 1}
+    - _ShadeFill: {r: 0.032, g: 0.047, b: 0.108, a: 1}
+    - _ShadowTint: {r: 0.72, g: 0.86, b: 1.24, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

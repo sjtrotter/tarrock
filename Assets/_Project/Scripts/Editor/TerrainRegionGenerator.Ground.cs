@@ -343,6 +343,17 @@ namespace Tarrock.Editor
             // gone it is no longer competing for the eye and it is the band a weathered face reads
             // its patchiness from; round 7's thinning was aimed at leopard spots that the facets
             // now out-argue at a scale the eye reads as structure rather than as blotch.
+            // ROUND 12 LEAVES THE TERRAIN'S ROCK BRANCH ALONE, deliberately, while the STONES'
+            // identical four numbers go up (BuildRockMaterial below). Two measured reasons.
+            // (a) The anchored-lattice port cost the two branches very different amounts:
+            // TerrainPainterly's own note measures high-pass rms 16.3-21.2 -> 15.7-18.1 here
+            // (about a tenth) against RockPainterly's 24 -> 15.5 (a third). The flat near mass is
+            // the stones' loss, not this one's.
+            // (b) v8 fore slope is the single ROI still OVER the board's whorl ceiling on the
+            // decontaminated gate (round11/critic3/whorl_clean.txt, CLEAN 0.517/0.0349 against a
+            // board ceiling of 0.502/0.0283), and it is a terrain ROI. Raising this branch's mark
+            // amplitudes is the one change most likely to be read as pushing that number, and
+            // there is no measurement in this round that says it needs raising.
             material.SetFloat("_RockGrainAmount", 0.34f);
             material.SetFloat("_RockFleckFine", 0.60f);
             material.SetFloat("_RockFleckMid", 0.72f);
@@ -531,7 +542,98 @@ namespace Tarrock.Editor
             // gradient means a smaller value step across a facet edge — the cheap half of the facet
             // fix, and it costs the storybook falloff nothing because a softer terminator is the
             // house look anyway (Visual pillar 1).
-            material.SetFloat("_ShadeWrap", 0.40f);
+            //
+            // ROUND 12 — 0.40 → 0.22. THE CAPTURE HAS SINCE MEASURED THIS AND IT DID NOT WORK.
+            // Read this paragraph before the argument below it, which is superseded and is kept only
+            // so the next round does not re-derive it.
+            //
+            //   PREDICTED median ground lit:shadow 3.02–4.28.  MEASURED 2.741 (round 11: 2.690;
+            //   board 3.553). The change delivered about 15% of the LOW end of its own bracket.
+            //
+            //   THE MECHANISM, AND IT IS THE DURABLE LESSON. TerrainPainterly.shader:2366 is
+            //       lit = wrapped * atten
+            //   and this scene's darks are CAST SHADOW, where atten = 1 − shadowStrength = 0.03
+            //   (TerrainRegionGenerator.Lighting.cs:371). So lit ≈ 0 there FOR ANY WRAP VALUE, and
+            //   the whole model above — which recovers `lit` from a pixel and re-wraps it — silently
+            //   assumed atten = 1 and therefore mistook cast shadow for terminator. Against cast
+            //   shadow, lowering the wrap moves the form ratio the WRONG way (critic 1 models
+            //   −14.7%): it darkens the LIT side, which is the numerator, and cannot touch the
+            //   denominator at all. Unwrapping only buys contrast at a TERMINATOR, and a 12° sun on
+            //   this landform barely produces one.
+            //
+            //   SO THE LEVER FOR lit:shadow IS NOT THE WRAP. It is the ambient / _ShadowTint /
+            //   _ShadeFill pedestal — the thing that sets how bright a cast shadow is. That collides
+            //   head-on with the jambG_dark5_B floor below, so it is a DIRECTOR call about which of
+            //   the two the Cliff would rather have, not a builder call.
+            //
+            //   The item-6b risk recorded at the foot of this block also did not materialise: v5's
+            //   deepest-1% blue was predicted at 1.94 against a floor of 5.5 and MEASURED 6.22,
+            //   passing. The model reproduced its own round-11 baseline to within 8% but
+            //   over-predicted the wrap's crush on the darks by 2.7×, which is the same atten error.
+            //
+            // WHAT FOLLOWS IS THE SUPERSEDED ARGUMENT, KEPT FOR THE RECORD.
+            //
+            // 0.40 → 0.22, AND THE NUMBER IS SET BY A GATE, NOT BY THE TARGET.
+            // The round-11 critique measured a 32% form-contrast deficit: lit:shadow inside the
+            // ground mask (brightest quarter over darkest quarter, sRGB luma, median of the nine
+            // views) reads 2.69 against the reference board's 3.55. Wrapping is what compresses it —
+            // `saturate((ndotl + w)/(1 + w))` lifts every ndotl below 1, and the terminator most of
+            // all — so the deficit is paid back by unwrapping.
+            //
+            // HOW FAR, and it is not the 0.22 the arithmetic on its own asks for. Modelled per
+            // pixel on the round-11 captures through the shipped frag → fog → 32-cube chain (the
+            // model reproduces round 11's own 2.690 at 2.675 and is EXACT at the null change), the
+            // statistic lands inside these brackets — the two ends are the two physical fog bounds,
+            // because the wrap acts before the fog and there is no depth buffer to pin it:
+            //     0.40  2.68 – 2.68     0.30  2.89 – 3.45     0.26  2.96 – 3.80
+            //     0.34  ~   – 3.10      0.28  2.93 – 3.61     0.22  3.02 – 4.28
+            // 0.28 and 0.22 both bracket the board's 3.55. What separates them is round 9's
+            // validated gate ITEM 4, JAMB / NEAR-MASS DARK HOLD (round9/gates/validated_gates.json),
+            // and it is a PAIR: over the ground mask intersected with the bottom 40% of frame rows,
+            //     jambG_L_p05     <= 0.2218   (the Fable ceiling, fable-06; a near mass may not
+            //                                  sit lifted off the floor of the picture)
+            //     jambG_dark5_B   >= 3        (the Fable floor is 6.2; dark WITHOUT crushing blue)
+            // Both halves matter and they pull opposite ways: unwrapping drives the darks down,
+            // which is what the ceiling wants and what the blue floor does not. Swept through the
+            // same model with the round-12 _GroundFogScale of 1.5 (TerrainRegionGenerator
+            // .Lighting.cs), worst view of the nine:
+            //     wrap   0.32  blue 6.91  p05 0.2836      0.26  blue 5.36  p05 0.2450
+            //            0.28  blue 6.13  p05 0.2581      0.24  blue 4.55  p05 0.2308
+            //                                             0.22  blue 3.83  p05 0.2173
+            // 0.22 is the ONLY value swept that clears BOTH halves, and it clears a ceiling this
+            // project has never cleared — round 8 failed it at v4 0.331 / v3 0.304 / v6 0.249 and
+            // round 11 still sat at 0.325. Nothing is crushed to literal zero (0.0000% of ground
+            // pixels reach a channel floor), so the blue floor is a colour guard, not clipping.
+            //
+            // THE PASS DEPENDS ON THE FOG SCALE. At _GroundFogScale 1.0 the same wrap gives
+            // jambG_dark5_B 2.56, which FAILS the >= 3 floor. 0.22 and 1.5 are landed together and
+            // must be reverted together.
+            //
+            // THE KNOWN, MEASURED RISK: VALIDATED GATE ITEM 6b, "deepest-1% blue" (floor 5.5, board
+            // band 5.5-25.6, Fable median 10.0). A deeper population than item 4's — the 1st
+            // percentile of the WHOLE ground mask rather than the 5th of the bottom-40% band — so it
+            // reads lower, and modelled it straddles the floor depending on how much the fog lifts
+            // the darks (median of the nine views, round-11 measured 11.40):
+            //     no fog at all (pessimistic)  median 11.30, and v5-ground-close falls 6.10 -> 1.94
+            //     maximum physical fog         median 25.60, every view clear, v5 6.10 -> 16.24
+            // Two views sit under the floor at the pessimistic end: v5-ground-close (1.94) and
+            // v9-shelf-west (4.81) — and v9 ALREADY fails this gate in round 11 at a measured 0.88,
+            // independent of anything here. v5 is the one this change puts at risk, and it has
+            // always been the marginal plate (round 8 read 6.45). Shipped as a known risk for the
+            // capture to settle rather than paid for with a wrap that fails item 4's ceiling.
+            //
+            // WHAT IT DOES NOT DO. The map is a CONTRACTION — lit' ≤ lit for every lit, exactly, with
+            // equality only at 0 and 1 — so it can only darken, it cannot manufacture highlight, and
+            // the round-11 warm white is out of its reach. It also cannot warm the shadows: `lit`
+            // falls, so `lerp(_ShadowTint, 1, lit)` returns MORE of the cool tint, and the modelled
+            // shadow B−R holds at −9.3 against round 11's −9.8 (board median −13.8).
+            //
+            // THE COST, and it is the frame's subject: flat lit meadow takes wrapped(sin 12°)
+            // 0.4342 → 0.3507, and v4's near meadow is modelled at sRGB luma 0.435 → 0.331. The
+            // round-8 precedent for holding that is a lamp compensation, and it is deliberately NOT
+            // taken here: the lamp is what carries the top of the picture into the highlight bucket
+            // at highlightsStart 2.90, and round 11's warm white is the state this round protects.
+            material.SetFloat("_ShadeWrap", 0.22f);
             material.SetFloat("_AmbientBoost", 1f);
             // ROUND 6 — COLOUR IN THE SHADOWS, the other half of the law the sun bleach implements
             // on the grass side. This tint is the terrain's only chroma-versus-value lever, and the
@@ -686,12 +788,54 @@ namespace Tarrock.Editor
             // surface is one material for every surface. Four rungs go (8 mm, 1.25 cm, 1.6 cm,
             // 2.6 cm); the 45-500 px CUT PLANES take the register they occupied, and they take it
             // with a different kind of mark rather than a smaller one of the same.
+            //
+            // ROUND 12 — THE NEAR-MASS RE-MARKING, and it is the remedy RockPainterly.shader's own
+            // anchored-lattice note names: "If the near mass now reads flat, the remedy is
+            // _RockFleck* amounts, NOT the lever." The lever is not touched here or anywhere; the
+            // amounts are.
+            //
+            // MEASURED, on builder2's round-11 offline port of this shader's stone branch
+            // (round11/builder2/rock.py + stone2.py + tk.py, run byte-identical from
+            // round12/builder3/fleckpick.py; output fleckpick.txt / fleckpick.json), mode
+            // 'anchored' at pitch 11 m — i.e. the SHIPPED state — over four disjoint patches of
+            // world at the four footprints this file's notes already quote:
+            //
+            //     pixelM      high-pass rms % of mean     mean albedo
+            //                 ship r11 -> round 12        ship r11 -> round 12
+            //     0.00247     15.52    -> 18.13  (x1.168)  1.0960 -> 1.1070  (+1.0%)
+            //     0.00659     19.57    -> 23.37  (x1.194)  1.0421 -> 1.0517  (+0.9%)
+            //     0.01647     17.58    -> 19.81  (x1.126)  1.0283 -> 1.0331  (+0.5%)
+            //     0.04283     14.56    -> 15.28  (x1.049)  1.0137 -> 1.0167  (+0.3%)
+            //
+            // TWO THINGS THAT MEASUREMENT SETTLES, both of which were open.
+            //
+            // (1) THE AMOUNTS ROUTE CANNOT PAY BACK THE WHOLE PORT. The port cost this branch
+            // 24 -> 15.5 rms at the closest footprint (a third). The amounts recover a sixth, and
+            // they run out because of TkMarkAmount's min(property * value, 0.90): with
+            // MarkValueSpread 0.36 the per-mark value runs 0.64-1.36, so an amount of 0.86 already
+            // clamps for every value above 1.047 — about 43% of the mark population loses its
+            // value variation, which is the material-sameness fault the round-8 note above went to
+            // some trouble to avoid. No band is taken to the 0.90 property cap for that reason,
+            // and the remaining sixth is NOT available from this line. It is the lever's, and the
+            // lever stays shortened.
+            //
+            // (2) FLECK AMOUNTS ARE A TEXTURE LEVER AND NOT A TONE LEVER, so this change does NOT
+            // make the frame's dark rock wings heavier. TkFleckBand3 divides the expected mean back
+            // out, and the measurement above is the proof rather than the promise: across the whole
+            // reachable range of amounts the mean albedo moves by at most 1.3%, and upward. This
+            // matters because the same two stones are round 12's near mass AND its "rock wings"
+            // (round11/critic5: 39.06% of v8's contrast weight against the hero tree's 0.37%), and
+            // the contrast-weight statistic is a FIRST-MOMENT statistic on a one-sided mask —
+            // sum|L - median| over a mask whose every pixel is below the median is exactly
+            // count x (median - mean), which no zero-mean texture can move. The wings are heavy
+            // because they are dark, not because they are busy; that ratio is closed from the hero's
+            // side (see the bark in TerrainRegionGenerator.Scatter.cs), not from this line.
             material.SetFloat("_DetailBaseScale", 0.32f);
             material.SetFloat("_RockGrainAmount", 0.30f);
-            material.SetFloat("_RockFleckFine", 0.58f);
-            material.SetFloat("_RockFleckMid", 0.72f);
-            material.SetFloat("_RockFleckCoarse", 0.62f);
-            material.SetFloat("_RockFleckLightMid", 0.50f);
+            material.SetFloat("_RockFleckFine", 0.74f);
+            material.SetFloat("_RockFleckMid", 0.86f);
+            material.SetFloat("_RockFleckCoarse", 0.76f);
+            material.SetFloat("_RockFleckLightMid", 0.66f);
             material.SetFloat("_FacetBaseScale", FacetScaleProp);
             material.SetFloat("_FacetRatio", FacetRatio);
             material.SetFloat("_FacetAmount", FacetAmountProp);

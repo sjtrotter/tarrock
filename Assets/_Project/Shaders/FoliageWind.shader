@@ -36,6 +36,35 @@ Shader "Tarrock/FoliageWind"
         // by pow(height - start, exponent) so the base stays planted and the crown carries the motion.
         _HeightMaskStart ("Height Mask Start (OS)", Float) = 0.05
         _HeightMaskExponent ("Height Mask Exponent", Float) = 1.5
+
+        // -- PAINTERLY SHADING (round 12) ------------------------------------------------------
+        // Added for the Cliff's hero dead tree, whose bark is the region's signature and which
+        // this shader could not express at any value: the round-11 note in
+        // TerrainRegionGenerator.Scatter.cs measured that the fragment below was albedo x
+        // (sun x N.L x shadow + SH), one flat multiply over BOTH sides of the form, so a
+        // warm-lit / cool-shade split was unauthorable from the material. Four of these five
+        // terms are Tarrock/RockPainterly's, named and shaped identically so the two shaders
+        // stay one vocabulary; _ShadeFill is new and is the one that does the work (see below).
+        //
+        // EVERY DEFAULT IS THE IDENTITY. wrap 0 -> saturate(N.L); boost 1; tint white; fill
+        // black; steps 0 -> the posterize is bypassed. A material that does not set them renders
+        // BIT-IDENTICALLY to the pre-round-12 shader, which is why this change is safe to make on
+        // a shader the stand-in foliage also uses (FoliageWindInstaller).
+        _ShadeWrap ("Shade - lambert wrap", Range(0, 1)) = 0
+        _AmbientBoost ("Shade - ambient multiplier", Range(0, 4)) = 1
+        // MULTIPLICATIVE cool on the shaded side. Cannot by itself put a warm albedo's shadow on
+        // the other side of neutral — it scales R down and B up but the product keeps the
+        // albedo's own hue ordering — so it is the SECOND term here, not the first.
+        _ShadowTint ("Shade - tint on the shaded side", Color) = (1,1,1,1)
+        // ADDITIVE cool fill on the shaded side, gated by (1 - lit), and the reason the bark can
+        // finally read cool in shade: it is added AFTER the albedo multiply, so it is the only
+        // term in this file that is not multiplied by a warm brown. Physically it is the sky's
+        // own light on a surface the sun has left. Authored dark on purpose — it lands on a
+        // silhouette, and its luminance cost is what buys or loses the read.
+        _ShadeFill ("Shade - ADDITIVE cool fill on the shaded side", Color) = (0,0,0,1)
+        // Value planes. 0 or 1 = OFF (the ramp is passed through untouched).
+        _BrushSteps ("Shade - value planes (0 = off)", Range(0, 10)) = 0
+        _BrushSoftness ("Shade - value plane softness", Range(0.02, 1)) = 0.35
     }
 
     SubShader
@@ -66,6 +95,12 @@ Shader "Tarrock/FoliageWind"
             float _FlutterFrequency;
             float _HeightMaskStart;
             float _HeightMaskExponent;
+            float _ShadeWrap;
+            float _AmbientBoost;
+            float4 _ShadowTint;
+            float4 _ShadeFill;
+            float _BrushSteps;
+            float _BrushSoftness;
         CBUFFER_END
 
         // GLOBAL wind scalar — deliberately OUTSIDE UnityPerMaterial so Shader.SetGlobalFloat reaches
@@ -112,6 +147,25 @@ Shader "Tarrock/FoliageWind"
 
             positionWS.xz += offset;
             return positionWS;
+        }
+
+        // Soft posterize — Tarrock/RockPainterly's TkSoftPosterize with ONE difference, and the
+        // difference is deliberate: that one returns 0 for steps = 0 (floor(0)=0 divided by
+        // max(steps,1)), so "off" would paint the whole plant black. Here anything under two
+        // steps passes the ramp straight through, which is what makes 0 a legal default on a
+        // shader other materials already use.
+        float TkFoliagePosterize(float x, float steps, float softness)
+        {
+            if (steps < 2.0)
+            {
+                return x;
+            }
+            float soft = clamp(softness, 0.02, 1.0) * 0.5;
+            float s = x * steps;
+            float level = floor(s);
+            float f = s - level;
+            float e = smoothstep(0.5 - soft, 0.5 + soft, f);
+            return saturate((level + e) / steps);
         }
         ENDHLSL
 
@@ -165,10 +219,27 @@ Shader "Tarrock/FoliageWind"
 
                 float3 normalWS = normalize(IN.normalWS);
                 Light mainLight = GetMainLight();
-                float ndotl = saturate(dot(normalWS, mainLight.direction));
-                float3 lighting = mainLight.color * (ndotl * mainLight.shadowAttenuation) + SampleSH(normalWS);
 
-                return half4(baseTex.rgb * lighting, 1.0);
+                // ROUND 12 — the painterly split. At the shipped defaults this is the round-11
+                // arithmetic term for term: wrapped = saturate(N.L), stepped = wrapped,
+                // shade = 1, fill = 0, so `color` reduces to baseTex.rgb * (sun*N.L*atten + SH).
+                //
+                // GetMainLight() is called WITHOUT a shadow coordinate, exactly as before, so
+                // shadowAttenuation is 1 and this tree still does not self-shadow. That is left
+                // alone on purpose: turning main-light shadows on here would change the frame by
+                // an amount nothing in this round has modelled.
+                float ndotl = dot(normalWS, mainLight.direction);
+                float wrapped = saturate((ndotl + _ShadeWrap) / (1.0 + _ShadeWrap));
+                float stepped = TkFoliagePosterize(wrapped, _BrushSteps, _BrushSoftness);
+                float lit = saturate(stepped * mainLight.shadowAttenuation);
+
+                float3 direct = mainLight.color * lit;
+                float3 ambient = SampleSH(normalWS) * _AmbientBoost;
+                float3 shade = lerp(_ShadowTint.rgb, float3(1.0, 1.0, 1.0), lit);
+                float3 color = baseTex.rgb * (direct + ambient) * shade
+                             + _ShadeFill.rgb * (1.0 - lit);
+
+                return half4(color, 1.0);
             }
             ENDHLSL
         }

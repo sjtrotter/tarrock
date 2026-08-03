@@ -116,6 +116,52 @@ namespace Tarrock.Editor
         //              shade fill lifts the SHADED floor into the reference band outright (lane
         //              saturation 0.932 -> 0.678 in shade). The sunlit remainder belongs to the
         //              lighting rig and the colour grade, and it is theirs to spend.
+        //
+        // ROUND 12 answers "the meadow reads as a sparse lawn". Two findings, and the second one
+        // is the round's, because it retires an assumption three rounds of density work rested on.
+        //
+        //   the ruler   Round 11's blade-cover figures were partly the STAND-IN FOOL. He is a
+        //               hooded figure in a saturated green cloak and 92% of his pixels pass the
+        //               blade test (greenness >= 0.08, chroma >= 0.30) — so v6's mid box read
+        //               27.65% and is 5.01% without him, and v1's meadow read 2.45% and is 0.42%.
+        //               A reusable exclusion mask now exists for the critics
+        //               (round12/builder2/foolmask.py); the numbers below are all post-mask.
+        //
+        //   THE CEILING SUNLIT GRASS CANNOT PASS THE BLADE TEST AT ANY DENSITY. Modelled end to
+        //               end through this shader, the round-11 grade and the Neutral tonemapper —
+        //               and validated against the round-11 v6 capture to within 0.005 of
+        //               greenness — the pass rate of an upright tuft is 0.0% in flat sun, 0.6%
+        //               at grazing light, 55.4% at the terminator and 83.7% in cast shadow. The
+        //               failing gate is greenness alone: flat-lit fescue lands at sRGB
+        //               (198, 204, 119), greenness +0.015 against a 0.080 gate, and the measured
+        //               lit meadow agrees at +0.019. Every blade-cover figure this project has
+        //               measured came from grass the sun does not reach. Density was never going
+        //               to fix the lit half of the frame, and three of the four terms that cause
+        //               it — the lamp's linear R/G of 1.37, the grade, the tonemap shoulder —
+        //               are not this file's. The fourth is: see _SunBleach.
+        //
+        //   geometry    With the instrument understood, the geometry deficit is measurable rather
+        //               than felt. v7's foreground box is 100% cast shadow, so its 8.78% blade
+        //               over an 83.7% pass rate puts UPRIGHT TUFT COVER AT ~10.5% of the near
+        //               meadow against a board floor of 13.57% (kena-01). Silhouette area is
+        //               bought three ways — density x1.55, fescue blade width x1.29, fescue blade
+        //               count x1.20 — because width is free and count is nearly so, while
+        //               density is the only one that costs instances. See MaxTuftsPerCell for the
+        //               arithmetic and the bill.
+        //
+        //   the grade   NOT a disconnect, and the premise is retracted with evidence. The grass
+        //               is one UniversalForward pass on the Geometry queue under the same camera
+        //               (renderPostProcessing = true, GauntletCapture.cs:931), with no emissive
+        //               term, no unlit branch and no second colour write, so the grade cannot
+        //               skip it. Measured: blade pixels carry the cool-in-shadow signature MORE
+        //               strongly than the terrain does (v7's lit-left box swings hue +37.5 deg
+        //               light-to-shade on blades against -1.4 deg on the ground under them).
+        //               What IS true, and belongs to Lighting.cs rather than here, is that
+        //               ShadowsMidtonesHighlights' highlightsStart sits at 2.90 in SMH-stage
+        //               luminance and NO PIXEL of any meadow or terrain box reaches it — 0.00%
+        //               across all eight boxes measured. The grade's warm-white argument is a
+        //               sky-only control by construction. Recorded here as a finding, not fixed
+        //               here, because the grade is not this file's to move.
         private static void BuildGrassDetails(TerrainData terrainData, Terrain terrain, Material ground)
         {
             Shader tuftShader = Shader.Find(TuftShaderName);
@@ -321,7 +367,53 @@ namespace Tarrock.Editor
                     // never set here in the first place — Species[s].MaxPerCell clamps them, and
                     // those are untouched. Thin grass where round 2 had none; the same stands where
                     // round 2 had stands.
-                    const float MaxTuftsPerCell = 3.8f;
+                    //
+                    // ROUND 12 — 3.8 -> 5.9, AND THE INSTANCE BUDGET WAS NEVER WHAT STOPPED US.
+                    //
+                    // Round 11's blade cover, re-measured with the stand-in Fool EXCLUDED (he
+                    // passes the blade test on 92% of his own pixels and had been counted as
+                    // meadow for three rounds — the v6 mid box read 27.65% and is 5.01% without
+                    // him), runs 0.42-10.00% across the meadow boxes against a board band of
+                    // 13.57% (kena-01) to 48.22% (kena-03).
+                    //
+                    // The clean anchor is v7's foreground box: it is 100% cast shadow, where the
+                    // modelled blade-test pass rate of an upright tuft is 83.7%, and it measures
+                    // 8.78% — so UPRIGHT TUFT GEOMETRY COVERS ABOUT 10.5% of the near meadow.
+                    // The board's own floor is 13.6%. The geometry alone cannot reach it even at
+                    // a perfect pass rate, so this number has to move.
+                    //
+                    // THE BILL, computed on the shipped heightmap rather than asserted
+                    // (round12/builder2/budget12.py, a numpy port of this very loop):
+                    //     tufts   55,479 + 19,036 + 17,108 + 4,073 = 95,696 inst,  2.32 M tris
+                    //     thatch                                    132,020 inst, 13.47 M tris
+                    //     TOTAL                                     227,716 inst, 15.78 M tris
+                    // THE THATCH IS 85% OF THE TRIANGLE BILL and 58% of the instances. That is
+                    // what makes the tuft budget the cheap one to spend — it buys nothing from
+                    // the layer that costs. Turn the mat down first if a frame budget ever bites;
+                    // the note above MaxMatsPerCell says so and it is still true.
+                    //
+                    // THE WHOLE ROUND-12 BILL, same script, with every change in this file:
+                    //     fescue    55,479 ->  86,130 inst    1.39 ->  2.58 M tris
+                    //     straw     19,036 ->  28,689 inst    0.29 ->  0.43 M tris
+                    //     sedge     17,108 ->  26,571 inst    0.60 ->  0.93 M tris
+                    //     bent       4,073 ->   6,297 inst    0.04 ->  0.06 M tris
+                    //     thatch   132,020 -> 132,020 inst   13.47 -> 13.47 M tris  (untouched)
+                    //     TOTAL    227,716 -> 279,707 inst   15.78 -> 17.47 M tris
+                    //                        (+22.8%)                    (+10.7%)
+                    // Inside Terrain.detailObjectDistance (120 m, a disc covering 69% of the
+                    // tile): 157,190 -> 193,079 instances, 10.89 -> 12.06 M triangles. The
+                    // project has no hard budget target yet — technical.md §Hard budget targets
+                    // is TBD to milestone M1 — so this is stated as arithmetic against the
+                    // shipped figure rather than against a ceiling nobody has set.
+                    //
+                    // WHY 5.9 AND NOT MORE. Silhouette AREA is what a cover metric measures, not
+                    // instance count, and this round buys it three ways at once: density x1.55,
+                    // fescue blade width x1.29 and fescue blade count x1.20 (see the species
+                    // table). Modelled as independent silhouettes, lambda = -ln(1 - 0.105) =
+                    // 0.111 becomes 0.111 x 2.40 = 0.266, i.e. upright cover 10.5% -> 23.4%,
+                    // which lands mid-band. Reaching that on density alone would have cost 2.4x
+                    // the instances for the same picture.
+                    const float MaxTuftsPerCell = 5.9f;
                     float instances = cover * band * MaxTuftsPerCell;
 
                     for (int s = 0; s < Species.Length; s++)
@@ -562,7 +654,57 @@ namespace Tarrock.Editor
             // It is a chroma move only: the shader normalises the tint by its own luminance, so
             // this number cannot move the meadow's exposure and the three rounds of lamp
             // arithmetic in TerrainRegionGenerator.Lighting.cs stand untouched.
-            material.SetFloat("_SunBleach", 0.45f);
+            //
+            // ROUND 12 — 0.45 -> 0.30, AND THIS IS THE ONLY PROPERTY THIS FILE OWNS THAT REACHES
+            // THE LIT MEADOW AT ALL.
+            //
+            // The round-12 finding, modelled end to end through this shader, the round-11 grade
+            // and the Neutral tonemapper (round12/builder2/tuftmodel.py + passrate.py, validated
+            // against the round-11 v6 capture to within 0.005 of greenness):
+            //
+            //     BLADE-TEST PASS RATE OF OUR OWN GRASS, by how much beam reaches it
+            //       species    flat lit   grazing   terminator   cast shadow
+            //       fescue         0.0%      0.6%        55.4%         83.7%
+            //       sedge          0.0%      1.6%        60.0%         71.7%
+            //       straw          0.0%      0.0%        12.0%         67.6%
+            //       thatch         0.0%      0.0%         0.0%          0.2%
+            //
+            // SUNLIT GRASS CANNOT PASS AT ANY DENSITY. Every blade-cover figure this project has
+            // ever measured came from grass the sun does NOT reach. The gate that fails is
+            // greenness: modelled flat-lit fescue lands at sRGB (198, 204, 119), greenness
+            // +0.015 against a 0.080 gate, and the measured round-11 v6 lit meadow agrees at
+            // +0.019. Chroma and luma pass with room to spare; it is G-versus-R that fails.
+            //
+            // Two terms cause it and only one is ours. The lamp is (1.00, 0.870, 0.715) at 7.35,
+            // linear R/G 1.37 — that belongs to Lighting.cs. The other is THIS: at lightReach
+            // 0.84 the bleach replaces 42% of the albedo with a near-neutral cream, and 42% of
+            // the blade's own green is exactly what it removes, at exactly the part of the meadow
+            // that carries the most pixels.
+            //
+            // The sweep (sweep12.py, bleach12.py), fescue, mean over the dryness/height grid:
+            //     0.45  lit greenness -0.0043   lit sat 0.435   grazing pass  0.6%
+            //     0.30  lit greenness +0.0169   lit sat 0.452   grazing pass 38.3%
+            //     0.20  lit greenness +0.0329   lit sat 0.467   grazing pass 46.5%
+            //     0.00  lit greenness +0.0724   lit sat 0.489   grazing pass 55.6%
+            // 0.30 is where it stops, because the saturation column is the board's law and it is
+            // the one this property exists to obey. Re-measured on the plates rather than quoted
+            // (bleach12.py): the board's own top-luma-decile saturation over the seven meadow and
+            // ground plates runs 0.048 (fable-08) to 0.512 (fable-01), median 0.382. Round 11's
+            // v6 near meadow sits at 0.485 — inside, but in the top fifth of that band, so there
+            // is about one step of room and this spends it. THE LAW IS NOT REPEALED: saturation
+            // still falls as luma rises, the bleach still runs, and the lit read is still the
+            // pale dawn gold the colour script asks for. It is 30% of the albedo that goes, not
+            // 45%.
+            //
+            // WHAT IS *NOT* DONE HERE, and it is the larger half. _BleachTint is (1.00, 0.94,
+            // 0.80) — the bleach pulls the lit blade toward a WARM cream, i.e. along the same
+            // axis the lamp is already pushing it. Re-hueing it to a neutral-cool cream at the
+            // SAME strength measures strictly better on both axes at once (lit greenness -0.0043
+            // -> +0.0288, lit saturation 0.435 -> 0.373, grazing pass 0.6% -> 44.5%). It is not
+            // taken because "pale dawn gold in the light" is the colour script's own sentence and
+            // taking the gold out of the light is a canon call, not a builder's. FLAGGED FOR THE
+            // DIRECTOR, with the numbers, rather than decided here.
+            material.SetFloat("_SunBleach", 0.30f);
             // The knee sits just above the shade fill's own 0.35: the bleach must not begin until
             // the fill has finished handing the shaded side its chroma, or the two cancel.
             material.SetFloat("_BleachStart", 0.06f);
@@ -1077,15 +1219,30 @@ namespace Tarrock.Editor
                 Seed = 0f,
                 DitherOffset = 2.5f,
                 ScatterSeed = 40213,
-                MaxPerCell = 3,
-                Blades = 5,
+                // ROUND 12: 3 -> 4. At MaxTuftsPerCell 5.9 the body species' own share tops out
+                // above 3 in the tussock stands, and a clamp that bites in exactly the cells the
+                // clumping octave exists to fill would flatten the stands back into even scatter.
+                // Measured on the ported density loop: 0.16% of cells clamped at 3.8/3, 1.47% at
+                // 5.9/3 — an order of magnitude more, and all of it in the stands.
+                MaxPerCell = 4,
+                // ROUND 12: 5 -> 6. Silhouette area per instance, which is what a cover metric
+                // measures, at +20% triangles ON THIS LAYER ONLY (1.39 M -> 1.67 M of a 15.78 M
+                // tile bill, i.e. +1.8% overall). Cheaper per unit of cover than the same gain
+                // bought with instances, and it does not thin the gaps between stands.
+                Blades = 6,
                 Rows = 4,
                 AngleJitter = 0.35f,
                 MeshHeight = 0.30f,
                 ShortestBlade = 0.52f,
                 BladeArc = 1.30f,
-                HalfWidthMin = 0.011f,
-                HalfWidthMax = 0.017f,   // 22-34 mm blades, not 320 mm slabs
+                // ROUND 12: 11-17 mm half-width -> 14-22 mm (22-34 mm blades -> 28-44 mm).
+                // THE FREE LEVER, and the reason it is taken before density: blade width is
+                // vertex positions, so it costs ZERO instances and ZERO triangles and multiplies
+                // apparent cover by 1.29 exactly. At the 4-6 m ground distance every meadow
+                // vantage measures at, 28-44 mm subtends 5-9 px — still a blade, not a slab, and
+                // well under the 320 mm slabs the round-2 note is warning about.
+                HalfWidthMin = 0.014f,
+                HalfWidthMax = 0.022f,
                 SplayMin = 0.05f,
                 SplayMax = 0.11f,
                 RootOffsetMin = 0.010f,
@@ -1244,7 +1401,9 @@ namespace Tarrock.Editor
                 Seed = 23.7f,
                 DitherOffset = 13.1f,
                 ScatterSeed = 40237,
-                MaxPerCell = 2,
+                // ROUND 12: 2 -> 3, for the same reason as the fescue's 3 -> 4 — at
+                // MaxTuftsPerCell 5.9 this clamp bit in 1.44% of cells, all of them stands.
+                MaxPerCell = 3,
                 Blades = 7,
                 Rows = 4,
                 AngleJitter = 0.35f,
@@ -1260,8 +1419,10 @@ namespace Tarrock.Editor
                 MeshHeight = 0.24f,
                 ShortestBlade = 0.45f,
                 BladeArc = 1.70f,        // bows hard: broad leaves fold under their own weight
-                HalfWidthMin = 0.016f,
-                HalfWidthMax = 0.026f,
+                // ROUND 12: the same free lever as the fescue's, at the same 1.19x — a sedge leaf
+                // is the broadest thing standing in this meadow and it costs nothing to widen.
+                HalfWidthMin = 0.019f,
+                HalfWidthMax = 0.031f,
                 SplayMin = 0.09f,
                 SplayMax = 0.15f,
                 RootOffsetMin = 0.014f,

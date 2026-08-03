@@ -94,7 +94,14 @@ namespace Tarrock.Editor
             // without going to black, which no bark on this board's plates does.
             //
             // ROUND 11 ASKED THIS LINE FOR PAINTERLY MODELLING — warm lit side, cool shade side —
-            // AND IT WAS NOT SPENT. Three measurements, in the order that decided it.
+            // AND IT WAS NOT SPENT, correctly, because the shader could not express it. ROUND 12
+            // SPENT IT, and the three measurements below are kept verbatim because they are still
+            // the reason the change had to be made in FoliageWind.shader and not here. What that
+            // note asks for at its end — "_AmbientFloor, _ShadowTint and _ShadeWrap, plus
+            // _BrushSteps" — now exists in Tarrock/FoliageWind, with one addition it did not name
+            // and which turned out to be the whole mechanism: an ADDITIVE cool fill (_ShadeFill),
+            // gated by (1 - lit) and applied AFTER the albedo multiply. See the round-12 note under
+            // the SetColor calls for what was measured and what it cost.
             //
             // (1) WHAT THIS MATERIAL CAN EXPRESS AT ALL. Tarrock/FoliageWind's whole property list
             // is _BaseMap, _BaseColor, _AlphaClip/_Cutoff and the four sway numbers. Its fragment
@@ -145,7 +152,68 @@ namespace Tarrock.Editor
             // _BrushSteps for value planes rather than a cosine. That is a change to
             // FoliageWind.shader, not to this file, and it has to be spent against the 0.0965
             // branch-mean ceiling above or it will hand back the silhouette to buy the shadow.
-            bark.SetColor("_BaseColor", new Color(0.145f, 0.118f, 0.098f)); // weathered near-black bark
+            //
+            // ==================== ROUND 12: THE BARK, AND WHAT IT COST ====================
+            //
+            // The constraint was released and the shader was changed. Everything below was modelled
+            // on the SHIPPED round-11 captures before this file was edited
+            // (round12/builder3/barkmodel3.py; barkmodel3.txt, barkmodel3.json): the frames are
+            // taken BACK through the post chain to scene linear with round10/builderL/chain.py
+            // re-parameterised from the shipped TerrainProtoPost.asset, the material change is
+            // applied THERE — which is where a shader change lands — and the frame is pushed
+            // forward again. Round-trip error on the untouched frame is 0.0013 (v8) and 0.0026
+            // (v9) display codes, so the chain is exact, and the recovered lighting term has
+            // luminance p50 5.17 against tmodel's LAMP luminance 5.646, which independently
+            // confirms that _BaseColor is read sRGB->linear before it multiplies.
+            //
+            // WHY AN ADDITIVE FILL AND NOT A TINT. A multiplicative shadow tint scales the shaded
+            // side of a WARM albedo; it cannot reorder that albedo's own channels, so it lightens
+            // the hue without crossing it. Measured on v8: tint alone (0.82, 0.90, 1.14) moves the
+            // interior R-B p05 from +0.110 to +0.077 and stops. The fill is added after the albedo
+            // multiply, so it is the only term in the file that is not multiplied by a brown, and
+            // it is nearly FREE in luminance: blue carries 0.0722 of luma and the dark end of sRGB
+            // is steep, so the fill that takes v8's shade from +0.077 to -0.014 R-B costs 0.003 of
+            // interior L p05. That is the round's signature bought for almost nothing.
+            //
+            // MEASURED, ship round 11 -> round 12, interior of the tree mask (1 px eroded, so
+            // antialiasing is excluded), critic 5's own masks and statistic:
+            //
+            //   v8 sidelit   L p05/p50/p95   0.146/0.269/0.382 (2.62x) -> 0.074/0.126/0.193 (2.59x)
+            //                R-B p05..p95    +0.110..+0.263            -> -0.014..+0.186
+            //                crosses neutral NO                        -> YES  (rackham -0.078,
+            //                                                             wolfwalkers -0.067)
+            //                Michelson vs its own sky ring  0.464      -> 0.620
+            //   v9 backlit   L p05/p50/p95   0.039/0.040/0.202 (5.14x) -> 0.044/0.061/0.103 (2.32x)
+            //                R-B p05..p95    +0.066..+0.176            -> -0.028..+0.057
+            //                Michelson       0.576                     -> 0.579   (floor 0.53)
+            //
+            // v9's 5.14x was the fake range the round-11 note complains about — p05 and p50 were
+            // the SAME value, i.e. half the tree was one flat slab. 2.32x is a real ramp, and it
+            // sits inside the board's own band for a sky-breaking subject (1.49-3.20). v9 is the
+            // frame that placed 2nd of six in round 11's blind ranking and its silhouette read is
+            // not spent to buy this: its Michelson goes UP by 0.003.
+            //
+            // WHAT THE FRAME BUYS, which is the round's headline. round11/critic5 measured the
+            // hero carrying 0.37% of v8's contrast weight against 39.06% for the two rock wings —
+            // 106.8x. Predicted round 12: 0.678% against the same wings, 57.4x, and per PIXEL
+            // (the area-free form, which is the only part a material can move while the camera and
+            // the proportions are frozen) the wings fall from 2.31x the hero's weight density to
+            // 1.24x. The board's own reading of that ratio, same instrument, is 0.617 on
+            // fable-06 (this vantage's declared analogue), 0.875 on rackham and 0.993 on the
+            // fable-03 windmill (round12/builder3/boardtarget.py, boardtarget.json).
+            //
+            // WHAT IS SHIPPED OFF, and why. _ShadeWrap stays 0 and _BrushSteps stays 0. A wrap
+            // lifts the terminator, which on a silhouette is paid straight out of the read; value
+            // planes need a face wide enough to hold a plane and these limbs are 2-6 px, where a
+            // posterised ramp quantises antialiasing into a staircase. Neither is in the model
+            // above, and nothing goes into this frame that was not modelled.
+            bark.SetColor("_BaseColor", new Color(0.070f, 0.048f, 0.030f));   // near-black, warmer bed
+            bark.SetColor("_ShadowTint", new Color(0.72f, 0.86f, 1.24f));     // cool, multiplicative
+            bark.SetColor("_ShadeFill", new Color(0.032f, 0.047f, 0.108f));   // cool, ADDITIVE, (1-lit)
+            bark.SetFloat("_ShadeWrap", 0f);
+            bark.SetFloat("_AmbientBoost", 1f);
+            bark.SetFloat("_BrushSteps", 0f);
+            bark.SetFloat("_BrushSoftness", 0.35f);
             // Sway amplitudes divided by ~13 with the tree's height multiplied by 2: Tarrock/
             // FoliageWind masks by pow(metres above the pivot, 1.5), so a 21.6 m crown is a 100x
             // lever on the same number an 11 m one was a 36x lever on. The tip excursion when the
