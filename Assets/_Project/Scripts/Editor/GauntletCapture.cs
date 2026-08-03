@@ -5,6 +5,7 @@ namespace Tarrock.EditorTools
     using System.Collections.Generic;
     using System.IO;
     using Tarrock.Editor;
+    using Tarrock.Player;
     using Unity.Cinemachine;
     using UnityEditor;
     using UnityEditor.SceneManagement;
@@ -170,7 +171,7 @@ namespace Tarrock.EditorTools
         // Three metres above the trunk's ground, which is where the v9 lens is aimed. NOT the
         // crown lift v8 uses: v9 stands 37 m out and 12 m BELOW the tree, so aiming at the crown
         // would pitch the lens up past the shelf the shot exists to show. See the vantage.
-        private const float ShelfAimLift = 3f;
+        private const float ShelfAimLift = ShelfRevealCameraNudge.AuthoredApexTargetLift;
 
         private const float StandInGroundClearance = 0.02f; // matches the installer's grounded spawn
 
@@ -324,6 +325,11 @@ namespace Tarrock.EditorTools
                     "v9-shelf-west", pivotX: ShelfFootX, pivotZ: ShelfFootZ,
                     targetX: KnollX, targetZ: KnollZ, targetLift: ShelfAimLift)
                 .WithStandIn(ShelfWalkX, ShelfWalkZ, yawDegrees: 78f),
+
+            // There is deliberately no v10 reveal frame. The reveal restores, for the player, the
+            // framing the capture rig always had: v9 already aims at the runtime nudge's shared
+            // ShelfRevealCameraNudge.AuthoredApexTargetLift. Its crown lands 2.5° inside the top
+            // edge, so a second capture at the nudge apex would be pixel-identical, not a new frame.
         };
 
         // -------------------------------------------------------------------------------------
@@ -379,6 +385,36 @@ namespace Tarrock.EditorTools
 
         private static int RunBatch()
         {
+            // The generator and KayKit installer save as part of their public entry points. Capture
+            // still needs their freshly generated in-memory objects, but it must not leave those
+            // authoring writes on disk: the rig documents that it only looks. Snapshot the two
+            // non-deterministically serialized files before Generate and restore them on every exit.
+            // The controller meta is included because BuildAnimatorController deletes/recreates the
+            // asset; preserving its GUID is as important as preserving the controller YAML.
+            var authoringFiles = new[]
+            {
+                new FileSnapshot(ScenePath),
+                new FileSnapshot(KayKitCharacterInstaller.ControllerPath),
+                new FileSnapshot(KayKitCharacterInstaller.ControllerPath + ".meta"),
+            };
+
+            try
+            {
+                return RunBatchAgainstGeneratedScene();
+            }
+            finally
+            {
+                foreach (FileSnapshot snapshot in authoringFiles)
+                {
+                    snapshot.Restore();
+                }
+
+                AssetDatabase.Refresh();
+            }
+        }
+
+        private static int RunBatchAgainstGeneratedScene()
+        {
             // 1. Regenerate. The generator owns every scene-affecting fact; the rig only looks.
             TerrainRegionGenerator.Generate();
 
@@ -427,6 +463,31 @@ namespace Tarrock.EditorTools
 
             Debug.Log($"{LogPrefix} All {written} vantage(s) written to {directory}.");
             return ExitSuccess;
+        }
+
+        /// <summary>Exact on-disk bytes for a capture-time authoring write, including absence.</summary>
+        private sealed class FileSnapshot
+        {
+            private readonly string _path;
+            private readonly byte[] _contents;
+
+            public FileSnapshot(string path)
+            {
+                _path = path;
+                _contents = File.Exists(path) ? File.ReadAllBytes(path) : null;
+            }
+
+            public void Restore()
+            {
+                if (_contents != null)
+                {
+                    File.WriteAllBytes(_path, _contents);
+                }
+                else if (File.Exists(_path))
+                {
+                    File.Delete(_path);
+                }
+            }
         }
 
         // -------------------------------------------------------------------------------------

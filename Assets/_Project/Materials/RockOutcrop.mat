@@ -44,7 +44,7 @@ Material:
     - _CavityDarken: 0.3
     - _CavityScale: 0.55
     - _DetailBaseScale: 0.32
-    - _FacetAmount: 0.22
+    - _FacetAmount: 0.3
     - _FacetBaseScale: 0.09
     - _FacetRatio: 3.3
     - _FormShadow: 0.055

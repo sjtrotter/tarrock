@@ -149,6 +149,11 @@ namespace Tarrock.Editor
             BuildLighting();
             BuildCloudSea();
             BuildDeadTree();
+            // Round 9's shelf foot is the authored entry to the west-shoulder spiral. Install the
+            // shared region-local volume here, before the existing scene save, so the generated
+            // TerrainProto scene can actually fire the camera reveal while preserving the one
+            // geometry definition owned by CliffGreyboxGenerator.
+            CliffGreyboxGenerator.CreateShelfRevealTrigger(null);
             // Dressing, after the landform exists and before the atmosphere: both of these read the
             // finished heightmap to decide where they belong.
             BuildRockOutcrops(terrainData, material);

@@ -2,6 +2,7 @@ namespace Tarrock.Editor
 {
 
     using Tarrock.Player;
+    using Tarrock.Regions;
     using Unity.Cinemachine;
     using UnityEditor;
     using UnityEngine;
@@ -108,6 +109,36 @@ namespace Tarrock.Editor
             SetObjectReference(wall, "_input", playerRig.GetComponent<PlayerInputReader>());
             SetObjectReference(wall, "_motor", playerRig.GetComponent<PlayerMotor>());
             SetObjectReference(wall, "_fade", fade);
+
+            // MQ00 shelf reveal: camera-side driver lives with the vcam; the region-local trigger
+            // discovers it on first entry. The target is resolved through CliffMarkerIds rather
+            // than an object name or duplicated id literal.
+            var reveal = vcamGo.GetComponent<ShelfRevealCameraNudge>();
+            if (reveal == null)
+            {
+                reveal = vcamGo.AddComponent<ShelfRevealCameraNudge>();
+            }
+
+            SetObjectReference(reveal, "_orbital", orbital);
+            SetObjectReference(reveal, "_composer", vcamGo.GetComponent<CinemachineRotationComposer>());
+            SetObjectReference(reveal, "_input", playerRig.GetComponent<PlayerInputReader>());
+            SetObjectReference(reveal, "_player", playerRig.transform);
+            SetObjectReference(reveal, "_deadTreeMarker", FindMarker(CliffMarkerIds.DeadTree));
+        }
+
+        private static Transform FindMarker(string markerId)
+        {
+            InteractionMarker[] markers = Object.FindObjectsByType<InteractionMarker>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (InteractionMarker marker in markers)
+            {
+                if (marker.MarkerId == markerId)
+                {
+                    return marker.transform;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

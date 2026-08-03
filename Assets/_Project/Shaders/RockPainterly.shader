@@ -1012,6 +1012,30 @@ Shader "Tarrock/RockPainterly"
                 float moss = _MossAmount * ledge * ledge * (0.35 + cavity * 0.65);
                 albedo = lerp(albedo, _MossColor.rgb, saturate(moss));
 
+                // ROUND 14 -- HUE FOLLOWS FORM, WITHOUT BUYING MORE CHROMA.  The board's stone
+                // moves around its existing colourfulness between a warm presented plane and a
+                // cool recess; it does not become a more saturated object.  Rotate the chroma
+                // vector in the plane perpendicular to linear luminance, preserving both its length
+                // and dot(albedo, luminance) before clipping.  The signed 12 degree range was
+                // propagated through the protected-grade model in rock_pipeline.py. It predicts a
+                // target of 8-13 degrees of warm/cool separation while changing median
+                // rock chroma by less than 0.5 code value.  Cavity supplies the cool end; a face's
+                // upward presentation supplies only a small warm bias here, with the actual beam
+                // adding the remainder after `lit` is known below.
+                const float3 rockLum = float3(0.2126, 0.7152, 0.0722);
+                const float3 rockChromaU = float3(0.95879, -0.28505, 0.0);
+                const float3 rockChromaV = float3(0.02747, 0.09234, -0.99535);
+                float rockY = dot(albedo, rockLum);
+                float3 rockChroma = albedo - rockY;
+                float rockU = dot(rockChroma, rockChromaU);
+                float rockV = dot(rockChroma, rockChromaV);
+                float coolTurn = radians(-12.0) * saturate(cavity * 1.35);
+                float coolSin;
+                float coolCos;
+                sincos(coolTurn, coolSin, coolCos);
+                albedo = rockY + rockChromaU * (rockU * coolCos - rockV * coolSin)
+                    + rockChromaV * (rockU * coolSin + rockV * coolCos);
+
                 // -- Per-facet value baked into the mesh: the hand-laid variation between one face
                 //    and the next, plus the darkening toward the buried base that makes a rock sit
                 //    IN the ground instead of on it. (See BuildRockMesh.)
@@ -1041,7 +1065,36 @@ Shader "Tarrock/RockPainterly"
                     dot(albedo, float3(0.2126, 0.7152, 0.0722)) * bleachTint,
                     bleach);
 
+                // Complete the hue arc on faces actually reached by the dawn beam.  This is the
+                // same luma/chroma-preserving rotation as the cavity turn above, not a tint lerp.
+                rockY = dot(albedo, rockLum);
+                rockChroma = albedo - rockY;
+                rockU = dot(rockChroma, rockChromaU);
+                rockV = dot(rockChroma, rockChromaV);
+                float warmTurn = radians(12.0) * smoothstep(0.18, 0.72, lit);
+                float warmSin;
+                float warmCos;
+                sincos(warmTurn, warmSin, warmCos);
+                albedo = rockY + rockChromaU * (rockU * warmCos - rockV * warmSin)
+                    + rockChromaV * (rockU * warmSin + rockV * warmCos);
+
                 float3 color = albedo * (direct + ambient) * shade;
+
+                // ROUND 14 -- A PAINTED TURN AT THE OBJECT'S OWN OUTLINE.  `fwidth` converts the
+                // N.V threshold to a screen-space profile, so this stays 2.5 pixels wide from the
+                // 2 m foreground stones to the 30 m shelf stones instead of becoming a broad rim
+                // on the close props.  The 0.24 multiplier was propagated through the captured
+                // 32-cube grade: predicted final-code depth 10.79-16.64 LSB over the captured
+                // mid-rock code range 75-180. The board outline band could
+                // not be measured with confidence because the three plate rocks join terrain, so
+                // this is a capture target rather than a claimed board match, never a sub-LSB
+                // shader gesture.  It acts after lighting so it reads as the form turning away and
+                // cannot increase the material's chroma.
+                float3 viewDirectionWS = SafeNormalize(GetCameraPositionWS() - positionWS);
+                float edgeFacing = abs(dot(normalWS, viewDirectionWS));
+                float edgeWidth = max(fwidth(edgeFacing) * 2.5, 1e-4);
+                float silhouetteTurn = 1.0 - smoothstep(0.0, edgeWidth, edgeFacing);
+                color *= 1.0 - silhouetteTurn * 0.24;
                 color = MixFog(color, input.fogCoord);
                 return half4(color, 1.0);
             }

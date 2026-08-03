@@ -1369,7 +1369,11 @@ namespace Tarrock.Editor
                 // actually paints gold.
                 // The body of the meadow: green +0.02 of chroma, dry to a true straw-gold. Its
                 // DryBias is 0.24, so the gold shows on about a fifth of it — a note, not a field.
-                Cool = new Color(0.28f, 0.44f, 0.38f),
+                // ROUND 14: (0.28, 0.44, 0.38) -> (0.28, 0.44, 0.23). Rebuilt HSV on every
+                // literal found this cool pole at 157.5 deg while the round-13 dark rendered band
+                // measured 113.8 deg in v1 / 112.5 deg in v2. The replacement is 105.7 deg: inside
+                // the board-supported green spread without flattening the green and dry poles.
+                Cool = new Color(0.28f, 0.44f, 0.23f),
                 Green = new Color(0.32f, 0.53f, 0.24f),
                 Dry = new Color(0.78f, 0.74f, 0.44f),
                 TurfTintWeight = 0f,
@@ -1455,7 +1459,9 @@ namespace Tarrock.Editor
                 // wind has scoured the meadow and nowhere else — the drift IS the band. Nothing is
                 // invented: this is a re-weighting of content the generator already places, and
                 // "gold is the meadow's weather" is this file's own round-6 wording.
-                Cool = new Color(0.34f, 0.50f, 0.40f),
+                // ROUND 14: blue 0.40 -> 0.29 moves this pole 142.5 -> 105.7 deg. Saturation and
+                // value remain species-specific; only the cyan excursion is removed.
+                Cool = new Color(0.34f, 0.50f, 0.29f),
                 Green = new Color(0.46f, 0.59f, 0.30f),
                 Dry = new Color(0.84f, 0.76f, 0.44f),
                 TurfTintWeight = 0f,
@@ -1553,7 +1559,9 @@ namespace Tarrock.Editor
                 // chord, so it gets the opposite treatment from the drift above — blue UP against
                 // red, not gold. Its dry pole comes down off straw as well: a sedge in a hollow is
                 // the last thing on the plateau the wind dries out.
-                Cool = new Color(0.24f, 0.38f, 0.36f),
+                // ROUND 14: blue 0.36 -> 0.20 moves the hollow pole 171.4 -> 106.7 deg. The pole
+                // remains the darkest standing species, so value still separates the hollow layer.
+                Cool = new Color(0.24f, 0.38f, 0.20f),
                 Green = new Color(0.28f, 0.46f, 0.26f),
                 Dry = new Color(0.50f, 0.58f, 0.40f),
                 TurfTintWeight = 0f,
@@ -1632,7 +1640,9 @@ namespace Tarrock.Editor
                 // the single high-chroma note the reference board's plates all have and round 6 has
                 // none of. DryBias comes down with it so the wisps that are not in the sun's own
                 // drift stay green — accent, not field.
-                Cool = new Color(0.33f, 0.48f, 0.40f),
+                // ROUND 14: blue 0.40 -> 0.28 moves the sparse bent pole 148.0 -> 105.0 deg.
+                // Its higher HueVariation remains, preserving a real spread around green.
+                Cool = new Color(0.33f, 0.48f, 0.28f),
                 Green = new Color(0.42f, 0.57f, 0.31f),
                 Dry = new Color(0.90f, 0.78f, 0.36f),
                 TurfTintWeight = 0f,
@@ -1739,7 +1749,10 @@ namespace Tarrock.Editor
                 MinHeightScale = 0.70f,
                 MaxHeightScale = 1.30f,
                 AlignToGround = 0.95f,   // thatch does not stand plumb on a slope; it lies on it
-                Cool = new Color(0.22f, 0.33f, 0.29f),   // round 7: further into the blue-green
+                // ROUND 14: blue 0.29 -> 0.19 moves the high-coverage mat pole 158.2 -> 107.1 deg.
+                // This is the largest rendered population and therefore the most important removal
+                // of the round-13 verdigris drift; its 0.26 variation is deliberately retained.
+                Cool = new Color(0.22f, 0.33f, 0.19f),
                 Green = new Color(0.25f, 0.39f, 0.23f),
                 // The mat's own "dry" is dead blade in a green mat, NOT bare earth. Bare earth is
                 // the scuff species below, and it belongs on the worn lanes, not under the meadow.

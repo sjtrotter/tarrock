@@ -153,10 +153,10 @@ Material:
     - _BleachTint: {r: 1, g: 0.92, b: 0.78, a: 1}
     - _CliffColor: {r: 0.3, g: 0.31, b: 0.35, a: 1}
     - _GroundFarColor: {r: 0.85300547, g: 0.839991, b: 0.8190204, a: 1}
-    - _MeadowCool: {r: 0.27, g: 0.35, b: 0.36, a: 1}
-    - _MeadowGreen: {r: 0.29, g: 0.38, b: 0.26, a: 1}
-    - _MeadowScuff: {r: 0.43, g: 0.36, b: 0.28, a: 1}
-    - _MeadowStraw: {r: 0.66, g: 0.62, b: 0.44, a: 1}
+    - _MeadowCool: {r: 0.29, g: 0.34, b: 0.35, a: 1}
+    - _MeadowGreen: {r: 0.3, g: 0.36, b: 0.28, a: 1}
+    - _MeadowScuff: {r: 0.41, g: 0.36, b: 0.3, a: 1}
+    - _MeadowStraw: {r: 0.63, g: 0.61, b: 0.48, a: 1}
     - _RockCool: {r: 0.4, g: 0.41, b: 0.45, a: 1}
     - _RockLichen: {r: 0.35, g: 0.4, b: 0.26, a: 1}
     - _RockWarm: {r: 0.56, g: 0.51, b: 0.42, a: 1}

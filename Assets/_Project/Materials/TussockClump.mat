@@ -69,7 +69,7 @@ Material:
     - _BleachTint: {r: 1, g: 0.94, b: 0.8, a: 1}
     - _CoolColor: {r: 0.27, g: 0.43, b: 0.39, a: 1}
     - _DryColor: {r: 0.48, g: 0.47, b: 0.31, a: 1}
-    - _GroundColor: {r: 0.236, g: 0.299, b: 0.2105, a: 1}
+    - _GroundColor: {r: 0.2415, g: 0.28800002, b: 0.22150001, a: 1}
     - _GroundDryColor: {r: 0.52, g: 0.48, b: 0.36, a: 1}
     - _ShadeFill: {r: 0.5, g: 0.55, b: 0.68, a: 1}
     - _WindAxis: {r: 1, g: 0.35, b: 0, a: 0}

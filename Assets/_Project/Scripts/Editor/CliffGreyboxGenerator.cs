@@ -2,6 +2,7 @@ namespace Tarrock.Editor
 {
 
     using System.IO;
+    using Tarrock.Player;
     using Tarrock.Regions;
     using UnityEditor;
     using UnityEditor.SceneManagement;
@@ -70,6 +71,12 @@ namespace Tarrock.Editor
         private const float LeapTriggerY = -8f;
         private const float VoidCatchY = -80f;
 
+        // Round 9's walkable west-shoulder approach in TerrainRegionGenerator.Landform. The volume
+        // is serialized scene data (not an Update constant): centred just beyond the shelf foot,
+        // broad enough to span the 3 m tread while remaining scoped to entry from the approach.
+        private static readonly Vector3 ShelfRevealTriggerCentre = new Vector3(119.62f, 2f, 60.79f);
+        private static readonly Vector3 ShelfRevealTriggerSize = new Vector3(3f, 4f, 5f);
+
         [MenuItem("Tarrock/Setup/Generate Cliff Greybox")]
         public static void Generate()
         {
@@ -118,6 +125,7 @@ namespace Tarrock.Editor
             CreateWaystation(environment.transform, mats);
 
             CreateAmbushTrigger(gameplay.transform);
+            CreateShelfRevealTrigger(gameplay.transform);
             CreateLeapTrigger(gameplay.transform);
 
             CreateLighting(lighting.transform);
@@ -399,6 +407,15 @@ namespace Tarrock.Editor
             box.size = new Vector3(LeapTriggerDepth, LeapTriggerHeight, PlateauHalfSize * 2f);
 
             trigger.AddComponent<LeapOfFaithTrigger>();
+        }
+
+        internal static void CreateShelfRevealTrigger(Transform parent)
+        {
+            GameObject trigger = CreateEmpty("Shelf_Reveal_Trigger", parent, ShelfRevealTriggerCentre);
+            var box = trigger.AddComponent<BoxCollider>();
+            box.isTrigger = true;
+            box.size = ShelfRevealTriggerSize;
+            trigger.AddComponent<ShelfRevealTrigger>();
         }
 
         // ---------------------------------------------------------------------------------

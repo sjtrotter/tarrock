@@ -52,7 +52,10 @@ namespace Tarrock.Editor
         internal static readonly Color TurfSoil = new Color(0.17f, 0.20f, 0.15f);   // damp root shadow
         internal static readonly Color TurfBlade = new Color(0.25f, 0.34f, 0.23f);  // living blade mat
         internal static readonly Color TurfOchre = new Color(0.52f, 0.48f, 0.36f);  // dry buff scour
-        internal static readonly Color MeadowGreen = new Color(0.29f, 0.38f, 0.26f); // wind-scoured
+        // ROUND 14: (0.29, 0.38, 0.26) -> (0.30, 0.36, 0.28). The meadow chord, rather than
+        // global grading, is the scoped instrument for muting non-narrative dressing. This keeps
+        // the green pole green while reducing its linear-RGB distance from neutral by 32%.
+        internal static readonly Color MeadowGreen = new Color(0.30f, 0.36f, 0.28f); // wind-scoured
 
         // The band tufts live in. BOTH sides feather it now (round-2 integration): the ground
         // shader fades its turf across _TurfFeatherDeg/_TurfFeatherM either side of these numbers,
@@ -155,7 +158,12 @@ namespace Tarrock.Editor
         internal const float FacetScaleTerrain = 0.12f;
         internal const float FacetScaleProp = 0.09f;
         internal const float FacetAmountTerrain = 0.20f;
-        internal const float FacetAmountProp = 0.22f;
+        // ROUND 14 -- 0.22 -> 0.30. Explicit rock ROIs on the three Fable plates carry adjacent
+        // facet steps of 19.33-74.47 final-code LSB; round 13's prop rocks carry 12.65-53.67.
+        // The protected-grade 32-cube model in rock_pipeline.py predicts an added 7.02-10.41 LSB
+        // at 0.30, putting the measured prop span at 19.67-64.08 LSB, inside the board band.
+        // Terrain stays at 0.20: this is the prop surface response, not contrast for the hillside.
+        internal const float FacetAmountProp = 0.30f;
 
         // REST. "The artist leaves areas at rest" is canon (art-bible brush economy) and round 7
         // had none of it: the share of 16 px patches whose fine energy falls under 40% of the local
@@ -231,13 +239,15 @@ namespace Tarrock.Editor
             // an orange, and the same colour the lamp was already painting on top of it. It is now
             // (0.397, 0.342, 0.164), R/B 2.4: still the warmest note on the floor, still clearly
             // straw beside the green, and no longer competing with the dawn for the same job.
-            // The scuff loses its orange for the same reason. _MeadowCool is untouched — it was
-            // the only member of this chord round 5 did not warm, and it is what keeps the hollows
-            // reading cool.
+            // The scuff loses its orange for the same reason. Round 14 compresses the whole meadow
+            // chord around each pole's own mean by roughly 30%, retaining green / straw / earth /
+            // cool identities while reserving saturation for the dawn and authored accents. The
+            // Turf* chord is deliberately unchanged: it dominates v1/v2, whose healthy medians are
+            // protected, while these Meadow* poles carry the exposed slopes in the wide frames.
             material.SetColor("_MeadowGreen", MeadowGreen);
-            material.SetColor("_MeadowStraw", new Color(0.66f, 0.62f, 0.44f));
-            material.SetColor("_MeadowScuff", new Color(0.43f, 0.36f, 0.28f));
-            material.SetColor("_MeadowCool", new Color(0.27f, 0.35f, 0.36f));
+            material.SetColor("_MeadowStraw", new Color(0.63f, 0.61f, 0.48f));
+            material.SetColor("_MeadowScuff", new Color(0.41f, 0.36f, 0.30f));
+            material.SetColor("_MeadowCool", new Color(0.29f, 0.34f, 0.35f));
             material.SetFloat("_MeadowMacroScale", 38f);
             material.SetFloat("_MeadowHueScale", 21f);
             material.SetFloat("_MeadowDabScale", 6f);
@@ -684,6 +694,14 @@ namespace Tarrock.Editor
             // ground the beam reaches.
             material.SetColor("_ShadowTint", new Color(0.78f, 0.88f, 1.11f));
             material.SetColor("_AmbientFloor", new Color(0.10f, 0.11f, 0.15f));
+            // ROUND 14 SSOT REPAIR — values unchanged from TerrainPainterly.shader's round-13
+            // defaults. These four must travel together: the knee builds shadeMix, which both
+            // deepens ambient and gates the additive dawn-sky fill. Writing them here prevents an
+            // existing material asset from silently retaining stale serialized values.
+            material.SetColor("_ShadeFill", new Color(0.00f, 0.552f, 0.696f, 1f));
+            material.SetFloat("_ShadeFillStrength", 0.30f);
+            material.SetFloat("_ShadeFillKnee", 0.35f);
+            material.SetFloat("_ShadeDeepen", 0.40f);
             // THE PENUMBRA, in metres of half-width on the ground (round 5; the derivation is in
             // TerrainPainterly's Frag lighting block). 1.0 m is the middle of the 0.45-1.8 m band a
             // 0.53° sun throws through forms standing 10-40 m from what they shade, once the 12°

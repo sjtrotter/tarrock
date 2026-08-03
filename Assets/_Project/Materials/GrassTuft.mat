@@ -67,10 +67,10 @@ Material:
     m_Colors:
     - _BaseColor: {r: 0.32, g: 0.53, b: 0.24, a: 1}
     - _BleachTint: {r: 1, g: 0.94, b: 0.8, a: 1}
-    - _CoolColor: {r: 0.28, g: 0.44, b: 0.38, a: 1}
+    - _CoolColor: {r: 0.28, g: 0.44, b: 0.23, a: 1}
     - _DryColor: {r: 0.78, g: 0.74, b: 0.44, a: 1}
-    - _GroundColor: {r: 0.23599996, g: 0.29899994, b: 0.21049997, a: 1}
-    - _GroundDryColor: {r: 0.40499997, g: 0.42999995, b: 0.30999997, a: 1}
+    - _GroundColor: {r: 0.24149998, g: 0.288, b: 0.22149998, a: 1}
+    - _GroundDryColor: {r: 0.40999997, g: 0.41999996, b: 0.32, a: 1}
     - _ShadeFill: {r: 0.5, g: 0.55, b: 0.68, a: 1}
     - _WindAxis: {r: 1, g: 0.35, b: 0, a: 0}
   m_BuildTextureStacks: []
