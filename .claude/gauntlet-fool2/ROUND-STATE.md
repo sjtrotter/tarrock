@@ -226,6 +226,24 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
 - Backups in-file: prepass2b/c/d (+ e pending R13), presculpt1/2, preremesh, prebool,
   Blocking_Backup, Hand_Shells.
 
+## ROUND 14 (OPEN, 2026-08-03): head sculpt
+
+- Brief: tooling/R14-BRIEF.md (final; draft deleted). Phase A = Codex tooling/
+  measurements (tooling/TASK-A-HEAD.md); Phase B = Opus builder (escalation
+  lesson applied at kickoff — brand-new-feature placement work); critique =
+  Fable-lead + Codex blind at close.
+- **WORKDIR NAMESPACING (standing):** `/home/betty/tarrock-gauntlet-work/r14/`
+  is the OTHER gauntlet session's (MQ00 scene run — Unity/C# content); round
+  dirs collide on bare numbers. This run uses `fool2-rNN/` from now on:
+  R14 workdir = `/home/betty/tarrock-gauntlet-work/fool2-r14/`. (`r13/` was
+  ours and stays as the record.)
+- Eyeball spec (lead-measured from v7 registration circles, grid-crop method):
+  sphere r = 35 mm; centers X = ±43 mm (IPD 86 mm), Z = 1.571 m; center Y +
+  socket recession computed in Phase A (eyeball_spec.json). Circles' row
+  position is spec-only (they float above the crown).
+- presence_render.py (studio + rake) was written by the previous lead but
+  NEVER RUN — Phase A validates it (closes the R13 flat-light-rig debt).
+
 ## Progress page (DIRECTOR CHANGE 2026-08-02)
 
 - Artifact abandoned per updated charter (none was ever published — change arrived
