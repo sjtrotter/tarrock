@@ -299,3 +299,34 @@ whole-profile check says the belly still leads the chest globally.
 (hard acromion corner, clavicle S ending above the plateau, humeral head), sacral
 triangle + iliac crest planes, halo removal + ulnar shaft line, elbow triad,
 chest-leads-belly globally.**
+
+---
+
+## Round 11 — additive structural presence (2026-08-03)
+
+**Builder (Opus):** broke the engraved-vs-soft deadlock with three tools: asymmetric
+teardrop falloffs (bone = tight edge one side, long tail into the shaft), C1
+smoothstep facing weights (the moat generator eliminated), and amplitude calibration
+against the post-blur field. Clavicle S 2.65 mm legible at full figure, hard acromion
+corner (+3.8% silhouette), humeral head, malleoli textbook, ulnar head/shaft, elbow
+triad, chest dome narrowed. Also proved the "belly leads" claim false by whole-profile
+measurement (chest led all along — it just read as padding) and found both "halos"
+were actually at neighbouring features. `Fool-v2-014.blend`.
+
+| Full-figure flat (presence test) | 3/4 |
+|---|---|
+| ![flat](renders/r11-front-flat.png) | ![3/4](renders/r11-three-quarter.png) |
+| ![shoulder](renders/r11-zoom-shoulder-tq.png) | ![back](renders/r11-back.png) |
+
+**Critic (Opus, fresh) + Codex blind:** **SEND BACK — but the corner is turned.**
+Shoulder girdle PASSES and is protected ("it carries the frame — do not touch it
+again"); malleoli "best-executed landmark on the model"; Codex style 3→5, complaint
+migrated from surface detail to proportion for the first time. Named gap: "structure
+stops at the collarbones" — no waist below the ribs (197→214→240 px going DOWN),
+knee zoom byte-identical to r10 (a lead briefing error: the 'guard' froze a region
+needing relief), pelvis re-dabbed, the left-chest diagonal got sharper, four new seam
+artifacts.
+
+**Round verdict: SEND BACK → Round 12 = scoped completion (torso waist/ribcage plane,
+knee relief inside the sheet silhouette, pelvis de-dab, chest diagonal, seam
+cleanup). Shoulder girdle/malleoli/clavicle protected.**
