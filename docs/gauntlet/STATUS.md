@@ -16,13 +16,26 @@ tree.
 
 ---
 
-## Round 16 — light on the tree, the cloud owned `QUEUED`
+## Round 17 — the current tells `QUEUED`
 
-- The signature finally gets lit: cast shadow and a warm rim on the dead tree (29k pixels at median Y 12.78, untouched
-  through fifteen rounds — both judges' converged mechanism: "a dark near mass the key light is not allowed to reach").
-- The cloud gets an owner at last — four consecutive judges have named it the hero frame's decisive tell.
-- Rock coverage properly scoped (v5: 96.2% of stone under 3 LSB vs the board's 5.8%).
+- The judges' tells are being eliminated one per round — round 17 opens by extracting the CURRENT tells verbatim from
+  the round-16 judge texts and attacking those, not last year's.
+- **Awaiting the director's staging ruling** ([issue #3](https://github.com/sjtrotter/tarrock/issues/3)): the hero frame
+  can never show the tree grounded — the knoll's own crest occludes its base, and its shadow throws off the island.
+- Record hygiene: the round-15 false-revert erratum, the refuted grade constant, instrument rebuilds.
 
+## Round 16 — light the tree · commit `d8eed26`
+
+![Round 16 v9](img/thumb-r16-v9-shelf-west.jpg) ![Round 16 v8](img/thumb-r16-v8-deadtree-skyline.jpg)
+
+**The round that redirected the project:** the tree-lighting goal was *algebraically impossible* from the shipped code
+(an even-function rim term with no sun direction — reverted at commit), and the cast-shadow goal was impossible before
+the round began — the knoll's crest occludes the tree's ground contact in the hero frame, and only 1.49 m of the
+21.6 m tree even lands on the plateau. Not a shading problem: a **staging** problem, escalated to the director. The
+positive control (the Fool's own crisp −40-code shadow) proves the whole lighting pipeline works.
+**Fifth identical blind ranking — but the tell changed:** four rounds of "unlit dark mass" is gone from both judges'
+texts. **Erratum:** round 15's "surgical revert" claim was false (the trim survived in five generated .mat files;
+round 16's regeneration undid it by accident). Runner integrity self-reports accepted and documented.
 ## Round 15 — the hierarchy round · commit `5e0ae33`
 
 ![Round 15 v9](img/thumb-r15-v9-shelf-west.jpg) ![Round 15 v8](img/thumb-r15-v8-deadtree-skyline.jpg)
