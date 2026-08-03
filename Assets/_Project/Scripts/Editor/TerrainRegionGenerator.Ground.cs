@@ -120,6 +120,23 @@ namespace Tarrock.Editor
         internal const float MarkValueSpread = 0.36f;
         internal const float MarkDensitySpread = 0.045f;
 
+        // ROUND 11 — THE LEVER ARM. All seven constants above are untouched; what the shader
+        // changed is what the frame is applied to. TkMarkSpace used to rotate the RAW world
+        // position by theta(p), and d/dp of that is R + |p| grad(theta), with |p| = 150-260 m at
+        // the Cliff's world coordinates and grad(theta) = 0.17 rad/m off the 1.9 m octave above.
+        // The correction term measured 26-44 against a wanted term of 1, so every mark band was
+        // sheared along the level sets of theta — closed curves. MarkSizeSpread did the same
+        // through the wavelength divisor for a second lever of 19. The frame now acts on the
+        // offset from a smooth staircase anchor of this pitch, which is never further than
+        // 0.0962 * pitch = 1.06 m away, so the correction term is 0.18.
+        //
+        // 11 m is chosen in PIXELS, not metres. The fix's own residual is a Jacobian modulation
+        // at the anchor pitch, and it has to sit ABOVE the 8-60 px band the whorl was measured
+        // in at the COARSEST footprint the vantages contain (v1's far hillside, pixelM 0.132 m):
+        // 11 m is 83 px there, 6 m would be 46 px and would land inside the ruler. It is also
+        // deliberately not 12 or 24 — both divide MarkTurnScale exactly.
+        internal const float MarkAnchorPitch = 11f;
+
         // -- THE PAINT RECIPE, ROUND 8 -----------------------------------------------------------
         // SHARED SURFACE, declared once and consumed twice, on the same rule as the mark frame
         // above: the hillside's stone and a boulder that fell off it must be made of the same
@@ -279,6 +296,7 @@ namespace Tarrock.Editor
             material.SetFloat("_MarkSizeSpread", MarkSizeSpread);
             material.SetFloat("_MarkValueSpread", MarkValueSpread);
             material.SetFloat("_MarkDensitySpread", MarkDensitySpread);
+            material.SetFloat("_MarkAnchorPitch", MarkAnchorPitch);
 
             // ROCK. Modelled at v5's 2.0 mm/px: 2.6 / 5.9 / 10.8 / 15.2 percent relative amplitude
             // at high-pass sigma 2/4/8/16 px, 54 luma levels, anisotropy 1.81 — against round 4's
@@ -692,6 +710,7 @@ namespace Tarrock.Editor
             material.SetFloat("_MarkSizeSpread", MarkSizeSpread);
             material.SetFloat("_MarkValueSpread", MarkValueSpread);
             material.SetFloat("_MarkDensitySpread", MarkDensitySpread);
+            material.SetFloat("_MarkAnchorPitch", MarkAnchorPitch);
 
             // The sun bleach, written rather than left at the shader default.
             material.SetFloat("_SunBleach", SunBleach);

@@ -278,11 +278,48 @@ namespace Tarrock.EditorTools
             //
             // AND WHAT THIS FRAME EXPOSES, which the round-runner should read as a finding and not
             // as a composition choice: at the rig's RESTING tilt (16° down, so the frame tops out
-            // 11.5° up) the crown sits 27.8° above the top edge from this very mark, and the
-            // knoll's own summit 2.0° above it. A player who never touches the right stick cannot
-            // see the tree he is being told to approach from anywhere on this shelf — nor the hill
-            // it stands on. That is a camera-rig question, not a landform one, and it is owed an
-            // answer; this frame is here so it is asked against a picture instead of a hunch.
+            // 11.5° up) the crown clears the top edge by 31.7° from this very mark, and the knoll's
+            // own skyline by 5.8°. A player who never touches the right stick cannot see the tree
+            // he is being told to approach from anywhere on this shelf — nor the hill it stands on.
+            // That is a camera-rig question, not a landform one, and it is owed an answer; this
+            // frame is here so it is asked against a picture instead of a hunch.
+            //
+            // ROUND 11 — THOSE TWO FIGURES READ 27.8° AND 2.0°, AND BOTH WERE TAKEN FROM THE WRONG
+            // POINT. The arithmetic was never wrong and it is unchanged: a point on the tree's axis
+            // 21.6 m above the plateau, 37.4 m out, does sit 39.5° up (39.5 - 11.5 = 28.0), and the
+            // summit point under it does sit 13.8° (2.3). But a silhouette is read at its NEAREST
+            // edge, never over the trunk, and everything nearer subtends more:
+            //   * THE CROWN. The highest-subtending bough tip is 4.6 m WEST of the axis — local
+            //     (-4.60, 21.40, +3.51) in BuildDeadTreeMesh, and west is toward this lens — so
+            //     32.7 m out rather than 37.4 m: +43.2°, i.e. 31.7° over the top edge. Critic 5's
+            //     clean tree mask measured 31.9° on the shipped round-10 frame; parsing the bough
+            //     table predicts 31.7°, which is the two methods agreeing to a quarter of a degree.
+            //   * THE HILL. The knoll is a FLAT plateau at y = 50 m inside radius 7 with a
+            //     smoothstep cone out to 26 (Landform.cs §6c), so what breaks the sky is the flank
+            //     tangent at radius ~8.7 m — 28.7 m out, +17.3°, i.e. 5.8° over the top edge. The
+            //     summit point is BEHIND that and 3.5° lower, which is why quoting it under-read
+            //     the hill by two thirds. Measured on round10/v9: crest elevation +16.5° from a
+            //     bottom-connected ground mask and +17.6° from critic 5's, so 5.0-6.1° over the
+            //     edge against the 5.8° predicted.
+            // The finding is unchanged and larger than it was written: the hill clears a resting
+            // frame by about six degrees, not by two. NOTHING ABOUT THE CAMERA MOVED TO FIX THIS.
+            // This is a comment; the pose it describes is the pose round 10 shot, unaltered.
+            // OWED ELSEWHERE AND DELIBERATELY NOT TAKEN HERE, because it is arithmetic that chose
+            // a MARK, and a mark is a camera decision. The "39.3 + 14.7 = 54.0° against a 55° lens"
+            // above carries the same wrong point AND a wrong second term:
+            //   * 14.7° is not the rig's head-below-lens angle. It is derived from a drop of
+            //     1.41 m, and the rig's own constants give 1.5463 m — CameraPivotHeight + orbit
+            //     radius x sin(tilt) over the pivot's ground, minus the head at CameraPivotHeight.
+            //     atan(1.5463 / 5.3927) = 16.00°, which it must be to the digit, because the seat
+            //     is placed ON the 16° ray from the head: the head is one resting tilt below the
+            //     lens by construction, never 14.7.
+            //   * with both terms right the sum is 43.2 + 16.0 = 59.1°, and even the over-trunk
+            //     point is 39.5 + 16.0 = 55.5°. Neither fits a 55° lens, so the stretch of shelf
+            //     that holds the walking figure and the whole tree is not "the first ~8 metres" —
+            //     it is empty, at this lens.
+            // The shipped frame is unaffected: it aims at ShelfAimLift rather than at the player's
+            // head, and the crown lands 2.5° inside its top edge. Nothing here moved the camera.
+            // The paragraph that picked this mark needs re-deriving by whoever owns the rig.
             Vantage.ThirdPersonLookingAt(
                     "v9-shelf-west", pivotX: ShelfFootX, pivotZ: ShelfFootZ,
                     targetX: KnollX, targetZ: KnollZ, targetLift: ShelfAimLift)

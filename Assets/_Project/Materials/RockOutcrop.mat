@@ -49,6 +49,7 @@ Material:
     - _FacetRatio: 3.3
     - _FormShadow: 0.055
     - _FormationTint: 0.55
+    - _MarkAnchorPitch: 11
     - _MarkAniso: 2.2
     - _MarkDensitySpread: 0.045
     - _MarkSizeSpread: 0.33

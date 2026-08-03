@@ -59,6 +59,7 @@ Material:
     - _GroundFogScale: 1
     - _HeightHigh: 48
     - _HeightLow: 8
+    - _MarkAnchorPitch: 11
     - _MarkAniso: 2.2
     - _MarkDensitySpread: 0.045
     - _MarkSizeSpread: 0.33

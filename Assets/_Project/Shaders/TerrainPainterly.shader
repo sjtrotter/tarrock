@@ -172,6 +172,18 @@ Shader "Tarrock/TerrainPainterly"
     // round-7 win and nothing here reduces it: the only term that leaves the stretched frame is
     // the meadow's continuous field, and it keeps the TURN.
     //
+    //   l. ROUND 11 — THE LEVER ARM. Those seven constants are still byte-identical; what
+    //      changed is what the frame is applied TO. h = R(theta(p)) * p differentiates to
+    //      R + (grad theta) (x) R(theta+pi/2) p, and |p| is 150-260 m here, so the correction
+    //      term measured 26-44 against a wanted term of 1 and the mark bands were stretched
+    //      along the LEVEL SETS OF THETA — closed curves, i.e. the concentric thumbprint the
+    //      round-10 capture wears on every pale face. markFrame.size divided the same large
+    //      position by a second field for a second lever of 19. Both now act on the offset from
+    //      a smooth staircase anchor 1.06 m away rather than on the raw position, which puts
+    //      the correction term at 0.18. Derivation, the numpy port that reproduces the whorl and
+    //      the footprint calibration against the capture are in TkMarkAnchor1's note and in
+    //      scratchpad/round11/builder2/ (REPORT.md, sweep2.py, calib.py, pitch.py).
+    //
     // House style mirrored from Tarrock/FoliageWind: minimal URP, hand-rolled main-light lambert +
     // SH ambient (NOT the full URP/Lit include, which has rendered unreliably on this box for our
     // runtime-built materials), SRP-Batcher-compatible CBUFFER.
@@ -395,8 +407,16 @@ Shader "Tarrock/TerrainPainterly"
         // a wide shot, fine so that a two-metre wall crop varies inside one frame — and the same
         // pair of fields also drives per-region mark SIZE, VALUE and DENSITY (finding 2).
         //
-        // It is still WORLD-LOCKED and still cannot trace a contour: nothing here reads the
-        // surface normal, the strike, or any projection. The round-6 win is structural and is kept.
+        // It is still WORLD-LOCKED: nothing here reads the surface normal, the strike, or any
+        // projection, and the round-6 win is structural and is kept.
+        //
+        // ROUND 11 CORRECTS THE SENTENCE THAT USED TO FOLLOW. It said the frame "cannot trace a
+        // contour" because it is world-locked. That does not follow and it was not true. A
+        // world-locked frame traces the contours OF ITS OWN FIELD: applying R(theta(p)) to a
+        // position 200 m from the origin is a shear of magnitude |p| grad(theta) whose null
+        // direction is a level set of theta, and a level set of a smooth 2-D field is a closed
+        // curve. It drew nested closed curves on every pale face for four rounds. What makes a
+        // frame safe is a SHORT LEVER, not a world lock — see TkMarkAnchor1.
         _MarkAniso ("Mark - stretch along the frame axis", Range(1, 4)) = 2.2
         _MarkTurnScale ("Mark - turn field coarse (m)", Float) = 24.0
         _MarkTurnScaleFine ("Mark - turn field fine (m)", Float) = 1.9
@@ -404,6 +424,14 @@ Shader "Tarrock/TerrainPainterly"
         _MarkSizeSpread ("Mark - per-region size spread", Range(0, 0.8)) = 0.33
         _MarkValueSpread ("Mark - per-region value spread", Range(0, 0.8)) = 0.36
         _MarkDensitySpread ("Mark - per-region threshold shift", Range(0, 0.15)) = 0.045
+        // ROUND 11 — the LEVER ARM the turn and size fields act through. See TkMarkAnchor1.
+        // 11 m and not less: the fix's own residual is a Jacobian wobble at THIS pitch, and at
+        // the coarsest footprint in these frames (v1's far hillside, pixelM 0.132 m) 11 m is
+        // 83 px, which is above the 8-60 px band the whorl was measured in. 6 m would be 46 px
+        // — inside the ruler. Not 12 or 24 either: both are integer divisors of
+        // _MarkTurnScale 24, and an anchor lattice commensurate with the field it anchors is a
+        // beat pattern waiting to be found.
+        _MarkAnchorPitch ("Mark - anchor pitch (m)", Float) = 11.0
 
         [Header(Facets    the stone vocabulary)]
         // CHUNKY PLANAR FACETS (round 8). A flat tone per jittered POLYGONAL cell and nothing
@@ -706,6 +734,7 @@ Shader "Tarrock/TerrainPainterly"
             float _MarkSizeSpread;
             float _MarkValueSpread;
             float _MarkDensitySpread;
+            float _MarkAnchorPitch;
             float _FacetBaseScale;
             float _FacetRatio;
             float _FacetAmount;
@@ -1193,25 +1222,122 @@ Shader "Tarrock/TerrainPainterly"
             return max(coverage * (1.0 + shift * kCoverageSlope), 0.0);
         }
 
-        // The frameless mark space, now turned. Horizontal is rotated into the region's stroke
-        // axis and THAT axis is the one stretched; world Y is untouched, so a bed still reads
-        // horizontal on a wall and the stretch is a lean rather than a shear.
-        float3 TkMarkSpace(float3 worldPos, TkMarkFrame f)
+        // -- ROUND 11: THE LEVER ARM, WHICH IS WHY THE GROUND WORE THUMBPRINTS -------------------
+        //
+        // Round 6 killed a contour lock and wrote down its rule: nothing may orient the mark
+        // field by anything that rotates with the surface. Round 7 obeyed the letter of it — the
+        // turn field is a function of world XZ and of nothing else — and re-created the fault in
+        // a form the rule does not name, because the fault was never about the surface normal.
+        // It is about DIFFERENTIATING a position-dependent transform of a LARGE position.
+        //
+        // The shipped construct was h = R(theta(p)) * p with theta a smooth world field. Its
+        // Jacobian is not R:
+        //
+        //     dh/dp = R(theta) + (grad theta) (x) R(theta + pi/2) p
+        //
+        // and the second term scales with |p|. gp3 = fmod(positionWS, 512) and the Cliff sits at
+        // world x,z = 150-215 m, so |p| is 212-269 m over the patch sampled. grad(theta) is
+        // dominated by _MarkTurnScaleFine: 1.15 rad of spread over a 1.9 m octave MEASURES
+        // 0.118 rad/m mean, 0.210 at p90 (builder2/levers.py, levers.json, a 2000x2000 sample at
+        // 2 cm over the region's own coordinates). The correction term is therefore 28.5 mean and
+        // 50.6 at p90, against a wanted term of 1. The map is not a rotation; it is a shear whose null
+        // direction is the LEVEL SET OF THETA — and the level set of a smooth 2-D field is a
+        // CLOSED CURVE. Every mark band is stretched infinitely along nested closed curves. That
+        // is the concentric raked-clay whorl the round-10 capture wears on every pale face.
+        //
+        // markFrame.size did the same thing twice over and nobody looked: the bands divided p by
+        // (lambda0 * s(p)) with s a second world field, whose correction term |p| * |grad s|/s
+        // measures 17.0 mean and 31.5 at p90. Modelled ALONE, each of the two draws textbook bullseyes
+        // (builder2/sweep2_pm0.010_rake2.0.png tiles 1 and 2); together they are the shipped
+        // surface (tile 0).
+        //
+        // THE FIX IS TO SHORTEN THE LEVER, NOT TO REMOVE THE TURN. The turn field, the size
+        // field and all seven mark-frame constants are untouched — orientation variation is the
+        // protected round-7 win. What changes is WHAT the frame is applied to: the offset from a
+        // smooth staircase ANCHOR that tracks world position and never leaves it by more than
+        // 0.0962 * pitch per axis. At pitch 11 m the measured |p - anchor| is 1.06 m mean and
+        // 1.50 m worst (levers.json, which matches the closed form to four figures and is the
+        // check that the offline port is the same arithmetic as this file). The correction terms
+        // fall from 28.5 and 17.0 to 0.124 and 0.075 — a factor of 230. The anchor itself passes
+        // through untransformed, which is what keeps the map globally near the identity and so
+        // keeps the noise unrepeated.
+        //
+        // The residual is honest and stated: dh/dp = M + (I - M) da/dp, where da/dp = 6f(1-f)
+        // runs 0 to 1.5 across a cell, so the mark family's stretch is fully expressed near a
+        // cell wall and diluted at a cell centre. That is a slow modulation at the anchor pitch
+        // and it is why the pitch is chosen in PIXELS (see _MarkAnchorPitch). Modelled over five
+        // footprints from 1 cm to 13 cm a pixel and four disjoint patches of world
+        // (builder2/pitch.py, noise.py, verify.py; pitch.json, noise.json, verify.json):
+        //
+        //     orientation-defect density, cores per 10^4 px   ship 7.5+-0.7 -> 5.0+-1.3 at
+        //         pixelM 0.0165, 12.5+-0.6 -> 5.0+-0.7 at 0.0708; no-turn floor 1.1-1.6
+        //     structure-tensor coherence                      ship 0.31-0.40 -> 0.49-0.55
+        //         (the reference band this file already quotes at the round-6 note is 0.27-0.55;
+        //          dropping the turn entirely gives 0.72-0.75, which is the wallpaper)
+        //     local orientation spread, degrees               ship 40-47 -> 20-24, no-turn 8-11
+        //     high-pass rms, per cent of mean                 ship 16.3-21.2 -> 15.7-18.1
+        //
+        // The surface does not go dead: it loses about a tenth of its high-pass energy, which is
+        // the energy the shear was manufacturing by smearing marks along those closed curves.
+        //
+        // WHAT IS NOT CLAIMED. The whorl estimator the gauntlet gates on (a magnitude-weighted
+        // gradient-orientation coherence in an annulus) does NOT rank these variants on an
+        // ALBEDO model: run over the model it scores the un-turned control ABOVE the shipped
+        // whorl at every annulus from 3-8 to 18-90 px (builder2/annsweep.py), and dropping its
+        // magnitude weight does not fix that (builder2/d1u.py). It separates them on the LIT
+        // capture and not here, so this file's evidence for the fix is the mechanism, the lever
+        // arithmetic, the defect density and the eye — not a forecast of that gate's number.
+        static const float kAnchorGuard = 0.05;
+
+        // A C1 staircase: floor plus the smoothstep of the fractional part, times the pitch. It
+        // tracks q, it is smooth, and |q - anchor| <= 0.0962 * pitch (the maximum of f - f^2(3-2f)).
+        // Not floor() alone — that is a hard seam every pitch metres, and a seam in mark space
+        // decorrelates the noise across a straight line.
+        // The guard is 1 m and not 1e-4: a stale .mat built before this property existed hands
+        // the CBUFFER a zero, and at pitch 0 the anchor equals the position, the offset is zero
+        // and the whole mark frame silently stops being applied. 1 m is short enough to be
+        // obviously wrong on inspection and long enough that the material still paints.
+        float TkMarkAnchor1(float q, float pitch)
         {
-            float2 h = float2(worldPos.x * f.turn.x - worldPos.z * f.turn.y,
-                              worldPos.x * f.turn.y + worldPos.z * f.turn.x);
+            float p = max(pitch, 1.0);
+            float u = q / p;
+            float c = floor(u);
+            float f = u - c;
+            return (c + f * f * (3.0 - 2.0 * f)) * p;
+        }
+
+        // The frameless mark space, now turned, sized and ANCHORED. Horizontal is rotated into
+        // the region's stroke axis and THAT axis is the one stretched; world Y is untouched by
+        // the rotation, so a bed still reads horizontal on a wall and the stretch is a lean
+        // rather than a shear. `sizeM` is the per-region wavelength multiplier, applied HERE
+        // rather than by the callers multiplying their wavelengths: dividing the anchored offset
+        // is a bounded transform, dividing the raw world position is the 19x lever above.
+        float3 TkMarkSpace(float3 worldPos, TkMarkFrame f, float sizeM)
+        {
+            float3 a = float3(TkMarkAnchor1(worldPos.x, _MarkAnchorPitch),
+                              TkMarkAnchor1(worldPos.y, _MarkAnchorPitch),
+                              TkMarkAnchor1(worldPos.z, _MarkAnchorPitch));
+            float3 d = (worldPos - a) / max(sizeM, kAnchorGuard);
+            float2 h = float2(d.x * f.turn.x - d.z * f.turn.y,
+                              d.x * f.turn.y + d.z * f.turn.x);
             h.x /= max(_MarkAniso, 1.0);
-            return float3(h.x, worldPos.y, h.y);
+            return float3(h.x + a.x, d.y + a.y, h.y + a.z);
         }
 
         // The meadow's twin: the ground is read from above, so its marks live in the horizontal
-        // plane and the same turn/stretch applies in 2-D.
-        float2 TkMarkSpace2(float2 worldXZ, TkMarkFrame f)
+        // plane and the same turn/size/stretch applies in 2-D. `stretch` is a parameter because
+        // the meadow's continuous field takes the TURN without the STRETCH (round 8: ground seen
+        // from above is not fibrous), and that field needs the same anchor as the mark bands or
+        // it draws the whorl on its own — it did, and it is the field the meadow ROIs read.
+        float2 TkMarkSpace2(float2 worldXZ, TkMarkFrame f, float sizeM, float stretch)
         {
-            float2 h = float2(worldXZ.x * f.turn.x - worldXZ.y * f.turn.y,
-                              worldXZ.x * f.turn.y + worldXZ.y * f.turn.x);
-            h.x /= max(_MarkAniso, 1.0);
-            return h;
+            float2 a = float2(TkMarkAnchor1(worldXZ.x, _MarkAnchorPitch),
+                              TkMarkAnchor1(worldXZ.y, _MarkAnchorPitch));
+            float2 d = (worldXZ - a) / max(sizeM, kAnchorGuard);
+            float2 h = float2(d.x * f.turn.x - d.y * f.turn.y,
+                              d.x * f.turn.y + d.y * f.turn.x);
+            h.x /= max(stretch, 1.0);
+            return h + a;
         }
 
         // -- MARK CONTRAST: THE GAINS ARE RETIRED (round 7, finding 5a) ---------------------------
@@ -1846,21 +1972,32 @@ Shader "Tarrock/TerrainPainterly"
                     float worked = saturate(restM.x - _UplandRest * upland);
                     ground *= 1.0 + (restM.y - 0.5) * 2.0 * _FormShadow;
 
-                    float2 mgp = TkMarkSpace2(gp, markFrame);
                     // The knoll's marks are BIGGER. Same ladder, one landform, a coarser hand.
+                    // ROUND 11: hoisted above the mark spaces, because the size multiplier is now
+                    // applied to the anchored offset inside TkMarkSpace2 instead of to each band's
+                    // wavelength. Dividing a 200 m world position by a field is the 19x lever the
+                    // TkMarkAnchor1 note derives; dividing a 1 m offset by it is not.
                     float mSize = max(markFrame.size, 0.35) * (1.0 + _UplandSize * upland);
+                    float2 mgp = TkMarkSpace2(gp, markFrame, mSize, _MarkAniso);
 
                     // THE GROUND'S CONTINUOUS FIELD IS NON-DIRECTIONAL (round 8). It keeps the
                     // region's TURN — that is the protected round-7 win and removing it would be
                     // round 6's wallpaper again — and loses only the anisotropic STRETCH, by
-                    // passing an unstretched frame. Ground seen from above is not fibrous; a
-                    // stretched fbm under five stretched mark bands is what made it read as one.
+                    // passing a stretch of 1. Ground seen from above is not fibrous; a stretched
+                    // fbm under five stretched mark bands is what made it read as one.
                     // The mark bands below keep the stretch, so the STROKES still lean and still
                     // turn with the passage of ground; only the tone underneath them is isotropic.
-                    TkMarkFrame flatFrame = markFrame;
-                    float2 igp = float2(gp.x * flatFrame.turn.x - gp.y * flatFrame.turn.y,
-                                        gp.x * flatFrame.turn.y + gp.y * flatFrame.turn.x);
-                    float detail = TkDetailFbm(igp, _MeadowDetailScale * mSize, pixelM);
+                    // ROUND 11: this line used to build its rotation inline off the raw world XZ,
+                    // which is the whorl generator with the stretch left out — |p| grad(theta) does
+                    // not care whether one axis was afterwards divided by 2.2. It goes through the
+                    // same anchor as everything else now.
+                    float2 igp = TkMarkSpace2(gp, markFrame, mSize, 1.0);
+                    // ROUND 11: the wavelength is the NOMINAL one now — mSize was applied to the
+                    // anchored offset above, so multiplying it in here as well would size the
+                    // marks twice. The octave gate therefore reads the nominal wavelength rather
+                    // than the per-region one, which also makes TkOctaveWeight uniform across a
+                    // draw again instead of a per-pixel quantity feeding a UNITY_BRANCH.
+                    float detail = TkDetailFbm(igp, _MeadowDetailScale, pixelM);
                     ground *= 1.0 + (detail - 0.5) * 2.0
                         * TkMarkAmount(_MeadowDetailAmount, markFrame.value) * worked;
 
@@ -1896,18 +2033,18 @@ Shader "Tarrock/TerrainPainterly"
                     float2 thrC = float2(0.50, 0.79) - markFrame.shift;
                     float2 thrD = float2(0.52, 0.81) - markFrame.shift;
                     float2 thrL = float2(0.52, 0.82) - markFrame.shift;
-                    float2 fleckMid = TkFleckBand(mgp + 53.1, 0.160 * mSize, 0.265 * mSize, thrB,
+                    float2 fleckMid = TkFleckBand(mgp + 53.1, 0.160, 0.265, thrB,
                         TkMarkCoverage(0.120, markFrame.shift),
                         TkMarkAmount(_MeadowFleckMid, markFrame.value) * worked, pixelM);
-                    float2 fleckTuft = TkFleckBand(mgp + 131.9, 0.560 * mSize, 0.925 * mSize, thrC,
+                    float2 fleckTuft = TkFleckBand(mgp + 131.9, 0.560, 0.925, thrC,
                         TkMarkCoverage(0.103, markFrame.shift),
                         TkMarkAmount(_MeadowFleckCoarse, markFrame.value) * worked, pixelM);
-                    float2 fleckWide = TkFleckBand(mgp + 217.7, 2.100 * mSize, 3.470 * mSize, thrD,
+                    float2 fleckWide = TkFleckBand(mgp + 217.7, 2.100, 3.470, thrD,
                         TkMarkCoverage(0.083, markFrame.shift),
                         TkMarkAmount(_MeadowFleckStand, markFrame.value) * worked, pixelM);
                     // The pale band. Same construct, amount NEGATED: (1 + mark*a) over a divisor
                     // that grows with it, so it is still mean-preserving and still cannot clip.
-                    float2 fleckLight = TkFleckBand(mgp + 401.3, 0.240 * mSize, 0.397 * mSize, thrL,
+                    float2 fleckLight = TkFleckBand(mgp + 401.3, 0.240, 0.397, thrL,
                         TkMarkCoverage(0.082, markFrame.shift),
                         -TkMarkAmount(_MeadowFleckLight, markFrame.value) * worked, pixelM);
                     ground *= fleckMid.x * fleckTuft.x * fleckWide.x * fleckLight.x;
@@ -2071,13 +2208,19 @@ Shader "Tarrock/TerrainPainterly"
                     float workedS = restS.x;
                     stone *= 1.0 + (restS.y - 0.5) * 2.0 * _FormShadow;
 
-                    float3 markPos = TkMarkSpace(gp3, markFrame);
+                    // ROUND 11: rSize is hoisted above markPos and handed to TkMarkSpace, which
+                    // applies it to the ANCHORED OFFSET. It used to multiply every wavelength
+                    // below, i.e. it divided a 150-260 m world position by a 1.9 m-octave field —
+                    // the second of the two whorl generators the TkMarkAnchor1 note derives, and
+                    // the larger of them (a correction term of 19 against a wanted term of 1).
+                    // Every wavelength below is therefore the NOMINAL one now.
                     float rSize = max(markFrame.size, 0.35);
+                    float3 markPos = TkMarkSpace(gp3, markFrame, rSize);
                     // The continuous field KEEPS its stretch — a bed weathers along its own strike
                     // and stone is legitimately anisotropic (the reference plates measure 0.27-0.55
                     // structure-tensor coherence). What drops is its AMOUNT, 0.80 -> 0.34: it was
                     // the fibre carrier, and the facets below are what stone is made of now.
-                    float rockDetail = TkDetailFbm3(markPos, _DetailBaseScale * rSize, pixelM);
+                    float rockDetail = TkDetailFbm3(markPos, _DetailBaseScale, pixelM);
                     stone *= 1.0 + (rockDetail - 0.5) * 2.0
                         * TkMarkAmount(_RockGrainAmount, markFrame.value) * workedS;
 
@@ -2113,16 +2256,16 @@ Shader "Tarrock/TerrainPainterly"
                     float2 rThrA = float2(0.46, 0.76) - markFrame.shift;
                     float2 rThrB = float2(0.50, 0.79) - markFrame.shift;
                     float2 rThrC = float2(0.56, 0.86) - markFrame.shift;
-                    float2 rockFine = TkFleckBand3(markPos, 0.062 * rSize, 0.103 * rSize,
+                    float2 rockFine = TkFleckBand3(markPos, 0.062, 0.103,
                         rThrA, TkMarkCoverage(0.140, markFrame.shift),
                         TkMarkAmount(_RockFleckFine, markFrame.value) * workedS, pixelM);
-                    float2 rockMid = TkFleckBand3(markPos + 61.7, 0.170 * rSize, 0.281 * rSize,
+                    float2 rockMid = TkFleckBand3(markPos + 61.7, 0.170, 0.281,
                         rThrB, TkMarkCoverage(0.106, markFrame.shift),
                         TkMarkAmount(_RockFleckMid, markFrame.value) * workedS, pixelM);
-                    float2 rockWide = TkFleckBand3(markPos + 193.1, 0.560 * rSize, 0.925 * rSize,
+                    float2 rockWide = TkFleckBand3(markPos + 193.1, 0.560, 0.925,
                         rThrC, TkMarkCoverage(0.062, markFrame.shift),
                         TkMarkAmount(_RockFleckCoarse, markFrame.value) * workedS, pixelM);
-                    float2 rockLightMid = TkFleckBand3(markPos + 457.9, 0.145 * rSize, 0.240 * rSize,
+                    float2 rockLightMid = TkFleckBand3(markPos + 457.9, 0.145, 0.240,
                         rThrC, TkMarkCoverage(0.045, markFrame.shift),
                         -TkMarkAmount(_RockFleckLightMid, markFrame.value) * workedS, pixelM);
                     stone *= rockFine.x * rockMid.x * rockWide.x * rockLightMid.x;

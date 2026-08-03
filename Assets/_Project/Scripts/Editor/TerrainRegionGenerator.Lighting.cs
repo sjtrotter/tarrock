@@ -743,6 +743,14 @@ namespace Tarrock.Editor
         // and every pixel is bit-identical to round 9. See the block at smh.highlights for the
         // measurement; the summary is that the round-9 frames sit 1.2x to 1.5x short of white in RED
         // and 3.8x to 11.7x short in BLUE, so what stops the light arriving is not the level.
+        //
+        // ROUND 11 MOVES THE SAME THREE NUMBERS AND NOTHING ELSE — the highlight triple and the two
+        // highlight limits. Round 10 reached white and BOUGHT IT WITH BLUE; this round buys it with
+        // a threshold instead. The whole argument, with the per-channel clip-order arithmetic and
+        // the URP colour-grading LUT constraint that decides where the threshold can legally sit,
+        // is at smh.highlights below. Everything the round-7/8 blocks forbid is still forbidden and
+        // still untouched: no global multiply moves, so the jamb the last six rounds locked is
+        // bit-identical.
         private static void BuildPostVolume()
         {
             var profile = ScriptableObject.CreateInstance<UnityEngine.Rendering.VolumeProfile>();
@@ -961,12 +969,83 @@ namespace Tarrock.Editor
             // their bucket population runs R/B 4.4-5.9 against v6's 3.06, so the deficit is in what
             // the render delivers, not in what the grade does with it. That belongs to the lamp and
             // the two _BleachTints, not here.
+            //
+            // ROUND 11 — THE WHITE STAYS; THE APPROACH TO IT GOES BACK TO BEING WARM.
+            //
+            // Everything round 10 argued above is kept: the bucket is still a white point that
+            // only the top of the picture reaches, the midtones line still carries round 6's
+            // whisper for the band underneath, and nothing else in this method moves. What is
+            // corrected is WHAT THE WHITE COST, which two critics measured independently on the
+            // round-10 captures:
+            //   (a) BLUE REACHED THE WALL FIRST on 7 of 9 frames, on critic 1's own instrument
+            //       (scratchpad round10/critic1/r10_cost.py reading r10_core.json). A warm dawn
+            //       clips RED first, or all three together. Never blue.
+            //   (b) INSIDE THE CLOUD MASK THE BRIGHTEST 2% WENT COLOURLESS: R−B +36.5 (v8) and
+            //       +39.7 (v7) in round 9, −0.3 and +0.0 in round 10, with 7.8%–30.6% of the mask
+            //       blown against a reference-board ceiling of 0.0–0.1% (critic 2's own saved
+            //       output, round10/critic2/dawnaxis.txt). That is the bleach, stated as a number.
+            //
+            // NEITHER FAULT IS THE LEVEL, AND EACH IS ONE NUMBER.
+            //
+            // (1) THE RATIO. Post-bucket a channel reaches the wall at S·m ≥ 4.0354, so RED
+            //     arrives before BLUE only while m_B/m_R < S_R/S_B on the pixels that get there.
+            //     Inverting the round-9 captures back to this stage, the 2000 brightest pixels of
+            //     each frame run S_R/S_B 2.66 (v8) to 6.95 (v1), 5th percentile 2.20. Round 10
+            //     shipped m_B/m_R = 4.60/1.30 = 3.54 — ABOVE that population on six of eight
+            //     views, which is precisely the measured fault. It is now 2.50, under the whole
+            //     distribution, and modelled the frame clips red-first on all eight. m_G/m_R stays
+            //     at the convergence ratio the same population gives, 1.37–1.42 → 1.40.
+            //
+            // (2) THE THRESHOLD, AND IT IS SET BY THE CLOUD, NOT BY THE MEADOW. critic 2's hiRB is
+            //     the colour of the brightest 2% INSIDE the cloud mask: put that band in the
+            //     bucket and it goes white, and the number collapses by construction. Measured at
+            //     this stage's own luminance that band begins at 2.200 (v3), 2.387 (v8), 2.493
+            //     (v7) and 2.590 (v6) — and round 10 opened the bucket at 1.40, underneath all
+            //     four. It now opens at 2.90, above all four.
+            //
+            // (3) 2.90 AND 3.80 ARE LUT SAMPLES, AND NO PREVIOUS ROUND MODELLED THIS. URP does not
+            //     run this grade per pixel. With m_ColorGradingLutSize 32
+            //     (Assets/Settings/PC_RPAsset.asset) it bakes the whole of ColorGrade() — this
+            //     smoothstep included — into a 32-cube indexed in LogC and trilinearly
+            //     interpolates it (Shaders/PostProcessing/LutBuilderHdr.shader; Common.hlsl's
+            //     ApplyLut2D). Samples are 1/31 LogC apart, which near the top of this picture is
+            //         j=20  linear 2.0642     j=21  2.8012     j=22  3.8002
+            //     A ramp that begins between two samples is NOT what the frame gets: both ends
+            //     fall in one cell, the LUT holds w=0 at the lower sample and w=1 at the upper,
+            //     and the hardware draws a straight line across the whole cell — so a threshold
+            //     authored at 2.30 or 2.75 actually starts lifting at 2.0642, under every cloud
+            //     crown listed above. Modelled through the real 32-cube, the thresholds that read
+            //     safest analytically are the ones that bleach: at h_start 2.75 the vault's R−B
+            //     comes back 10–17 where the per-pixel model promised 33. Standing the bucket's
+            //     foot clear of the 2.8012 sample is what keeps the crown on the untouched side of
+            //     the grid, and highlightsEnd sits on the next sample for the same reason.
+            //
+            // WHAT IT COSTS, AND IT IS NOT HIDDEN. v3, v4, v5 and v8 have nothing above 2.90 —
+            // their brightest pixels are at 2.97, 2.48, 2.76 and 2.99 — so they carry no true
+            // white and their Lmax comes back off 1.0 (0.978 / 0.951 / 0.964 / 0.986). That is a
+            // frontier, not a dial: the LUT grid offers no threshold between 2.0642 and 2.8012, so
+            // the choice is white on those four frames OR a warm cloud, and canon picks the cloud
+            // ("pale dawn gold... WHITE IN THE LIGHT — warm white, NOT bleach"). The board carries
+            // frames of both kinds: fable-04 is among its brightest plates at 0.000% white, and
+            // fable-01 — the dawn plate this grade was written for — carries 0.0047%, which is the
+            // order this change delivers (round10/critic1/r10_core.json).
+            //
+            // PREDICTED, modelled through the 32-cube on the round-9 captures, and on the judges'
+            // own implementations:
+            //     true white   v2 0.0052%  v6 0.0035%  v7 0.0001%  v1 0.0001%   (v3,v4,v5,v8 0)
+            //     clip order   RED first on the seven views that clip at all (v4 clips in no
+            //                  channel); clip_R ≥ clip_B on all eight, where round 10 measured
+            //                  blue ahead of red on seven of nine
+            //     vault R−B    v3 +41.6  v7 +37.5  v6 +35.3  v8 +34.9   (round 10: +0.0 to −0.3)
+            //     vault clip   0.0% on all four boxes  (round 10: 4.8–20.0%; board 0.0–0.1%)
+            //     jamb p05     bit-identical to round 10 on all eight — the bucket is bounded
+            //                  below and the whole dark structure is three decades under 2.90.
             smh.midtones.Override(new Vector4(1.022f, 1.013f, 1.004f, 0f));   // → (1.049, 1.029, 1.009) the old whisper
-            smh.highlights.Override(new Vector4(1.1267f, 1.3226f, 2.0010f, 0f)); // → (1.30, 1.85, 4.60) converge on white
+            smh.highlights.Override(new Vector4(2.2579f, 2.6310f, 3.4244f, 0f)); // → (6.00, 8.40, 15.00) warm shoulder, small white core
             smh.shadowsStart.Override(0f);
             smh.shadowsEnd.Override(0.10f);
-            smh.highlightsStart.Override(1.40f);
-            smh.highlightsEnd.Override(2.40f);
+            smh.highlightsStart.Override(2.90f);
+            smh.highlightsEnd.Override(3.80f);
 
             // THE FLOOR — and in round 2 this was the toe, and the toe is what ate the picture.
             //

@@ -132,6 +132,14 @@ Shader "Tarrock/RockPainterly"
         _MarkSizeSpread ("Mark - per-region size spread", Range(0, 0.8)) = 0.33
         _MarkValueSpread ("Mark - per-region value spread", Range(0, 0.8)) = 0.36
         _MarkDensitySpread ("Mark - per-region threshold shift", Range(0, 0.15)) = 0.045
+        // ROUND 11 — the LEVER ARM the turn and size fields act through. See TkMarkAnchor1.
+        // Same 11 m as the terrain's, and SHARING it is the point rather than a coincidence: a
+        // boulder and the hillside it fell off must be painted by the same hand (the note above),
+        // and with one anchor lattice in world space they sit in the SAME anchor cell and take the
+        // same residual. The pixel argument that sets it is the terrain's; it also holds here,
+        // where the coarsest footprint a stone is read at is a standing stone at ~30 m (pixelM
+        // 0.043 m), where 11 m is 256 px — above the 8-60 px band the whorl was measured in.
+        _MarkAnchorPitch ("Mark - anchor pitch (m)", Float) = 11.0
         // How far the block's own colour drifts between formations. It is a HUE swing between two
         // stone colours applied per formation, not a value oscillation applied per pixel.
         _FormationTint ("Formation Hue Swing", Range(0, 1)) = 0.55
@@ -232,6 +240,7 @@ Shader "Tarrock/RockPainterly"
             float _MarkSizeSpread;
             float _MarkValueSpread;
             float _MarkDensitySpread;
+            float _MarkAnchorPitch;
             float _FormationTint;
             float _BeddingSpacing;
             float4 _BeddingDip;
@@ -436,7 +445,11 @@ Shader "Tarrock/RockPainterly"
         //
         // Replaced by frameless world-space 3-D lookups. Anisotropy is kept but WORLD-LOCKED: one
         // horizontal component is divided by _MarkAniso so every mark is stretched along a
-        // horizontal axis. A world-space axis cannot trace a contour.
+        // horizontal axis.
+        //
+        // ROUND 11 CORRECTS THE SENTENCE THAT USED TO END THAT PARAGRAPH. It said a world-space
+        // axis "cannot trace a contour". It traces the contours OF ITS OWN FIELD, and it did, for
+        // four rounds — see TkMarkAnchor1 below. A world lock is not what makes a frame safe.
         //
         // ROUND 7: THAT AXIS NOW TURNS. Round 6 used one constant axis everywhere, and the round-6
         // critique measured the result — the block-wise stroke direction collapsed to a single
@@ -490,12 +503,85 @@ Shader "Tarrock/RockPainterly"
             return max(coverage * (1.0 + shift * kCoverageSlope), 0.0);
         }
 
-        float3 TkMarkSpace(float3 worldPos, TkMarkFrame f)
+        // -- ROUND 11: THE LEVER ARM ------------------------------------------------------------
+        //
+        // The construct above was h = R(theta(p)) * p with theta a smooth world field, and the
+        // whole derivation lives in Tarrock/TerrainPainterly's TkMarkAnchor1 note. The short
+        // version: dh/dp = R(theta) + (grad theta) (x) R(theta+pi/2) p, the second term scales
+        // with |p|, and it turns the map into a shear whose null direction is a LEVEL SET of
+        // theta — a closed curve. markFrame.size did the same through the wavelength divisor.
+        //
+        // MEASURED AT THIS FILE'S OWN CALL SITE, over the shipped boulder population (6400
+        // scatter cells, Scatter.cs RockCell 3 m over the 256 m terrain; builder2/rocklevers.py,
+        // rocklevers.json):
+        //
+        //     |p_xz|, the rotation's lever arm    mean 192 m, max 346 m
+        //     turn lever |p_xz| * grad(theta)     mean 20.1, p90 51.4, WORST 99.9
+        //     size lever |p_xyz| * grad(s)/s      mean 15.4, p90 39.9, WORST 80.1
+        //
+        // against a wanted term of 1. Note what that measurement does NOT say: this file feeds
+        // TkMarkSpace `positionWS` RAW where the terrain feeds it fmod(positionWS, 512), and the
+        // obvious inference is that the lever is therefore worse here. It is not, because
+        // fmod(p, 512) is the IDENTITY for a 256 m world — the two files were carrying the same
+        // arithmetic. The missing wrap is a latent hazard for any region placed further out, not
+        // an active amplifier in this scene, and it is left as it is rather than "fixed" on a
+        // guess. What IS worse here is the TAIL: a stone in the far corner sits at 346 m where the
+        // Cliff's own faces sit at 212-269, so the worst-case lever is 99.9 against the terrain's
+        // 50.6.
+        //
+        // THE FIX IS THE TERRAIN'S, VERBATIM: shorten the lever. The turn field, the size field
+        // and all seven mark-frame constants are byte-identical. The frame now acts on the offset
+        // from a smooth staircase anchor — measured |p - a| 1.03 m mean, 1.47 m worst — which puts
+        // the two levers at 0.108 and 0.101. A factor of 186 and 152.
+        //
+        // WHAT IT BUYS AND WHAT IT COSTS, at boulder footprints (builder2/rockverify.py,
+        // rockverify.json; four disjoint patches of world, mean +/- sd):
+        //
+        //   pixelM 0.0165 (a stone at ~10 m)  defect 8.5+-2.0 -> 5.3+-1.5, no-turn floor 1.5
+        //   pixelM 0.0428 (a stone at ~30 m)  defect 10.9+-1.3 -> 4.2+-0.4, floor 1.4
+        //   pixelM 0.0066 (a stone at ~4 m)   the whorl is plain to the eye and gone after
+        //                                     (rock_1to1.png); the statistic is sparse there
+        //                                     because the tile holds only one or two cores
+        //   pixelM 0.0025 (the jamb, ~1.5 m)  NO artefact to remove: the tile spans less than one
+        //                                     1.9 m turn wavelength, so the shear is very nearly a
+        //                                     uniform linear map. The port is neutral here.
+        //   orientation spread, deg           ship 26-54 -> 21-24, no-turn control 11-19
+        //                                     (the round-7 win is kept at every footprint)
+        //
+        // THE COST, STATED: high-pass rms falls 24 -> 15.5 per cent at the closest footprint. That
+        // is the near mass and the broken jamb, and it is the surface round 7 fought to get OFF a
+        // flat card. Most of it is not loss: at lever 20 the 4 cm band was being sampled twenty
+        // times too fast along one axis, i.e. drawn at two millimetres on a face gated as though
+        // it were forty — the octave gate was computing on the nominal wavelength while the screen
+        // got hash. Removing the shear makes the gate honest. If the near mass now reads flat, the
+        // remedy is _RockFleck* amounts, NOT the lever.
+        static const float kAnchorGuard = 0.05;
+
+        // Guarded at 1 m, not 1e-4: a stale .mat built before this property existed hands the
+        // CBUFFER a zero, and at pitch 0 the anchor equals the position and the frame silently
+        // stops being applied at all.
+        float TkMarkAnchor1(float q, float pitch)
         {
-            float2 h = float2(worldPos.x * f.turn.x - worldPos.z * f.turn.y,
-                              worldPos.x * f.turn.y + worldPos.z * f.turn.x);
+            float p = max(pitch, 1.0);
+            float u = q / p;
+            float c = floor(u);
+            float f = u - c;
+            return (c + f * f * (3.0 - 2.0 * f)) * p;
+        }
+
+        // `sizeM` is the per-region wavelength multiplier, applied HERE rather than by the callers
+        // multiplying their wavelengths: dividing a 1 m anchored offset by a field is bounded,
+        // dividing a 192 m world position by it is the 15x lever above.
+        float3 TkMarkSpace(float3 worldPos, TkMarkFrame f, float sizeM)
+        {
+            float3 a = float3(TkMarkAnchor1(worldPos.x, _MarkAnchorPitch),
+                              TkMarkAnchor1(worldPos.y, _MarkAnchorPitch),
+                              TkMarkAnchor1(worldPos.z, _MarkAnchorPitch));
+            float3 d = (worldPos - a) / max(sizeM, kAnchorGuard);
+            float2 h = float2(d.x * f.turn.x - d.z * f.turn.y,
+                              d.x * f.turn.y + d.z * f.turn.x);
             h.x /= max(_MarkAniso, 1.0);
-            return float3(h.x, worldPos.y, h.y);
+            return float3(h.x + a.x, d.y + a.y, h.y + a.z);
         }
 
         // ROUND 7 RETIRES THE GAINS (finding 5a). The four `k*Gain` constants that lived here are
@@ -856,12 +942,17 @@ Shader "Tarrock/RockPainterly"
                 float workedS = restS.x;
                 albedo *= 1.0 + (restS.y - 0.5) * 2.0 * _FormShadow;
 
-                float3 markPos = TkMarkSpace(positionWS, markFrame);
+                // ROUND 11: rSize is hoisted above markPos and handed to TkMarkSpace, which applies
+                // it to the ANCHORED OFFSET. It used to multiply every wavelength below, i.e. it
+                // divided a 192 m world position by a 1.9 m-octave field — the second of the two
+                // whorl generators TkMarkSpace's note derives. Wavelengths below are NOMINAL now,
+                // so TkOctaveWeight gates on the wavelength the screen actually gets.
                 float rSize = max(markFrame.size, 0.35);
+                float3 markPos = TkMarkSpace(positionWS, markFrame, rSize);
                 // The continuous field keeps its stretch (weathering runs along a bed, and the
                 // board's rock measures 0.27-0.55 coherence) and loses two thirds of its AMOUNT:
                 // it was the fibre carrier and the facets below are what stone is made of now.
-                float stoneDetail = TkDetailFbm3(markPos, _DetailBaseScale * rSize, pixelM);
+                float stoneDetail = TkDetailFbm3(markPos, _DetailBaseScale, pixelM);
                 albedo *= 1.0 + (stoneDetail - 0.5) * 2.0
                     * TkMarkAmount(_RockGrainAmount, markFrame.value) * workedS;
 
@@ -880,16 +971,16 @@ Shader "Tarrock/RockPainterly"
                 float2 sThrA = float2(0.46, 0.76) - markFrame.shift;
                 float2 sThrB = float2(0.50, 0.79) - markFrame.shift;
                 float2 sThrC = float2(0.56, 0.86) - markFrame.shift;
-                float2 stoneFine = TkFleckBand3(markPos, 0.040 * rSize, 0.066 * rSize,
+                float2 stoneFine = TkFleckBand3(markPos, 0.040, 0.066,
                     sThrA, TkMarkCoverage(0.140, markFrame.shift),
                     TkMarkAmount(_RockFleckFine, markFrame.value) * workedS, pixelM);
-                float2 stoneMid = TkFleckBand3(markPos + 61.7, 0.120 * rSize, 0.198 * rSize,
+                float2 stoneMid = TkFleckBand3(markPos + 61.7, 0.120, 0.198,
                     sThrB, TkMarkCoverage(0.106, markFrame.shift),
                     TkMarkAmount(_RockFleckMid, markFrame.value) * workedS, pixelM);
-                float2 stoneWide = TkFleckBand3(markPos + 193.1, 0.400 * rSize, 0.660 * rSize,
+                float2 stoneWide = TkFleckBand3(markPos + 193.1, 0.400, 0.660,
                     sThrC, TkMarkCoverage(0.062, markFrame.shift),
                     TkMarkAmount(_RockFleckCoarse, markFrame.value) * workedS, pixelM);
-                float2 stoneLightMid = TkFleckBand3(markPos + 457.9, 0.100 * rSize, 0.165 * rSize,
+                float2 stoneLightMid = TkFleckBand3(markPos + 457.9, 0.100, 0.165,
                     sThrC, TkMarkCoverage(0.045, markFrame.shift),
                     -TkMarkAmount(_RockFleckLightMid, markFrame.value) * workedS, pixelM);
                 albedo *= stoneFine.x * stoneMid.x * stoneWide.x * stoneLightMid.x;
