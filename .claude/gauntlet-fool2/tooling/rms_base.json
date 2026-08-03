@@ -1,0 +1,129 @@
+{
+  "settings": {
+    "engine": "BLENDER_WORKBENCH",
+    "resolution": [
+      1400,
+      800
+    ],
+    "light": "STUDIO/paint.sl single-color, shadows on, cavity/specular off",
+    "sigma_px": 6.0,
+    "camera": "R5_CAM; same ortho_scale, aimed front/back at z=.88"
+  },
+  "anchors": {
+    "upper_arm": {
+      "center_px": [
+        516.2502586841583,
+        270.9375858306885
+      ],
+      "radius_px": [
+        6.562499902211131,
+        5.2499999217689055
+      ],
+      "anchor_world": [
+        0.42,
+        -0.08,
+        1.315
+      ]
+    },
+    "abdomen": {
+      "center_px": [
+        691.250216960907,
+        356.25009536743164
+      ],
+      "radius_px": [
+        15.312499771825975,
+        15.312499771825975
+      ],
+      "anchor_world": [
+        0.02,
+        -0.11,
+        1.12
+      ]
+    },
+    "costal": {
+      "center_px": [
+        638.7502253055573,
+        347.5000858306885
+      ],
+      "radius_px": [
+        17.499999739229683,
+        10.937499837018553
+      ],
+      "anchor_world": [
+        0.14,
+        -0.12,
+        1.14
+      ]
+    },
+    "clavicle": {
+      "center_px": [
+        649.6877253055573,
+        244.6876049041748
+      ],
+      "radius_px": [
+        26.249999608844526,
+        13.124999804422263
+      ],
+      "anchor_world": [
+        0.115,
+        -0.13,
+        1.375
+      ]
+    },
+    "psis": {
+      "center_px": [
+        667.1877086162567,
+        415.3125762939453
+      ],
+      "radius_px": [
+        34.999999478459365,
+        17.499999739229683
+      ],
+      "anchor_world": [
+        0.075,
+        0.12,
+        0.985
+      ]
+    },
+    "belt": {
+      "center_px": [
+        645.3127086162567,
+        384.68761444091797
+      ],
+      "radius_px": [
+        17.499999739229683,
+        17.499999739229683
+      ],
+      "anchor_world": [
+        0.125,
+        0.12,
+        1.055
+      ]
+    }
+  },
+  "metrics_rms_8bit": {
+    "upper_arm": 0.31338829003106156,
+    "abdomen": 0.626920580305667,
+    "costal": 22.693710658598324,
+    "clavicle": 6.518918502512869,
+    "psis": 6.259015018674879,
+    "belt": 8.107425849925267
+  },
+  "ordering": [
+    "upper_arm",
+    "abdomen",
+    "psis",
+    "clavicle",
+    "belt",
+    "costal"
+  ],
+  "expected_ordering": [
+    "upper_arm",
+    "abdomen",
+    "psis",
+    "clavicle",
+    "belt",
+    "costal"
+  ],
+  "ordering_pass": true
+}
