@@ -16,15 +16,26 @@ tree.
 
 ---
 
-## Round 12 — form, cover, and the hero's weight `QUEUED`
+## Round 13 — the spawn bowl, the pedestal, the deck `QUEUED`
 
-- Form shading (`_ShadeWrap` toward the measured deficit), the 64-cube LUT (white *and* warm clouds), v4's fog inversion.
-- The meadow's blade cover pushed toward the board band (we sit at 0.4–10% vs 13.6–48.2%).
-- v8 rebalanced: the tree earns contrast weight (now 0.37% vs 39% for two rock wings); bark material (constraint
-  released); the cloud-sea waterline.
-- **Still awaiting the director's camera ruling** — re-confirmed on round-11 pixels: no stretch of the shelf frames
-  both figure and tree at resting tilt.
+- The opening frame joins the meadow win (spawn-bowl cover, the lagging tussock material, pressed grass under the
+  Fool on every vantage).
+- The shadow pedestal traded properly: v5's broken ground mask fixed first, the chroma route (hold blue, drop R/G
+  toward the board's −13.8), fog reverted to 1.0, and the grass/terrain wrap discontinuity healed.
+- The deck's real gap: 72% of it is one code value — painted variation, not more geometry.
+- **Camera/proportions ruling sharpened for the director:** v8 needs 4.0× the tree's screen area to enter the board
+  band; v9 needs nothing (hero already out-weighs flanks 1.6:1, better than any board plate).
 
+## Round 12 — the meadow reaches the board · commit `47f924c`
+
+![Round 12 v6](img/thumb-r12-v6-meadow-scale.jpg) ![Round 12 v9](img/thumb-r12-v9-shelf-west.jpg)
+
+**Won:** the meadow — blade cover doubled-to-tripled and now sits *at or above the board* in the meadow proper
+(critic 4); the whorl's death confirmed three independent ways; the sun-bleach greenness model landed within 12%.
+**Missed honestly:** shade-wrap cannot reach cast shadow (the darks sit at atten 0.03 — the pedestal is the real
+lever, and it trades against the blue floor); the bark model wasn't coverage-aware; the waterline instrument was
+condemned along with five others in a nine-instrument audit. **Integrity:** round-11's blind-ranking milestone was
+retracted (see above) — the rule now is that ranking judges are always fresh and never the measurer.
 ## Round 11 — the whorl dies at the source · commit `4258d33`
 
 ![Round 11 v9](img/thumb-r11-v9-shelf-west.jpg) ![Round 11 v1](img/thumb-r11-v1-spawn-west.jpg)
@@ -33,7 +44,9 @@ tree.
 lever arm; anchoring them to an 11 m world lattice (shared with terrain: the "same hand" rule) removed it by eye and
 by decontaminated measurement, and Codex — fresh context, told nothing — dropped the terrain complaint it had made two
 rounds running. Warm white landed (cloud clipping → 0.0%, the near-white band warm at board-median saturation).
-**Milestone: v9-shelf-west places 2nd of six in the blind ranking — the first frame to outrank board plates.**
+~~Milestone: v9-shelf-west places 2nd of six in the blind ranking~~ — **RETRACTED in round 12**: that ranking
+was the runner's sighted self-assessment presented as blind; four fresh blind judges place ours 5th/6th, including
+on these same round-11 frames. Blind rankings are now delegated to dedicated fresh judges only.
 **Process:** three broken measuring instruments found and fixed (two self-reported by the agents that made them); the
 provenance rule held; one prompt-injection attempt in a transcript was flagged by the harness and neutralised.
 
