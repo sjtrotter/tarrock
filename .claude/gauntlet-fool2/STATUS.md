@@ -271,3 +271,31 @@ lines be the edges of forms; kill terraces by residual removal; flatten the bell
 the chest leads; de-dab knee/ASIS/PSIS/wrist; re-cut the clavicle as a true S.
 
 **Round verdict: SEND BACK → Round 10 = form-first Pass-2 redo.**
+
+---
+
+## Round 10 — form-first Pass-2 redo (2026-08-02)
+
+**Builder (Opus):** new anisotropic terrace tool (radius-grid over (z,φ), Gaussian
+along Z only) killed the four terraces; falloff bug (infinite gradient at cutoff —
+the source of every "stuck-on bump" halo) fixed at source; scapula rebuilt as a
+plate, knee as one mass, clavicle wire removed, thoracic plate + costal arch added;
+chest-vs-belly measured 7.7 mm forward (drawn 8.1) at the sampled stations.
+`Fool-v2-013.blend`.
+
+| 3/4 | Side belly |
+|---|---|
+| ![3/4](renders/r10-three-quarter.png) | ![belly](renders/r10-side-belly.png) |
+| ![scapula](renders/r10-zoom-scapula.png) | ![clavicle](renders/r10-zoom-clavicle-tq.png) |
+
+**Critic (Opus, fresh) + Codex blind:** **SEND BACK.** Banked as real: scapula plate,
+knee one-mass, terrace kill (~3.5/4), clavicle wire removal. But the round was net
+SUBTRACTIVE — "softer, not bonier"; Codex verdict word-for-word identical to last
+round ("mannequin-smooth", style 3/10); pixel-delta audit shows elbow (0.86%),
+pelvis (1.8%), wrist (3.2%) were never redone; new halos at malleolus/ulnar head;
+whole-profile check says the belly still leads the chest globally.
+
+**Round verdict: SEND BACK → Round 11 = ADDITIVE structural round: shoulder girdle
+(hard acromion corner, clavicle S ending above the plateau, humeral head), sacral
+triangle + iliac crest planes, halo removal + ulnar shaft line, elbow triad,
+chest-leads-belly globally.**
