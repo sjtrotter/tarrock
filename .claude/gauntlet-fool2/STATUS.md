@@ -194,3 +194,31 @@ probes.** All pre-states kept as hidden backups. `Fool-v2-009.blend`.
 **Round verdict: LANDED (hand visual judgment folds into the sculpt Pass 1 critic).
 Next: Round 7 = Sculpt Pass 1 — masses & silhouette + the carried fix list (inner
 leg line, trapezius, ankle step, crown, jaw pan).**
+
+---
+
+## Round 7 — Sculpt Pass 1: masses & silhouette (2026-08-02)
+
+**Builder (Opus):** all Tier-1 numpy fields, symmetry exact by construction. Carried
+fixes landed with per-station tables: inner leg to ±1.1 mm (was −7.7), shoulder
+saddle→acromion-crest structure built, ankle step gone, crown to drawn exactly, jaw
+mandible tuck, brow to ±3 mm, palm dome. Pass-1 masses at storybook restraint (pec fan
+2.2 mm peak, diagonal glute wedges, ribcage back plane, trochanter dents). Two
+paid-for method lessons logged (Gaussian-only profile smoothing; cyl_fair corrugates
+oblique surfaces). `Fool-v2-010.blend`.
+
+| Front overlay | 3/4 |
+|---|---|
+| ![front](renders/r7-overlay-front.png) | ![3/4](renders/r7-three-quarter.png) |
+| ![shoulder](renders/r7-zoom-shoulder-tq.png) | ![back](renders/r7-back.png) |
+
+**Critic (Opus, fresh) + Codex blind A/B:** proportion gate COMPREHENSIVELY MET
+(front and side contours ±3 mm at every sampled row; symmetry ≤1 px; trapezius
+finding closed for good). Codex (blind, 2 runs) independently corroborated the one
+real defect class: **banded transitions** — a ruler-straight terrace across the whole
+upper back (5 mm height variation over 296 mm), a neck-base collar welt, the deltoid
+fenced by grooves, sternal notch/clavicles overdone, crown facet residual.
+**SEND BACK — one blending session, not a re-sculpt.**
+
+**Round verdict: SEND BACK → Round 8 = boundary-blending session (back terrace, neck
+welt, deltoid fencing, clavicle backing-off ~40%, crown egg).**
