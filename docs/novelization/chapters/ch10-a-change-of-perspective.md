@@ -20,9 +20,9 @@ She looped the staff back onto the Bindle. It felt like taking off a coat she ha
 
 A man came down a tree trunk toward her — not climbed down, came *down*, walking, boots finding the bark the way boots find a path, two good coils of rope over each shoulder and the long-settled ease of someone who had stopped noticing which way was up.
 
-"Mind your step," he said, arriving at what was, for him, apparently the ground, "and I mean that in every direction at once, out here. Watch me, not your feet." He looked her over — fresh boots, a rose gone soft-pink at the belt, a small white dog deciding whether a stranger merited standing up for. "Fresh boots. You'll want a guide. This wood eats travellers who trust their own eyes.
+"Mind your step," he said, arriving at what was, for him, apparently the ground, "and I mean that in every direction at once, out here. Watch me, not your feet." He looked her over — fresh boots, a rose gone soft-pink at the belt, a small white dog deciding whether a stranger merited standing up for. "You'll want a guide. This wood eats travellers who trust their own eyes.
 
-"Bracken Loft," he said, offering a hand. "I read the wood for folk who can't. Been at it years — longer than anyone living, near enough — because out here your eyes lie to you, and I've learned exactly which lies. Up's a suggestion in the Gallowwood. Down's a hobby."
+"Bracken Loft," he said, offering a hand. "I read the wood for folk who can't. Been at it years — longer than anyone living, near enough. Up's a suggestion in the Gallowwood. Down's a hobby."
 
 "Which way is the man on the tree?" she asked.
 
@@ -112,7 +112,7 @@ He did not look up as she passed. The narrator will not tell you whether Fenwick
 
 Bracken Loft stopped at the clearing's edge.
 
-"Far as I go," he said, looking up at the hanging figure with something crossing his face he did not try to name. "My rope's no good up there, and neither am I. Go careful with him. He's the happiest thing I ever met, and I've never once been able to decide if that's a comfort or the saddest thing in this whole crooked wood."
+"Far as I go," he said, looking up at the hanging figure. "My rope's no good up there, and neither am I. Go careful with him. He's the happiest thing I ever met, and I've never once been able to decide if that's a comfort or the saddest thing in this whole crooked wood."
 
 The Hanged Man turned his head — unhurried, upside down, entirely unsurprised — and found her with a look of plain, uncomplicated affection, as though he had been expecting exactly this visitor for a long and pleasant while.
 
@@ -120,13 +120,13 @@ The Hanged Man turned his head — unhurried, upside down, entirely unsurprised 
 
 "You know what I've come to do," she said.
 
-"Mm. Turn me loose. Cut me down, more or less." He smiled, and it reached everything about him. "The others made a fight of it, I should think. Poor loves. All that struggling to hold a thing they were only ever standing in.
+"Mm. Turn me loose. Cut me down, more or less." He smiled, and it reached everything about him. "The others made a fight of it, I should think. Poor loves.
 
-"I shan't fight you. I couldn't, and I wouldn't, and there'd be no point — you can't beat a man who's already exactly where he wants to be. But you *can* join me. Come up. Hang a while. Do the thing I've done for three hundred years, the whole long circuit of it, and then — then ask me if I'll come down."
+"I shan't fight you. I couldn't, and I wouldn't, and there'd be no point — you can't beat a man who's already exactly where he wants to be. But you *can* join me. Come up. Hang a while. Do the thing I've done for three hundred years, and then — then ask me if I'll come down."
 
 "That's the whole trial? Hanging?"
 
-"That's the whole trial. Hardest thing in the wood and the easiest, both at once. Letting go, and *staying* let go, all the way round and back to me." He tipped his head, plainly delighted by the idea. "Nobody's ever done the full circuit. I'm rather excited to watch."
+"That's the whole trial. Hardest thing in the wood and the easiest, both at once. Letting go, and *staying* let go, all the way round and back to me." He tipped his head, delighted. "Nobody's ever done the full circuit. I'm rather excited to watch."
 
 *  *  *
 
@@ -134,7 +134,7 @@ She left the Bindle slung and unused, and reached up for the great bough beside 
 
 The same motion as the low bough, the same argument in her hands, quieter now, half-remembered rather than fresh — and she hung there beside the Hanged Man, high above a ground indistinguishable from a sky, and felt her body slowly stop insisting there was anything to be afraid of.
 
-"There," he said, easy, unhurried, keeping pace beside her. "Feel your hands wanting to close? That's not fear, whatever they told you. That's just a body that never learned the difference between falling and flying. Neither did I, at your age. You unlearn it. You've all the time there is."
+"There," he said, easy, keeping pace beside her. "Feel your hands wanting to close? That's not fear, whatever they told you. That's just a body that never learned the difference between falling and flying. Neither did I, at your age. You unlearn it. You've all the time there is."
 
 Then the circuit began, and this stretch of it remains, to my mind, the strangest and the gentlest of her whole journey.
 
@@ -182,13 +182,13 @@ And under it, surfacing the way that breath does, came a name.
 
 Around them the World-Tree began, very slowly, to right itself — the smallest first stirrings of a turning that would take the whole wood the rest of the evening to finish. And Wendel let go of the bough one final time, not into a hang, but into a fall, gentle as a leaf coming down at its own unhurried pace, and was set down standing on the true ground beside her, both feet flat on something that had, at long last, stopped arguing about which way it was.
 
-"Ground," he said, looking down at his own feet with frank, childlike wonder. "Would you look at that. I'd forgotten it was down there." A beat — the one honest, wistful note. "I'll miss the view, I think. That's allowed, isn't it. To be glad, and to miss it. I rather think that's the most honest thing there is."
+"Ground," he said, looking down at his own feet with frank wonder. "Would you look at that. I'd forgotten it was down there." A beat — the one honest, wistful note. "I'll miss the view, I think. That's allowed, isn't it. To be glad, and to miss it. I rather think that's the most honest thing there is."
 
 He reached into the air beside him — no flourish, just a man opening his hand — and a card came loose, turned over, and dropped into her waiting palms.
 
 "Trump the Twelfth," he said. "Overturn, if anyone ever bothers to write it down properly. It's the letting-go, made a thing you can carry. Feather-fall, they'll call the best of it. You'll never fear a drop again. That's my whole life's one lesson, in your pocket. Use it kinder than the world used me. Which—" he laughed, once "—it never did, in fact. That's the joke. Go well, little Excuse."
 
-She slotted the card into the Past pocket, where Triumph had ridden since the toll-fort, and felt it settle with the small certain click every Trump gave her now — a truth she would carry, this time, about falling, and about what it costs a person to let go of a thing they loved even when the letting go is the mercy.
+She slotted the card into the Past pocket, where Triumph had ridden since the toll-fort, and felt it settle with the small certain click every Trump gave her now — a truth she would carry, this time, about what it costs a person to let go of a thing they loved even when the letting go is the mercy.
 
 *  *  *
 
@@ -196,7 +196,7 @@ The righting of the Gallowwood took the rest of the evening, and she stayed for 
 
 It was not sudden. It was a long, tidal reshuffle, glade by glade, three centuries of held-up gravity remembering its business and letting everything gently down. Leaves that had fallen upward for three hundred years reversed mid-drift and came home the ordinary way. The upside-down brook poured off its borrowed ceiling and found itself a proper bed among the roots. The canopy bridges swung slowly round until they hung the way bridges are meant to.
 
-Underfoot now — unhappily, abruptly — a canopy-dweller's cottage built entirely to the old gravity found itself upside down all at once. A woman stood in her own doorway, now above her head, staring at a kettle hanging from what had just become her ceiling, her face caught precisely between grief and a bark of laughter that hadn't decided which one it meant to be.
+Underfoot now — unhappily, abruptly — a canopy-dweller's cottage built to the old gravity found itself upside down all at once. A woman stood in her own doorway, now above her head, staring at a kettle hanging from what had just become her ceiling, her face caught between grief and a bark of laughter that hadn't decided which one it meant to be.
 
 "...Well," she said, to nobody. "My front step's the roof now. Forty years I built that the right way up. The *old* right way up."
 
@@ -206,13 +206,13 @@ Further along, a pilgrim turned slowly on the spot, his whole religion resolved 
 
 *Feel that?* said the Querent, in a voice pitched to carry beyond just her ear. *Went out of the wood and just... kept going. The frightened ones, the guilty ones, all across the Spread — a notch calmer tonight, and none of them will know why. He does spread, that one. Even done, he spreads.*
 
-Then, quieter: *Twelve down. And the only one of the lot who was* glad *the whole time. Sit with that a moment, little Excuse. I have, rather a lot.*
+Then, quieter: *Twelve down. And the only one of the lot who was* glad *the whole time. Sit with that a moment, little Excuse.*
 
-And then — I will not pretend this was not deliberate, nor that I had not been saving it — the one thing I allow myself, once, in every card I turn with her:
+And then — the one thing I allow myself, once, in every card I turn with her:
 
 *You're the hero of this story, and the kindest thing you did today was cut down a man who was perfectly happy. Do let that sit crooked in you. It's supposed to.*
 
-She did not answer that one. I did not expect her to. Some things you are simply meant to carry crooked, and carrying them well is its own kind of answer.
+She did not answer that one. Some things you are simply meant to carry crooked, and carrying them well is its own kind of answer.
 
 *  *  *
 
@@ -242,10 +242,10 @@ Feather-fall took her the way a hand takes a dropped cup before it can shatter �
 
 *There you are*, said the Querent, something almost like pride in it. *A drop taken slow as a leaf. He'd have liked to see that. I daresay he still can, somewhere.*
 
-She turned, in the last gold light of the wood, and looked north-west — out past the whole crooked shoulder of the Gallowwood, to where a mountain sat locked in a dusk that had never once, in three hundred years, thought to deepen into night or lighten into day. And on its far slope, small and steady and entirely alone, one lantern-light moved — unhurried, going nowhere anyone had ever managed to follow it to.
+She turned, in the last gold light of the wood, and looked north-west — out past the crooked shoulder of the Gallowwood, to where a mountain sat locked in a dusk that had never once, in three hundred years, deepened into night or lightened into day. On its far slope, small and steady and alone, one lantern-light moved — unhurried, going nowhere anyone had ever managed to follow it to.
 
 "What's that one?"
 
 *That*, said the Querent, and I will confess I let the fondness show more than I meant to, *is the Dim. And the very next thing on your road, if you've a mind to go and get properly lost for a while.*
 
-She whistled up the dog and turned her boots toward the lantern, and did not look back at the Gallowwood again — though she would tell me, much later, that she still thought sometimes about a man teaching a whole forest how to fall gently, and a guide learning, slowly, how to love a place for what it used to be.
+She whistled up the dog and turned her boots toward the lantern, and did not look back at the Gallowwood again — though she would tell me, later, that she still thought sometimes about a man teaching a whole forest how to fall gently, and a guide learning to love a place for what it used to be.

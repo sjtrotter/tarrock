@@ -136,8 +136,8 @@ to spend when it's not your winter you're spending it out of." A grudging pause.
 not the same as free, mind. But I'll say this — that bear'll live to be frightened another day,
 which is more than I'd have given it an hour back."
 
-He did not follow further. At the edge of the shelf, where his ground ended, he stopped and
-looked up at the small far shape on the ridge.
+He did not follow further. At the shelf's edge, where his ground ended, he stopped and looked
+up at the small far shape on the ridge.
 
 "This is as far up as I go. Never had a reason. You'll have your own, I expect. Mind the
 shrines. They get stranger the higher you climb."
@@ -221,7 +221,7 @@ teeth, in a world that froze before it could learn better. It does not deserve a
 deserves *holding*. There is a difference. It is the whole one."
 
 The arms shuddered again, worse this time, mastered more slowly. "There is one thing," she
-said, barely above the wind. "One turn. Three hundred years and no one has ever offered, and
+said, barely above a whisper. "One turn. Three hundred years and no one has ever offered, and
 pride is a luxury the hands gave up around the same time as feeling. Hold it for me. Just a
 turn. Exactly as it is held now — no tighter, no crueller, and gods help you, do not let go —
 and let these hands remember what empty feels like. One turn. That is all that is asked."

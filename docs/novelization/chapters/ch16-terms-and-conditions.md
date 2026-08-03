@@ -1,70 +1,64 @@
 # Chapter Sixteen — Terms and Conditions
 
-The road west out of the Confluence had learned, in the space of about a fortnight, how to
-be autumn.
+The road west out of the Confluence had learned, in about a fortnight, how to be autumn.
 
-It astonished her every single morning, and I do not use the word morning carelessly: the
-sun over the Spread sat exactly where it had sat for three hundred years, so what she woke
-to was only ever the same unmoving light she had gone to sleep under. But the *road* had
-changed. The hedges had gone rust and copper along their tops, and every so often a whole
-handful of fallen leaves would come up off the verge in a gust and go past her ear, and
-Pip would spin round after them with the outrage of a professional whose yard has been
-interfered with. He had been doing this for a fortnight. He had not, as far as I could
-tell, begun to tire of it.
+The sun had not moved to permit it — the sun over the Spread sat exactly where it had sat
+for three hundred years and had no plans whatever — but the hedges had gone rust and copper
+along their tops, and every so often a whole handful of fallen leaves would come up off the
+verge in a gust and go past her ear, and Pip would spin round after them with the outrage
+of a professional whose yard has been interfered with. He had not, as far as I could tell,
+begun to tire of it.
 
 They passed a farmhouse where three men were getting the last of a crop in under a canvas
 because there was rain coming, and they knew there was rain coming, and none of them had
 known such a thing was knowable a year ago. One of them lifted an arm to her as she went
-by and shouted something about the weather that was mostly consonants, and she waved back,
-and that was the whole of it. I mention it because I want you holding one honest ordinary
-hour of that autumn in your head before we go underground. It will be needed later. Most
-things are.
+by and shouted something about the weather that was mostly consonants, and she waved back.
+I mention it because I want you holding one honest ordinary hour of that autumn in your
+head before we go underground. It will be needed later. Most things are.
 
-Then the country began to lean west, and somewhere out past a line of thorn the wind
-stopped.
+Then the country began to lean west, and somewhere past a line of thorn the wind stopped.
 
 Not died down. *Stopped* — the way a sound stops when a door shuts on it. One stride the
-grass was moving and the next it was standing exactly as the last breeze had left it,
-combed all one way and holding the shape like a portrait of itself. She had crossed this
-seam fifteen times now. It got worse every time, not better. That is what happens when you
-learn what a thing means.
+grass was moving and the next it stood exactly as the last breeze had left it, combed all
+one way and holding the shape like a portrait of itself. She had crossed this seam fifteen
+times now. It got worse every time, not better. That is what happens when you learn what a
+thing means.
 
 *Fifteenth,* said the Querent, in her ear. *And still the same little slap in the face,
 isn't it. Good. I should worry about you if it ever stopped being one.*
 
-Ahead, the western hills went up in long bare shoulders under an evening — and not an
-evening that was going anywhere: the light out here had been six o'clock since before
-anybody's grandmother, low and gold-brown across the gorse, every shadow lying down the
-same way and never once creeping. It was the loveliest hour in the world, and it had been
-that hour for three hundred years, which is another way of saying nobody out here had ever
-been to bed.
+Ahead, the western hills went up in long bare shoulders under an evening that was going
+nowhere: the light out here had been six o'clock since before anybody's grandmother, low
+and gold-brown across the gorse, every shadow lying down the same way and never once
+creeping. It was the loveliest hour in the world and it had been that hour for three
+centuries, which is another way of saying nobody out here had ever been to bed.
 
 And in the fold of two of those hills, sunk into the turf like something the ground had
 swallowed and not quite got down, was a stair.
 
 *  *  *
 
-It went down and kept going. Cut stone, wide enough for four abreast, with a handrail worn
-to a shine on both sides by an enormous number of hands. Out of the throat of it came a
-light that was not daylight at all, rising the way heat rises — warm, low, the colour of
-butter and old brandy — and with it a smell: coin, and beeswax, and something sweet
-underneath the two of them that she could not name and was not at all sure she wanted to.
+It went down and kept going: cut stone, wide enough for four abreast, the handrail worn to
+a shine on both sides by an enormous number of hands. Out of the throat of it came a light
+that was not daylight at all, rising the way heat rises — warm, low, the colour of butter
+and old brandy — and with it a smell of coin and beeswax and something sweet underneath the
+two of them that she could not name and was not at all sure she wanted to.
 
 Across the head of the stair, absurdly, hung a velvet rope. Crimson, gold-tasselled, a
-little frayed at one end where three centuries of sleeves had gone past it — the sort of
-rope a theatre keeps at the door so that the queue may feel chosen. It could have been
-stepped over by a determined toddler. Nobody, she suspected, ever had.
+little frayed where three centuries of sleeves had gone past it — the sort of rope a
+theatre keeps at the door so that the queue may feel chosen. It could have been stepped
+over by a determined toddler. Nobody, she suspected, ever had.
 
 Growing at the very lip of the stairwell, where the last of the gold light fell across the
-top step and stopped, was a wild white rose. It had got its roots into the crack between
-two stones and made an argument out of it, and it was in full flower, and it was the last
+top step and stopped, was a wild white rose. It had got its roots into a crack between two
+stones and made an argument out of it, and it was in full flower, and it was the last
 living growing thing between her and the dark.
 
 She crouched down to it. She had six petals at her belt by then, and she had learned that a
-grafting is not a thing you *take*, exactly. She got her knife under the right place. She
-was slow about it. She apologised out loud, which she had done every time and never once
-mentioned to me afterwards, and then she bound the cutting in at her own Rose's stem with a
-bit of cord out of the Bindle and held her thumb over it until it stopped being two things.
+grafting is not a thing you *take*, exactly. She got her knife under the right place; she
+was slow about it; she apologised out loud, which she did every time and never once
+mentioned to me afterwards. Then she bound the cutting in at her own Rose's stem with a bit
+of cord out of the Bindle and held her thumb over it until it stopped being two things.
 
 The seventh petal came up out of the white about as fast as a person swallows.
 
@@ -73,34 +67,32 @@ Nothing grows down there, little Excuse — not for want of soil. They simply fo
 didn't miss it, and stopped paying for the window.* A pause. *Mind the last of the sky on
 your way past. They don't keep any of it below.*
 
-She looked up. The gorse stood in its unmoving evening; away east across the whole width
-of the world the Axis sat small and silver and perfectly still, with something turning at
-the middle of it, as it had done every day of her life and every day of everyone's.
-
-Then she stepped past the velvet rope and went down, and Pip went with her at heel — game
-as ever, unhurried, but keeping one ear turned back on her the whole way down the way a
+Away east across the whole width of the world the Axis sat small and silver and perfectly
+still, with something turning at the middle of it, as it had done every day of her life and
+every day of everyone's. Then she stepped past the velvet rope and went down, and Pip went
+at heel — game as ever, but keeping one ear turned back on her the whole way, the way a
 good dog minds a companion in a stranger's house.
 
 *  *  *
 
 The stair let out onto a balcony, and the balcony was over the whole of it.
 
-I have watched a great many people arrive at that balcony, and every one of them stops. It
-is a pit — a well of a city, dropping away in tier after tier, balconies and counting-houses
-and private boxes going round and down and round and down into a warm gold dark with no
-floor you can find from up there, every rail and lintel worked in gold leaf gone soft at
-the corners the way gold leaf goes when it is loved and handled and never once replaced.
+I have watched a great many people arrive there, and every one of them stops. It is a pit —
+a well of a city, dropping away in tier after tier, balconies and counting-houses and
+private boxes going round and down and round and down into a warm gold dark with no floor
+you can find from up there, every rail and lintel worked in gold leaf gone soft at the
+corners the way gold leaf goes when it is loved and handled and never once replaced.
 
 There is no sky. That is not a poetic remark: it is the one region in the whole Spread with
 a lid on it. What it has instead is gaslight — thousands of jets in brass brackets going up
-the walls in constellations, and every single flame standing perfectly, mathematically
-still. No draught. No flutter. Three hundred years of open flame and not one of them so
-much as leaning.
+the walls in constellations, every single flame standing perfectly, mathematically still.
+No draught. No flutter. Three hundred years of open flame and not one of them so much as
+leaning.
 
 She noticed that before she noticed the people. Then she noticed the people: everywhere,
-busy, and *cheerful*. And from wrists and ankles and belt-loops, catching the gaslight in
-little warm strings all the way down the pit, hung chains — fine as jewellery, the kind of
-gold links a person might be given at a wedding.
+busy, *cheerful*. And from wrists and ankles and belt-loops, catching the light in little
+warm strings all the way down, hung chains — fine as jewellery, the kind of gold links a
+person might be given at a wedding.
 
 *The Undervault,* said the Querent. *Every chain you can see, somebody asked for. Signed
 for. Haggled the price of, a few of them, and came away feeling they'd got the better end.*
@@ -128,8 +120,8 @@ Pip sat down and looked at the chain. Pip had opinions.
 
 "*Trapped!*" She laughed — and here is the difficulty, and I want it on the record: it was
 a kind laugh, not a defensive one. "Dear, the door's right there." Her hand went over her
-own wrist as she said it, and it went a half-second too fast, and it stayed there. "I've
-simply nowhere I'd rather be. That's not a trap. That's a *home*."
+own wrist as she said it, a half-second too fast, and stayed there. "I've simply nowhere
+I'd rather be. That's not a trap. That's a *home*."
 
 The Fool looked at the chain, and at the hand over it, and asked the only question she had
 actually come with.
@@ -137,8 +129,7 @@ actually come with.
 "Do you ever miss the sky?"
 
 The woman opened her mouth to answer, and did not. It went on a good deal longer than a
-pause has any business going on. Somewhere below them a counting-house bell rang the hour
-it had been ringing for three centuries.
+pause has any business going on.
 
 "...You know," she said at last, "nobody's asked me that in years." She frowned slightly,
 the way you frown at a sum that will not come out. "No. No, I don't think I do." And then,
@@ -165,11 +156,11 @@ every hand and I've forgotten what a *good* hand felt like." He gathered the car
 pity me. I'd sign it again tomorrow."
 
 In the second, a Cups-suit woman sat with her hands folded and her eyes shut and her mouth
-moving, conducting a silence as though it were an aria and she had written it.
+moving, conducting a silence as though it were an aria she had written.
 
-"I traded my voice for quiet." No sound came out of her at all; the words simply arrived,
-the way a smell arrives. "You've no idea how loud a life gets, love. I've never slept so
-well." A small pleased breath. "Never sung again either. Small price."
+"I traded my voice for quiet." No sound came out of her; the words simply arrived, the way
+a smell arrives. "You've no idea how loud a life gets, love. I've never slept so well." A
+small pleased breath. "Never sung again either. Small price."
 
 In the third, a Wands-suit woman rocked an empty cradle with one foot, at perfect ease.
 
@@ -177,19 +168,14 @@ In the third, a Wands-suit woman rocked an empty cradle with one foot, at perfec
 was the whole of the horror. "Now I remember loving her and I don't remember losing her."
 The cradle went on going. "It's the kindest thing anyone ever sold me."
 
-The Fool stood in the passage between the three lit boxes for longer than the walking of it
-required. Pip pressed against her boot and stayed there.
+Pip pressed against the Fool's boot and stayed there.
 
 *Every one of those is a true story with the price paid in full,* said the Querent, low.
 *That's what he sells down here. Not lies. Terms. And the awful part isn't that they were
-cheated, little Excuse.* A pause. *The awful part is that they weren't.*
-
-And then, because we had come far enough by then that I had stopped softening things for
-her:
-
-*You've met his cousins. Death gave endings away for nothing at all. This one charges, and
-prints the bill, and hands you a copy for your records. I couldn't tell you which of the
-two I trust less.*
+cheated, little Excuse.* A pause. *The awful part is that they weren't.* And then, because
+we had come far enough by then that I had stopped softening things for her: *You've met his
+cousins. Death gave endings away for nothing at all. This one charges, and prints the bill,
+and hands you a copy for your records. I couldn't tell you which of the two I trust less.*
 
 *  *  *
 
@@ -200,25 +186,22 @@ open.
 She read the contract. It was three paragraphs of perfectly ordinary print about the
 storage of grain, and it made no sense at all, and it took her a while to work out why:
 underneath the flourish at the bottom, in a smaller hand, ran four more lines set the wrong
-way round. Backward. Mirror-script. Not hidden — nothing was hidden, there was no dust on
-it, no seal over it, nothing but the fact of its being small and reversed and at the bottom
-where a person's eye stops.
+way round. Mirror-script. Not hidden — nothing here was hidden; there was no dust on it and
+no seal over it, only the fact of its being small and backward and down where a person's
+eye stops.
 
-The Veil had taught her a habit, months ago, in a house of pillars where she had kept a
+The Veil had taught her a habit, months back, in a house of pillars where she kept a
 woman's secret and never told a soul including me: the habit of not reading a page so much
 as letting it be read *at* you, sideways, patiently, until it gives up. She took the
-reading-lamp off its hook and got down on her heels and turned the flame and the glass and
+reading-lamp off its hook, got down on her heels, and turned the flame and the glass and
 her own head about until the small backward lines came round the right way.
 
-They said what the big print said. They said it exactly, precisely, without one grain of
-difference — only completely, and with the cost in it.
+They said what the big print said. Exactly, without one grain of difference — only
+completely, and with the cost in it.
 
-She sat back on her heels.
-
-*There,* said the Querent. *That's the whole of him in one room, if you were wondering.
-It isn't hidden. It's just* small, *and backward, and nobody down here has ever once held
-it up to a light.* A beat. *You did. Keep the habit. You'll want it in about thirty
-seconds.*
+*There,* said the Querent. *That's the whole of him in one room, if you were wondering. It
+isn't hidden. It's just* small, *and backward, and nobody down here has ever once held it
+up to a light.* A beat. *You did. Keep the habit. You'll want it in about thirty seconds.*
 
 The door opened.
 
@@ -226,24 +209,22 @@ The door opened.
 
 The lowest tier was the grandest: a floor of black-and-gold marble under the whole ringed
 city, every balcony above it full of contented people leaning on gilded rails to watch. And
-at the centre of that floor, where you would have expected a throne, there was a desk.
+at the centre of it, where you would have expected a throne, there was a desk.
 
-That is the thing I have never got over about him. Not a throne. A *desk* — mahogany,
-green leather, an inkwell, a fair stack of blank contracts squared true at the corners,
-and one pen laid across them at a considerate angle for a right-handed guest.
+That is the thing I have never got over about him. Not a throne. A *desk* — mahogany, green
+leather, an inkwell, a fair stack of blank contracts squared true at the corners, and one
+pen laid across them at a considerate angle for a right-handed guest.
 
-The man behind it rose the exact correct amount.
+The man behind it rose the exact correct amount. He was trim and unhurried and dressed like
+somebody who has never once in his life been cold, and his face had been built, by whatever
+builds faces, for the specific purpose of putting people at their ease. It worked on her,
+and she knew what he was.
 
-He was trim and unhurried and dressed like somebody who has never once in his life been
-cold, and his face had been built, by whatever builds faces, for the specific purpose of
-putting people at their ease. It worked, too. It worked on her, and she knew what he was.
-
-At the foot of the dais Pip stopped dead. His hackles came up along his whole back, and he
+At the foot of the dais Pip stopped dead. His hackles came up along his whole back and he
 growled — once, low, from somewhere under the floor of him — and it was a sound she had
 never heard him make at any single thing in the entire world. Not at the Blanks. Not at the
-Bataleur. Not at the lion.
-
-She glanced down. He settled, watchful, deeply unhappy, and stayed exactly where he was.
+Bataleur. Not at the lion. She glanced down; he settled, watchful, deeply unhappy, and
+stayed exactly where he was.
 
 "There you are." Old Nick Lowry gestured at the chair on her side. "Do sit — no? Stand,
 then, by all means. A standing guest drives a harder bargain and I've no objection whatever
@@ -251,13 +232,13 @@ to a hard bargain. I so rarely get a *new* one."
 
 He came round the desk far enough to be sociable and not one inch further.
 
-"You'll have seen the residents on your way down. Happy, every one. I'd like you to hold
-that in your mind, because in about a minute you're going to assume I did something
-dreadful to them, and I'd rather have the assumption gone before we talk." He said it
-pleasantly. He said everything pleasantly. "I never did a single thing to anybody in this
-city that wasn't written down first, read aloud, and signed atop. I don't cheat. I don't
-lie. I've never had the need. The truth closes more deals than a lie ever managed — that's
-the one secret of the trade, and I'll give it you for free."
+"You'll have seen the residents on your way down. Happy, every one. Hold that in your mind,
+because in about a minute you're going to assume I did something dreadful to them, and I'd
+rather have the assumption gone before we talk." He said it pleasantly. He said everything
+pleasantly. "I never did a single thing to anybody in this city that wasn't written down
+first, read aloud, and signed atop. I don't cheat. I don't lie. I've never had the need.
+The truth closes more deals than a lie ever managed — that's the one secret of the trade,
+and I'll give it you for free."
 
 "And if I've come to fight you?"
 
@@ -265,14 +246,14 @@ the one secret of the trade, and I'll give it you for free."
 came down a very long stair, and it would be *rude* of me not to offer you terms first.
 Three of them. All honest. All yours to take or leave."
 
-He turned the top three contracts face-up, unhurried, and squared them with two fingers.
+He turned the top three contracts face-up and squared them with two fingers.
 
 "Read every word. I'll not stop you. I never stop anyone." He returned to his side of the
 desk. "Stopping people is the only thing in this business that would actually be
 dishonest."
 
-And here — once, and I shall not do it again this chapter — I leaned close and said the
-thing I say when I cannot help myself:
+And here — once, and I shall not do it again — I leaned close and said the thing I say when
+I cannot help myself:
 
 *Mind how you sign, little Excuse. You and I both know there's a hand on the far side of
 you doing the actual choosing, and it does so love a good bargain.* A dry beat. *He knows
@@ -407,60 +388,55 @@ to actually fight for a single day of it in nearly as long.
 *  *  *
 
 I will not dress this up. It was the hardest fight of her life to that point, and she had
-walked into it having refused every single advantage she was offered, and she never once
-looked as though she regretted it, which is not the same as not regretting it.
+walked into it having refused every advantage she was offered, and she never once looked as
+though she regretted it, which is not the same as not regretting it.
 
-He fought with the chains. Of course he did — the same fine gold links the whole city wore,
-except that in his hands they came off the marble like whips and went out across the pit
-faster than a person can decide anything. He put one round her ankle in the first ten
-seconds and pulled her off the floor and up over the rail of the second tier, and she came
-down onto the balcony among a crowd of delighted, applauding residents, and she did not
-break, because Overturn was in the near pocket over her heart and had been since the
-Gallowwood, and a drop is only a drop to somebody a hanged man taught to fall like a leaf.
+He fought with the chains — the same fine gold links the whole city wore, except that in
+his hands they came off the marble like whips and went out across the pit faster than a
+person can decide anything. He put one round her ankle in the first ten seconds and pulled
+her off the floor and over the rail of the second tier, and she came down among a crowd of
+delighted, applauding residents, and she did not break, because Overturn had been in the
+pocket over her heart since the Gallowwood, and a drop is only a drop to somebody a hanged
+man taught to fall like a leaf.
 
 She got up. He was already there.
 
-And here is what won it, in the end: she had spent an hour that evening learning to hold
-small backward things up to a light, and she did it again in the middle of the fight. The
-gaslight down there was everywhere and showed nothing. So she spent Fortune she had not
-bought and raised the Hermit's Lantern instead — a thin honest white light in a room made
-of flattering gold — and in it she could see the chains for exactly what they were: not
-magic, not fate, only links, with a slack in them, and a moment at the top of every throw
-when they were nothing at all.
+And here is what won it: she had spent an hour that evening learning to hold small backward
+things up to a light, and she did it again in the middle of the fight. The gaslight down
+there was everywhere and showed nothing. So she spent Fortune she had not bought and raised
+the Hermit's Lantern instead — a thin honest white light in a room made of flattering gold
+— and in it she could see the chains for exactly what they were: not magic, not fate, only
+links, with a slack in them, and a moment at the top of every throw when they were nothing
+at all.
 
-After that it was thirty minutes of the worst work she had ever done. He was fast and he
-was clean and he did not gloat, because there was no need. Twice she burned petals off the
-Rose two at a time. The residents watched from every balcony in the pit and enjoyed it
-enormously and bore her no ill will whatsoever.
+After that it was half an hour of the worst work she had ever done. He was fast and he was
+clean and he did not gloat, because there was no need. Twice she burned petals off the Rose
+two at a time, and the whole pit watched from its balconies and enjoyed it enormously and
+bore her no ill will whatsoever.
 
 Halfway through, he took her off the third tier with a chain across the chest and she did
-not get up, and for a moment the whole pit went quiet in a way that gold rooms do not
-usually manage.
-
-Then Death's card answered in the far pocket, the way it had been waiting to since the
-Stillmarsh — *not yet* — and she came up off the marble on one petal, shaking, with her
+not get up, and for a moment the place went quiet in a way that gold rooms do not usually
+manage. Then Death's card answered in the far pocket, the way it had been waiting to since
+the Stillmarsh — *not yet* — and she came up off the marble on one petal, shaking, with her
 hair in her eyes.
 
-Old Nick stopped for a half-beat.
+Old Nick stopped for a half-beat. "That," he said, with enormous professional interest,
+"ought to have been a full stop."
 
-"That," he said, with enormous professional interest, "ought to have been a full stop."
-
-"You took *nothing*." He said it later, much later, when they were both wrecked and the
-chains were coming slower. "Do you know how long it's been since somebody took nothing?
-You walked into the one shop in the world that gives fair value, and you paid full price
-in the only coin I don't stock." He was laughing — a real one, the first ungoverned sound
-he had made all night. "*Pride.* I could kiss you. I could also end you. Both, I think. In
-that order."
+"You took *nothing*," he said later, when they were both wrecked and the chains were coming
+slower. "Do you know how long it's been since somebody took nothing? You walked into the
+one shop in the world that gives fair value and you paid full price in the only coin I
+don't stock." He was laughing — the first ungoverned sound he had made all night. "*Pride.*
+I could kiss you. I could also end you. Both, I think. In that order."
 
 She hit him with the Bindle across the forearm on the outside of a throw, which is the one
 place a chain cannot help a man, and then she hit him again, and that was the end of it.
 
 *  *  *
 
-Something went out of him that had nothing to do with the blow.
-
-He stopped. He looked down at the chain in his own hand as though it were a thing that had
-been handed to him by mistake, at a party, by somebody he did not know.
+Something went out of him that had nothing to do with the blow. He stopped, and looked down
+at the chain in his own hand as though it were a thing handed to him by mistake, at a
+party, by somebody he did not know.
 
 "That's — hm." Old Nick Lowry frowned. "That's not a term I recall drafting. Losing." He
 turned the words over with real puzzlement, the way you turn over a coin from a country you
@@ -470,8 +446,8 @@ He sat down on the marble. Slowly. Without a desk to sit behind for the first ti
 hundred years.
 
 "Do you know, I don't believe I ever wrote myself a clause for this," he said. "Careless.
-I'm never careless." He looked up at the tiers, the gold, the whole warm gilded well of it
-going up and up and up into its lid. "What have I been *doing* down here."
+I'm never careless." He looked up at the gold, the tiers, the whole warm gilded well of it
+going up and up into its lid. "What have I been *doing* down here."
 
 And the office cracked.
 
@@ -485,15 +461,15 @@ shouted across that pit ten thousand times and never once in three centuries sai
 himself.
 
 "They all call me it," he said, barely. "Every day. *Old Nick. Old Nick Lowry.* Across the
-floor, up the stair — I hear it more than any name has ever been heard by anybody." He
+floor, up the stair — I hear it more than any name's ever been heard by anybody." He
 stopped. "And I never — it was the office's name. The desk's name. Never *mine* to say."
 
-He tested it. Slowly. The way a man picks up a piece of cutlery he has not held in so long
-that he has forgotten which hand it belongs in.
+He tested it, the way a man picks up a piece of cutlery he has not held in so long that he
+has forgotten which hand it belongs in.
 
 "...Nick." A pause. "*I'm* Nick."
 
-And then he laughed — small, astonished, and not one grain of awful anywhere in it.
+And then he laughed — small, astonished, without one grain of awful anywhere in it.
 
 "Oh. Oh, that's — I'd forgotten there was a *me* under the terms of me." He wiped his face
 with the back of his wrist and seemed surprised at what came off on it. "Three hundred
@@ -501,9 +477,8 @@ years keeping everybody else's word. Nobody ever offered to keep mine."
 
 He got up off that marble a plainer man than the one who had sat down on it — smaller,
 older about the eyes, the charm gone quiet and the awfulness gone entirely, and only the
-funny left, which had always been the part that was actually his.
-
-He reached into the air and drew out a card, without any flourish at all.
+funny left, which had always been the part that was actually his. He reached into the air
+and drew out a card, without any flourish at all.
 
 "Trump the Fifteenth. Bargain, they'll call it, and they'll be right — it's the honest one,
 it always was." He turned it once in his fingers. "And I know what you're doing, by the by.
@@ -525,9 +500,9 @@ the ink."
 It went up through the pit like a change of pressure.
 
 On every tier, from every wrist and ankle and belt-loop, the fine gold chains simply
-*opened*. There was no drama in it and nothing snapped; it was a quiet universal unlatching,
-as though every contract in the Undervault had reached its final clause at the same instant
-and been permitted, at last, to end.
+*opened*. Nothing snapped; there was no drama in it at all. It was a quiet universal
+unlatching, as though every contract in the Undervault had reached its final clause at the
+same instant and been permitted, at last, to end.
 
 And then the air came down.
 
@@ -541,8 +516,8 @@ screaming.
 People looked down at their open chains. Some wept. Some sat down where they stood. And
 then, in ones and twos and then in a slow dazed upward tide, they began to climb.
 
-Pip watched the crowd going by with his head tilted, tail going uncertainly, plainly
-weighing whether this was a thing that ought to be herded.
+Pip watched them go with his head tilted and his tail going uncertainly, plainly weighing
+whether this was a thing that ought to be herded.
 
 "Look at them all *leave*," said Nick, at her shoulder, in a voice of pure bewilderment. "I
 always told myself they stayed because the terms were good. And the terms *were* good,
@@ -570,42 +545,40 @@ again."
 "I know it. Felt it go." He held up his own bare wrist and considered it without hurry.
 "Funny. Lighter than I'd like, if I'm honest. A weight you've worn thirty years, you miss
 the *shape* of it." A short breath that was very nearly a laugh. "Like a hat. Take a hat
-off after thirty years and your head goes about half a mile up. Undignified."
+off after thirty years and your head goes half a mile up. Undignified."
 
-Above them, the climbers kept climbing. Below them, the gaslight leaned and swayed in an
-air it had never met.
+Above them the climbers kept climbing. Below them the gaslight leaned and swayed in an air
+it had never met.
 
 "Come up. It's better up there."
 
-"Is it?" He said it kindly. There was nothing in it to fight. "You'd know better than me.
+"Is it?" He said it kindly; there was nothing in it to fight. "You'd know better than me.
 You've seen the sky lately." He looked at her properly then, for the first time, and she
-saw a man who had already finished the sum and was only being polite about the working.
-"I know what you are. And I know it's coming for everyone, up there and down here both. A
-man like me does the sums." He shrugged, small. "I'd still rather meet the end of the whole
+saw a man who had already finished the sum and was only being polite about the working. "I
+know what you are. And I know it's coming for everyone, up there and down here both. A man
+like me does the sums." He shrugged, small. "I'd still rather meet the end of the whole
 business sat at a table I can't lose at, than gamble on the daylight for whatever's left."
 
-"Chosen, mind," he added. "Not chained. There's a difference, even if it looks exactly the
-same from the stair."
+"Chosen, mind. Not chained. There's a difference, even if it looks exactly the same from
+the stair."
 
 Then, because she had not found a word and there was not one:
 
 "I had a sure thing down here. Never lost a hand." He gave her a small nod, entirely
 without bitterness. "I don't think I'm brave enough for a world where I might."
 
-He went back down. Nobody held him. Nothing held him. He walked down past four hundred
-people coming the other way, and along a tier, and into a lit box, and sat at a table that
-dealt itself, and picked up the same sure hand it had been dealing him for thirty years.
+He went back down. Nothing held him. He walked past four hundred people coming the other
+way, and along a tier, and into a lit box, and sat at a table that dealt itself, and picked
+up the same sure hand it had been dealing him for thirty years. And then he reached down
+and took the fallen chain from where it lay and latched it back around his own wrist.
 
-And then he reached down and picked up the fallen chain from where it lay, and latched it
-back around his own wrist.
-
-It was fastened to nothing now. It held him not at all. He did it the way a man puts his
-watch on — out of thirty years of a hand knowing where a thing goes — and it fitted, because
+It was fastened to nothing now. It held him not at all. He did it the way a man puts on his
+watch — out of thirty years of a hand knowing where a thing goes — and it fitted, because
 comfort worn long enough fits like skin.
 
-I am not going to resolve that for you. Neither did she. He is still down there, and I
-have had three hundred years of practice at not tidying up the parts of a story that
-decline to be tidied, and I am not going to start on him now.
+I am not going to resolve that for you. Neither did she. He is still down there, and I have
+had three centuries of practice at not tidying up the parts of a story that decline to be
+tidied, and I am not going to start on him now.
 
 *  *  *
 
@@ -629,12 +602,12 @@ She went up the last of the stair and out past the struck velvet rope, which som
 unhooked and coiled and left on the step like a thing nobody would need again, and Pip came
 up the whole way pressed hard against her leg, shoulder to shin, every single step.
 
-The western hills were exactly as she had left them. The light had not moved an inch: the
+The western hills were exactly as she had left them. The light had not moved an inch — the
 same low gold-brown six o'clock lying long across the gorse, going nowhere, as it had gone
 nowhere since before anybody's grandmother. But the gorse was *moving* now, whole slopes of
-it running dark and pale and dark again, and behind her four hundred people were coming up
-out of the ground into a sky that most of them had not seen in decades and some of them had
-never seen at all, and standing about in it blinking, with their hands up against a light
+it running dark and pale and dark again; and behind her four hundred people were coming up
+out of the ground into a sky that most of them had not seen in decades and some had never
+seen at all, and standing about in it blinking, with their hands raised against a light
 that did not move but at least, unarguably, *was* one.
 
 One old man got to the top step and simply sat down on the turf and put both palms flat on
@@ -642,32 +615,28 @@ it.
 
 *  *  *
 
-She camped that evening — the evening; the only one there was — a mile east of the
-stairhead, in a fold of the hills where somebody's shepherd's hut had lost most of a roof
-and gained a good deal of character.
+She camped a mile east of the stairhead — that evening; the only one there was — in a fold
+of the hills where somebody's shepherd's hut had lost most of a roof and gained a good deal
+of character, and she was too sore to do much but sit with her back to the stones while Pip
+lay across her boots like a small warm sandbag and slept.
 
-She was too sore to do much. She sat with her back to the stones and the new card in the
-Bindle beside the others, and Pip lay across her boots like a small warm sandbag and went
-to sleep instantly, in the way of an animal for whom the world contains no outstanding
-items whatsoever.
+Below her, three or four households of the hill country had a fire going and were feeding
+freed folk off it, and she could hear the whole of it from where she sat. Somebody had
+opened a barrel that had plainly been opened for a reason. A woman went along the line with
+a ladle saying *mind, it's hot, mind, it's hot* to grown adults, and was ignored, and went
+on saying it. A boy was explaining to a newly freed vault-teller, at length and with
+enormous authority, how to tell when rain is coming, and getting most of it wrong. Two old
+men who had known each other sixty years were having the argument they had been having for
+sixty years, and enjoying it.
 
-Below her, at the bottom of the fold, three or four households of the hill country had a
-fire going, and were feeding freed folk off it. She could hear the whole of it from where
-she sat. Somebody had opened a barrel that had plainly been opened for a reason. A woman
-was going along the line with a ladle saying *mind, it's hot, mind, it's hot* to grown
-adults, and being ignored, and going on saying it. Somebody's boy was demonstrating to a
-newly freed vault-teller, at length and with enormous authority, how to tell when rain is
-coming, and getting most of it wrong. Two old men who had known each other for sixty years
-were having the same argument they had been having for sixty years, and enjoying it.
-
-And every last one of them, down to the boy, knew what she was and what her road meant, and
-what it meant for the fire and the barrel and the argument and the whole autumn. They had
-known since the Stillmarsh. There was a woman at that fire who had crossed the hills
+And every last one of them, down to the boy, knew what she was and what her road meant —
+for the fire and the barrel and the argument and the whole of that autumn. They had known
+since the Stillmarsh. There was a woman at that fire who had walked over the hills
 specifically to see her, and did not come up, because she was busy.
 
-They did it fondly anyway. That is the thing I most want you to have out of this whole
-chapter, and it is not the desk and it is not the pit: it is a hillside of people at their
-supper in the last autumn of the world, minding the ladle was hot.
+They did it fondly anyway. That is the thing I most want you to carry out of this chapter,
+and it is not the desk and it is not the pit: it is a hillside of people at their supper in
+the last autumn of the world, minding the ladle was hot.
 
 She watched them a long while, out of the dark, with her hand on a sleeping dog.
 

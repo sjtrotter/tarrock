@@ -5,32 +5,30 @@ South of the Bower the road was busy for the first time since she had woken at t
 Wagons went by her going the other way, heaped with the Bower's first harvest in three
 hundred years — marrows the size of cradles, sacks of grain sagging at the seams,
 children riding the tailgates with the particular shade of pleased that comes only from
-being allowed to sit on top of a wagonload of something enormous. Pip trotted alongside
-the last cart for a quarter mile, accepted a heel of bread from a girl who seemed to
-think this was owed him, and rejoined her the way a professional returns from a small
-errand.
+being allowed to sit atop a wagonload of something enormous. Pip trotted alongside the
+last cart for a quarter mile, accepted a heel of bread from a girl who seemed to think
+this was owed him, and rejoined her the way a professional returns from a small errand.
 
 *They'll be doing that the length of the Spread, before long*, said the Querent, from
-somewhere behind her breastbone, comfortable as an old coat. *Wagons on every road,
-carrying off a summer that only just found out it was allowed to happen. Terribly
-ordinary thing to like, given everything, but there it is.*
+somewhere behind her breastbone. *Wagons on every road, carrying off a summer that only
+just found out it was allowed to happen. Terribly ordinary thing to like, given
+everything, but there it is.*
 
 The road climbed and thinned, and the last of the carts fell away behind a shoulder of
 hill, and somewhere in that unremarked stretch the birds stopped.
 
-She noticed it the way you notice a held breath — not an absence exactly, but a change in
-the weight of the air, and she had learned, in three days of walking, to trust that
-particular quiet the way other people trust weather. The grass ahead stood taller and
-stiller than the grass behind. And then the road gave out at a lip of bare rock, and the
-world dropped away into a canyon so deep the bottom was lost in blue haze, and she
-understood that she had walked out of one held breath and directly into another.
+She noticed it the way you notice a held breath — not an absence, but a change in the
+weight of the air, and she had learned, in three days of walking, to trust that particular
+quiet the way other people trust weather. The grass ahead stood taller and stiller than
+the grass behind. Then the road gave out at a lip of bare rock, and the world dropped away
+into a canyon so deep the bottom was lost in blue haze, and she understood she had walked
+out of one held breath and directly into another.
 
 Bunting hung the whole visible length of both clifftops — strung pole to pole, faded to
 the colour of old bone — and it was not still, exactly. It was worse than still. Every
-pennant was caught at the precise, particular violence of a snap, one whole ribbon frozen
-mid-crack like a whip a heartbeat before the sound arrives. It looked, more than
-anything, like a wind had come through here once, furious and glad, and had simply never
-been allowed to finish saying so.
+pennant was caught at the precise violence of a snap, one whole ribbon frozen mid-crack
+like a whip a heartbeat before the sound arrives — as though a wind had come through here
+once, furious and glad, and simply never been allowed to finish saying so.
 
 "There's no wind," she said, out of habit now, the way you'd name a coin before you spent
 it.
@@ -48,9 +46,9 @@ the day.
 
 The water-stair down to the landing had been worn into the rock by more feet than the
 canyon now needed, and at the bottom a flat-bottomed ferry knocked its post in a river
-that lay glassed and motionless — until the boat's own rocking disturbed it, and it broke
-into small dark rings that spread and vanished and did not renew themselves, because
-nothing was renewing them.
+that lay glassed and motionless — until the boat's own rocking broke it into small dark
+rings that spread and vanished and did not renew themselves, because nothing was renewing
+them.
 
 A broad, unhurried old man sat in the stern with a pole across his knees and the settled
 look of somebody who has heard everything twice and most of it three times. He lifted a
@@ -58,8 +56,8 @@ hand without getting up.
 
 "Fresh face," he said, "and both feet still on the same bank. Rare thing round here. Most
 folk have picked a side before they've picked their nose." He looked her over, and Pip,
-already at home on the middle thwart. "Sit in the boat, if you like. I only know the one
-story, but I know it very well."
+already at home on the middle thwart. "Sit in the boat. I only know the one story, but I
+know it very well."
 
 She sat. He pushed off with a single lean of the pole, and the canyon opened around them,
 vast and hushed, the two half-spans sliding overhead.
@@ -73,8 +71,7 @@ across. Grand idea. Everybody wept. Bunting went up."
 
 "And then the world stopped, friend, right on the day. Bridge half-built. Bride on one
 side, groom on the other, and the small matter of *whose town holds the wedding* never
-quite settled." He poled on, entirely content with this. "Been not-settling it ever
-since."
+quite settled." He poled on, content. "Been not-settling it ever since."
 
 "Whose fault was it, really?"
 
@@ -89,8 +86,7 @@ generations of them now — and they stick on the same plank every single time. 
 isn't waiting on carpentry, friend." He looked at her sideways, and there was nothing
 unkind in it. "It's waiting on a choice."
 
-"Can the two just marry anywhere?" she asked, and meant it plainly, because it seemed to
-her, one day into caring about any of this, like an obvious question.
+"Can the two just marry anywhere?" she asked, and meant it plainly.
 
 "Bless you for asking it plain." He almost smiled. "No. It has to be *somewhere*, and
 somewhere means a bank, and a bank means a town wins and a town loses. That's the whole
@@ -100,28 +96,23 @@ The ferry bumped a landing on the east side, gentle as a full stop.
 
 "There," said Pell. "Two banks, two towns, one wedding that won't happen. Go and let both
 sides tell you it's the other lot's doing. Then go up top, to where the bridge stops.
-That's where the pair of them are. Been standing there a long while." He settled back into
-the stern as she climbed out, Pip already three steps up the stair ahead of her. "Whistle
-when you want ferrying. I'll not be far. I'm never far — it's a boat, not a career with
-prospects."
+That's where the pair of them are." He settled back into the stern as she climbed out, Pip
+already three steps up the stair ahead of her. "Whistle when you want ferrying. I'm never
+far — it's a boat, not a career with prospects."
 
 *  *  *
 
 The east town climbed the cliff in salt-bleached tiers of blue and shell-white, a cup set
-out on every threshold as though hospitality here were a fact of architecture rather than
-a habit of people. Wedding garlands hung dry and dun-coloured above every lintel, and
-every window faced the sea, which lay out past the cliff-edge grey and glassed and
-patiently still.
+out on every threshold as though hospitality were a fact of architecture here rather than
+a habit of people. Wedding garlands hung dry above every lintel, and every window faced
+the sea, glassed and patiently still.
 
-The bride's hall stood at the top, and beside it a chapel whose bell had not sounded once
-in three centuries — the town saving its one great noise, all this time, for a wedding it
-had never been allowed to hold.
-
-The Elder who rose to meet her at the door had eyes the particular pale of someone who has
-spent a very long life looking at the same horizon, and a folded garland kept in her lap
-like a christening gown she had never got to use. She took the Fool's hands in both of
-hers before she had said a single word, because that, apparently, was simply what this
-house did.
+At the top stood the bride's hall, and beside it a chapel whose bell had not sounded once
+in three centuries — the town saving its one great noise for a wedding it had never been
+allowed to hold. The Elder who rose to meet her had eyes the pale of someone who has spent
+a long life looking at one horizon, and a folded garland kept in her lap like a christening
+gown she had never got to use. She took the Fool's hands in both of hers before she had
+said a word, because that, apparently, was simply what this house did.
 
 "Blessings on your road, and sit, and be welcome — no, don't refuse, we've a cup out and a
 cup out means it's poured." She poured. "You've come about the wedding. Everyone comes
@@ -131,10 +122,10 @@ about the wedding, eventually."
 
 "Our girl. Our chapel, blessed by every one of our dead in the ground beneath it. The
 wedding was promised *here*, with the sea to witness — and if it goes across to that cold
-stone hall over the water, our own dead go unhonoured by the one ceremony they were owed,
-and our girl sails away, and this town has nothing left to wait for. We are the poorer
-town, you'll have seen. When pilgrims come for a wedding by the sea, they come here. That
-is all we have coming. That, and her."
+stone hall, our own dead go unhonoured by the one ceremony they were owed, and our girl
+sails away, and this town has nothing left to wait for. We are the poorer town, you'll
+have seen. When pilgrims come for a wedding by the sea, they come here. That is all we
+have coming. That, and her."
 
 She set out a second cup as she spoke — not for the Fool. For someone across the water. It
 had been set out, and never once drunk from, for three hundred years, poured with the
@@ -159,15 +150,13 @@ out again. Ready. Always ready.
 
 *  *  *
 
-The west town was a short crossing and a long climb, and stone where the east had been
-timber and salt: a proud grey terrace rising to a great ancestral hall, built — she
-understood this before anyone told her — by a lineage with no other purpose in mind but
-the one wedding it had never got to host. The doors stood open on a floor swept to a
-shine and standing entirely, perfectly empty.
-
-The Elder here met her at the threshold with a stiff, weary bow, a ledger open on a
-lectern behind him with every course and toast and seating arranged in ink that had not
-faded because nothing here was permitted to.
+The west town was a short crossing and a long climb, stone where the east had been timber
+and salt: a proud grey terrace rising to a great ancestral hall, built — she understood
+this before anyone told her — by a lineage with no other purpose but the one wedding it
+had never got to host. Its doors stood open on a floor swept to a shine and standing
+entirely, perfectly empty. The Elder met her at the threshold with a stiff, weary bow, a
+ledger open on a lectern behind him, every course and toast and seating arranged in ink
+that had not faded because nothing here was permitted to.
 
 "You'll have heard the east's version first," he said, before she had said anything at
 all. "Everyone hears the east's first — they've the prettier chapel and the sadder eyes.
@@ -178,8 +167,8 @@ Hear ours now, and judge with a full hand."
 "This hall was raised for it. Stone on stone, generation on generation, every one of them
 building toward the single day their line would host the joining of the two towns. That
 is not pride, whatever the east calls it. That is three hundred years of purpose, cut off
-one plank short of the door. If the wedding goes east, this hall is a monument to a party
-that never came. Our dead built a promise, and the promise was kept somewhere else."
+one plank short of the door. Our dead built a promise, and if the wedding goes east, the
+promise gets kept somewhere else."
 
 "What is he like?"
 
@@ -202,18 +191,16 @@ again to the very same page. The arrangements waited. Everything here waited.
 
 There was no proper road to the bridge's broken end, because there was no proper bridge
 for a road to lead to. The way up was Cutwright Fenn's own work: ladders lashed to the
-cliff face, guy-ropes strung between them, swaying board-and-plank scaffold climbing the
-half-span like ivy that had decided, against all sense, to be useful. She went up hand
-over hand, Pip somehow already three rungs above her, professionally unbothered.
+cliff face, guy-ropes strung between them, board-and-plank scaffold climbing the half-span
+like ivy that had decided, against all sense, to be useful. She went up hand over hand,
+Pip already three rungs above her, professionally unbothered.
 
 A tally was carved into the scaffold's main upright — hundreds of scratches, cut in a
-dozen different hands over a very great many years, the newest still pale and splintered
-where the knife had barely finished with it. The last legible line read: *same plank,
-gods turn its card.*
+dozen hands over a very great many years, the newest still pale where the knife had barely
+finished with it. The last legible line read: *same plank, gods turn its card.*
 
-She put her palm flat to the wood a moment, the way you'd touch a gravestone you didn't
-know the name on, and climbed the rest of the way in a respectful silence she hadn't
-planned.
+She put her palm flat to the wood, the way you'd touch a gravestone you didn't know the
+name on, and climbed the rest of the way in a respectful silence she hadn't planned.
 
 *  *  *
 
@@ -224,11 +211,11 @@ half-span reaching back the same short, hopeless distance.
 On the two lips, facing each other across that gap, stood the Betrothed.
 
 They were dressed to be married, and had been for three hundred years — a gown gone the
-grey of the fog off the sea below, a coat gone thin and soft, the garlands at both their
-collars crumbled to a scatter of thread. One hand each, lifted, reaching across the gap
-toward the other, fingers a hand's breadth apart, exactly as far apart as the bridge that
-had never been built to close it. Everything the bride did, the groom did, in the same
-breath — mirrored, perfect, frozen mid-reach.
+grey of the fog below, a coat gone thin and soft, garlands crumbled at both collars to a
+scatter of thread. One hand each, lifted, reaching across the gap toward the other,
+fingers a hand's breadth apart, exactly as far apart as the bridge that had never been
+built to close it. Everything the bride did, the groom did, in the same breath — mirrored,
+perfect, frozen mid-reach.
 
 Pip stopped at the traverse's end and sat, watching the two reaching figures with the
 frank unbothered attention he gave to weather.
@@ -256,27 +243,25 @@ through the space where a body should have taken it, no more resistance than a h
 a reflection, and across the gap the groom flinched at a strike that had never touched
 him, in the exact same instant.
 
-*While they're mirrored, they can't be hurt*, said the Querent, thoughtful now, the play
-gone out of the voice. *You'll want to think about that, little Excuse, and not with your
-arms.*
+*While they're mirrored, they can't be hurt*, said the Querent, the play gone out of the
+voice. *You'll want to think about that, little Excuse, and not with your arms.*
 
-She thought about it with her feet instead. A guy-rope of Fenn's scaffold hung within
-reach; she hauled it and swung the west span's edge a foot wide of true, and for one
-staggering half-second the two figures fell out of time with each other — and a blow that
-had done nothing all fight *landed*, cracked across the bride's shoulder, and she
-staggered, actually hurt — and then both of them turned back toward the gap and toward
-each other and closed the sync like a wound healing itself.
+She thought about it with her feet. A guy-rope of Fenn's scaffold hung within reach; she
+hauled it and swung the west span's edge a foot wide of true, and for one staggering
+half-second the two figures fell out of time with each other — and a blow that had done
+nothing all fight *landed*, cracked across the bride's shoulder, actually hurt — and then
+both of them turned back toward each other and closed the sync like a wound healing
+itself.
 
 "You cannot separate what refuses to be separated," they said together, mid-motion.
 "Pull us apart and we will only reach harder. That is the whole of the last three hundred
 years, witness, and you will not undo it with a stick."
 
-She sent Pip in low and fast at the groom — *harry* — pinning his whole attention for one
-held breath while she worked a counterweight loose on the east side and dropped the
-bride's footing a half-step behind her mirror. The two of them hung apart, straining,
-longer this time, both faces open with something that looked almost like relief and
-almost like terror in exactly the same measure. Then, because relief and terror both know
-the way home, they closed it. Again.
+She sent Pip in low and fast at the groom — *harry* — pinning his attention for one held
+breath while she worked a counterweight loose and dropped the bride's footing a half-step
+behind her mirror. The two of them hung apart, straining, longer this time, both faces
+open with something that looked almost like relief and almost like terror in equal
+measure. Then, because relief and terror both know the way home, they closed it. Again.
 
 "Better this than to choose," said the east. "Better forever than to lose the other's
 town its wedding," said the west. "Better to reach," they said together, and it was the
@@ -293,24 +278,19 @@ three hundred years.
 The Bindle could not finish this. She let it hang.
 
 *There*, said the Querent, gently, the way you'd speak into a room where someone was
-finally about to say something they'd been putting off for years. *Feel that? That's the
-fight ending without being won. Some knots don't cut, little Excuse. They're waiting on
-the one thing nobody in three hundred years would say out loud.*
+finally about to say something they'd put off for years. *Feel that? That's the fight
+ending without being won. Some knots don't cut, little Excuse. They're waiting on the one
+thing nobody in three hundred years would say out loud. You're nobody, you know. You
+belong to neither bank — which means you're the only soul who* can *say it. Go on. Answer
+the question they've been dying not to ask.*
 
-*You're nobody, you know. You belong to neither bank. Which means you're the only soul
-who* can *say it — and, between you and me and the whole watching canyon, the only one who
-was ever going to have to.* A small pause, warmer than the rest. *Go on. Answer the
-question they've been dying not to ask.*
+The reaching hands lifted once more and held over the gap. Both Betrothed turned their
+faces to her. For the first time since she had climbed onto the span, they were not
+asking her to leave. They were waiting.
 
-The reaching hands lifted once more and held, a hand's breadth apart over the gap. Both
-Betrothed turned their faces to her. For the first time since she had climbed onto the
-span, they were not asking her to leave.
-
-They were waiting.
-
-"Say it, then," they said, together, and there was nothing left of the duelists' weary
-displeasure in it, only three hundred years of tiredness finally arriving somewhere.
-"Say where. We have never once been able to."
+"Say it, then," they said, together, nothing left of the duelists' weary displeasure in
+it, only three hundred years of tiredness finally arriving somewhere. "Say where. We have
+never once been able to."
 
 *  *  *
 
@@ -322,12 +302,11 @@ understood, entirely, what she was about to do. "Your word is the blow. There is
 kind of ending for us."
 
 She thought of the sea-eyed woman pouring a cup that would never be drunk, and the dry
-grey man opening a ledger to a page that would never be needed, and understood that
-whichever way she spoke, one of them would close a book they had kept faithfully open for
-three hundred years — and there was no way to say the word that did not do exactly that
-to somebody who deserved better than to hear it from a stranger. Both futures ached. She
-could feel the weight of the one she wasn't choosing already, like a hand on the back of
-her neck.
+grey man opening a ledger to a page that would never be needed, and understood there was
+no way to say the word that did not close a book someone had kept faithfully open for
+three hundred years, and did not do it to somebody who deserved better than to hear it
+from a stranger. Both futures ached. She could feel the weight of the one she wasn't
+choosing already, like a hand on the back of her neck.
 
 "Here," she said. "Marry here, by the sea."
 
@@ -345,7 +324,7 @@ crack she felt in her own back teeth.
 They stood together on the east span now, the one who had stayed and the one who had
 crossed the gap no carpenter had ever closed, and for the first time in three centuries
 they were not mirrored, because one of them had chosen the other. Their joined reach
-finally finished itself. A hand's breadth became nothing at all. They touched.
+finished itself. A hand's breadth became nothing at all. They touched.
 
 And the office cracked in both of them at once, the frozen bride and the frozen groom
 splitting along the same seam like a single garment coming apart at the shoulder. Three
@@ -365,10 +344,10 @@ sound of my own—"
 
 "Wystan. Say it again. Say them together, the way they were always meant to be said."
 
-"Elsbeth and Wystan," they said, together, and it landed like a vow — the vow, the one
-that had been owed and never given, spoken three centuries late and not one word less true
-for the wait. Two people now, holding hands on a broken bridge, dressed in ruined finery,
-plainly and simply married, in the only way that had ever counted.
+"Elsbeth and Wystan," they said, together, and it landed like a vow — the one owed and
+never given, spoken three centuries late and not one word less true for the wait. Two
+people now, holding hands on a broken bridge in ruined finery, plainly and simply married,
+in the only way that had ever counted.
 
 Wystan looked back once across the gap, at the hall he had left and his name's whole
 unfinished errand — then looked at Elsbeth, and did not look back again.
@@ -381,8 +360,8 @@ at the traverse's end, tilted his head at the word — "no offence to the actual
 the one word we couldn't manage. You unwelcome, impossible, necessary witness. Thank you.
 We are so sorry you had to see us like that. We are so glad you did."
 
-Wystan lifted their joined hands, and in the gesture, without any flourish, there was a
-card between their two palms.
+Wystan lifted their joined hands, and there was a card between their two palms, without
+any flourish at all.
 
 "Trump VI," he said. "Union, they'll call it. It's the two of us, so it takes the two of
 us to hand it over — that's rather the whole point of the thing. Take it. And take this
@@ -394,25 +373,24 @@ for three hundred years. It was choosing that let us touch."
 *  *  *
 
 Over the stretch it took the canyon to notice what had happened to it — measured, this far
-south, in candle-stubs and meals and the ache that settles into a body that has climbed a
-rope ladder twice in one span of waking — the bridge did what three generations of Fenns
-had not managed. It grew: the two half-spans crept toward each other by nothing she could
-watch happening and everything she could measure by leaving and coming back, the gap that
-had always been the choice made slowly, patiently physical — and somewhere in a stretch of
-rest against Fenn's own scaffold post, the last plank, the cursed one, went in with a
-sound like a lock turning. She woke to it. She was fairly sure she was the only living
-soul who had.
+south, in candle-stubs and meals and the ache of a body that has climbed a rope ladder
+twice in one span of waking — the bridge did what three generations of Fenns had not
+managed. It grew: the two half-spans crept toward each other by nothing she could watch
+happening and everything she could measure by leaving and coming back, the gap that had
+always been the choice made slowly, patiently physical — and somewhere in a stretch of
+rest against Fenn's own scaffold post, the last plank went in with a sound like a lock
+turning. She woke to it. She was fairly sure she was the only living soul who had.
 
 Cutwright Fenn stood at the western foot of the new span when she came down to look,
 chisel still in his hand, staring at a bridge he had spent his entire life failing to
 build.
 
 "Done overnight," he said, to nobody, to her, to the bridge, to all three at once. "By a
-*wedding*. Three generations of us and the same cursed plank, and it goes and finishes
-itself while I sleep, on account of two people finally making up their minds." He looked a
-long moment across the span, and huffed out something that was almost a laugh. "Well. A
-finished bridge is a finished bridge, however it got finished. First Fenn to walk it.
-That'll do nicely."
+*wedding*. Three generations of us and the same cursed plank, and it finishes itself while
+I sleep, on account of two people finally making up their minds." He looked a long moment
+across the span, and huffed out something that was almost a laugh. "Well. A finished
+bridge is a finished bridge, however it got finished. First Fenn to walk it. That'll do
+nicely."
 
 He crossed it — the first of his line ever to reach the far side on his own two feet — and
 at the rail carved one last word beneath three generations of failed tally-marks: *done.*
@@ -420,10 +398,10 @@ at the rail carved one last word beneath three generations of failed tally-marks
 Beyond him the two towns were already becoming one thing, and not shared out evenly. The
 sea-facing chapel's bell rang for the first time in three hundred years and did not stop,
 ringing out the wedding the east had waited its whole existence to host, pilgrims already
-turning up the coast road toward the sound of it. Across the bridge, the great grey hall
-stood open on its swept and shining floor, and would go on standing open on it forever,
-its wedding kept somewhere else. Somewhere in that stone terrace, a family was folding
-banners into a chest, packing to cross and live where the town's life had gone.
+turning up the coast road. Across the bridge, the great grey hall stood open on its swept
+and shining floor, and would go on standing open forever, its wedding kept somewhere else.
+Somewhere in that stone terrace, a family was folding banners into a chest, packing to
+cross and live where the town's life had gone.
 
 *  *  *
 
@@ -433,19 +411,18 @@ it. He sat in it all the same, pole across his knees, watching the crossings go 
 
 "There it is, then," he said, when she found him. "A bridge. Grand thing. Everyone
 crossing, nobody sinking, everybody pleased." He patted the gunwale, the way you'd pat a
-horse too old to be ridden any further. "And me with the one trade the canyon doesn't need
-any more, on account of it having two banks that talk to each other now instead of one man
-who carried the talking. Never thought the far bank would come to *me*, mind. Reached
-right across and put my boat out of a job."
+horse too old to be ridden. "And me with the one trade the canyon doesn't need any more,
+on account of it having two banks that talk to each other now instead of one man who
+carried the talking. Never thought the far bank would come to *me*, mind. Reached right
+across and put my boat out of a job."
 
-Then, because three hundred years of carrying other people's news across water had taught
-him where the dry end of any grief was hiding, he found it.
+Then, because he was Pell, he found the dry end of it.
 
 "Still. I knew every soul on both banks by their business for three hundred years. A man
-who knows a canyon that well doesn't stop being useful just because the canyon got easier
-to cross. There's a toll-house wants keeping on that bridge, I hear. Same gossip, drier
-feet." He looked out at the water a long while. "Might take it up. Might just sit here and
-watch a while first. I've earned a sit."
+who knows a canyon that well doesn't stop being useful just because it got easier to
+cross. There's a toll-house wants keeping on that bridge, I hear. Same gossip, drier feet."
+He looked out at the water a long while. "Might take it up. Might just sit here and watch
+a while first. I've earned a sit."
 
 She sat with him a while on the empty landing and said nothing, and that turned out to be
 the correct thing to have done, because he did not ask her to leave.
@@ -454,10 +431,10 @@ the correct thing to have done, because he did not ask her to leave.
 
 The finished bridge stood whole for the first time in three hundred years, spanning a gap
 that had never really been a matter of stone, and she walked out onto it with Pip ranging
-ahead — past the seam where the two half-spans had finally met, out over the empty air
-that had held a wedding's shape for three centuries — and reached the far bank on her own
-two feet, the way exactly one other person ever had, a few days before her, with a chisel
-still warm in his hand.
+ahead — past the seam where the two half-spans had finally met, over the empty air that
+had held a wedding's shape for three centuries — and reached the far bank on her own two
+feet, the way exactly one other person ever had, a few days before her, chisel still warm
+in his hand.
 
 *First person ever to walk clean across, you know*, said the Querent, warm and a little
 sly. *Everyone before you either stopped at the gap or paid Pell to go round it. You just
@@ -465,12 +442,11 @@ sly. *Everyone before you either stopped at the gap or paid Pell to go round it.
 Excuse. It's only ever finished once somebody decides which shore they're standing on.
 The rest is just very hopeful carpentry.*
 
-Behind her the canyon carried its two sounds at once, the way it would carry them from now
-on — a bell that would not stop ringing, and under it, quieter, a hall gone dark and
-still. One town had got its wedding. One town had got the bridge. Both had got a person
-married, and lost a future, and she suspected neither would ever be entirely sure the
-trade had been a fair one. She walked on anyway, because that, she was beginning to
-understand, was rather the whole job.
+Behind her the canyon carried its two sounds at once — a bell that would not stop ringing,
+and under it, quieter, a hall gone dark and still. One town had got its wedding. One town
+had got the bridge. Both had got a person married, and lost a future, and she suspected
+neither would ever be entirely sure the trade had been fair. She walked on anyway, because
+that, she was beginning to understand, was rather the whole job.
 
 *  *  *
 
@@ -484,9 +460,9 @@ yet. And between them, for the first time since she had gone through this coat's
 firelight and found three empty shapes with no name for what went in them, the middle
 pocket had woken.
 
-She felt it before she understood it — a small, private give, like a held breath finally
-allowed out — and looked down to find the middle seam of her coat lying open, patient,
-exactly the size of a card.
+She felt it before she understood it — a small, private give, like a held breath let out —
+and looked down to find the middle seam of her coat lying open, patient, exactly the size
+of a card.
 
 *There's your third pocket, little Excuse*, said the Querent, something underneath the
 dryness of it. *Three cards make a spread. Nobody tells you that going in. Everybody works
@@ -498,16 +474,16 @@ because it had.
 
 Nothing rang out. No power came alive in her fingertips the way the reach for a hat had,
 that first night. What arrived instead was quieter and stranger: a kind of knowledge she
-now simply had, the way she knew her own left hand from her right — that the next forage
-she turned up on a road like this would come to her doubled, and that somewhere behind her
-ribs, very slowly, in country that had learned to breathe again, the White Rose at her
-belt had begun, of its own accord, to grow.
+now simply had, the way she knew her left hand from her right — that the next forage she
+turned up on a road like this would come doubled, and that somewhere behind her ribs, very
+slowly, in country that had learned to breathe again, the White Rose at her belt had
+begun, of its own accord, to grow.
 
 She looked down at it. Three petals still, closed and modest as they had been since the
 morning she woke. But there was give in the stem that had not been there yesterday, and
-she understood, a beat late and completely, that this was not a thing she would ever reach
-for and spend. It was simply, now, a true thing about her, the way her hair was cropped
-rough or her boots were creased to her own walking. She wore it. She did not use it.
+she understood, a beat late, that this was not a thing she would ever reach for and spend.
+It was simply, now, a true thing about her, the way her hair was cropped rough or her
+boots were creased to her own walking. She wore it. She did not use it.
 
 *Three*, said the Querent, quietly, almost to itself. *Past, present, and — one day, when
 you've earned the last of it — whatever's still to come. You're becoming rather a
@@ -521,16 +497,15 @@ She sat a while longer, letting her legs forgive her, and somewhere past the can
 inland lip, faint enough to have been a trick of distance, she heard it: a bell. Not the
 east's new one, still ringing joy into the coast behind her — a different bell, further
 off, striking the same single note over and over, patient and unmistakably wrong, the way
-a clock is wrong when it has struck the same hour for three hundred years and has no
+a clock is wrong when it has struck the same hour for three hundred years with no
 intention of striking another.
 
-She had been hearing it, she realised, since before the road had climbed to the canyon's
-lip — under the wagon-noise, under Pell's story, under two names said together on a broken
+She had been hearing it, she realised, since before the road climbed to the canyon's lip —
+under the wagon-noise, under Pell's story, under two names said together on a broken
 bridge — ringing on and on, asking nothing, stopping for nothing, utterly unlike the bell
 that had just, at long last, been allowed to ring for something.
 
 She got up. Pip was already three steps down the inland road, looking back with the frank
 patience of a professional waiting on a slower colleague. She whistled him on, and walked
 the finished bridge into memory behind her, and went south toward the bell that would not
-stop — because it was there, and because that, she was learning, was rather the whole
-method.
+stop — because it was there, and because that, she was learning, was the whole method.

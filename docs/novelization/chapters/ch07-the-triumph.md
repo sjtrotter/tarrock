@@ -1,18 +1,18 @@
 # Chapter Seven — The Triumph
 
-The last of the Maw's living wind died against her back the moment her boot found the causeway stone, and after that there was no wind at all.
+The last of the Maw's living wind died against her back the moment her boot found the causeway stone, and after that there was no wind.
 
-She had grown used to the wilds being loud about themselves — gorse hissing on the crags, a lion who now lay in her shadow of an afternoon and let her scratch the scarred place under his chin, because a Trump called Tame rode in her Past pocket, and beasts had stopped minding her the way the whole Maw, eventually, had. All of that fell away on the downward path, the way sound falls away behind a closing door, and what came up to meet her instead was a road so wide it looked built for something other than people.
+She had grown used to the wilds being loud about themselves — gorse hissing on the crags, a lion who now lay in her shadow of an afternoon and let her scratch the scarred place under his chin, because a Trump called Tame rode in her Past pocket, and beasts had stopped minding her the way the Maw, eventually, had. All of that fell away on the downward path, and what came up to meet her instead was a road so wide it looked built for something other than people.
 
-Four wagons abreast, raised on dressed stone, curving away left and right until the curve became a ring, and the ring a rumour of distance she could not see the end of. To the inward side, past a low parapet, the land fell away in long green shelves toward the middle of everything, and there — closer than she had ever seen it — sat the Axis. A still, silver eye with no shadow in it, and at the heart of that stillness a single figure turned, and turned, and went on turning.
+Four wagons abreast, raised on dressed stone, curving away left and right until the curve became a ring, and the ring a rumour of distance with no end she could see. To the inward side, past a low parapet, the land fell away in long green shelves toward the middle of everything, and there — closer than she had ever seen it — sat the Axis. A still, silver eye with no shadow in it, and at its heart a single figure turned, and turned, and went on turning.
 
-*You've been squinting at that thing since the Cliff*, said the Querent, not unkindly, in her ear. *Get used to it looking back. You're on its doorstep now, more or less. Every road on the Spread comes to this one eventually — it's the world's own spine, the Longroad. Rather appropriate you'd meet it walking on your own two feet, given how much use you've had of them.*
+*You've been squinting at that thing since the Cliff*, said the Querent, not unkindly. *Get used to it looking back. You're on its doorstep now, more or less. Every road on the Spread comes to this one eventually — it's the world's own spine, the Longroad. Rather appropriate you'd meet it walking on your own two feet, given how much use you've had of them.*
 
 And then there was dust.
 
-Not weather — she had learned better than to call anything on this road weather — but a long low banner of it, kicked up somewhere out of sight, moving fast and moving away. Under it, before she heard it at all, she felt it: a tramp of feet coming up through the stone into her boots, steady as a heartbeat, and a drum keeping time to a verse that had worn away and left only the beat.
+Not weather — she had learned better than to call anything on this road weather — but a long low banner of it, kicked up out of sight, moving fast and away. Before she heard it, she felt it: a tramp of feet coming up through the stone into her boots, steady as a heartbeat, and a drum keeping time to a verse worn away and left only the beat.
 
-Pip's ears went up together, which they did for almost nothing. He looked at the dust, and then at her, and something in his stance said, quite plainly, *that*.
+Pip's ears went up together, which they did for almost nothing. He looked at the dust, then at her, and something in his stance said, quite plainly, *that*.
 
 *  *  *
 
@@ -22,7 +22,7 @@ The toll-fort straddled the road like a man standing with his legs too far apart
 
 "Hello," she said, because it always seemed to work.
 
-"Corporal Pike. Third of the line, or I was, when there was a first and a second worth counting." He turned the helmet over in his hands, not looking at it. "You'll be wanting to know about the parade. Everyone new wants to know about the parade. Then they stop being new, and they stop asking, and one day they're marching in it and can't remember why either."
+"Corporal Pike. Third of the line, or I was, when there was a first and second worth counting." He turned the helmet over in his hands, not looking at it. "You'll be wanting to know about the parade. Everyone new wants to know about the parade. Then they stop being new, and stop asking, and one day they're marching in it and can't remember why either."
 
 "What are you all marching for?"
 
@@ -32,7 +32,7 @@ She sat down on the step beside him, because there did not seem to be anything s
 
 "How do I get aboard?"
 
-"On foot, poor devil. Nothing on this road's faster than the column, and there's no mount in the world yet." He nodded down the causeway, to where another fort's gate-arm stood raised against the sky. "You'd have to catch its tail and leap. Off a gate-arm's your best shot, if you've a mind to try something that stupid."
+"On foot, poor devil. Nothing on this road's faster than the column, and there's no mount in the world yet." He nodded to where another fort's gate-arm stood raised against the sky. "Catch its tail and leap. Off a gate-arm's your best shot, if you've a mind to try something that stupid."
 
 "I've a mind."
 
@@ -46,7 +46,7 @@ The dust arrived ahead of the column and then the column arrived inside the dust
 
 She cut the bend the way Pike hadn't said to, because there hadn't been time: down the embankment in three strides mostly falling with intention, over the low toll-chain without breaking stride, taking the inside of the curve where the column had to take the long way round. Pip went ahead of her, low and delighted, born for exactly this, and for a few strides the gap held even, and then — grudgingly — began to close.
 
-*You've crossed the entire Spread on those two feet, little Excuse, and never once complained to me about it — which I've noticed, and appreciated.* The Querent's voice had gone breathless on her behalf, which was new, and rather moving, in the two seconds she had to notice it. *Catch this and you'll not have to walk it again. Consider it the world's way of apologising for the mileage.*
+*You've crossed the entire Spread on those two feet, little Excuse, and never once complained to me about it — which I've noticed, and appreciated.* The Querent's voice had gone breathless on her behalf, which was new. *Catch this and you'll not have to walk it again. Consider it the world's way of apologising for the mileage.*
 
 The first gate-arm hung out over the road at exactly the wrong height to be sensible and the right height to be tried. She went up it hand over hand and threw herself at a roof already gone. Her hands found the running-board of the next carriage instead and held — held for three scraping yards that took most of the skin off her palms — and then didn't, and she was rolling clear across the road with the column thundering on without her, the specific fury of a near miss burning worse than the graze.
 
@@ -64,11 +64,11 @@ Up close, the triumph was a corpse that had forgotten to fall down.
 
 The banners overhead — great regimental colours, once every shade a proud army owns — had bleached to a single uniform bone-white, the devices on them worn to ghosts of themselves. The gilt on the carriages had gone the green of old pennies. A trumpeter stood frozen mid-fanfare on a passing roof, cheeks puffed for a note three hundred years unblown, the bell of his instrument dented too deep to ever sound true again.
 
-And the roofs were held. Parade-armoured Blanks — blank ovals where faces belonged, tabards bearing the column's higher ranks in colours faded to grey — wheeled and presented arms in perfect drill, inspecting a rank that would never be inspected, on a march with nowhere left on earth to arrive.
+And the roofs were held. Parade-armoured Blanks — blank ovals where faces belonged, tabards bearing the column's higher ranks in grey — wheeled and presented arms in perfect drill, inspecting a rank that would never be inspected, on a march with nowhere left to arrive.
 
 *There's your welcome party*, said the Querent, with the particular good cheer it kept for things about to be difficult. *Same as ever, dressed for the occasion. Fell one and its card blows straight off the back of the train, gone into the dust behind you. Nothing ends out here, remember. It only relocates.*
 
-The first rank turned from its phantom inspection and levelled halberds at her, in step, because they had never learned to do anything any other way.
+The first rank turned from its phantom inspection and levelled halberds at her, in step, because they had never learned to do anything else.
 
 She fought forward, because forward was the only direction the roofs allowed. Each felled Blank folded at the knees and the waist, slumping the way a puppet slumps when the hand goes out of it, and each card peeled off the falling tabard and tumbled — not up, this time, but *backward*, snatched down the length of the moving train and off the tail into the road behind, already blowing toward some far stretch of causeway to raise a bearer where she was not. She stopped watching them go. There wasn't time, and there was always another rank.
 
@@ -110,7 +110,7 @@ And three hundred years of momentum began, at last, to die.
 
 It did not stop all at once. There was too much of it, too long a run of it, and the halt went down the train like that same held breath, only slower: the lead carriage's wheels locked and *screamed*, a bright line scored down the causeway stone, and behind it carriage after carriage shuddered and slewed to a stop it had never once practised, the whole column telescoping down into one vast unstoppable stillness.
 
-The dust that had hidden this procession for three centuries came forward, overtook it, and hung — and then began, softly, to settle. The banners overhead, deprived all at once of whatever had kept them flying, folded. One after another, down the whole visible mile of the train, they lost their shape and came down over the carriages, bone-white, gentle, like sheets drawn up over furniture in a house being closed for the last time.
+The dust that had hidden this procession for three centuries came forward, overtook it, and hung — then began, softly, to settle. The banners overhead, deprived all at once of whatever had kept them flying, folded. One after another, down the whole visible mile, they lost their shape and came down over the carriages, bone-white, gentle, like sheets drawn up over furniture in a house being closed for the last time.
 
 The drum stopped. The cadence that had lived in Corporal Pike's own feet from a fort away simply ceased, and the silence it left behind was the loudest thing the Longroad had heard in three hundred years.
 
@@ -124,7 +124,7 @@ The office cracked first.
 
 The black laurel, the tarnished armour, the whole hard carriage of *the General* — it came apart the way the halt had come down the train, front to back, and underneath it was only a soldier, old, appallingly tired, looking at his own halted triumph the way a man looks at something he had been certain could not exist.
 
-"It stopped," he said. "By the Deal — it *stopped*. Three hundred years I held it forward because a commander does not halt a triumph, a commander does not —" He stopped himself, the way the train had. "It turns out all it ever wanted was for someone to pull the other way."
+"It stopped," he said. "By the Deal — it *stopped*. Three hundred years I held it forward because a commander does not halt a triumph —" He stopped himself, the way the train had. "It turns out all it ever wanted was someone to pull the other way."
 
 Something surfaced then, the way a name surfaces — not a wound, only a man coming up for air after a very long time under water. His grip on the reins went loose entirely.
 
@@ -146,7 +146,7 @@ Where the dust had circled there was only a long settling haze and a mile of hal
 
 Away up the slope toward the Maw's crags something tawny and enormous lay along a ledge, watching the stilled road the way a landlord watches a tenant finally settle a debt. She lifted a hand to it out of habit more than hope. Its tail went once against the stone, and that seemed answer enough from something that no longer had to answer to anybody.
 
-Ahead, where the ring met a region road, a caravan sat stopped at the edge of the causeway — drivers who had waited three hundred years for a parade to clear a junction, unable quite to believe the road was theirs. The lead wagon eased out onto the stone, wheels loud and ordinary and wonderful in the new quiet, and she knew the painted sides of it before she knew anything else about it.
+Ahead, where the ring met a region road, a caravan sat stopped at the edge of the causeway — drivers who had waited three hundred years for a parade to clear a junction, unable quite to believe the road was theirs. The lead wagon eased out onto the stone, wheels loud and ordinary and wonderful in the new quiet, and she knew the painted sides of it before she knew anything else.
 
 "OI!" Flick was hanging half off the tailboard, waving both arms as though she might miss an entire touring show trundling past at eight feet away. "It's HER! Tomkin, it's the *sky-woman*!"
 
@@ -180,13 +180,13 @@ She waved the Fool off, not unkindly, and turned back to her cold range — and 
 
 Back at the near fort, Corporal Pike sat exactly where she had left him — boots off, helmet in his lap — but he was no longer watching the road for dust. There was no dust left to watch for.
 
-"It's quiet," he said, looking at his own bare feet as if seeing them for the first time in three centuries. "I keep waiting for the cadence to come round and put my feet right, and it — doesn't. I've caught myself standing up to fall in three times since it stopped. Habit. Just habit, marching a man about with nobody left to give the order."
+"It's quiet," he said, looking at his own bare feet as if seeing them for the first time in three centuries. "I keep waiting for the cadence to come round and put my feet right, and it — doesn't. Caught myself standing up to fall in three times since it stopped. Habit. Just habit, marching a man about with nobody left to give the order."
 
 She sat down beside him again, and didn't tell him what to do with any of it. It didn't seem hers to tell.
 
 He turned the boots over in his hands for a long while, the way a man considers a decision that has finally, after three hundred years, come round to being his.
 
-"No, don't tell me to go," he said at last, though she hadn't. "I've had three centuries of being told where to put my feet, and I find I'd like to be the one who decides the last of it." He looked down the freed road, then back at his cold brazier, and stayed. "Maybe I'll keep the fort. Sweep it. Greet whoever the new road brings, the way somebody once greeted me and I've plumb forgotten who." He raised a hand toward the stilled train and held it there — not quite a salute, and then, deciding, exactly a salute. "When I march again it'll be because I chose the road. Not because the drum did. That'll do nicely."
+"No, don't tell me to go," he said at last, though she hadn't. "I've had three centuries of being told where to put my feet, and I find I'd like to be the one who decides the last of it." He looked down the freed road, then back at his cold brazier, and stayed. "Maybe I'll keep the fort a while yet. Sweep it. Greet whoever the new road brings, the way somebody once greeted me and I've plumb forgotten who." He glanced, almost shyly, at the unlit lamp on the fort's own step. "Might be, further down the road, I'd keep something smaller. A lamp. A step swept for tired feet. There's a kind of standing post to that too, I'd wager." He raised a hand toward the stilled train and held it there — not quite a salute, and then, deciding, exactly a salute. "When I march again it'll be because I chose the road. Not because the drum did. That'll do nicely."
 
 *  *  *
 
