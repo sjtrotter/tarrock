@@ -35,8 +35,16 @@ an edit, not a research task. TBD markers are genuinely undecided.
   head technique (Bran Sculpts order: head sculpt precedes head retopo) and the
   charter's style mix (40% Fable / 20% Kells / 15% Kena / 10% Dishonored /
   10% fairy tales / 5% Ghibli; stylized-simple wins).
-- Eyeball spec TBD: sphere radius + socket clearance to be measured from the
-  sheet's registration circles before the builder starts (lead task).
+- Eyeball spec (lead-measured 2026-08-03 from the v7 sheet registration circles,
+  grid-crop method; S = 0.00201523 m/px): sphere DIAMETER ≈ 70 mm (34.5±1 px) →
+  radius ≈ 35 mm; pupil columns ±43 mm from the X midline (interpupillary
+  ≈ 86 mm); eye-center height Z ≈ 1.571 m (pupil row ≈ 152.5). The circles'
+  row position is spec-only (they float above the crown — column + diameter
+  carry the data). Sanity: drawn eye aperture ≈ 58 mm wide, so the 70 mm sphere
+  is proportionate to the big-eye style; drawn head ≈ 266 mm tall (6.4
+  head-heights — matches R1 certification). Builder must verify eyeball DEPTH
+  (Y) from the side-view head before cutting sockets; socket clearance TBD at
+  build (suggest ~2 mm radial).
 
 ## Executor plan
 - Codex remains default executor UNLESS the round is judged diagnosis-heavy at
