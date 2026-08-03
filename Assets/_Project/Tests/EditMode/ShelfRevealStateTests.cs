@@ -1,6 +1,7 @@
 namespace Tarrock.Tests.EditMode
 {
 
+    using System.Reflection;
     using NUnit.Framework;
     using Tarrock.Player;
     using UnityEngine;
@@ -62,6 +63,51 @@ namespace Tarrock.Tests.EditMode
             ShelfRevealSaveData data = NewState().Capture();
 
             Assert.AreEqual(ShelfRevealSaveMigrator.CurrentVersion, data.Version);
+        }
+
+        [Test]
+        public void TryBeginReveal_RequiresMarkerAndStartsWhenWired()
+        {
+            var player = new GameObject("ShelfRevealTestPlayer");
+            var marker = new GameObject("ShelfRevealTestMarker");
+            var camera = new GameObject("ShelfRevealTestCamera");
+
+            try
+            {
+                var reveal = camera.AddComponent<ShelfRevealCameraNudge>();
+                SetComponentField(reveal, "_player", player.transform);
+                SetComponentField(reveal, "_orbital", camera);
+                SetComponentField(reveal, "_composer", camera);
+
+                Assert.IsFalse(reveal.TryBeginReveal(), "A null marker must fail closed.");
+
+                SetComponentField(reveal, "_deadTreeMarker", marker.transform);
+                Assert.IsTrue(reveal.TryBeginReveal(), "A fully wired reveal must start.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(camera);
+                Object.DestroyImmediate(marker);
+                Object.DestroyImmediate(player);
+            }
+        }
+
+        private static void SetComponentField(
+            ShelfRevealCameraNudge reveal, string fieldName, GameObject host)
+        {
+            FieldInfo field = typeof(ShelfRevealCameraNudge).GetField(
+                fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(field);
+            field.SetValue(reveal, host.AddComponent(field.FieldType));
+        }
+
+        private static void SetComponentField(
+            ShelfRevealCameraNudge reveal, string fieldName, Transform value)
+        {
+            FieldInfo field = typeof(ShelfRevealCameraNudge).GetField(
+                fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(field);
+            field.SetValue(reveal, value);
         }
     }
 }

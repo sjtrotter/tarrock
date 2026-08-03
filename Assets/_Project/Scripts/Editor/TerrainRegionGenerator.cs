@@ -17,8 +17,8 @@ namespace Tarrock.Editor
     /// SCOPE. This is a FEEL TEST, not the shipping Cliff. It rehearses the Cliff's terrain grammar
     /// (high meadow plateau, a valley funnelling west, a refusing edge where the world is broken —
     /// docs/design/world.md §The Cliff) so the sculpted approach is judged against real canon rather
-    /// than an abstract slope. It deliberately carries NO quest markers: porting the Cliff's marker
-    /// ids onto sculpted ground is a separate pass, once the feel is blessed.
+    /// than an abstract slope. It carries only the dead-tree marker needed by the shelf reveal;
+    /// porting the Cliff's remaining quest markers is a separate pass once the feel is blessed.
     ///
     /// Canon this honours (docs/design/art-audio.md §Current build, world.md §The Cliff):
     /// - The Cliff is an ISLAND IN A SEA OF CLOUD (director-blessed 2026-07-26): edged everywhere
@@ -49,6 +49,7 @@ namespace Tarrock.Editor
         private const string CloudLobeMeshPathFormat = "Assets/_Project/Art/CloudLobeMass{0}.asset";
         private const string DeadTreeMeshPath = "Assets/_Project/Art/DeadTree.asset";
         private const string DeadTreeMaterialPath = MaterialDir + "/DeadTreeBark.mat";
+        private const string DeadTreeObjectName = "DeadTree";
         private const string TuftMeshPath = "Assets/_Project/Art/GrassTuft.asset";
         private const string TuftMaterialPath = MaterialDir + "/GrassTuft.mat";
         private const string TuftPrefabPath = "Assets/_Project/Art/GrassTuft.prefab";
@@ -149,6 +150,17 @@ namespace Tarrock.Editor
             BuildLighting();
             BuildCloudSea();
             BuildDeadTree();
+            // Round 15 correction: the sculpted generator previously built the tree but not the
+            // MQ00 marker CameraRigConfig resolves. Parent it at local zero so the marker and the
+            // tree root share one transform relationship even if the knoll is resculpted.
+            GameObject deadTree = GameObject.Find(DeadTreeObjectName);
+            if (deadTree == null || deadTree.transform.parent != null)
+            {
+                throw new System.InvalidOperationException(
+                    "[Tarrock] Sculpted dead-tree root was not built; marker creation aborted.");
+            }
+
+            CliffGreyboxGenerator.CreateDeadTreeMarker(deadTree.transform, Vector3.zero);
             // Round 9's shelf foot is the authored entry to the west-shoulder spiral. Install the
             // shared region-local volume here, before the existing scene save, so the generated
             // TerrainProto scene can actually fire the camera reveal while preserving the one
@@ -176,7 +188,7 @@ namespace Tarrock.Editor
             Debug.Log(
                 $"[Tarrock] Terrain prototype generated at {ScenePath}: {TerrainSize}×{TerrainSize} m, " +
                 $"{HeightmapResolution}² heightmap, max height {TerrainHeight} m, procedural material " +
-                $"'{ShaderName}'. Feel test only — no quest markers (see class doc).");
+                $"'{ShaderName}'. Feel test only — dead-tree marker only (see class doc).");
         }
 
         // -------------------------------------------------------------------------------------

@@ -160,8 +160,9 @@ namespace Tarrock.Editor
         internal const float FacetAmountTerrain = 0.20f;
         // ROUND 14 -- 0.22 -> 0.30. Explicit rock ROIs on the three Fable plates carry adjacent
         // facet steps of 19.33-74.47 final-code LSB; round 13's prop rocks carry 12.65-53.67.
-        // The protected-grade 32-cube model in rock_pipeline.py predicts an added 7.02-10.41 LSB
-        // at 0.30, putting the measured prop span at 19.67-64.08 LSB, inside the board band.
+        // ROUND 15 CORRECTION -- the round-14 capture measured only 0.00 to +2.01 final-code LSB
+        // from this change; it entered no board band. The protected-grade 32-cube prediction failed
+        // because it modelled amplitude without the rendered facet coverage that actually limits it.
         // Terrain stays at 0.20: this is the prop surface response, not contrast for the hillside.
         internal const float FacetAmountProp = 0.30f;
 
@@ -881,7 +882,9 @@ namespace Tarrock.Editor
             //
             // (2) FLECK AMOUNTS ARE A TEXTURE LEVER AND NOT A TONE LEVER, so this change does NOT
             // make the frame's dark rock wings heavier. TkFleckBand3 divides the expected mean back
-            // out, and the measurement above is the proof rather than the promise: across the whole
+            // out. ROUND 15 CORRECTION -- this was a round-14 prediction, not proof; the round-14
+            // capture refuted the predictor because it did not model rendered mark coverage.
+            // Across the whole
             // reachable range of amounts the mean albedo moves by at most 1.3%, and upward. This
             // matters because the same two stones are round 12's near mass AND its "rock wings"
             // (round11/critic5: 39.06% of v8's contrast weight against the hero tree's 0.37%), and

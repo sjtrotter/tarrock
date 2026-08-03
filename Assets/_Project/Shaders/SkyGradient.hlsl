@@ -219,6 +219,7 @@
 #define TARROCK_HORIZON_ANTI       1.00  // how far the horizon band cools at the anti-sun
 #define TARROCK_HORIZON_ANTI_POWER 2.5   // ...spent past 90° off the sun, like the tilt
 #define TARROCK_HORIZON_ANTI_FALL  4.0   // ...and gone by the time the sky is a zenith
+#define TARROCK_VAULT_KEY          0.08  // white share at the 25-63° anti-sun backdrop plateau
 // sRGB (0.20, 0.33, 0.63), decoded here because this is a #define and not a material colour —
 // a new uniform would have to be added to Tarrock/GradientSky's Properties block, and that file
 // belongs to another builder this round. A deep grey-blue: the horizon opposite a low sun.
@@ -934,7 +935,8 @@ float3 TarrockSkyColor(float3 dir, TarrockSkyDesc sky)
     // band with height, and at h = 0 every bearing still got the same gold. `anti` changes the
     // gold itself, spends its travel past 90° off the sun, and dies with height so the vault
     // (and the protected anti-sun zenith v8 looks into) is untouched.
-    float anti = TARROCK_HORIZON_ANTI * pow(1.0 - bearing, TARROCK_HORIZON_ANTI_POWER)
+    float antiBearing = pow(1.0 - bearing, TARROCK_HORIZON_ANTI_POWER);
+    float anti = TARROCK_HORIZON_ANTI * antiBearing
                  * exp(-saturate(h) * TARROCK_HORIZON_ANTI_FALL);
     float3 horizonHere = lerp(sky.horizon, TARROCK_HORIZON_ANTI_COLOR, anti);
 
@@ -948,6 +950,21 @@ float3 TarrockSkyColor(float3 dir, TarrockSkyDesc sky)
     float u = smoothstep(0.0, 1.0, saturate((h - leanMid) / max(1.0 - leanMid, 0.001)));
     u = TarrockSoftBand(u, sky.bandCount, sky.bandStrength, sky.bandSoftness);
     float3 above = lerp(color, sky.zenith, u);
+
+    // ROUND 15 — KEY THE VAULT THE TREE ACTUALLY BREAKS. Camera rays, not an image-derived
+    // horizon row, put v9's visible tree backdrop at 17-63° and v8's at 29-51°
+    // (r15/sky/reconciliation.json). The discarded h=0 key was below 0.01 final-code levels in
+    // both frames; it survived only as an unsupported +6.94 Y levels on v4 and is removed.
+    // Fixed ROI/colour masks on the four assigned plates (r15/sky/board_vault.txt) find usable
+    // open sky only in fable-01 and fable-06: their median code chroma is 13 and 78 against v9's
+    // 107 branch-adjacent backdrop. Kena-01 and fairytale-01 contain no usable open sky, and the
+    // board's 15-61 value ramps bracket ours at 22, so neither is claimed as a value-ramp target.
+    // Spend an 8% neutral lift only from 17-78°, plateauing through 25-63°, and weight it by
+    // the existing anti-sun term. White is a destination rather than an additive value, so pinned
+    // whites cannot exceed white; the zero endpoints preserve the horizon and round-8 zenith.
+    float vaultBand = smoothstep(sin(radians(17.0)), sin(radians(25.0)), h)
+                    * (1.0 - smoothstep(sin(radians(63.0)), sin(radians(78.0)), h));
+    above = lerp(above, 1.0.xxx, TARROCK_VAULT_KEY * antiBearing * vaultBand);
 
     // BELOW. The lower hemisphere is the cloud sea seen at infinity, so it settles on the haze
     // the fog and the deck both settle on. Everything distant in this region — rim rock, the

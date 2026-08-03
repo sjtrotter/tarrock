@@ -67,7 +67,7 @@ Material:
     m_Colors:
     - _BaseColor: {r: 0.32, g: 0.53, b: 0.24, a: 1}
     - _BleachTint: {r: 1, g: 0.94, b: 0.8, a: 1}
-    - _CoolColor: {r: 0.28, g: 0.44, b: 0.23, a: 1}
+    - _CoolColor: {r: 0.33, g: 0.44, b: 0.23, a: 1}
     - _DryColor: {r: 0.78, g: 0.74, b: 0.44, a: 1}
     - _GroundColor: {r: 0.24149998, g: 0.288, b: 0.22149998, a: 1}
     - _GroundDryColor: {r: 0.40999997, g: 0.41999996, b: 0.32, a: 1}

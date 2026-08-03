@@ -1080,16 +1080,14 @@ Shader "Tarrock/RockPainterly"
 
                 float3 color = albedo * (direct + ambient) * shade;
 
-                // ROUND 14 -- A PAINTED TURN AT THE OBJECT'S OWN OUTLINE.  `fwidth` converts the
-                // N.V threshold to a screen-space profile, so this stays 2.5 pixels wide from the
-                // 2 m foreground stones to the 30 m shelf stones instead of becoming a broad rim
-                // on the close props.  The 0.24 multiplier was propagated through the captured
-                // 32-cube grade: predicted final-code depth 10.79-16.64 LSB over the captured
-                // mid-rock code range 75-180. The board outline band could
-                // not be measured with confidence because the three plate rocks join terrain, so
-                // this is a capture target rather than a claimed board match, never a sub-LSB
-                // shader gesture.  It acts after lighting so it reads as the form turning away and
-                // cannot increase the material's chroma.
+                // ROUND 15 CORRECTION -- the round-14 capture measured <= 0.05 final-code LSB,
+                // refuting the 10.79-16.64 LSB prediction. This smooth-normal construction shipped
+                // on deliberately flat facets: N is constant, |N.V| changes only about 0.05 over
+                // ~100 px, and fwidth ~5e-4 makes the turn only ~0.07 degrees of grazing -- a
+                // sub-pixel sliver antialiasing erases. No multiplier fixes that coverage failure.
+                // The board supplies no silhouette band to chase: fable-01 and fable-05 bury rock
+                // outlines into moss/grass over 10-30 px, while fable-06 meets a blown highlight.
+                // The supported axis is burial rather than a clean silhouette value edge.
                 float3 viewDirectionWS = SafeNormalize(GetCameraPositionWS() - positionWS);
                 float edgeFacing = abs(dot(normalWS, viewDirectionWS));
                 float edgeWidth = max(fwidth(edgeFacing) * 2.5, 1e-4);

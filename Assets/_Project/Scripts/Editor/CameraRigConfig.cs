@@ -188,15 +188,22 @@ namespace Tarrock.Editor
         {
             if (target == null)
             {
-                return;
+                throw new System.ArgumentNullException(nameof(target),
+                    $"[Tarrock] Cannot wire field '{fieldName}' on a null target.");
             }
 
             var serialized = new SerializedObject(target);
             SerializedProperty property = serialized.FindProperty(fieldName);
             if (property == null)
             {
-                Debug.LogWarning($"[Tarrock] Field '{fieldName}' not found on {target.GetType().Name}.");
-                return;
+                throw new System.InvalidOperationException(
+                    $"[Tarrock] Field '{fieldName}' not found on {target.GetType().Name}.");
+            }
+
+            if (value == null)
+            {
+                throw new System.InvalidOperationException(
+                    $"[Tarrock] Cannot wire {target.GetType().Name}.{fieldName}: resolved value is null.");
             }
 
             property.objectReferenceValue = value;

@@ -349,7 +349,7 @@ namespace Tarrock.Editor
                 new Vector3(0.2f, 3.2f, 0.6f), new Vector3(0.15f, 1f, 0.15f), mats.DeadTree,
                 Quaternion.Euler(-40f, 20f, -20f));
 
-            SetMarkerId(tree.AddComponent<InteractionMarker>(), CliffMarkerIds.DeadTree);
+            CreateDeadTreeMarker(tree.transform, Vector3.zero);
         }
 
         private static void CreateStandingStones(Transform parent, GreyboxMaterials mats)
@@ -416,6 +416,12 @@ namespace Tarrock.Editor
             box.isTrigger = true;
             box.size = ShelfRevealTriggerSize;
             trigger.AddComponent<ShelfRevealTrigger>();
+        }
+
+        internal static void CreateDeadTreeMarker(Transform parent, Vector3 localPosition)
+        {
+            GameObject marker = CreateEmpty(CliffMarkerIds.DeadTree, parent, localPosition);
+            SetMarkerId(marker.AddComponent<InteractionMarker>(), CliffMarkerIds.DeadTree);
         }
 
         // ---------------------------------------------------------------------------------

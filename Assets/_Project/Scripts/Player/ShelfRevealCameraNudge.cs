@@ -42,6 +42,7 @@ namespace Tarrock.Player
         private Vector3 _entryTargetOffset;
         private float _apexHorizontal;
         private Vector3 _apexTargetOffset;
+        private Vector3 _apexWorldAim;
 
         public bool HasPlayed => State.HasPlayed;
 
@@ -64,10 +65,10 @@ namespace Tarrock.Player
             _entryHorizontal = _orbital.HorizontalAxis.Value;
             _entryTargetOffset = _composer.TargetOffset;
 
-            Vector3 worldAim = _deadTreeMarker.position + (Vector3.up * _apexTargetLift);
-            Vector3 planar = worldAim - _player.position;
+            _apexWorldAim = _deadTreeMarker.position + (Vector3.up * _apexTargetLift);
+            Vector3 planar = _apexWorldAim - _player.position;
             _apexHorizontal = Mathf.Atan2(planar.x, planar.z) * Mathf.Rad2Deg;
-            _apexTargetOffset = _player.InverseTransformPoint(worldAim);
+            _apexTargetOffset = _player.InverseTransformPoint(_apexWorldAim);
             return true;
         }
 
@@ -84,12 +85,18 @@ namespace Tarrock.Player
             if (_input != null && _input.LookInput.magnitude >= _lookReleaseThreshold)
             {
                 State.ReleaseForLookInput();
+                _orbital.HorizontalAxis.Value = _entryHorizontal;
                 _composer.TargetOffset = _entryTargetOffset;
                 return;
             }
 
             State.Tick(Time.deltaTime);
             float weight = State.RevealWeight;
+            // Composer offsets are player-local while orbital yaw is world-space. Re-resolve the
+            // fixed world aim each frame so turning or moving cannot split the channels.
+            Vector3 planar = _apexWorldAim - _player.position;
+            _apexHorizontal = Mathf.Atan2(planar.x, planar.z) * Mathf.Rad2Deg;
+            _apexTargetOffset = _player.InverseTransformPoint(_apexWorldAim);
             _orbital.HorizontalAxis.Value = Mathf.LerpAngle(_entryHorizontal, _apexHorizontal, weight);
             _composer.TargetOffset = Vector3.Lerp(_entryTargetOffset, _apexTargetOffset, weight);
         }
