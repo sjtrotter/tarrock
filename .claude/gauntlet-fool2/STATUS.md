@@ -360,7 +360,7 @@ rebuilt as form; all named seams killed. Protected regions verified at 0.000 mm.
 | ![3/4](renders/r12-three-quarter.png) | ![knee](renders/r12-zoom-knee.png) |
 
 **Critic (Opus, fresh) + Codex blind:** **SEND BACK, but the diagnosis is now one
-line: amplitude, not placement.** Forms are in the right places at ~⅓ the contrast
+line: amplitude, not placement (r12).** Forms are in the right places at ~⅓ the contrast
 needed in flat light; the one LOUD feature is the iliac-crest "belt" artifact (louder
 than the clavicles); the costal arch has a midline kink; arms are the quietest region
 on the figure. Codex: style regressed to 3, "mannequin-smooth" a fourth time — but
@@ -372,3 +372,66 @@ planes 2–3×, kill the belt, resolve the costal midline; arm relief if cheap).
 pre-commitment: if R13 verifies presence in flat light and the belt is dead, the
 Pass-2 gate closes under the charter's 80–90% rule with arm-relief debt logged —
 Pass 3 and the head-round gates re-judge the whole figure regardless.**
+
+---
+
+## Round 13 — amplitude turn-up, re-run after the reboot (2026-08-03)
+
+*The 08:53 machine reboot destroyed the first R13 attempt mid-flight; this is the
+full re-run under a successor lead, and the round that changed how we see the
+mesh.*
+
+**Phase A (Codex, tooling):** the lost run tooling rebuilt and validated — field
+library (C1/teardrop falloffs, calibrated amplitude, terrace repair), 015
+silhouette station baseline (now the guard: |candidate − 015| ≤ 3 mm), 160-probe
+webbing set, flat-light RMS metric reproducing the r12 critic's regional ordering.
+
+**Phases B + C (Codex builders, two honest FAILs):** mm-space field targets hit,
+but the planes rendered as faceted plates (integration blur 10× too tight), the
+belt shrugged off a 0.29 mm erase, and both render-RMS instruments proved blind —
+the belt "ridge" measured 0.000 mm proud, and plane work *lowered* the abdomen
+high-pass RMS. Candidates retained, unpromoted.
+
+**Phase D (escalation to an Opus builder — the diagnose-first round):** the
+finding that redefines the remaining work: **in flat light the eye reads the
+surface normal, not height — every band, plate, and seam is a curvature
+concentration.** The belt is a 44° slope knee whose garment read is its
+*horizontality* (the turn line wanders only 6.5 mm from spine to flank); nothing
+is proud, so every erase was aimed at a phantom. The plate artifacts were plateau
+displacements (panels translated without rotating their normals — only the rim
+ever showed). Rebuilt in slope space: costal two-panel tilt 4.3 mm p-p, flank
+planes, belt curvature-retarget 9.5 mm via an inward spinal carve, arm relief with
+the 015-inherited ring seam de-kinked. Five internal build→render→look cycles.
+
+| Front (flat set) | 3/4 |
+|---|---|
+| ![front](renders/r13-front-flat.png) | ![3/4](renders/r13-three-quarter.png) |
+| ![torso](renders/r13-zoom-torso.png) | ![pelvis](renders/r13-pelvis-back.png) |
+
+**Lead validation (eyes-on + numbers):** torso integration WON — soft two-panel
+costal read, no plates or islands (edge-hardness 0.972 vs 1.515 base / 1.940
+Codex); guards all green (silhouette max 2.915 mm, webbing 160/160, topology and
+crown/sole exact). Belt visibly softened, not dead. Arm relief still quiet after
+three executor attempts. **Structural finding: killing the belt needs ~±7 mm of
+differential across the back — more than the ±3 mm sheet-certified silhouette
+gate permits. That fork (open the gate regionally vs log the belt as debt) went
+to the director: issue #2, lead recommends debt** (the band's region lives under
+the Fool's clothing layers in-game). A quieter line of the same class was found
+on the front at z≈1.264 and rides the same ruling.
+
+**Codex blind (stage-close), reported without varnish:** style **3/10 — unchanged
+from r12**. "Generic, stiff mannequin"; biggest gap "boxy, segmented" vs the
+sheet's "graceful, youthful taper"; first order "rebuild the torso-to-pelvis
+silhouette." Lead reading: the measured contour sits within ±3 mm of the sheet at
+every station (twice certified; guard held all round), so the judge's complaint is
+the curvature-presence read, not the contour — consistent with Phase D's lesson —
+but the blind score did not move this round, and that fact stands in the debt log
+rather than being explained away. The presence work is not finished; what changed
+is that we now know its mechanism.
+
+**Round verdict: LANDED — chain advances to `Fool-v2-016.blend` (Phase D
+candidate promoted; guards green; best-integrated torso of the run). Pass-2 gate
+closure pending the director's belt ruling on issue #2; arm-relief debt logged
+per the 7fab0ad pre-commitment. Standing process changes from this round: run
+tooling now lives in the repo (`tooling/`), and sculpt gates are geometry-space
+plus mandatory builder eyes-on — render-RMS scalars are retired.**

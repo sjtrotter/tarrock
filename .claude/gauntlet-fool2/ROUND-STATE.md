@@ -133,15 +133,71 @@ calls stay with the lead.
 - New lead (this session) resumes under the same charter, regime, and gate
   pre-commitment (commit 7fab0ad). Tooling-persistence rule adopted (above).
 
-## ROUND 13 (RE-RUN, Codex-executed): amplitude turn-up
+## ROUND 13 (RE-RUN, closed 2026-08-03): amplitude turn-up — four phases
 
-Pre-committed lead gate: R13 = (1) torso plane contrast ×2–3 (same shapes, more
-gain; abdomen especially), (2) kill the belt (break at spine, fade laterally, RMS
-below clavicle level), (3) costal midline continuous crossing, (4) arm relief ≥
-clavicle RMS (deltoid insertion V, biceps/triceps plane split, ulnar line, elbow
-gain). NO re-proportioning (silhouette verified correct twice). If flat-light
-presence verifies and the belt is dead → Pass-2 gate CLOSES under the charter's
-80–90% rule with residual debt logged; head sculpt unblocks.
+Pre-committed lead gate (7fab0ad): close Pass-2 if flat-light presence verifies
+AND the belt is dead; arm-relief debt loggable. Outcome:
+
+- **Phase A (Codex):** tooling reconstructed + validated (fieldlib, 015 station
+  baseline, 160-probe webbing set, RMS metric w/ ordering sanity gate). Promoted
+  to tooling/ (commit 1e70c17).
+- **Phase B (Codex, honest FAIL):** fields hit mm targets but read as faceted
+  plates (integration blur 0.855 mm — 10× too tight); belt erase 0.29 mm =
+  nothing; abdomen RMS gate proved structurally unwinnable (plane work REDUCES
+  high-pass RMS). Candidate 016 unpromoted.
+- **Phase C (Codex, honest FAIL):** re-gain overshoot re-amplified plate edges;
+  belt ridge measured p95 = 0.000 mm (not a ridge!); lead's MID-band metric
+  swamped by pre-existing curvature (ratios pinned at 1.000). Both render-RMS
+  instruments ruled blind at these mask sizes.
+- **Phase D (ESCALATION, Opus builder — Codex failed same piece twice):**
+  diagnose-first. THE DIAGNOSIS: flat-light bands are curvature concentrations
+  (the eye reads the surface NORMAL, not height). The belt = a 44° slope knee
+  whose garment read is its HORIZONTALITY (turn centroid varies 6.5 mm spine→
+  flank); nothing is proud — B/C erased a phantom. Plate artifacts = plateau
+  displacement (translates a panel without rotating its normal; only the rim
+  shows). Arm seam inherited from 015 (slope kink at x≈0.40). Built in slope
+  space: belt curvature-retarget 9.5 mm (inward carve trick), costal two-panel
+  tilt 4.3 mm p-p, flank plane, arm relief 7 mm p-p, seam de-kink. 5 internal
+  build→render→LOOK cycles. Torso integration PASS (edge-hardness 0.972 vs
+  base 1.515 / Codex 1.940, no plates); belt softened NOT dead; arm still
+  quiet; guards all green (silhouette 2.915 mm, webbing 160/160, topology/
+  crown/sole exact).
+- **STRUCTURAL FINDING:** de-horizontalizing the belt's 44° turn needs ~±7 mm
+  differential across the back — the ±3 mm silhouette gate allows less than
+  half. The belt CANNOT die inside the current gate. → Director issue #2
+  (options: log as debt + close Pass-2 [lead rec] vs open posterior-pelvis
+  gate to ±7 mm). Second garment-class line found on the FRONT at z≈1.264.
+- **Lead verdict: 016c promoted as chain Fool-v2-016.blend** (strict
+  improvement, guards green; workdir 016/016b were unpromoted phase
+  candidates). Pass-2 gate closure PENDING issue #2 ruling. GUI reloaded to
+  chain head.
+
+## Method lessons (Round 13, paid for)
+
+- Flat-light "bands/plates/seams" are CURVATURE concentrations — the eye reads
+  the normal, not height. Diagnose with slope/curvature profiles, never height
+  residuals. Plateau displacement (translate panel, don't rotate normal) is the
+  plate-artifact generator; build fields in SLOPE space and bound curvature.
+- Render-RMS scalar gates at small masks are blind to real work (0.1% moves on
+  zoom-visible changes; band-pass swamped by baseline curvature). Gates must be
+  geometry-space numbers + mandatory eyes-on render iteration by the builder.
+- The "-flat" renders were never actually flat-lit in ANY phase (base-back ==
+  base-back-flat byte-identical) — internally consistent A/Bs, but fix the
+  flat-light rig in tooling before the next presence gate.
+- Escalation clause works: Codex 2× fail → Opus with diagnose-first mandate
+  found in one round what four cycles missed.
+
+## Carried forward (R13 additions)
+
+- BELT: slope-knee horizontality at z 1.03–1.10 back — debt-vs-gate ruling
+  pending director issue #2. Front garment-class line z≈1.264 rides the same
+  ruling. Arm relief: quiet after 3 executor attempts (7 mm p-p registered
+  +0.6%) — debt per pre-commitment; note the T-pose horizontal-cylinder
+  lighting geometry limits front-view arm reads.
+- Flat-light render rig defect: build a true single-directional flat rig in
+  tooling (all phases judged on studio-lit "flat" renders).
+- Chain mapping: chain Fool-v2-016.blend = workdir Fool-v2-016c.blend (Phase D).
+  Workdir 016/016b = failed phase candidates, retained for the record.
 
 ## Carried forward
 

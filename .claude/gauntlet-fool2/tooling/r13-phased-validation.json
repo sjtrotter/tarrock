@@ -1,0 +1,90 @@
+{
+  "backups_present": [
+    "Fool_SculptBase_preboolean",
+    "Fool_SculptBase_prepass2",
+    "Fool_SculptBase_prepass2b",
+    "Fool_SculptBase_prepass2c",
+    "Fool_SculptBase_prepass2d",
+    "Fool_SculptBase_prepass2e",
+    "Fool_SculptBase_preremesh",
+    "Fool_SculptBase_presculpt1",
+    "Fool_SculptBase_presculpt2"
+  ],
+  "counts": [
+    992787,
+    1985570,
+    992785
+  ],
+  "crown_delta_mm": 0.0,
+  "prepass2e_untouched": true,
+  "silhouette_max_abs_mm": 2.9149726033210754,
+  "silhouette_pass": true,
+  "sole_delta_mm": 0.0,
+  "webbing_outside": [
+    160,
+    160
+  ],
+  "webbing_pass": true,
+  "worst10": [
+    {
+      "axis": "y_max",
+      "delta_mm": -2.9149726033210754,
+      "region": "torso",
+      "z": 1.02
+    },
+    {
+      "axis": "y_max",
+      "delta_mm": -2.4836286902427673,
+      "region": "torso",
+      "z": 1.0225
+    },
+    {
+      "axis": "y_min",
+      "delta_mm": 2.4693310260772705,
+      "region": "torso",
+      "z": 1.1625
+    },
+    {
+      "axis": "y_max",
+      "delta_mm": -2.408556640148163,
+      "region": "torso",
+      "z": 1.0175
+    },
+    {
+      "axis": "y_max",
+      "delta_mm": -2.375282347202301,
+      "region": "torso",
+      "z": 1.025
+    },
+    {
+      "axis": "y_min",
+      "delta_mm": 2.3694410920143127,
+      "region": "torso",
+      "z": 1.1725
+    },
+    {
+      "axis": "y_min",
+      "delta_mm": 2.3672878742218018,
+      "region": "torso",
+      "z": 1.17
+    },
+    {
+      "axis": "y_min",
+      "delta_mm": 2.3607537150382996,
+      "region": "torso",
+      "z": 1.175
+    },
+    {
+      "axis": "y_min",
+      "delta_mm": 2.3564547300338745,
+      "region": "torso",
+      "z": 1.1675
+    },
+    {
+      "axis": "y_min",
+      "delta_mm": 2.3392215371131897,
+      "region": "torso",
+      "z": 1.1775
+    }
+  ]
+}
