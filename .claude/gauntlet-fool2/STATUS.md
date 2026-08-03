@@ -112,3 +112,34 @@ come at sculpt; deferral list corrected (hand residual is dorsal).
 
 **Round verdict: SEND BACK → Round 4 = final pre-merge fixes (finger-root ledge,
 shoulder plan pinch, cranium width, groin V, foot soles) + honest ortho re-renders.**
+
+---
+
+## Round 4 — pre-merge fixes (2026-08-02)
+
+**Builder (Opus):** finger dorsal ledge closed (12.3 mm step → ≤2.2 mm, seam step now
+matches the drawn line's own drop); shoulder plan pinch solved (13-pass ring solver,
+depth now monotone, deltoid widest); groin plate rebuilt as converging V/dome with
+crotch apex preserved to 0.07 mm; soles planar within 0.74 mm at exactly Z=0. Also
+DISPUTED two critic premises with sheet-frame measurements: the cranium was already on
+the drawn skull line (+2.7 mm, not +28 mm — the critic had a 300-px frame error) and
+the sole "collapse" was a 1.2 mm dome. All renders certified true-ortho.
+`Fool-v2-006.blend`.
+
+| Front overlay | True-ortho top |
+|---|---|
+| ![front](renders/r4-front.png) | ![top](renders/r4-top.png) |
+| ![hand](renders/r4-front-zoom-hand.png) | ![crotch](renders/r4-crotch-tq.png) |
+
+**Critic (Opus, fresh context, MERGE GATE):** all five claims verified on the renders;
+cranium dispute adjudicated FOR the builder (refuted by an order of magnitude); lead's
+inguinal-crease ruling holds; whole-figure fit ±3 mm front, +0.5/+4.5 mm side.
+**SEND BACK — pre-flight only, no art changes:** certify solid intersection at finger
+roots / arm root / foot / thigh, state voxel sizes against the narrowest slots, and
+widen the inter-thigh slot (17 mm vs drawn 26 mm — nudge thighs ~4 mm/side out, which
+also improves the drawing match). Corrections logged: trapezius residual is 10.4 mm at
+two stations (not ≤3.7); brow plane starts +9 mm proud for the sculpt brief.
+
+**Round verdict: SEND BACK (pre-flight) → Round 5 = thigh nudge + certification
+numbers + THE MERGE (pipeline Step 3: backup, apply modifiers, join body, voxel
+remesh; hands stay separate for a finer pass).**
