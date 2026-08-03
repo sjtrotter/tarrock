@@ -99,7 +99,12 @@ art detail belongs to [`art-audio.md`](art-audio.md) and the quest docs.
   where the Spread is finally visible from this height — revisit at MQ19+.)
 - **The Prestige (I):** A carnival that has been mid-performance for 300 years. Tents
   like cathedral naves, an audience that cannot leave its seats, popcorn older than
-  nations. Warm, gaslit, uncanny. Intended first region.
+  nations. Warm, gaslit, uncanny. Intended first region. **The carnival's "wind" is
+  stage machinery** — under-stage bellows breathe through vents to keep the banners
+  snapping and the paper beasts stirring, reconciling MQ01's scripted gusts with the
+  bound-region stillness rule (`art-audio.md`: no ambient motion while bound). The
+  machinery is exposed at the under-stage flip ("as above, so below"), and real moving
+  air enters the Prestige for the first time when `WS_MAGICIAN_UNBOUND` fires.
 - **The Veil (II):** A cloister-library in perpetual moonlit mist between two colossal
   pillars. Silent order of archivist nuns, plus a small lay staff of under-librarians
   (addressed as Brother or Sister by cloister courtesy, not vow); the world's secrets

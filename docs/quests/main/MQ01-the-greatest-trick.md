@@ -483,6 +483,13 @@ open for the first time in three hundred years.
 
 ## Open questions
 
+- **[Resolved — narrative review, 2026-08-03]** This script's scripted wind (banners
+  that "snap crisp in a wind that never quite stops," the Menagerie's "wind gets in the
+  paper," the High Wire's rising gusts) is **stage machinery**, not weather: under-stage
+  bellows breathing through vents, per `world.md` §The Prestige. The bound-region
+  stillness rule (`art-audio.md`) holds; the bellows are exposed at the under-stage
+  flip, and the region's first real moving air arrives with `WS_MAGICIAN_UNBOUND`.
+
 - Should Ferridge remain a fixture NPC after MQ01 (in either branch) so his mourning
   gets a later beat of resolution, or is he scoped to this quest only per the theme's
   "show them, don't resolve them" instruction?
