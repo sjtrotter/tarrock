@@ -9,6 +9,10 @@ faces −Y, mirror axis X, soles at Z=0, bald crown 1.72 m. Chain: `Fool-v2-###.
 Workflow: references & blockout → merge & sculpt → head sculpt → head retopo → body
 retopo → rigging → hair → clothes & accessories → materials → Unity FBX gate.
 
+*(2026-08-03: run resumed after a session-limit stop; per director order, Codex CLI is
+now the default builder-executor on a headless Blender lane, Claude reserved for lead
+validation and stage-close critique.)*
+
 | Stage | Status |
 |---|---|
 | References & blockout | in progress (body done; arms/hands/neck next) |

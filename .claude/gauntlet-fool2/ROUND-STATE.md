@@ -77,16 +77,59 @@ Run started: 2026-08-02. Lead: Fable (this file is the resume point).
   a SECOND field after refresh. Widen + taper polyline ends or you get "coat hanger".
 - Tier-1 numpy beats brushes for everything tried so far; no Tier-3 stroke needed yet.
 
+## Rounds 10–12 (reconciled 2026-08-03 after session-limit death; chain = Fool-v2-015)
+
+- **R10 (013):** form-first Pass-2 redo. Anisotropic terrace tool (radius grid over
+  (z,φ), Gaussian along Z only) killed 4 terraces; falloff moat-bug fixed at source
+  (fpow≥1 / C1 smoothstep); scapula plate, knee one-mass. Critic: SEND BACK — net
+  subtractive, "mannequin-smooth" (Codex ×2), elbow/pelvis/wrist barely touched.
+- **R11 (014):** additive structural round. New r11lib: asymmetric teardrop falloffs
+  (aradius), C1 facing, amplitude calibrated against post-blur field. Shoulder girdle
+  PASSED and is PROTECTED (acromion corner, clavicle S 2.65 mm, humeral head);
+  malleoli "best-executed". Critic: SEND BACK — "structure stops at the collarbones";
+  knee frozen by a bad lead guard (byte-identical); Codex style 3→5.
+- **R12 (015):** scoped completion. Proved drawn waist was already matched in
+  silhouette (defect = shading legibility only); costal arch + waist planes, knee
+  three-prominence read, pelvis rebuilt (1 crest / 1 ASIS / 2 PSIS / glute mass),
+  chest diagonal erased+rebuilt, seams killed; guards 0.000 mm. Critic: SEND BACK —
+  **"amplitude, not placement"**: forms right, ~⅓ contrast needed; iliac-crest BELT
+  artifact too loud (RMS 8.94 vs clavicle 6.16); costal midline kink; arms quietest
+  region (RMS 2.03). Codex "mannequin-smooth" 4th time, style back to 3.
+- Critic's measured RMS map (r12): upper arm 2.03 · abdomen 4.33 · PSIS 5.16 ·
+  clavicles 6.16 · belt 8.94 · costal arch 9.74 (reads as scored line).
+
+## REGIME CHANGE (director order 2026-08-03 — charter §Usage economy)
+
+- Codex CLI (`codex exec`) = DEFAULT executor for builder/grunt work, driving
+  `blender --background --python` on the latest chain file (headless lane; GUI MCP
+  socket unused by agents while Codex holds the lane; GUI must never save).
+- Claude agents ONLY for: lead planning/validation, stage-close critique, pieces
+  Codex failed twice. Lean briefs, lean narration.
+
+## ROUND 13 (next, Codex-executed): amplitude turn-up
+
+Pre-committed lead gate: R13 = (1) torso plane contrast ×2–3 (same shapes, more
+gain; abdomen especially), (2) kill the belt (break at spine, fade laterally, RMS
+below clavicle level), (3) costal midline continuous crossing, (4) arm relief ≥
+clavicle RMS (deltoid insertion V, biceps/triceps plane split, ulnar line, elbow
+gain). NO re-proportioning (silhouette verified correct twice). If flat-light
+presence verifies and the belt is dead → Pass-2 gate CLOSES under the charter's
+80–90% rule with residual debt logged; head sculpt unblocks.
+
 ## Carried forward
 
 - Face: featureless mask + jaw/head horizontal band; nose absent; ears absent; eye
   sockets + separate eyeball spheres REQUIRED (charter: rig-ready eyes). Head-sculpt
-  round owns all of it.
+  round owns all of it. Manubrium band z≥1.32 ~15 mm proud → head/neck round.
 - Pass-3 creases not done (clavicle hollows, sternal line, deltopectoral, inguinal V +
   ligament, sartorius, glute fold, popliteal, Achilles flanks, wrist creases, lateral
   knee grooves). Consider masked/local work — global remesh finer than 1.5 mm is heavy.
 - Knee silhouette: sheet wins (narrower than calf); knobbly read lives inside it.
+- Calf-top outer edge 3.3–4.0 mm narrow vs drawn (z 0.40–0.46) — unowned.
+- Side z=1.21 station −4.28 mm (sheet's chest/shoulder notch under protected girdle).
 - 992k verts: residual passes 10–50 s each; prefer region masks over global ops.
+- Backups in-file: prepass2b/c/d (+ e pending R13), presculpt1/2, preremesh, prebool,
+  Blocking_Backup, Hand_Shells.
 
 ## Progress page (DIRECTOR CHANGE 2026-08-02)
 
