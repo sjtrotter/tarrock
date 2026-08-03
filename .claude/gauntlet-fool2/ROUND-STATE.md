@@ -243,6 +243,22 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
   position is spec-only (they float above the crown).
 - presence_render.py (studio + rake) was written by the previous lead but
   NEVER RUN — Phase A validates it (closes the R13 flat-light-rig debt).
+- Cycle log: A (Codex tooling, validated; eyeball-Y later corrected) → B c1
+  (Opus, 017e, gates green, blind 4/10, send-back) → B c2 (Opus, 017h, gates
+  green, blind FLAT 4/10 — extremes-gates blind to off-midline cheek mass) →
+  B c3 (Opus, wedge plan-section mandate, TASK-B3-HEAD.md).
+- **LEAD PRE-COMMITMENT (before seeing cycle-3 results):** if cycle 3 does not
+  move the blind score above 4, R14 closes under the charter 80–90% clause on
+  the best candidate: eye-read/mouth-read debts go to the head-retopo +
+  materials stages (which own face edge loops and the iris/lash graphics the
+  gray sculpt cannot show a judge), jaw-band debt logged if it survives. If it
+  DOES move, one further cycle is allowed at most before the same closure rule
+  applies.
+- Instrument findings (paid for, carry): per-z extreme stations are blind to
+  off-midline mass — plan-view sections are the anti-muzzle instrument;
+  contour locks fit to drawn-ink stations re-inject pixel-tread banding (use
+  smooth polynomial locks); EEVEE rake shows shadow-map acne Workbench does
+  not — never chase stripes only the rake shows.
 
 ## Progress page (DIRECTOR CHANGE 2026-08-02)
 
