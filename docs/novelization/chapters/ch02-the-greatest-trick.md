@@ -145,7 +145,7 @@ old — but she had the shape. *These people are waiting. The waiting is what's 
 mend it, somebody must take the waiting away.* She could not have told you what that would
 cost. Neither could I, at the time, though I had a much better idea.
 
-She went out the side of the tent, and Pip went with her, and the peach stayed where it
+She went out the side of the tent, and Pip went with her, and the toffee apple stayed where it
 was.
 
 *  *  *
@@ -261,7 +261,8 @@ the title, I expect."
 "An ending, eventually." She said it lightly, the way you'd mention rain. "A good one, if
 I'm reading it right. And I am always reading it right."
 
-The Fool thought about the peach, and the woman's arm held out for three hundred years.
+The Fool thought about the toffee apple, and the woman's arm held out for three hundred
+years.
 
 "I'd rather not know."
 
