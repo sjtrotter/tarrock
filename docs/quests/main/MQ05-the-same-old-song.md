@@ -648,14 +648,12 @@ out through. MQ05 ends here.]**
   reused elsewhere (audio callback shared with SQ-CHANTRY-01's flat note and SQ-CHANTRY-02's
   new peal), or is it left undefined at outline stage? *(Carried forward unresolved; this
   script keeps the new song deliberately unnamed so the audio decision stays open.)*
-- **New (scripting delta):** beat 4 stages "three choir-pipes across the town's rooftops
-  and bell towers" and beat 9 stages "the final choir-pipe redirected: the hymn breaks
-  mid-note." This script reads those as three *town* pipes (redirected in the approach) plus
-  the organ's own **master pipe** at the colosseum's heart as the fourth-and-final,
-  redirected mid-fight as the killing sabotage. If canon intends exactly three pipes total
-  — with the third held back for the fight rather than a distinct organ pipe — the
-  colosseum finisher should be re-labelled the third town pipe and the approach reduced to
-  two. Flagged for the arcana.md owner.
+- **[Resolved — narrative review, 2026-08-03]** Pipe count: this script's staging is
+  canon — three *town* choir-pipes redirected in the approach (teaching the loop), plus
+  the organ's own **master pipe** at the colosseum's heart as the distinct fourth-and-
+  final, redirected mid-fight as the killing sabotage. `arcana.md` §V's "sabotage the
+  choir-pipes" states no count and needs no change; where this file's prose says "the
+  final choir-pipe," read it as the master pipe.
 - **New (scripting delta):** the Chantry's scenes are time-stamped "THE SACRED HOUR"
   (pre-unbinding) / "THE NEW HOUR" (post) rather than DAY/NIGHT, because the region's fixed
   single hour is its defining stasis. Confirm this state-dependent slug convention is

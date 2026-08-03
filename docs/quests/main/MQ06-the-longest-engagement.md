@@ -758,12 +758,11 @@ whichever town loses the wedding still loses the future it built its whole ident
 - Does either branch have downstream side-quest hooks (e.g., the losing town's elder seeking
   the Fool out later, or the packing family recurring as displaced NPCs across the bridge),
   or does this quest's ache stand alone?
-- **Reconcile Ferryman Pell with Sculley Marsh (SQ-DIVIDE-02).** That side quest already
-  flags the collision — both are written as "the Divide's gossip ferryman who mourns the
-  ferry's obsolescence," and both this quest and SQ-DIVIDE-02 stage that mourning and the
-  same toll-house successor. This script keeps the mourning on **Pell** (per the outline and
-  `characters.md`) and does not stage Sculley at all, leaving SQ-DIVIDE-02's proposed
-  resolution (same character, or owner-Pell / hand-Sculley) open. Resolve across both docs
-  before either reaches `implemented`.
+- **[Resolved — narrative review, 2026-08-03] Ferryman Pell / Sculley Marsh (SQ-DIVIDE-02)
+  reconciled as owner and hand**, two people per `characters.md`. This quest's mourning
+  beat stays on **Pell** and is about the *trade* (the crossing nobody needs). SQ-DIVIDE-02
+  owns **Sculley**, his hand, whose grief is scoped to the *knowing* (the gossip-network),
+  and owns the toll-house succession (Sculley's option; Pell declines it). Neither quest
+  stages the other's beat; SQ-DIVIDE-02's Open questions record the same resolution.
 - Exact Fortune cost and tuning of Union's Present (Tether) effect is TBD at combat tuning
   per `arcana.md`; not decided here.

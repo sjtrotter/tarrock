@@ -78,10 +78,14 @@ Rewards, if any: modest coins; a small rise in the local suit's Renown.
 
 ## Open questions
 
-- **Reconcile with MQ06's Ferryman Pell.** Both Sculley Marsh and Pell are written as "the
-  Divide's gossip ferryman" who mourns the ferry's obsolescence, and MQ06 already stages
-  Pell watching his trade end. Are they the same character under two names (recommend
-  consolidating), or a ferryman-owner (Pell) and his hand (Sculley), with Sculley scoped
-  down to the *hand's* grief so the two beats don't duplicate? Resolve before script status.
+- **[Resolved — narrative review, 2026-08-03] Reconciled with MQ06's Ferryman Pell:**
+  they are two people, owner and hand, per `characters.md` (both entries stand). **Pell**
+  owns the ferry and the neutral go-between office; MQ06 stages his mourning and it is
+  about the *trade* — the crossing nobody needs him for anymore. **Sculley Marsh** is his
+  ferry hand; this quest's grief is scoped to the *knowing* — the gossip-network he was,
+  the canyon's social bridge — and to what a man does with a headful of everyone's
+  business once the boat is beached. The toll-house succession belongs to this quest
+  (Sculley may take it; Pell, older, does not want it). Neither quest stages the other's
+  beat.
 - Did Sculley's ferry carry the letters of SQ-DIVIDE-03's correspondents — a possible
   warm cross-link between the two Divide quests?

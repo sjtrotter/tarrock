@@ -667,9 +667,105 @@ like a card laid down.]**
 > sunset was worth three hundred years of noon. This is the second one. Turns out it's
 > just as good. Down you go, then. Down you go."*
 
-**[Matrix note: the other 16 regional farewells — each keyed to that region's unbinding
-and any branch flags it carries — are authored at content pass to this staging. Regions
-the player unbound fold with a farewell; the fold order is `READING_ORDER`, always.]**
+**Farewell — The Veil (High Priestess; no branch):**
+
+> The mist folds back between the pillars like a cover closing on a finished book.
+> *"Shelve the last of it, sisters. A secret kept three hundred years is a secret kept —
+> the Reading heard it anyway. Sleep well. Dream."*
+
+**Farewell — The Bower (Empress; no branch):**
+
+> The orchards let their last windfall down into the deep grass, gently, all together.
+> *"Everything ripened, everything gathered, nothing wasted at the end of it. There,
+> love. The garden could bear to be cut down after all."*
+
+**Farewell — The Bastion (Emperor; no branch):**
+
+> The gates stand open as the grey streets dim, and no gong calls anyone home.
+> *"One last entry, in a fair hand: seen, approved, and — at long last — amended. The
+> books close balanced."*
+
+**Farewell — The Chantry (Hierophant; no branch):**
+
+> The bells swing once more, all together, and let the note go instead of holding it.
+> *"Every song ends on a note it kept back for the purpose. That was this one. Amen,
+> and goodnight."*
+
+**Farewell — The Longroad (Chariot; no branch):**
+
+> The great ring-road empties mile by mile, banners folded, dust settling for good.
+> *"Every road's a circle if you march it long enough. This one finally got where it
+> was going. At ease — all of you. At ease."*
+
+**Farewell — The Maw (Strength; no branch):**
+
+> The high crags lower their heads into the dark like beasts folding down to sleep.
+> *"Gently, now. It was always strongest done gently — she taught the whole mountain
+> that. Let the lion lie down first."*
+
+**Farewell — The Dim (Hermit; no branch):**
+
+> The stars over the mountain go out last of all, after every lamp below them.
+> *"One lantern led the whole dark home in the end. Put it out now, love. Nobody's
+> lost."*
+
+**Farewell — The Wheelhouse (Wheel of Fortune; no branch):**
+
+> The great wheel turns once more, slow, and comes to rest on no number at all.
+> *"House closes. All bets settled, every last one — and fairly, which was the miracle.
+> Cash out, my dears. Well played."*
+
+**Farewell — The Assize (Justice; no branch):**
+
+> The courts go dark docket by docket, every bench empty, every case closed.
+> *"Verdict for the world, in the matter of the world. No appeal wanted. None filed."*
+
+**Farewell — The Gallowwood (Hanged Man; no branch):**
+
+> The forest turns over one last time, unhurried, leaves falling every way at once and
+> none of them wrong.
+> *"Let go, let go — that was always the whole trick. Fancy a forest learning it. Fancy
+> all of us."*
+
+**Farewell — The Confluence (Temperance; no branch):**
+
+> The two rivers run out to sea together, the cups poured empty at last, rinsed and set
+> down.
+> *"Finished — the one word the whole delta couldn't say. It says it beautifully, for a
+> beginner."*
+
+**Farewell — The Spire (Tower; no branch):**
+
+> The quiet ground where the tower finally landed folds up smooth, cairn and all.
+> *"It got to land. Three hundred years of falling, and it got to land. Let that be the
+> whole epitaph."*
+
+**Farewell — The Mere (Star; no branch):**
+
+> The wish-lights dim together on the water, and the impossible star goes last of all.
+> *"Every wish landed somewhere in the end — even the ones that only wished for company.
+> Goodnight, little lights. You were hoped on, and it held."*
+
+**Farewell — The Mirrormarsh (Moon; no branch):**
+
+> The fog does not come back. The marsh folds clear, honest to its last reed.
+> *"No more masks, no more borrowed faces — everyone went home as themselves. Hardest
+> trick in the deck, that. Sleep plain, love. Sleep true."*
+
+**Farewell — The Hollows (Judgement; no branch):**
+
+> The garden that was a graveyard folds in full bloom, not one grave open, not one soul
+> waiting.
+> *"Everybody called, everybody answered, everybody home. The trumpet can rest in the
+> grass now. It earned the quiet twice over."*
+
+**[Matrix note — complete as of 2026-08-03: all twenty foldable regions (cards I–XX) now
+carry authored farewells above — five staged as the original worked examples (Prestige
+and the Divide branch-keyed, per their `world.md` flags) and the remaining fifteen
+single-state lines authored to the same staging. The Axis does not fold — the wreath is
+what remains. Regions the player unbound fold with their farewell; the fold order is
+`READING_ORDER`, always. Each line was checked against its card's traditional meaning
+per the SSOT rule.]**
 
 As the last region folds, the wreath is all that remains, and the two Fools on it, and
 the dog.
@@ -973,13 +1069,12 @@ staged.
   sign-off: it plays **only** on the True Shuffle path (this script gives the Early Shuffle
   a sparer, Dancer-voiced, wink-free lead-in instead, to honor "rush endings leave the
   Querent unrevealed"). Confirm that placement is intended.
-- **The two scripting matrices** are now scaffolded, not yet filled: the Reading recital
-  (63 lines = 21 cards × 3 positions) and the 10a regional farewells (21 regions × branch
-  states) each have their frame, staging, and worked examples authored here (nine recital
-  examples; five farewell examples), with the remainder marked authored-at-content-pass.
-  Both are wanted in full (GDD §Iteration clause); sequencing/VO batching still needs a
-  plan at M4, and the recital lines each need the SSOT card-meaning defensibility check at
-  authoring.
+- **Scripting matrices status:** the 10a regional farewell matrix is **complete**
+  (2026-08-03) — all twenty foldable regions authored, branch-keyed where their flags
+  branch. The Reading recital matrix (63 lines = 21 cards × 3 positions) remains
+  scaffolded: nine worked examples authored, the other 54 at content pass, each needing
+  the SSOT card-meaning defensibility check at authoring. Sequencing/VO batching still
+  needs a plan at M4.
 - **The threshold mourning-NPC selection** (Act III only): chosen from the player's
   *completed* side quests, highest-Renown suit breaking ties; a side-quest-less run leaves
   the threshold respectfully empty. Confirm the selection/tie-break rule, the empty-run
