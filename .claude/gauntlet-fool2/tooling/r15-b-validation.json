@@ -1,0 +1,370 @@
+{
+ "phase": "R15-B",
+ "candidate": "Fool-v2-019b.blend",
+ "object": "Fool_HeadRetopo",
+ "source_chain": "docs/design/3d-models-inwork/Fool-v2-018.blend (opened read-only; never written)",
+ "method": "A2 scaffold measured unusable and discarded; head retopo authored from a graded cube-sphere with explicit (chart,i,j) bookkeeping, ray+snap fitted to Fool_SculptBase, feature holes cut as true combinatorial rectangles and rebuilt as concentric rings (brief's sanctioned manual-loops fallback)",
+ "gates": {
+  "deviation_excluding_named_divergences": {
+   "vertex_rms_mm": 0.18160612652075722,
+   "vertex_p95_mm": 0.42272202845197143,
+   "vertex_max_mm": 0.9757938678376377,
+   "vertex_count": 1079,
+   "face_centroid_rms_mm": 0.4857174998580662,
+   "face_centroid_max_mm": 4.988358356058598,
+   "limit_rms_mm": 1.5,
+   "limit_max_mm": 3.0,
+   "rms_pass": true,
+   "max_pass": true
+  },
+  "quad_dominance": {
+   "quad_percent": 99.79869149471565,
+   "limit": 95.0,
+   "pass": true,
+   "triangles": 4,
+   "ngons": 0
+  },
+  "x_symmetry": {
+   "mirror_residual_max_mm": 0.13314,
+   "verts_off_mirror": 2,
+   "total_verts": 2058,
+   "pass": true
+  },
+  "encirclement": {
+   "eye_lid_edge_ring_verts": 38,
+   "eye_concentric_rings": 4,
+   "mouth_seam_verts": 30,
+   "mouth_concentric_rings": 3,
+   "loops_exiting_each_mouth_corner": 2,
+   "pass": true
+  },
+  "pole_hygiene": {
+   "total_poles": 32,
+   "min_distance_to_forbidden_site_mm": 21.6,
+   "poles_within_10mm_of_mouth_corner_or_inner_canthus": 0,
+   "pass": true
+  },
+  "lid_globe_clearance": {
+   "visible_lid_edge_mm": 1.5,
+   "hidden_inner_rim_mm": 0.8,
+   "retopo_verts_inside_globe": 0,
+   "guide_mm": 1.3,
+   "note": "hidden rim deliberately hugs the globe; it is occluded"
+  },
+  "boundedness": {
+   "boundary_edges": 148,
+   "non_manifold_edges": 0,
+   "boundaries": "neck seam 72 + two hidden eye rims 38 each = 148",
+   "neck_seam": {
+    "verts": 72,
+    "z_mm": 1442.0,
+    "planar_max_dev_mm": 3e-05,
+    "circumference_mm": 332.7
+   }
+  },
+  "budget": {
+   "tris": 3970,
+   "verts": 2058,
+   "faces": 1987,
+   "working_estimate_tris": [
+    4000,
+    8000
+   ],
+   "pass": false
+  },
+  "surface_health": {
+   "inverted_faces_excl_divergences": 0,
+   "self_intersecting_face_pairs": 22,
+   "self_intersection_regions": {
+    "orbital/lid": 22
+   },
+   "sliver_faces_shape_gt_100": 8,
+   "face_area_mm2": [
+    0.5374370175559307,
+    84.34196206508204,
+    391.54518162831664
+   ]
+  }
+ },
+ "deliberate_divergences": {
+  "orbital_and_lids": {
+   "count": 436,
+   "rms_mm": 1.8245626297725823,
+   "p95_mm": 4.60070138797164,
+   "max_mm": 5.113820545375347,
+   "reason": "lead ruling: the orbital builds forward/outward to the drawn front width at eye rows; lid rings clear the r=35 mm globes instead of following the sculpt's socket bed",
+   "rendered_in": [
+    "b7-final-face-closeup.png",
+    "b7-sub-three-quarter.png",
+    "sections-b/b7-z1.580.png"
+   ]
+  },
+  "ear_simplification": {
+   "count": 426,
+   "rms_mm": 4.376673665994187,
+   "p95_mm": 11.403114534914494,
+   "max_mm": 21.366693079471588,
+   "reason": "brief: retopo the ears with SIMPLE storybook loops (helix + concha only); the sculpt's thin fused flap is replaced by a helix rim and concha bowl",
+   "rendered_in": [
+    "b7-final-side.png",
+    "b7-sub-three-quarter.png",
+    "sections-b/b7-z1.580.png"
+   ]
+  },
+  "mouth_rings": {
+   "count": 117,
+   "rms_mm": 0.6938597008431778,
+   "p95_mm": 1.1395732639357445,
+   "max_mm": 3.7901452742516994,
+   "reason": "R14 debt: one crisp gentle-smile line with lip volume, replacing the sculpt's shallow scored split",
+   "rendered_in": [
+    "b7-sub-face-closeup.png",
+    "b7-final-face-closeup.png"
+   ]
+  },
+  "z1_51_terrace": {
+   "reason": "the sculpt's z~1.51 remesh terrace is NOT reproduced; the retopo runs smooth topology through it",
+   "rendered_in": [
+    "sections-b/b7-z1.520.png",
+    "b7-final-side.png"
+   ]
+  }
+ },
+ "features": {
+  "eye_right": {
+   "boundary_verts": 38,
+   "ring_verts": 38,
+   "lid_edge_verts": 38,
+   "inner_rim_verts": 38,
+   "aperture_x_mm": [
+    22.0,
+    79.0
+   ],
+   "aperture_z_mm": [
+    1545.3,
+    1589.8
+   ],
+   "lid_edge_globe_clearance_mm": 1.5,
+   "hidden_rim_globe_clearance_mm": 0.8
+  },
+  "eye_left": {
+   "boundary_verts": 38,
+   "ring_verts": 38,
+   "lid_edge_verts": 38,
+   "inner_rim_verts": 38,
+   "aperture_x_mm": [
+    -79.0,
+    -22.0
+   ],
+   "aperture_z_mm": [
+    1545.3,
+    1589.8
+   ],
+   "lid_edge_globe_clearance_mm": 1.5,
+   "hidden_rim_globe_clearance_mm": 0.8
+  },
+  "mouth": {
+   "boundary_verts": 32,
+   "ring_verts": 32,
+   "seam_verts": 30,
+   "corner_index_right": 14,
+   "corner_index_left": 29,
+   "triangles": 4,
+   "seam_width_mm": 63.7,
+   "seam_z_mm": 1493.5
+  },
+  "ear_right": {
+   "boundary_verts": 26,
+   "rings": 3,
+   "cap": "coons_grid",
+   "cap_verts": 30,
+   "helix_x_mm": 116.7,
+   "concha_depth_mm": 46.5,
+   "z_mm": [
+    1525.2,
+    1591.1
+   ],
+   "y_mm": [
+    31.1,
+    75.7
+   ]
+  },
+  "ear_left": {
+   "boundary_verts": 26,
+   "rings": 3,
+   "cap": "coons_grid",
+   "cap_verts": 30,
+   "helix_x_mm": 116.7,
+   "concha_depth_mm": 46.5,
+   "z_mm": [
+    1525.2,
+    1591.1
+   ],
+   "y_mm": [
+    31.1,
+    75.7
+   ]
+  },
+  "grid_rows_mm": [
+   1442.0,
+   1460.0,
+   1482.3,
+   1495.8,
+   1503.3,
+   1509.6,
+   1516.9,
+   1525.6,
+   1536.4,
+   1546.2,
+   1556.5,
+   1566.5,
+   1576.9,
+   1588.9,
+   1603.7,
+   1621.4,
+   1641.1,
+   1659.7,
+   1674.4
+  ],
+  "eye_rect": {
+   "c0": 10,
+   "c1": 23,
+   "j0": 8,
+   "j1": 14,
+   "x_medial_mm": 9.4,
+   "x_lateral_mm": 82.9
+  },
+  "mouth_rect": {
+   "i0": 3,
+   "i1": 15,
+   "j0": 2,
+   "j1": 6,
+   "x_half_mm": 42.5
+  },
+  "ear_rect": {
+   "i0": 12,
+   "i1": 18,
+   "j0": 6,
+   "j1": 13,
+   "y_mm": [
+    31.3,
+    73.4
+   ],
+   "z_mm": [
+    1519.7,
+    1592.1
+   ]
+  }
+ },
+ "a2_scaffold_rejection": {
+  "file": "Fool-v2-019a.blend / Fool_HeadRetopo_draft",
+  "a2_reported_vertex_rms_mm": 0.3614,
+  "measured_face_centroid_rms_mm": 7.1244502751538015,
+  "measured_face_centroid_max_mm": 62.563858926296234,
+  "inverted_faces": 650,
+  "total_faces": 2616,
+  "self_intersecting_face_pairs": 3510,
+  "degenerate_faces": 8,
+  "sliver_faces": 302,
+  "eye_globe_covered_fraction": 0.5443786982248521,
+  "conclusion": "nearest-surface projection pins vertices to the target while faces fold across crevices, so a vertex-only RMS cannot detect the failure"
+ },
+ "protocol": {
+  "blender": "5.2.0 LTS headless only",
+  "gui_touched": false,
+  "port_9876_touched": false,
+  "concurrent_blender_processes": 1,
+  "governor_checked_before_every_run": true,
+  "wrote_outside_workdir": false,
+  "chain_file_mtime_unchanged": true
+ },
+ "evidence": {
+  "renders": [
+   "b0-scaffold-face-closeup.png",
+   "b0-scaffold-front.png",
+   "b0-scaffold-tq-closeup.png",
+   "b1-shell-face-closeup.png",
+   "b1-shell-front.png",
+   "b1-shell-side.png",
+   "b1-shell-three-quarter.png",
+   "b2-shell-face-closeup.png",
+   "b2-shell-front.png",
+   "b2-shell-side.png",
+   "b3-shell-face-closeup.png",
+   "b3-shell-front.png",
+   "b3-shell-side.png",
+   "b4-face-face-closeup.png",
+   "b4-face-front.png",
+   "b4-face-side.png",
+   "b4-face-tq-closeup.png",
+   "b4-sub-face-closeup.png",
+   "b4-sub-front.png",
+   "b5-face-face-closeup.png",
+   "b5-face-front.png",
+   "b5-face-side.png",
+   "b5-face-tq-closeup.png",
+   "b5-sub-face-closeup.png",
+   "b5-sub-front.png",
+   "b6-face-face-closeup.png",
+   "b6-face-front.png",
+   "b6-face-side.png",
+   "b6-face-three-quarter.png",
+   "b6-face-tq-closeup.png",
+   "b6-sub-face-closeup.png",
+   "b6-sub-front.png",
+   "b6-sub-side.png",
+   "b6-sub-three-quarter.png",
+   "b7-final-face-closeup.png",
+   "b7-final-front.png",
+   "b7-final-side.png",
+   "b7-final-three-quarter.png",
+   "b7-final-tq-closeup.png",
+   "b7-sub-face-closeup.png",
+   "b7-sub-front.png",
+   "b7-sub-side.png",
+   "b7-sub-three-quarter.png"
+  ],
+  "sections": [
+   "b0-z1.460.png",
+   "b0-z1.490.png",
+   "b0-z1.520.png",
+   "b0-z1.550.png",
+   "b0-z1.580.png",
+   "b1-z1.460.png",
+   "b1-z1.490.png",
+   "b1-z1.520.png",
+   "b1-z1.550.png",
+   "b1-z1.580.png",
+   "b2-z1.460.png",
+   "b2-z1.490.png",
+   "b2-z1.520.png",
+   "b2-z1.550.png",
+   "b2-z1.580.png",
+   "b3-z1.460.png",
+   "b3-z1.490.png",
+   "b3-z1.520.png",
+   "b3-z1.550.png",
+   "b3-z1.580.png",
+   "b4-z1.460.png",
+   "b4-z1.490.png",
+   "b4-z1.520.png",
+   "b4-z1.550.png",
+   "b4-z1.580.png",
+   "b5-z1.460.png",
+   "b5-z1.490.png",
+   "b5-z1.520.png",
+   "b5-z1.550.png",
+   "b5-z1.580.png",
+   "b6-z1.460.png",
+   "b6-z1.490.png",
+   "b6-z1.520.png",
+   "b6-z1.550.png",
+   "b6-z1.580.png",
+   "b7-z1.460.png",
+   "b7-z1.490.png",
+   "b7-z1.520.png",
+   "b7-z1.550.png",
+   "b7-z1.580.png"
+  ]
+ }
+}

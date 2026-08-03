@@ -520,3 +520,35 @@ cheekbone).
 | 017k front | 017k side | 017k 3/4 rake |
 |---|---|---|
 | ![front](renders/r14k-front.png) | ![side](renders/r14k-side.png) | ![tq](renders/r14k-tq-rake.png) |
+
+---
+
+## Round 15 — head retopo (2026-08-03)
+
+**Research (Sonnet):** hybrid method — shrinkwrap a CC0 donor for bulk, manual
+loops for the face. **A1:** thebasemesh.com proved to have no head asset at
+all; the itch.io CC0 fallback was acquired with license evidence (99.44% quad
+donor, closed eyes, single-exit mouth corners). **A2 (Codex):** registered +
+masked-shrinkwrapped scaffold, honest vertex-RMS 0.36 mm. **Phase B (Opus),
+the round's finding:** the scaffold was unusable — 24.8% inverted faces and
+3,510 self-intersections that a vertex-only RMS is structurally incapable of
+seeing (instrument lesson recorded). The builder took the brief's sanctioned
+fallback and AUTHORED the head from a graded cube-sphere: **2,058 v /
+3,970 tris, 99.80% quad, deviation RMS 0.182 / max 0.976 mm** outside three
+named divergences (orbital build-out per the eye ruling, simplified ears,
+mouth rings), valence-4 mouth corners with two exit loops, lid–globe
+clearance 1.50 mm, no pole within 21.6 mm of a mouth corner or canthus; the
+z ≈ 1.51 sculpt terrace is simply not reproduced.
+
+| Subsurf preview | Face topology | 3/4 |
+|---|---|---|
+| ![front](renders/r15-sub-front.png) | ![wire](renders/r15-wire-face.png) | ![tq](renders/r15-sub-tq.png) |
+
+**Blind judge (bare-globe caveat stated): likeness 6/10, topology 7/10 — the
+first score movement of the head stage** (three flat 4s before). **Round
+verdict: CLOSED — chain advances to `Fool-v2-019.blend`.** Debts to later
+stages: aperture slightly wide/protruding vs the drawn taller eye; nose soft;
+lower lid minimal; 22 hidden self-intersections in the occluded lid roll-back
+band; judge's mouth-corner-density deformation note — all owned by body
+retopo/rigging/blend-shape and materials rounds (irises arrive with
+materials).

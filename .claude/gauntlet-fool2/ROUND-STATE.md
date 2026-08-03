@@ -330,3 +330,23 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
 ## Blockers / TBD
 
 - none yet
+
+## ROUND 15 CLOSED (2026-08-03): head retopo → chain Fool-v2-019.blend
+
+- Chain = workdir Fool-v2-019b.blend (object Fool_HeadRetopo): 2,058 v /
+  3,970 tris, 99.80% quad, dev RMS 0.182 / max 0.976 mm excl. 3 named
+  divergences (orbital ruling, ears, mouth); neck seam z=1.442 (72 v);
+  eyes untouched/separate; chain 018 untouched.
+- INSTRUMENT LESSON (paid for): vertex-only RMS cannot see folded faces —
+  A2's shrinkwrap scaffold measured 0.36 mm while 24.8% of faces were
+  inverted with 3,510 self-intersections (face-centroid RMS 7.12 / max
+  62.6 mm). Any future wrap gate must include normal-inversion count,
+  self-intersection pairs, and face-centroid deviation. Codex A2 report was
+  honest on its own numbers; the numbers were the wrong instrument.
+- Blind: likeness 6/10 / topology 7/10 (first movement; bare-globe caveat).
+- Debts → later rounds: aperture taller/rounder wanted; nose soft; lower lid
+  minimal; 22 hidden lid-band self-intersections (occluded); mouth-corner
+  density deformation check at rigging; iris/pupil at materials.
+- R16 = body retopo (reuse authored/graded approach + donor lessons; same
+  gates + the new wrap instruments). Then rigging, hair, clothes, materials,
+  Unity FBX gate.
