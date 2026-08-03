@@ -35,9 +35,35 @@ Run started: 2026-08-02. Lead: Fable (this file is the resume point).
 
 ## Rounds
 
-- **Round 1 (closing):** scene setup + calibration + body blockout (pipeline Step 1)
-  vs v7 sheet. Builder: Opus — landmarks all within ¼-head, joints ≥10 mm overlap.
-  Critic: Opus fresh-context, verdict pending.
+- **Round 1:** setup + calibration + body blockout → PASS (Fool-v2-001/002).
+- **Round 2:** neck + arm + hand blockout, attach → SEND BACK (elbow tube; 003/004).
+- **Round 3:** arm fixes → 4/5 FIXED; hand ledge regression + shoulder plan pinch → SEND BACK (005).
+- **Round 4:** pre-merge fixes (finger ledge, plan pinch, groin V, soles; cranium
+  premise refuted) → SEND BACK pre-flight only (006).
+- **Round 5:** thigh inner-line fix (slot 16.8→26.2 mm), full certification, THE MERGE:
+  Fool_SculptBase 87,615 verts @ 5 mm voxel, 1 component / 0 holes / 0 non-manifold,
+  landmark drift ≤0.33 mm; Blocking_Backup (16 cages) + Hand_Shells (6 applied shells)
+  + preremesh duplicate all kept in-file (007/008).
+
+## Standing lead rulings (accumulated)
+
+- Inguinal "V" above the crotch = interior crease line art → sculpt stage, not blockout.
+- Ears: cranium sits on the drawn SKULL line; ears are sculpt-stage additions.
+- Front T-pose figure governs MASS/silhouette; cutouts govern shape/landmarks (sheet
+  scale defect between the two is logged, ±25%).
+- HAND MERGE PLAN (Round 5 ruling): inter-finger gaps measured 0.19–0.58 mm — fine
+  voxel pass impossible. Instead: spread digits at shell level to ≥4 mm min separation
+  (small root rotations, rig-friendly standard), hand-only voxel remesh (trial 2.0 /
+  1.5 mm), then EXACT boolean union onto Fool_SculptBase at the 25 mm wrist overlap.
+
+## Carried to sculpt (accumulated, from critics + builders)
+
+- Inner leg line ~5 mm too thick below z≈0.70 (thigh AND calf).
+- Trapezius/acromion: 10.4 mm low at two stations (steep-slope blip; additive fix).
+- Ankle "boot-cuff" step at calf/foot weld; faint.
+- Face: featureless mask, brow plane +9 mm proud, nose −17 mm, ears absent.
+- Crown +4–5 mm proud at z≈1.708 (slightly square top taper).
+- Jaw pan flat-bottomed; head/jaw band artifact visible in 3/4 render.
 
 ## Progress page (DIRECTOR CHANGE 2026-08-02)
 

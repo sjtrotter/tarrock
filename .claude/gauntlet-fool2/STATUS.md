@@ -143,3 +143,31 @@ two stations (not ≤3.7); brow plane starts +9 mm proud for the sculpt brief.
 **Round verdict: SEND BACK (pre-flight) → Round 5 = thigh nudge + certification
 numbers + THE MERGE (pipeline Step 3: backup, apply modifiers, join body, voxel
 remesh; hands stay separate for a finer pass).**
+
+---
+
+## Round 5 — pre-flight + THE MERGE (2026-08-02)
+
+**Builder (Opus):** disputed the thigh-translation prescription with sheet-frame
+numbers (outer line was already ±2 mm; the error was inner-surface thickness) and
+fixed it properly: inner-biased Z-tapered widening, slot 16.8 → 26.2 mm (drawn
+24–26 mm), outer contour unchanged to 0.01 mm. Full 15-joint certification passed
+(worst: pinky↔palm 16.8 mm vs 10 mm gate). **Merge executed:** 10 body blocks →
+`Fool_SculptBase`, voxel 5 mm beat 4 mm on the pipeline's coarser-wins rule —
+87,615 verts, 1 component, 0 holes, 0 non-manifold, crotch open at 26 mm, landmark
+drift ≤ 0.33 mm; targeted seam-only smooth (armpit 4.8 → 0.9 mm Laplacian). Backup
+cages, pre-remesh duplicate, and applied hand shells all preserved in-file.
+Discovery: inter-finger gaps are 0.19–0.58 mm — the planned fine-voxel hand pass is
+impossible (no voxel separates 0.2 mm). `Fool-v2-007/008.blend`.
+
+| Merged body 3/4 | Front overlay |
+|---|---|
+| ![3/4](renders/r5-three-quarter.png) | ![front](renders/r5-front.png) |
+| ![crotch weld](renders/r5-weld-crotch.png) | ![hand xray](renders/r5-hand-xray-top.png) |
+
+**Lead ruling (hand plan):** spread digits at shell level to ≥4 mm separation
+(rig-friendly standard), hand-only voxel remesh (trial 2.0/1.5 mm), then EXACT
+boolean union onto the body at the 25 mm wrist overlap.
+
+**Round verdict: MERGE LANDED. Next: Round 6 = hand resolution (spread, fine remesh,
+boolean attach) → then the sculpt rounds begin.**
