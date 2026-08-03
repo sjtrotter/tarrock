@@ -171,3 +171,26 @@ boolean union onto the body at the 25 mm wrist overlap.
 
 **Round verdict: MERGE LANDED. Next: Round 6 = hand resolution (spread, fine remesh,
 boolean attach) → then the sculpt rounds begin.**
+
+---
+
+## Round 6 — hand resolution: spread, fine remesh, boolean attach (2026-08-02)
+
+**Builder (Opus):** found the root cause of the 0.2 mm gaps — the drawn fingers
+CONVERGE (yaw −2.4° to −5.8°), they were never parallel. Fanned the digits 5° per
+adjacent pair about their buried roots (index −7°, middle −2°, ring +3°, pinky +8°;
+thumb untouched) → all pairs ≥ ~4 mm. Hand-only voxel remesh: 2.0 mm webbed the
+Middle|Ring base (rejected, kept as evidence); 1.5 mm clean. EXACT boolean union onto
+the body at the 38.7 mm wrist overlap in 1.39 s; 8 sliver faces dissolved; wrist
+"boot-cuff" step Taubin-smoothed 2.5 → 1.4 mm at +0.0004% volume. **Full figure now
+ONE watertight component: 153,966 verts, 0 boundary, 0 non-manifold, 0/96 webbing
+probes.** All pre-states kept as hidden backups. `Fool-v2-009.blend`.
+
+| Spread fan (top ortho) | Wrist boolean seam |
+|---|---|
+| ![hand](renders/r6-hand-top.png) | ![wrist](renders/r6-wrist-weld.png) |
+| ![front](renders/r6-front.png) | ![3/4](renders/r6-three-quarter.png) |
+
+**Round verdict: LANDED (hand visual judgment folds into the sculpt Pass 1 critic).
+Next: Round 7 = Sculpt Pass 1 — masses & silhouette + the carried fix list (inner
+leg line, trapezius, ankle step, crown, jaw pan).**
