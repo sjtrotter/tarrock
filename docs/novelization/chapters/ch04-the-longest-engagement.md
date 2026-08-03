@@ -9,13 +9,12 @@ being allowed to sit atop a wagonload of something enormous. Pip trotted alongsi
 last cart for a quarter mile, accepted a heel of bread from a girl who seemed to think
 this was owed him, and rejoined her the way a professional returns from a small errand.
 
-*They'll be doing that the length of the Spread, before long*, said the Querent, from
-somewhere behind her breastbone. *Wagons on every road, carrying off a summer that only
-just found out it was allowed to happen. Terribly ordinary thing to like, given
-everything, but there it is.*
+*They'll be doing that the length of the Spread, before long*, said the Querent. *Wagons
+on every road, carrying off a summer that only just found out it was allowed to happen.
+Terribly ordinary thing to like, given everything, but there it is.*
 
-The road climbed and thinned, and the last of the carts fell away behind a shoulder of
-hill, and somewhere in that unremarked stretch the birds stopped.
+The road climbed and thinned, the last of the carts falling away behind a shoulder of
+hill, and somewhere in that stretch the birds stopped.
 
 She noticed it the way you notice a held breath — not an absence, but a change in the
 weight of the air, and she had learned, in three days of walking, to trust that particular
@@ -381,9 +380,8 @@ always been the choice made slowly, patiently physical — and somewhere in a st
 rest against Fenn's own scaffold post, the last plank went in with a sound like a lock
 turning. She woke to it. She was fairly sure she was the only living soul who had.
 
-Cutwright Fenn stood at the western foot of the new span when she came down to look,
-chisel still in his hand, staring at a bridge he had spent his entire life failing to
-build.
+Cutwright Fenn stood at the western foot of the new span, chisel still in hand, staring at
+a bridge he had spent his entire life failing to build.
 
 "Done overnight," he said, to nobody, to her, to the bridge, to all three at once. "By a
 *wedding*. Three generations of us and the same cursed plank, and it finishes itself while
@@ -392,8 +390,8 @@ across the span, and huffed out something that was almost a laugh. "Well. A fini
 bridge is a finished bridge, however it got finished. First Fenn to walk it. That'll do
 nicely."
 
-He crossed it — the first of his line ever to reach the far side on his own two feet — and
-at the rail carved one last word beneath three generations of failed tally-marks: *done.*
+He crossed it — first of his line ever to reach the far side on his own two feet — and at
+the rail carved one last word beneath three generations of failed tally-marks: *done.*
 
 Beyond him the two towns were already becoming one thing, and not shared out evenly. The
 sea-facing chapel's bell rang for the first time in three hundred years and did not stop,
@@ -421,8 +419,8 @@ Then, because he was Pell, he found the dry end of it.
 "Still. I knew every soul on both banks by their business for three hundred years. A man
 who knows a canyon that well doesn't stop being useful just because it got easier to
 cross. There's a toll-house wants keeping on that bridge, I hear. Same gossip, drier feet."
-He looked out at the water a long while. "Might take it up. Might just sit here and watch
-a while first. I've earned a sit."
+He looked out at the water. "Might take it up. Might just sit and watch a while first.
+I've earned a sit."
 
 She sat with him a while on the empty landing and said nothing, and that turned out to be
 the correct thing to have done, because he did not ask her to leave.

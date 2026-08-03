@@ -300,12 +300,12 @@ and the silence at least had the decency to be empty." She looked at the Fool th
 look at a sum come out even, against expectation. "You are not empty. You simply chose to
 be quiet."
 
-She took a step — very possibly the first in three hundred years that was not part of some
-fixed, practised motion, and it came out unsteady, a foot testing ground it did not yet
-trust. "I built this to keep everyone out. It never occurred to me that the way through it
-was to want nothing on the other side." She almost smiled, and the almost cost her
-something visible. "You have unmade my whole cloister by being *trustworthy* at it, and I
-do not know whether to thank you or bar the gates."
+She took a step — possibly the first in three hundred years not part of some fixed,
+practised motion — unsteady, a foot testing ground it did not yet trust. "I built this to
+keep everyone out. It never occurred to me that the way through it was to want nothing on
+the other side." She almost smiled, and the almost cost her something visible. "You have
+unmade my whole cloister by being *trustworthy* at it, and I do not know whether to thank
+you or bar the gates."
 
 Then, all at once, the grey wax sealing ten thousand shelves began to crack — a long,
 spreading, cloister-wide sound like ice going out on a river at the first true thaw in

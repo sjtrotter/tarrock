@@ -1,19 +1,18 @@
 # Chapter Twenty-Two — The Shuffle
 
-The world's first night was some hours old by then, and had not yet run out, and nobody
-in the Hollows could stop looking at it.
+The world's first night was some hours old, and had not yet run out, and nobody in the
+Hollows could stop looking at it.
 
-They had come up out of their houses to do it — whole families, in coats, sitting on
-their own garden walls with their heads tipped back like people at a very slow firework
-display. Somebody had put a kettle on a brazier at the top of the third terrace and never
-once got round to taking it off. Away east, where the Noonlands lay, the last of the
-gold had gone out of the sky and left behind a blue so deep it had a grain to it, and in
-that blue the stars stood out in their hundreds and their thousands, patient, already
-arranged, having been up there waiting a good while before the sun could be persuaded to
-get out of their way.
+They had come up out of their houses to do it — whole families, in coats, sitting on their
+own garden walls with their heads tipped back like people at a very slow firework display.
+Somebody had put a kettle on a brazier at the top of the third terrace and never once got
+round to taking it off. Away east the last of the gold had gone out of the sky and left a
+blue so deep it had a grain to it, and in that blue the stars stood out in their thousands,
+patient, already arranged, having been up there a good while before the sun could be
+persuaded to get out of their way.
 
-*They were early*, I remember somebody saying, on a wall, to nobody. *All that time. They
-were up there being early.*
+"They were early," somebody said, on a wall, to nobody at all. "All that time. They were up
+there being early."
 
 She came down through the terraces at a walk, with the dog trotting well out ahead.
 
@@ -29,10 +28,9 @@ Nobody stopped her. That is worth saying plainly, because everybody wanted to.
 They had lined the terrace paths without arranging to — a hundred people, perhaps more,
 standing at their gates in the dark with their hands full of things they had brought out
 and then thought better of offering. A loaf. A folded blanket. A child on a hip, held up
-to see. They did not cheer, and they did not call out, and not one of them stepped down
-onto the path in front of her, because word had gone round the rim in the way word does,
-and every soul on that hillside had arrived at the same understanding without a single
-one of them being told: *this bit is hers.*
+to see. They did not cheer and they did not call out, and not one of them stepped down onto
+the path in front of her, because every soul on that hillside had arrived at the same
+understanding without a single one of them being told: *this bit is hers.*
 
 An old woman put a hand to her mouth as the Fool passed and took it away again, and said,
 quite steadily, "Gods turn your card, love." And that was the loudest thing anybody said
@@ -86,21 +84,21 @@ He had walked from the Prestige. It had taken him eleven days and he had blister
 intended to complain about for the rest of his life, which, as it turned out, was not
 long, but nobody knew that yet and he would not have minded.
 
-He had the programme out of his inside pocket and rolled in one fist, out of an old
-habit that had outlived every reason for it, and he lifted it in greeting and then didn't
-seem to know what to do with the arm.
+He had the programme out of his inside pocket and rolled in one fist, out of an old habit
+that had outlived every reason for it, and he lifted it in greeting and then did not seem
+to know what to do with the arm.
 
 "Walked a fair way to stand here," said Ferridge. "Longer than I've walked in three
 hundred years, and my knees have opinions about it."
 
-She had not seen him since a green with nothing on it. He was greyer. He had also, and
-this took her a moment to place, got thinner in a way that had nothing to do with hardship
-and everything to do with time having been let into the room.
+She had not seen him since a green with nothing on it. He was greyer, and thinner in a way
+that had nothing to do with hardship and everything to do with time having been let into
+the room.
 
 "You came all this way."
 
-"I did." He looked past her, down the pale steps, at the small turning figure, and then
-back, and took a breath, and got on with the thing he had come eleven days to say.
+"I did." He looked past her, down the pale steps at the small turning figure, and then
+back, and got on with the thing he had walked eleven days to say.
 
 "I'm not going to ask you not to. I know better than that now — you taught me, back at the
 tent." The programme turned over once in his fist. "I only wanted to be somewhere you
@@ -148,11 +146,11 @@ who's been —*
 
 White stone. Two feet on it, and four.
 
-There is no wind. There has never been wind here; weather does not come to this ground
-and never has. But there is no birdsong either, and no grass to move, and no voice
-anywhere at all — not in the air, not behind her ribs, not in the place where a voice has
-been for twenty regions and every mile between them. The silence has a shape. The shape
-is the size of the thing that used to be in it.
+There is no wind. Weather does not come to this ground and never has. But there is no
+birdsong either, and no grass to move, and no voice anywhere at all — not in the air, not
+behind her ribs, not in the place where a voice has been for twenty regions and every mile
+between them. The silence has a shape. The shape is the size of the thing that used to be
+in it.
 
 Only one sound comes up from the bottom of the pale steps, and it is very faint, and she
 has been half-hearing it since her first hour in the world without ever once stopping to
@@ -170,30 +168,30 @@ curves toward a floor at the heart of it, and the whole ring is faced with alcov
 into the inner wall, evenly spaced, one after another the whole way round, twenty-one of
 them.
 
-Each holds a card.
+They hold cards.
 
-They stand face-up and at rest, each in its niche, each a hand's-breadth taller than she
-is. The Magician's is the first she comes to. There is a man on it in a top hat with his
+The cards stand face-up and at rest, each in its niche, each a hand's-breadth taller than
+she is. The Magician's is the first she comes to. There is a man on it in a top hat with his
 arms spread, and the paint is quiet, and nothing about it moves. She has seen the corrupt
 version of this image on a hundred banners and a hundred coins and it has always been
 doing something — turning, looping, catching, the same half-second of it forever. This one
 is only a picture of a man who did a good trick once.
 
-The Empress after it, throne and orchard, still. The Lovers, two people and a bridge, and
-nobody choosing, because the choosing is done. The Hierophant with his bells hanging at
-rest. Strength with her hand on a lion's jaw, and the lion asleep. The Chariot stopped.
-The Emperor's stone chair. The Wheel, at no number at all. The Hanged Man, upside down and
-comfortable about it. The Hermit's lamp burning low and not walking anywhere. Justice with
-her scales level and empty.
+The Empress after it, throne and orchard, still. The Lovers, and nobody choosing, because
+the choosing is done. The Hierophant with his bells hanging at rest. Strength with her
+hand on a lion's jaw, and the lion asleep. The Chariot stopped. The Emperor's stone chair.
+The Wheel, at no number at all. The Hanged Man, upside down and comfortable about it. The
+Hermit's lamp burning low and not walking anywhere. Justice with her scales level and
+empty.
 
 She walks it. There is nothing to fight and nothing to pick up and nowhere to turn aside,
 and the approach is long, and it is meant to be.
 
 The High Priestess between her pillars, closed like a book that was read. Death on his
-horse, going at a walk. Temperance pouring, and the cup underneath is full. The Devil,
-and the chains on the two figures at his feet are loose enough to lift over a head, and
-always were. The Tower, landed. The Star with her feet in the water. The Moon with the
-fog off it and the road plain. Judgement's trumpet down. The Sun, going down.
+horse, going at a walk. Temperance pouring, and the cup underneath is full. The Devil, and
+the chains at his feet loose enough to lift over a head, as they always were. The Tower,
+landed. The Star. The Moon with the fog off it. Judgement's trumpet down. The Sun, going
+down.
 
 Twenty cards, in card order round the ring — and yet, from where she is standing on the
 long curve of the steps, they do not read in card order at all. From here, left to right,
@@ -212,24 +210,23 @@ without understanding, and down the last of the steps, toward the floor.
 
 The floor is pale stone, worn faintly circular.
 
-Not scuffed. Worn — dished, the way a doorstep is dished, the way the middle of a flight
-of stairs goes lower than its edges. Three hundred years of the same feet in the same
-places have taken the stone down by half a thumb's width and polished what is left.
+Not scuffed. Worn — dished, the way a doorstep is dished. Three hundred years of the same
+feet in the same places have taken the stone down half a thumb's width and polished what
+is left.
 
 At the edge of it, set down long ago and never taken up again, lies a bindle.
 
 She stops walking when she sees it. It is a quarterstaff of pale close-grained wood, worn
 dark at the grip, with a bundle knotted at one end, and it is the twin of the one across
-her shoulders in every particular except that the cloth has gone the colour of dust and
-the knot has not been untied in longer than there are people to remember. Beside it, on
-the stone, lies a single white rose. It is withered to paper. It has three petals, closed,
+her shoulders in every particular except that the cloth has gone the colour of dust. Beside
+it, on the stone, lies a single white rose. It is withered to paper. Three petals, closed,
 and it finished opening a very long time ago.
 
 And in the middle of the floor, turning, is a person.
 
 That is all. A person: travel-worn, wiry, in clothes cut not so differently from her own —
 patched at the elbow, boots creased into the exact shape of feet that have walked. There
-is no crown, no wreath of glory, no light coming off them. There is only a woman's height
+is no crown, no wreath of glory, no light coming off them. There is only a person's height
 and a body's weight going round and round on worn stone with the tired, exact economy of
 someone doing a thing they could do in their sleep and have, many times.
 
@@ -281,7 +278,7 @@ need any more numbers.
 
 "I don't want to fight you."
 
-"I know." The Dancer says it without weight, the way you agree about the weather. "Neither
+"I know." The Dancer says it lightly, the way people agree about the weather. "Neither
 did the one before me want to fight the one before them. It's not about wanting. It's
 about *earning* — the same as it always is with us. You'll fight me, and you'll be right
 to."
@@ -326,35 +323,33 @@ She understands it in the first exchange and it goes through her like cold water
 her own high block, the one she found by accident on a wire and has used a thousand times
 since. That is her step-and-turn out of a committed swing. That is the small ugly
 shoulder-first shrug she does when she has left it too late, which she has never seen from
-the outside and did not know looked like that. The Dancer's Bindle comes round in the
-short flat arc she uses in doorways and the long lazy one she uses when there is room, and
-there is nothing borrowed anywhere in it, and nothing false.
+the outside and did not know looked like that. There is nothing borrowed anywhere in it,
+and nothing false.
 
 In a marsh a little while ago she fought a fog wearing her own face and every one of her
 own powers, reversed, and it had been horrible and it had been a lie. This is not a lie.
 This is the same trick done sincerely, and it is worse, and it is better.
 
-She takes a strike on the ribs that folds her sideways and gets clear on instinct. She
-spends a petal, kneeling, and the rose at her belt gives one up with the small private
-sound of a held breath let go — eight petals, and she does not count them, and she will
-spend four before the end.
+She takes a strike on the ribs that folds her sideways. She spends a petal, kneeling, and
+the rose gives one up with the small private sound of a held breath let go — eight petals,
+and she does not count them, and she will spend four before the end.
 
-The Dancer does not taunt. The Dancer does not press an advantage that was given by
-accident. Twice, when she is down, the turning simply carries them away and round and back
-again, giving her the width of the floor to stand up in, and each time it is worse than
-being hit.
+The Dancer does not taunt, and does not press an advantage that was given by accident.
+Twice, when she is down, the turning simply carries them away and round and back again,
+giving her the width of the floor to stand up in, and each time it is worse than being
+hit.
 
 She learns them. It takes a long time and it costs her, and what she learns is that they
-are her exactly, only three hundred years more so: every habit she has, worn down to the
-grain, done with no wasted motion at all. Her own vocabulary, spoken by somebody fluent.
+are her exactly, only three hundred years more so: every habit she has, worn to the grain,
+done with no wasted motion at all. Her own vocabulary, spoken by somebody fluent.
 
 And then she leaves a window.
 
 It is not a large one — a half-beat too long at the end of a swing, the sort of thing
 nobody has ever punished her for. The Dancer's head comes round. And the world goes slow
-and syrupy, and the air thickens, and she watches the woman who has been dancing since
-before her grandmother's grandmother step through the gap in her guard the way you step
-through a doorway, with all the time in creation to do it, and the whole of it is her own:
+and syrupy, and the air thickens, and she watches the one who has been dancing since
+before her grandmother's grandmother step through the gap in her guard the way a person
+steps through a doorway, with all the time in creation, and the whole of it is her own:
 her held breath, her ridiculous unearned second, the one gift she has had since a meadow
 on a plateau, turned round and given back to her by its previous owner.
 
@@ -368,12 +363,11 @@ has any business managing.
 
 The last opening is hers.
 
-It comes at the end of a long exchange, out of nothing, on a turn the Dancer has made
-ten million times and makes a fraction wide — and something in her chest takes a breath
-and holds it, and the world slows for the last time it will ever slow for her, and she has
+It comes at the end of a long exchange, out of nothing, on a turn the Dancer has made ten
+million times and makes a fraction wide — and something in her chest takes a breath and
+holds it, and the world slows for the last time it will ever slow for her, and she has
 absurd, unreasonable time. Time to see the grain in the worn stone. A bead of sweat coming
-off a jaw and hanging in the air with nothing to do. Three hundred years of the same steps
-laid down in the dish of the floor under both their feet.
+off a jaw and hanging in the air with nothing to do.
 
 She steps inside the turn and puts the butt of the Bindle in under the ribs, and the world
 lets its breath out.
@@ -398,13 +392,11 @@ further than it has ever gone before. And it lands. One long line of it, carried
 hundred years without ever being allowed its last note, coming down at last onto the note
 it was always going toward, and holding there, and stopping.
 
-And over the top of it, out of the whole silver bowl of the sky and the stone and the
-ground under everything, comes the sound of a card turning over.
+And over the top of it comes the sound of a card turning over.
 
-She has heard it twenty times. She has heard it in a carnival's underworks and a marsh's
-candlelight and on a hillside with the stars coming back. It has never once sounded like
-this. This is the same sound made by something the size of the world, unhurried, absolute,
-one enormous rectangle coming off its face and going over onto its back, and the noise of
+She has heard it twenty times, in a carnival's underworks and a marsh's candlelight and on
+a hillside with the stars coming back. It has never once sounded like this. This is the
+same sound made by something the size of the world, unhurried, absolute, and the noise of
 it goes out across the Spread and is heard in every region there is, and in the Hollows a
 hundred people on garden walls stand up.
 
@@ -428,11 +420,10 @@ scruffy head in both hands and leans in and puts her mouth against the side of h
 And she says her name to the dog.
 
 Only to the dog. It is too low for the Fool, standing eight feet away with the Bindle
-still in her hand. It is too low for the stone and the sky. It is too low for me, and I
-have been listening to everything that has ever happened here since before there was
-anybody to listen to, and I did not hear it, and I never have, and I never will. Whatever
-the Dancer's name was, whoever she had been before she was The World, it is spoken once,
-into a white dog's ear, and nobody else gets it, because it was never ours to hear.
+still in her hand. It is too low for the stone and the sky. It is too low for anything in
+the whole world that might have been listening. Whatever the Dancer's name is, whoever she
+was before she was The World, it is spoken once, into a white dog's ear, and nobody else
+gets it, because it was never anybody else's to hear.
 
 Pip wags.
 
@@ -470,15 +461,18 @@ man there ever was, at telling it." She breathes out. "I'm glad it was him you g
 
 And that is where I came back.
 
-I had better do this properly, since it is the last chance I shall get.
+No, I did not hear the name either, before you ask. I never have. It went into a dog's ear
+and it stayed there, and of all the things I have had to be reconciled to, that is the one
+I made my peace with soonest.
 
-You have been reading a book with an *I* in it for a very long while now. It has been
-saying *I would like to tell you she was magnificent*, and *I have watched this happen
-twenty-one times*, and *I answered, and I would like it noted that I told her the truth
-every single time.* You will have made some sort of arrangement with that *I* in your own
-head — a voice, an old party in a chair, somebody who knew her and was fond of her and had
-got to the end of the story before we started. That was all correct. It simply was not
-very much of it.
+I had better do the rest of this properly, since it is the last chance I shall get.
+
+You have been reading a book with an *I* in it for a very long while now. *I would like to
+tell you she was magnificent.* *I have watched this happen twenty-one times.* *I answered,
+and I would like it noted that I told her the truth every single time.* You will have made
+some sort of arrangement with that *I* in your own head — a voice, an old party in a
+chair, somebody who knew her and was fond of her and had got to the end of the story
+before we started. That was all correct. It simply was not very much of it.
 
 Nobody ever asks a voice what it is the voice *of*. She never did either, not once, in a
 hundred regions of asking me everything else. And I had three hundred years to work out
@@ -569,16 +563,13 @@ round, and from the floor of the wreath the whole rim of the world stood open �
 had stood open once before, from underneath a cloud, with her falling through it and
 screaming.
 
-Every region of it awake. The Prestige with its roads open and its wagons out on them. The
-Bower heavy and gathered in. A bridge with lamps on it over a canyon. Bells. A ring-road
-with nothing marching on it. Grey streets with their gates open. A wheel going round on
-no schedule but its own. A forest turning its leaves over. Stars on a mountain. Empty
-benches in a court. Mist gone from between two rows of pillars. A marsh full of lanterns
-and lit windows and, at last, of graves. Two rivers running out to the sea together. A
-gilded pit with people on the stairs, going both ways. A tower on the ground. Wish-lights
-on water. A marsh with no fog in it. A garden that used to be a graveyard. And away east,
-gold fields lying under the dark, cooling, with dew on them for the first time in three
-hundred years.
+Every region of it awake. Roads open, and wagons out on them. Orchards gathered in. A
+bridge with lamps on it over a canyon. Bells. A ring-road with nothing marching on it.
+Grey streets with their gates open. A wheel going round on no schedule but its own. Stars
+on a mountain. Empty benches in a court. A marsh full of lanterns and lit windows and, at
+last, of graves. Two rivers running out to the sea together. A tower on the ground.
+Wish-lights on water. A garden that used to be a graveyard. And away east, gold fields
+lying under the dark, cooling, with dew on them for the first time in three centuries.
 
 All of it alive. All of it more alive than it had been since before anybody's grandmother.
 And all of it — she felt this before she understood it, and so did you, I expect, some
@@ -601,15 +592,14 @@ this reading, this whole three-hundred-year reading, was always being dealt for 
 me.* How does my story end? *That's the only question a querent ever asks. It's the only
 one I've ever asked.*
 
-I have said elsewhere in this account that I never lied to her, and I will hold to it, and
-I will also say now what I was doing instead. Every time she asked me who I was, I told
-her the truth about the size of the loneliness and nothing whatever about the shape of it.
-I said *someone who's waited a long while.* I said *I don't make the rules of the Reading;
-I only get to ask the questions.* I said, on the very first evening, at the very first
-edge, that *fix* was a strong word for what was coming and *finish* might serve better,
-and she took that for grammar.
+I said elsewhere in this account that I never lied to her, and I hold to it, and I will
+say now what I was doing instead. Every time she asked who I was, I told her the truth
+about the size of the loneliness and nothing whatever about the shape of it. *Someone
+who's waited a long while.* *I don't make the rules of the Reading; I only get to ask the
+questions.* And on the very first evening, at the very first edge, that *fix* was a strong
+word for what was coming and *finish* might serve better — and she took that for grammar.
 
-And you — you I welcomed in at the start and offered a chair to, and told plainly that it
+And you: you I welcomed in at the start and offered a chair to, and told plainly that it
 ends, and you thought I was being ominous about somebody else.
 
 *And I was* afraid *of the answer*, I said. *That's the truth of the Stall — not a curse,
@@ -626,9 +616,8 @@ Excuse. You're not my saviour. You were never that. You're my* answer *— the o
 frightened to hear, walked all the way up to me on your own two feet, so that this time I
 couldn't look away.*
 
-The freed Fool stood at the edge of the floor with her old bindle at her boots and did not
-interrupt. She had heard this before, from the other side of it, three hundred years ago,
-and she had the good manners of somebody attending a thing that is not about her.
+The freed Fool stood at the floor's edge and did not interrupt. She had heard this before,
+from the other side of it, three hundred years ago.
 
 *The world has been asking how its story ends.* And I had to stop for a moment, having
 come all this way. *You're how it ends. And I asked for you. Standing up. At last.*
@@ -708,10 +697,10 @@ Let the lion lie down first.*
 After that it began to come faster, the way it does when a hand is being squared and the
 dealer's fingers know their business.
 
-The Longroad emptied mile by mile, banners folded, dust settling for good — *every road's
+The Longroad emptied mile by mile, banners folded, dust settling for good — *Every road's
 a circle if you march it long enough. This one finally got where it was going. At ease —
 all of you. At ease* — and the Bastion's gates stood open as its grey streets dimmed, and
-no gong called anybody home — *one last entry, in a fair hand: seen, approved, and — at
+no gong called anybody home — *One last entry, in a fair hand: seen, approved, and — at
 long last — amended. The books close balanced* — and in the Wheelhouse the great wheel
 went round one more time, slow, and came to rest on no number at all.
 
@@ -719,13 +708,13 @@ went round one more time, slow, and came to rest on no number at all.
 out, my dears. Well played.*
 
 The Gallowwood turned over one final time, unhurried, all its leaves coming down every way
-at once and not one of them wrong — *let go, let go — that was always the whole trick.
+at once and not one of them wrong — *Let go, let go — that was always the whole trick.
 Fancy a forest learning it. Fancy all of us* — and over the Dim the stars went out last of
 all, after every lamp beneath them had gone first.
 
 *One lantern led the whole dark home in the end. Put it out now, love. Nobody's lost.*
 
-The Assize went dark docket by docket, every bench empty, every case closed — *verdict for
+The Assize went dark docket by docket, every bench empty, every case closed — *Verdict for
 the world, in the matter of the world. No appeal wanted. None filed* — and the Veil's mist
 folded back between its pillars like a cover closing on a finished book.
 
@@ -833,15 +822,14 @@ Our Fool took the centre.
 The worn-circular floor accepted one step, and then another, and settled under her the way
 a doorstep settles under somebody who lives there.
 
-She stood a while. Then she knelt down and unknotted the bundle on her own Bindle, and
-went through it with her hands the way she had on her first evening alive — a tin, a
-length of cord, a comb she had never once had a use for — and took out from the bottom of
-it a small wooden dog.
+She stood a while. Then she knelt and unknotted the bundle on her own Bindle and went
+through it the way she had on her first evening alive — a tin, a length of cord, a comb she
+had never once had a use for — and took out from the bottom of it a small wooden dog.
 
-Crude work. Four legs of four different lengths and a head that was mostly optimism, one
-ear worn to a stub, the whole of it gone smooth and dark from being turned over in
-somebody's fingers on a great many evenings for a great many years. She had carried it
-through twenty-one regions and never lost it and never mentioned it to anyone.
+Crude work. Four legs of four different lengths, a head that was mostly optimism, one ear
+worn to a stub, the whole of it gone smooth and dark from being turned over in somebody's
+fingers on a great many evenings for a great many years. She had carried it through twenty
+regions and never lost it and never mentioned it to a living soul.
 
 I told you at the beginning that it stayed in the Bindle, and that I would say no more
 about it than that, because I had a long way to go that evening and no wish whatever to
@@ -852,14 +840,14 @@ it, and I will not tell you what I felt, because there is no room in a sentence 
 
 And then, at her belt, the White Rose opened.
 
-All of it, at once, every petal — eight of them, gathered one at a time from a hedge in
-the Maw and a cracked stair in the Undervault and a lakeside where somebody kept a vigil,
-each one spent and regrown a hundred times and never once, in all that while, permitted to
-be anything but useful. It came open slowly and completely in the silver light, the way
-roses are supposed to, with the small private sound of somebody letting go of a breath
-they had been holding out of politeness — and it went on opening, wider than it had any
-business going, until it was simply a white rose in full bloom on the belt of a young
-woman standing in the middle of everything.
+All of it, at once, every petal — eight of them, gathered one at a time from a hedge in the
+Maw and a cracked stair in the Undervault and a lakeside where somebody kept a vigil, each
+one spent and regrown a hundred times and never once, in all that while, permitted to be
+anything but useful. It came open slowly and completely in the silver light, with the
+small private sound of somebody letting go of a breath they had been holding out of
+politeness — and it went on opening, wider than it had any business going, until it was
+simply a white rose in full bloom on the belt of a young woman standing in the middle of
+everything.
 
 It had only ever regrown. In all its life it had never been allowed to *flower*.
 
@@ -883,15 +871,15 @@ The light arrived the way a good trick arrives: not switched on, not poured — 
 It came up out of nothing at all over the shoulder of a high meadow and stood there
 looking pleased with itself, and there was gold in it that had certainly not been there a
 moment before and had certainly not come from anywhere, and the whole horizon had the air
-of a hand turning over to show you that it had been empty the entire time.
+of a hand turning over to show you it had been empty the entire time.
 
-A waking that was its own first act of making. I had said as much, and I had meant it, and
-here it was, and the honest wonder of it is that it is a wonder anyway.
+A waking that was its own first act of making. I had said as much, and here it was, and
+the honest wonder of it is that it is a wonder anyway.
 
 Grass to the knee, wet and silver, laid down and let up again in broad slow strokes by a
 wind that had every intention of going somewhere. A plateau, and an edge, and cloud below
-it. Fire-rings scattered untidily about — a great many of them, older and newer, one with
-a walking-stick driven into the turf and its handle polished pale.
+it. Fire-rings scattered untidily about, older and newer, one with a walking-stick driven
+into the turf and its handle polished pale.
 
 At the nearest of them, embers gone grey and shy, a last thread of smoke standing straight
 up and thinning into nothing.
@@ -927,10 +915,9 @@ There. That is the whole of it, and I have squared the cards away, and there is 
 left in the deck that belongs to us.
 
 You have been very patient. I said at the start that there was a chair, and that I had had
-rather less company than you would expect, and both those things were true and only one of
-them is true now, which is the sort of arithmetic I have learned to be grateful for. You
-stayed to the end of a reading you had been warned about on the first page. Not everybody
-does. Thank you.
+rather less company than you would expect; both were true, and only one of them is true
+now, which is the sort of arithmetic I have learned to be grateful for. You stayed to the
+end of a reading you were warned about on the first page. Not everybody does. Thank you.
 
 I told you it ends. I told you the ending was not a punishment for having stayed to hear
 it, and that it was the point of the whole thing, and you did not believe me, and I said I
@@ -938,20 +925,19 @@ would not hold it against you. I don't. I never did. I had three hundred years o
 believing it myself, and I had to have it walked all the way up to me by a young woman
 with a rose and a dog before I could sit still for the hearing of it.
 
-Somewhere, at this moment, in a world that is not mine and never will be, somebody with no
-past to speak of and no name on the tip of their tongue is opening their eyes in wet grass
-and finding it enormous, the way a room is enormous before the furniture arrives. And
-somewhere behind that, in a place with no weather, something small and frightened is
-sitting down at its own table and finding the nerve to say the only question there is out
-loud.
+Somewhere, at this moment, somebody with no past to speak of and no name on the tip of
+their tongue is opening their eyes in wet grass and finding it enormous, the way a room is
+enormous before the furniture arrives. And somewhere behind that, something small and
+frightened is sitting down at its own table and finding the nerve to say the only question
+there is out loud.
 
 It ends. It ends. And then it asks again.
 
-The dog waits. The dog always waits. He does not bark, and he does not fuss, and he does
-not perform one particle of the pleasure he is plainly feeling; he simply sits in the cold
+The dog waits. The dog always waits. He does not bark and he does not fuss and he does not
+perform one particle of the pleasure he is plainly feeling; he simply sits in the cold
 grass at the start of everything with one ear up and one ear making its own arrangements,
 watching a stranger come awake, ready to go with.
 
-*Hello*, said the stranger, to nobody, and startled himself.
+"Hello," said the stranger, to nobody, and startled himself.
 
 *Thump*, said the tail.
