@@ -16,15 +16,24 @@ tree.
 
 ---
 
-## Round 14 — contrast budgeting `QUEUED`
+## Round 15 — the hierarchy round `QUEUED`
 
-- One owner for the whole frame's chroma: mute the set dressing toward the board, fix the verdigris bowl grass back to
-  wind-scoured green, restore a real accent ratio. (Codex's mechanism, two rounds running: "contrast budgeting and
-  compositional authorship.")
-- The rocks stop being untextured primitives — the blind judge's first-named tell, and ours to fix.
-- The unowned white horizon keyline (three rounds frozen at full amplitude) gets an owner; the capture rig stops
-  silently rewriting the scene; the Fool-exclusion mask is re-fit.
+- The frame learns to read tree-first: a warm key behind the ridge (the sky carries 75% of the hero frame's chroma and
+  has never been art-directed), dressing subordinated, the dead nudge marker wired so the reveal finally fires.
+- Rock coverage (not amplitude): 43% of hero stone renders under 3 LSB vs the board's <12%.
+- The three false repo comments corrected (code and capture must agree — project rule).
 
+## Round 14 — contrast budgeting · commit `bdbfd81`
+
+![Round 14 v9](img/thumb-r14-v9-shelf-west.jpg) ![Round 14 v1](img/thumb-r14-v1-spawn-west.jpg)
+
+**Won:** the verdigris is dead (65–77% of ground above 140° hue → 2–6%), and the economics flipped — every builder ran
+on Codex (12 runs), Claude reduced to critics and judges. The rig's scene-rewrite bug is fixed; the camera-nudge
+machinery shipped with tests and a save migration.
+**The ledger:** the round's visual delta was sub-LSB on all nine frames, the nudge can't fire (null marker), and both
+blind judges ranked ours 4/5/6 again — then the runner *measured* their two-word mechanism on our own change set:
+77% of effort went to grass, 61% to rock, 1.38% to the tree, 0.00% to the sky. Six of the runner's own findings were
+reversed by its validation pass and self-reported. Round 15 spends effort where the judges look.
 ## Round 13 — the spawn bowl joins the board · commit `7a982f1`
 
 ![Round 13 v1](img/thumb-r13-v1-spawn-west.jpg) ![Round 13 v6](img/thumb-r13-v6-meadow-scale.jpg)
