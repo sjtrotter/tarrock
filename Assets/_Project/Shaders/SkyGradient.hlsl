@@ -209,13 +209,22 @@
 // straddling the horizon at MID angles, which is the one place the deck's far field and
 // Lighting.cs's constant fog colour are contracted to agree (§ROUND 8, the seam). A point of a
 // gate v3 fails anyway is not worth re-opening a closed seam for.
-#define TARROCK_CLOUD_PLANE        0.45  // how much of `form` is the MASS's plane, not the lobe's
-#define TARROCK_CLOUD_PLANE_GAIN   0.55  // ...and how fast that plane sweeps, per half width
+// ROUND 16 uses fable-03's actual composition: the landmark crosses a bright cloud passage, but
+// the cloud reads as one lit plane and one shadow plane rather than as overlapping circular
+// stamps. PLANE 0.45→0.68 makes that mass statement dominant; GAIN 0.55→0.48 keeps both ends
+// inside the silhouette. SCALLOP, MID_TIER and TOOTH retain their three authored scales at lower
+// amplitude, while EDGE_SOFTEN extends cloud 0's 0.60-degree coverage half-width to 0.87 degrees.
+#define TARROCK_CLOUD_PLANE        0.68  // how much of `form` is the MASS's plane, not the lobe's
+#define TARROCK_CLOUD_PLANE_GAIN   0.48  // ...and how fast that plane sweeps, per half width
 #define TARROCK_CLOUD_SKYFILL      0.30  // the DOME's light on the shaded washes: the cool half
 #define TARROCK_CLOUD_SKY_DEPTH    3.0   // ...fading IN over this many coverage-fade widths
 #define TARROCK_CLOUD_SKY_BREAK    0.45  // ...and broken this far by the mass's own crumple
 #define TARROCK_CLOUD_BELLY        0.60  // how far the big masses' base is driven to the shadow
 #define TARROCK_CLOUD_RIM          0.45  // the dawn rim on the sunward edge
+#define TARROCK_CLOUD_SCALLOP      0.52  // quiet the circular silhouette stamp without losing lobes
+#define TARROCK_CLOUD_EDGE_SOFTEN  1.45  // coverage half-width; 0.87 deg / about 16 px on cloud 0
+#define TARROCK_CLOUD_MID_TIER     0.16  // broad modelling, below the 0.25 terrace boundary margin
+#define TARROCK_CLOUD_TOOTH        0.34  // paper tooth strength after all three light sources
 #define TARROCK_HORIZON_ANTI       1.00  // how far the horizon band cools at the anti-sun
 #define TARROCK_HORIZON_ANTI_POWER 2.5   // ...spent past 90° off the sun, like the tilt
 #define TARROCK_HORIZON_ANTI_FALL  4.0   // ...and gone by the time the sky is a zenith
@@ -549,11 +558,20 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
     float toothWeight = 0.30 + 0.34 * (1.0 - toothSel);
     float crumple = TarrockGradNoise(pc * 3.4 + spec.x)
                   + TarrockGradNoise(pc * toothFreq + spec.y * 3.1) * toothWeight;
-    float scallop = crumple * sky.cloudLump;
+    // ROUND 16, fable-03: the landmark is held against a bright cloud passage, not a hole cut in
+    // the cloud, but that passage is one broad light plane. In round 15 the 0.090-half-width
+    // displacement drew repeated 28-97 px circular bites along cloud 0. The frozen v8 cloud ROI
+    // contains 17,774 edge pixels and its baseline scanline transition is 36 px median
+    // (measure_baseline.py -> baseline_measurements.json). Retain the authored lobe alphabet while
+    // halving only its noisy displacement; the alphabet, rather than the noise, owns the outline.
+    float scallop = crumple * sky.cloudLump * TARROCK_CLOUD_SCALLOP;
 
     float sd = TarrockCumulusField(pc, style) + scallop;
 
-    float soft = max(sky.cloudSoftness, 1e-3);
+    // Round 15's 0.030 half-width is 0.60 degrees on cloud 0. Extending the coverage fade to
+    // 0.87 degrees is a predicted +5-8 final pixels at the hero lenses: visibly painted, still
+    // far narrower than a lobe, and it removes the hard alpha-card read without moving the mass.
+    float soft = max(sky.cloudSoftness * TARROCK_CLOUD_EDGE_SOFTEN, 1e-3);
     float coverRaw = 1.0 - smoothstep(-soft, soft, sd);
 
     // ROUND 10 — THE INTERIOR IS OPAQUE; spec.w IS AN EDGE VEIL. The cross-model blind judge's
@@ -635,8 +653,9 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
     // the round-6 terrace was always for; it had nothing at mass scale to quantise until now.
     //
     // The gain is set so the sweep spends itself across the alphabet's own extent: the field runs
-    // to ±1.25 half-widths in x and −0.85..+1.05 in y, so 0.55 per half-width puts plane 0 and 1
-    // just inside the two flanks and leaves no dead saturated cap on either.
+    // to ±1.25 half-widths in x and −0.85..+1.05 in y. Round 16's 0.48 per half-width keeps plane
+    // values 0 and 1 inside the two flanks after its plane share rises to 0.68, leaving no dead
+    // saturated cap on either.
     float plane = saturate(dot(pc, wash) * TARROCK_CLOUD_PLANE_GAIN + 0.5);
     form = lerp(form, plane, TARROCK_CLOUD_PLANE);
 
@@ -703,11 +722,14 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
     // crumple is. Round 6's rule against noise before the terrace was about SPECKS (8-15 px
     // islands of the body wash punched into a crown); at 47 px an island is not a speck, it is
     // a sub-lobe turning away from the light, which is the thing the tier is missing. The count-2
-    // terrace still holds its 0.25 margin either side of every plateau against this one's ±0.17.
+    // terrace held its 0.25 margin either side of every plateau against round 8's ±0.17.
     // Measured through the graded chain, E16: v3 3.6 → 5.9, v4 5.8 → 13.9, v8 4.0 → 8.4.
     float midTier = TarrockGradNoise(pc * 8.0 + spec.x * 0.77);
     midTier = 0.50 * midTier * rsqrt(0.25 + midTier * midTier);
-    form = saturate(form + midTier * 0.34);
+    // ROUND 16: 0.34 could cross most of the 0.25 margin to either terrace boundary and made the
+    // internal modelling repeat as circular splats. 0.16 keeps a value variation inside its plane;
+    // the mass-scale plane above now carries the lit-side / shadow-side statement.
+    form = saturate(form + midTier * TARROCK_CLOUD_MID_TIER);
 
     form = TarrockSoftBand(form, 2.0, 0.92, 0.030);
 
@@ -871,7 +893,7 @@ float4 TarrockVaultCloud(float2 azEl, float2 sunAzEl, float4 spec, float2 varian
     float brush = TarrockGradNoise(pc * 7.0 + 57.1) * 1.4
                 + TarrockGradNoise(pc * 22.0 + 3.7) * saturate(1.0 - foot * 22.0)
                 + TarrockGradNoise(pc * 46.0 + 21.3) * 0.6 * saturate(1.0 - foot * 46.0);
-    color = max(color * (1.0 + brush * 0.55 * float3(1.22, 1.02, 0.80)), 0.0);
+    color = max(color * (1.0 + brush * TARROCK_CLOUD_TOOTH * float3(1.22, 1.02, 0.80)), 0.0);
 
     // The dawn rim: the sunward edge of a cloud at this hour is the brightest thing in the vault.
     // It is NOT the halo — round 9 removed it entirely on the offline model and halo_S moved
