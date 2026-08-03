@@ -16,13 +16,26 @@ tree.
 
 ---
 
-## Round 11 — white without bleach, the whorl's last stand `QUEUED`
+## Round 12 — form, cover, and the hero's weight `QUEUED`
 
-- Rebalance the white: round 9's band was board-correct in colour and failed to reach the wall; round 10 reached the
-  wall and bleached it (blue clips first on 7 of 9 frames). Merge the two.
-- The concentric whorl field, precisely located at last (18–90 px, 1.8× the board max) — killed at that specific term.
-- Revert the noiseSeed rescramble; polish the tree's bark material.
-- **Awaiting a director ruling** on how a resting camera gets to see the tree (look-at nudge / default tilt / proportions).
+- Form shading (`_ShadeWrap` toward the measured deficit), the 64-cube LUT (white *and* warm clouds), v4's fog inversion.
+- The meadow's blade cover pushed toward the board band (we sit at 0.4–10% vs 13.6–48.2%).
+- v8 rebalanced: the tree earns contrast weight (now 0.37% vs 39% for two rock wings); bark material (constraint
+  released); the cloud-sea waterline.
+- **Still awaiting the director's camera ruling** — re-confirmed on round-11 pixels: no stretch of the shelf frames
+  both figure and tree at resting tilt.
+
+## Round 11 — the whorl dies at the source · commit `4258d33`
+
+![Round 11 v9](img/thumb-r11-v9-shelf-west.jpg) ![Round 11 v1](img/thumb-r11-v1-spawn-west.jpg)
+
+**Won:** the five-round whorl artifact is dead — marks had been rotating about the *world origin* with a 200–350 m
+lever arm; anchoring them to an 11 m world lattice (shared with terrain: the "same hand" rule) removed it by eye and
+by decontaminated measurement, and Codex — fresh context, told nothing — dropped the terrain complaint it had made two
+rounds running. Warm white landed (cloud clipping → 0.0%, the near-white band warm at board-median saturation).
+**Milestone: v9-shelf-west places 2nd of six in the blind ranking — the first frame to outrank board plates.**
+**Process:** three broken measuring instruments found and fixed (two self-reported by the agents that made them); the
+provenance rule held; one prompt-injection attempt in a transcript was flagged by the harness and neutralised.
 
 ## Round 10 — the tree earns its frame · commit `cf733bd`
 
