@@ -633,7 +633,49 @@ namespace Tarrock.Editor
             // round-8 precedent for holding that is a lamp compensation, and it is deliberately NOT
             // taken here: the lamp is what carries the top of the picture into the highlight bucket
             // at highlightsStart 2.90, and round 11's warm white is the state this round protects.
-            material.SetFloat("_ShadeWrap", 0.22f);
+            //
+            // ================= ROUND 13: 0.22 → 0.36, ONE LAW FOR THE GROUND PLANE =============
+            // Reverted together with _GroundFogScale, as the block above requires. Three reasons,
+            // in order of weight, and none of them is a compromise between two numbers.
+            //
+            // 1. THE SEAM. Tarrock/GrassTuft has carried _ShadeWrap 0.36 since round 8
+            //    (TerrainRegionGenerator.Grass.cs). Round 12 took the terrain to 0.22 and left the
+            //    grass where it was, so from round 12 onward TWO DIFFERENT SHADING LAWS MET AT THE
+            //    SAME GROUND PLANE. On flat ground under a 12° sun the direct term is
+            //    wrapped(sin 12°) = (0.2079 + w)/(1 + w): 0.3507 at w = 0.22 against 0.4176 at
+            //    w = 0.36. The blades were collecting 19.1% more of the beam than the soil they
+            //    grow out of, everywhere, with no physical difference to justify it.
+            // 2. THE EXPOSURE ARITHMETIC WAS ALREADY SOLVED FOR 0.36. TerrainRegionGenerator
+            //    .Lighting.cs's lamp block raised the lamp 6.06 → 7.35 explicitly to hold flat lit
+            //    meadow's direct term with the wrap at 0.36 ("round 8 wrapped(sin 12°) at wrap 0.36
+            //    = 0.4176, lamp lum 0.7681 × 7.35"). Terrain at 0.22 was therefore sitting 16.0%
+            //    BELOW the level every grade decision since round 3 has been pinned to, and the
+            //    block above says in terms that no lamp compensation was taken for it. 0.36 puts
+            //    the terrain back on the pivot the grade was built on without touching the lamp,
+            //    the LUT or the volume — i.e. it protects the round-11 grade rather than spending it.
+            // 3. THE LEVER DID NOT WORK, MEASURED. The sweep above predicted lit_over_sh 3.02-4.28
+            //    at w = 0.22 and jambG_L_p05 0.2173 worst-of-nine. The round-12 capture measured
+            //    2.741 and 0.3242 — 0.40 → 0.22 bought +0.051 of a predicted +0.33 to +1.59, and
+            //    the p05 ceiling it was chosen to clear was missed on four views of nine. Critic 1
+            //    established why in round 12 and it is structural, not a tuning error: this scene's
+            //    darks are CAST SHADOW, where `lit = wrapped * atten` with atten = 1 − shadowStrength
+            //    = 0.03, so `lit ≈ 0` for any wrap and the wrap has no authority over the shadow
+            //    denominator at all. The shadow PEDESTAL is the lever, and that is what round 13
+            //    moves instead (see _ShadeFill / _ShadeDeepen below).
+            //
+            // NOT 0.22 FOR THE GRASS INSTEAD, and this is measured too: GrassTuft.shader's own
+            // property block records that below about 0.34 the grass shade goes CYAN (at wrap 0.36
+            // with round-7's fill the deepest shadow landed at hue 110°), which no plate on the
+            // reference board contains. 0.36 is the only value with a measurement standing behind
+            // it on BOTH surfaces, which is why this is a move of the terrain and not a split.
+            //
+            // TARROCK/ROCKPAINTERLY IS DELIBERATELY LEFT AT 0.22 and that is not an oversight. Rock
+            // has been at 0.22 since round 5 — it did not follow the terrain to 0.40 and it does not
+            // follow it back — and the rock shader carries no shade fill, so a wrap raise there is a
+            // pure LIFT of the near jamb masses, which is the exact population the round-9 item-4
+            // ceiling (jambG_L_p05 <= 0.2218) scores and which the round-12 capture already misses
+            // on four views. Unifying it is a separate change with its own gate.
+            material.SetFloat("_ShadeWrap", 0.36f);
             material.SetFloat("_AmbientBoost", 1f);
             // ROUND 6 — COLOUR IN THE SHADOWS, the other half of the law the sun bleach implements
             // on the grass side. This tint is the terrain's only chroma-versus-value lever, and the

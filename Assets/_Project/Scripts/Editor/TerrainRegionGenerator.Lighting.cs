@@ -99,7 +99,24 @@ namespace Tarrock.Editor
         // mid-frame dip of −0.073 and fable-08's −0.124. The trade is real and is the round-2 one: haze doing
         // work value should do. It is bounded to the 35-140 m band by the curve, and the lit slope
         // at 35-60 m is modelled as moving 0.678 → 0.671, so what the haze takes is the DARKS.
-        private const float GroundFogScale = 1.5f;
+        //
+        // ROUND 13 — 1.5 → 1.0, REVERTED (gauntlet lead's ruling). Two reasons, and the first is
+        // that the round-12 argument above was never validated:
+        //   1. IT BLEACHED THE SHADOW MASS. The x1.5 curve mixes 24.6% of the far field into the
+        //      ground at 60 m against 11.8% at x1.0, and the far field is a PALE value. What the
+        //      block above calls "haze doing work value should do" is measured on the capture as
+        //      v4's shadow mass losing its darkness: the round-12 frame is the first in the run
+        //      whose near-field darks a shading lever cannot reach, because the pale is arriving
+        //      from the atmosphere and not from the light.
+        //   2. THE MODEL IT RESTED ON IS RETIRED. Round 12's paired argument (this scale with
+        //      _ShadeWrap 0.22 below) predicted `lit_over_sh` 3.02-4.28 and `jambG_L_p05` 0.2173
+        //      worst-of-nine. The capture measured 2.741 and 0.3242 -- the lever delivered +0.051
+        //      of a predicted +0.33 to +1.59. Round 12's own audit put the model at ~2.7x over.
+        //      Two of the three instruments those numbers were read through (`metrics.masks()`
+        //      GROUND, the absolute-form triage predicates) have since been condemned.
+        // Reverting the scale and the wrap TOGETHER is what the block below asks for; both are
+        // reverted in the round-13 change and neither is left standing alone.
+        private const float GroundFogScale = 1.0f;
 
         private static void BuildLighting()
         {

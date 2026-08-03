@@ -277,6 +277,78 @@ namespace Tarrock.Editor
                     // that has a reason to be bare.
                     float scour = Mathf.Pow(
                         Mathf.InverseLerp(-0.30f, 0.34f, Fbm(wx * 0.028f + 5f, wz * 0.028f + 11f)), 1.15f);
+
+                    // ROUND 13 — THE SPAWN BOWL IS SHELTERED, AND THE NOISE HAD PUT ITS WORST BALD
+                    // PATCH ON THE FIRST THING A PLAYER EVER SEES.
+                    //
+                    // MEASURED, on the shipped heightmap through a numpy port of this very loop
+                    // (round13/builder1/densityport.py, validated by reproducing round 12's own
+                    // published instance total to +0.39% and FindTreeSpur's documented endpoints
+                    // exactly; region breakdown in diagnose_bowl.py, decomposition in decompose.py):
+                    //
+                    //     ring around the spawn mark   tufts/m²   thatch/m²   `scour`
+                    //       r  0- 5 m                    2.86       5.97       0.157
+                    //       r  5-10 m                    3.60       5.58       0.256
+                    //       r 10-15 m                    6.06       5.36       0.431
+                    //       r 15-20 m                    6.70       4.93       0.515
+                    //       whole region (grassed)       5.60       4.74       0.437
+                    //       v6's meadow mark             7.94       4.19       0.721
+                    //
+                    // The ground the opening frame stands on carried HALF the region's grass and the
+                    // MOST of its flat mat. It is not the band gate (band = 1.000 inside r<20 m, so
+                    // nothing is being called rock) and it is not the worn lane (mean `wear` 0.004
+                    // at r<5 m; the lane's whole contribution over the v1 near cone is a x0.92 on
+                    // cover against x0.96 region-wide). It is `scour` alone: 0.157 at the mark
+                    // against a region mean of 0.437 — the 18th percentile of all grassed ground —
+                    // while `ragged` and `tussock` sit at their region-average values there. The
+                    // broad ~35 m octave simply has a deep low centred on the spawn.
+                    //
+                    // AND IT SHOWS IN PIXELS. Round-12 v1, near-field box, Fool-excluded
+                    // (round13/builder1/nearfield13.py + bladecover13.py, blade predicate rebuilt
+                    // with a G>=B sky guard): 0.48% blade cover, against v6's 10.36% and v7's
+                    // 14.87%. Gate by gate (gates13.py) v1's near field passes luma at 100% and
+                    // chroma at 71%, and fails GREENNESS at 99.5% — 70.7% of that box is bright,
+                    // chromatic, non-sky ground that is not green. That is the arithmetic above
+                    // seen from the lens: thatch mat and ochre floor between too few blades.
+                    //
+                    // WHY A SHELTER TERM AND NOT A DENSITY MULTIPLIER. `scour` is the wind-scoured
+                    // ground — this file's own words, "the wind-scoured ground where the Cliff has
+                    // been worked at for three hundred years". The spawn bowl is by the landform's
+                    // own design (Landform.cs §6b) a contained hollow whose rim wraps every
+                    // direction except the west opening. A rimmed hollow is the one place on this
+                    // plateau the wind does NOT reach, so it is the one place that should not carry
+                    // the plateau's scour. The bowl was carrying the worst of it. Modelling the
+                    // shelter fixes the opening frame and states a reason, where a multiplier here
+                    // would only have moved a number; and because it works through `scour` it also
+                    // takes the flat mat DOWN (thatchCover's own Lerp(1, 0.78, scour) below), which
+                    // is the second half of the note: the bowl needs standing grass, not more floor.
+                    //
+                    // SoftMax rather than Mathf.Max for the reason that function exists (see it):
+                    // a hard clamp draws its own contour. Cells already above the floor keep their
+                    // value, so the field is lifted where it is poor and left alone where it is not.
+                    //
+                    // THE BILL, same port: +4,053 instances (+1.40%) and +0.08 M triangles (+0.47%)
+                    // over the whole region, because the sheltered disc is 7.7% of the grassed
+                    // ground. This is deliberately NOT a global density change — the meadow proper
+                    // is bit-identical, and round 12's calibration there stands untouched.
+                    //
+                    // THE COST, stated because it is real: inside r<16 m the cover product's
+                    // coefficient of variation falls 0.771 -> 0.488 against the meadow's 0.707
+                    // (variation.py). The 2.4 m tussock octave and the 9.5 m ragged octave are
+                    // untouched, so the clumping the eye reads at walking distance is all still
+                    // there; what goes is broad-scale patchiness inside a 32 m disc, which is
+                    // precisely the wind's own signature and the thing a sheltered hollow is not
+                    // supposed to have. If a review reads the bowl as a lawn, lower the floor —
+                    // it trades cover for patchiness monotonically and changes nothing else.
+                    float bowlShelter = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(
+                        SpawnBowlShelterInnerMetres, SpawnBowlShelterOuterMetres,
+                        Vector2.Distance(new Vector2(wx, wz), new Vector2(SpawnHint.x, SpawnHint.z))));
+                    if (bowlShelter > 0f)
+                    {
+                        scour = Mathf.Lerp(
+                            scour, SoftMax(SpawnBowlScourFloor, scour, SpawnBowlScourKnee), bowlShelter);
+                    }
+
                     float ragged = Mathf.InverseLerp(-0.42f, 0.42f, Fbm(wx * 0.105f + 41f, wz * 0.105f + 7f));
                     float tussock = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(
                         0.34f, 0.74f, Mathf.InverseLerp(-0.40f, 0.40f, Fbm(wx * 0.42f + 17f, wz * 0.42f + 29f))));
@@ -1140,6 +1212,31 @@ namespace Tarrock.Editor
         // species grows where. Shared between ExposureDrift here and the material's _PatchScale —
         // the shader mirrors this function and the two must agree.
         private const float PatchScaleMetres = 26f;
+
+        // THE SPAWN BOWL'S SHELTER (round 13). See the long note at `bowlShelter` in
+        // BuildGrassDetails for the measurements and the reasoning; these are the three numbers it
+        // turns on, and they are radii from SpawnHint, never a second copy of the mark itself.
+        //
+        // The radii track the landform's own bowl rather than being chosen: Landform.cs §6b starts
+        // lifting the rim at bowlR 18 m (sideBand) and 20 m (backBand) and has it fully up by 34 m
+        // and 26 m. Full shelter therefore ends where the rim BEGINS (16 m, just inside the first
+        // of those), and the shelter is spent where the side rim is fully up (34 m). If the bowl's
+        // geometry moves, move these with it — a shelter that outlives its rim is just a patch of
+        // fertiliser on the map.
+        private const float SpawnBowlShelterInnerMetres = 16f;
+        private const float SpawnBowlShelterOuterMetres = 34f;
+
+        // What `scour` is floored to under full shelter. 0.62 against a region mean of 0.437 and a
+        // measured 0.157 at the mark: the sheltered hollow ends up modestly LUSHER than the scoured
+        // plateau, which is the whole claim the term is making. It puts the bowl at 8.5-10.5
+        // tufts/m² over r<20 m against v6's meadow at 7.94 — above the frame that already reads as
+        // meadow, and well under both the round-2 measured lush stands (~14/m²) and the fescue
+        // clamp (MaxPerCell 4, i.e. 16/m²). THIS IS THE DIAL: it trades cover against broad-scale
+        // patchiness and touches nothing else.
+        private const float SpawnBowlScourFloor = 0.62f;
+        // SoftMax's softness. Small enough that the floor is a floor (a cell 0.2 above it is lifted
+        // by under 0.001) and large enough that no contour appears where the field crosses it.
+        private const float SpawnBowlScourKnee = 0.08f;
 
         // The direction the last wind combed the meadow. Same prevailing axis as Tarrock/FoliageWind
         // so cloth and grass, when the region does unbind, lie the same way.
@@ -2224,7 +2321,39 @@ namespace Tarrock.Editor
             material.SetFloat("_ShadeFillStrength", 1.0f);
             // The sun bleach, at the same setting as the meadow — the law is about light, not about
             // which prototype the light happens to land on.
-            material.SetFloat("_SunBleach", 0.45f);
+            //
+            // ROUND 13 — 0.45 -> 0.30, BECAUSE THE LINE ABOVE STOPPED BEING TRUE AND NOBODY MOVED
+            // THIS ONE. Round 12 took the meadow's tufts from 0.45 to 0.30 (BuildTuftPrototype,
+            // and the six sibling materials with it) on the finding that the bleach was replacing
+            // enough of a lit blade's albedo with cream to fail the blade test's greenness gate.
+            // This call was left at 0.45, so the clump that dresses the spawn bowl — i.e. the
+            // near fringe of the opening frame — has been bleaching half again as hard as the
+            // meadow it edges, under a comment asserting that it does not.
+            //
+            // THE ROUND-12 ARGUMENT APPLIES HERE UNCHANGED, and that is checkable rather than
+            // assumed. _SunBleach does exactly one thing (GrassTuft.shader 871-877):
+            //     albedoLit = lerp(albedo, luma(albedo) * bleachTint, _SunBleach * smoothstep(...))
+            // a luma-PRESERVING desaturation toward _BleachTint. Tussock and meadow are the SAME
+            // shader with the SAME _BleachTint (1.00, 0.94, 0.80) and the SAME _BleachStart (0.06),
+            // so lamp, exposure and tonemap are common factors and the only per-material input is
+            // the albedo. Measured in albedo space over the whole dryness ramp
+            // (round13/builder1/bleach13.py), at the shader header's own flat-lit smoothstep of
+            // 0.435:
+            //     _SunBleach 0.45 -> 0.30    mean saturation      mean greenness
+            //       GrassTuft (fescue)       0.624 -> 0.652       +0.185 -> +0.204
+            //       TussockClump             0.523 -> 0.546       +0.100 -> +0.110
+            //
+            // AND THE "TUSSOCKS ARE DIFFERENT" CASE FAILS ON ITS OWN NUMBERS. It would need the
+            // clump to be MORE saturated or MORE green than the meadow, so it could afford more
+            // bleach. It is the opposite: at any given setting the tussock is 16% less saturated
+            // than the fescue and carries barely HALF its greenness (+0.100 against +0.185). The
+            // clump has less headroom than the meadow, not more, so if the meadow could not carry
+            // 0.45 this cannot either.
+            //
+            // Nothing changes on a shaded clump, by construction: the bleach is gated on
+            // lightReach, so it is ~0 wherever the beam does not arrive — which is most of the
+            // spawn bowl (Lighting.cs: 79% of it is in shadow). This is a LIT-pixel change.
+            material.SetFloat("_SunBleach", 0.30f);
             material.SetFloat("_BleachStart", 0.06f);
             material.SetColor("_BleachTint", SunBleachTint);
             material.SetFloat("_SkyOcclusionRoot", 0.55f);

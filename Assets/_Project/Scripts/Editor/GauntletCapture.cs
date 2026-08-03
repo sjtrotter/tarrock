@@ -519,8 +519,10 @@ namespace Tarrock.EditorTools
 
                 foreach (Vantage vantage in Vantages)
                 {
+                    // ORDER IS LOAD-BEARING: WriteBendGlobals reads standIn.position, which
+                    // PlaceStandIn has just set for this vantage. See WriteBendGlobals.
                     PlaceStandIn(standIn, vantage, standInPosition, standInRotation);
-                    WriteBendGlobals(standIn, vantage);
+                    WriteBendGlobals(standIn);
                     PlaceCamera(camera, vantage);
 
                     string path = Path.Combine(directory, vantage.Name + ".png");
@@ -597,7 +599,7 @@ namespace Tarrock.EditorTools
 
             Vantage first = Vantages[0];
             PlaceStandIn(standIn, first, spawnPosition, spawnRotation);
-            WriteBendGlobals(standIn, first);
+            WriteBendGlobals(standIn);
             PlaceCamera(camera, first);
 
             var descriptor = new RenderTextureDescriptor(CaptureWidth, CaptureHeight)
@@ -637,11 +639,43 @@ namespace Tarrock.EditorTools
         }
 
         /// <summary>
-        /// Presses the grass where the stand-in Fool is standing, for the vantages that plant him.
-        /// Every other vantage gets an empty field, so no ring is ever photographed under a Fool who
-        /// is not there. See the bend-globals block above for the packing contract.
+        /// Presses the grass where the stand-in Fool is standing. See the bend-globals block above
+        /// for the packing contract.
+        ///
+        /// ROUND-13 FIX — THE FOOL WAS FLOATING IN UNPRESSED BLADES IN THE OPENING FRAME.
+        ///
+        /// This method used to early-out on `!vantage.MovesStandIn`, and `MovesStandIn` is true for
+        /// exactly three vantages (v6, v7, v9 — the ones with `.WithStandIn(...)`). But
+        /// <see cref="PlaceStandIn"/> plants the stand-in for EVERY vantage: on the vantage's own
+        /// mark when it moves him, and back on his spawn pose when it does not. He is therefore in
+        /// the world, standing on grass, in all nine frames, and VISIBLE in six of them — v1, v2 and
+        /// v4 as well as v6, v7 and v9. On v1, v2 and v4 the grass under him was photographed
+        /// unpressed, i.e. the frame that opens the game showed a figure standing IN blades rather
+        /// than on ground that yields to him. "A bound world still yields to touch" is a standing
+        /// director ruling and canon (docs/design/art-audio.md §The world-state is the art
+        /// direction), so the frames that contain him must show it.
+        ///
+        /// The condition is now the only one that was ever load-bearing: is there a stand-in at all.
+        /// `MovesStandIn` says where he is put, which is <see cref="PlaceStandIn"/>'s business; it
+        /// never said whether he exists, and it was never a statement about which frames contain
+        /// him. Deriving the press from `standIn.position` rather than from a second list of
+        /// "vantages he appears in" keeps ONE source for the coordinate — the same reason the
+        /// round-4 note above gives for reading the position off the transform.
+        ///
+        /// THE ORDERING INVARIANT IS UNCHANGED and is what makes this correct: both call sites
+        /// (the shoot loop and <see cref="WarmUpRenderer"/>) call PlaceStandIn IMMEDIATELY before
+        /// this, so `standIn.position` is the resting position for this vantage — the vantage's mark
+        /// when it moves him, the spawn pose when it does not — and never a stale or zero one. In
+        /// both branches PlaceStandIn puts the transform origin at the feet (mark branch: ground +
+        /// StandInGroundClearance; spawn branch: the installer's own grounded spawn), so `feet`
+        /// below means the same thing either way. PlaceStandIn also calls Physics.SyncTransforms.
+        ///
+        /// The three frames he is NOT visible in (v3, v5, v8) now press the grass at the spawn too,
+        /// which is where he is standing in those frames. That is correct rather than merely
+        /// harmless: it is what GrassBender does in play mode, where the press does not know or care
+        /// where the camera is looking, and the pressed disc is off-camera in all three.
         /// </summary>
-        private static void WriteBendGlobals(Transform standIn, Vantage vantage)
+        private static void WriteBendGlobals(Transform standIn)
         {
             for (int i = 0; i < BenderSlots; i++)
             {
@@ -649,7 +683,7 @@ namespace Tarrock.EditorTools
                 BenderPower[i] = Vector4.zero;
             }
 
-            if (standIn == null || !vantage.MovesStandIn)
+            if (standIn == null)
             {
                 Shader.SetGlobalVectorArray(BenderDataId, BenderData);
                 Shader.SetGlobalVectorArray(BenderPowerId, BenderPower);
@@ -725,6 +759,12 @@ namespace Tarrock.EditorTools
 
         // The stand-in Fool is scenery for the scale shots: moved onto the vantage's mark, and put
         // back on its spawn for every other frame (v1/v2 want him exactly where the game starts him).
+        //
+        // THE `MovesStandIn` TEST BELONGS HERE AND ONLY HERE (round 13). It answers "where does he
+        // go for this vantage", which is this method's whole job. It is NOT a test for "is he in
+        // this frame" — he is in the world for all nine, which is why WriteBendGlobals no longer
+        // consults it. Both branches leave the transform origin at his feet, so anything downstream
+        // that reads standIn.position as a ground contact is right either way.
         private static void PlaceStandIn(
             Transform standIn, Vantage vantage, Vector3 spawnPosition, Quaternion spawnRotation)
         {

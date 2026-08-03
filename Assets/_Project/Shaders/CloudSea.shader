@@ -113,6 +113,16 @@ Shader "Tarrock/CloudSea"
         _MottleBandStrength ("Mottle - wash strength", Range(0, 1)) = 0.42
         _MottleBandSoftness ("Mottle - wash softness", Range(0.005, 0.5)) = 0.030
 
+        // ROUND 13 — THE PAINTED TOOTH. See §THE TOOTH in the fragment for the whole
+        // argument; the short version is that the terrace above is a near-hard quantiser
+        // and every octave applied BEFORE it at less than a step's amplitude is thrown
+        // away, so the deck's texture has to be laid on AFTER it. Each octave is packed
+        // (scale m, weight, fade start m, fade end m) the way the vault clouds are.
+        _ToothGain ("Tooth - master gain", Range(0, 0.6)) = 0.22
+        _Tooth0 ("Tooth - octave 0 (scale m, weight, fade start, fade end)", Vector) = (1.05, 0.55, 30, 59)
+        _Tooth1 ("Tooth - octave 1", Vector) = (0.42, 0.75, 16, 37)
+        _Tooth2 ("Tooth - octave 2", Vector) = (0.18, 0.60, 8, 24)
+
         _WarpScale ("Domain warp scale (m)", Float) = 95.0
         _WarpAmount ("Domain warp amount (m)", Float) = 26.0
         _StreakAxis ("Streak axis (xz, normalised, points at the sun)", Vector) = (-0.978, -0.208, 0, 0)
@@ -258,6 +268,10 @@ Shader "Tarrock/CloudSea"
                 float _MottleBands;
                 float _MottleBandStrength;
                 float _MottleBandSoftness;
+                float _ToothGain;
+                float4 _Tooth0;
+                float4 _Tooth1;
+                float4 _Tooth2;
                 float _WarpScale;
                 float _WarpAmount;
                 float4 _StreakAxis;
@@ -486,6 +500,70 @@ Shader "Tarrock/CloudSea"
                 // washes following the billow instead of cutting across it.
                 mottle = TarrockSoftBand(mottle, _MottleBands, _MottleBandStrength, _MottleBandSoftness);
 
+                // -------------------------------------------------------------------------------
+                // THE TOOTH (round 13, against gauntlet/round12/v3). THE FINDING: 72.3% of the
+                // deck is one code value across 3x3 neighbourhoods. Measured independently on the
+                // round-12 capture over two clean open-deck rectangles: 74.9% and 76.8%. The board
+                // reads 0.0-6.0% on the same test over cloud and water alike.
+                //
+                // THE MECHANISM, and it is a quantiser bug, not a shortage of octaves. The terrace
+                // above runs at strength 0.90 over softness 0.030, which is a near-hard 8-level
+                // quantiser: a value that does not straddle a step boundary is dragged 90% of the
+                // way onto the step's flat level. The curd and fleece octaves are added to the ramp
+                // BEFORE it, and their combined amplitude is about ±0.03 in ramp units against a
+                // step of 1/8 = 0.125 — so over roughly nine tenths of the surface they are pulled
+                // out again and the deck is left as eight flat washes. Every round from 2 to 12 that
+                // answered "the deck is flat" by adding another pre-terrace octave was adding it on
+                // the wrong side of the quantiser.
+                //
+                // So the tooth goes on AFTER the terrace, where nothing can take it out again, and
+                // it is what a brush actually leaves: the paper's tooth and the pigment's granulation
+                // inside a flat wash, not another form under it. The washes and their soft boundaries
+                // — the storybook brush economy art-bible.md asks for — are untouched.
+                //
+                // THREE THINGS ABOUT ITS SHAPE, all of them measured rather than dialled:
+                //
+                //  * IT IS SAMPLED FROM p, NOT q. p is metres from the deck centre, before the
+                //    streak stretch and before the domain warp. The banks are drawn out along the
+                //    wind that made them; the brush that painted them is not, and a tooth carrying
+                //    the same 2.2:1 stretch reads as drift over the surface. A/B'd over this
+                //    frustum at the shipped gain: sampled from p the 8-32 px band's anisotropy falls
+                //    from 4.79/5.59 to 3.33/3.42, and sampled from q it only reaches 4.19/4.29.
+                //
+                //  * IT IS FINE, AND ONLY FINE. A coarse set (9 m and 2.6 m octaves) was modelled
+                //    first, because at 40-90 m those are the sizes whose VERTICAL screen extent
+                //    lands in the band. It photographed as windblown snow — sastrugi — because a
+                //    metres-wide mark on a plane at grazing incidence projects to a long horizontal
+                //    streak, and a streak is a record of something having moved. The deck is canon-
+                //    bound to be motionless (world.md §The Cliff; art-audio.md §the world-state is
+                //    the art direction), so the coarse octaves are not here. The three that are all
+                //    live close in, where the projected aspect d/H is 2.5-4 and a mark still reads
+                //    as round.
+                //
+                //  * EVERY FADE IS THE 2 px SHIMMER FLOOR, the same criterion the octave fades above
+                //    are derived from. A world length L at distance d on this lens stands 1037·6.3·L/d²
+                //    px tall, so 1.05 m reaches 2 px at 59 m, 0.42 m at 37 m and 0.18 m at 24 m, and
+                //    each octave is gone by there. Nothing on the deck is allowed to reach the size at
+                //    which it would scintillate — a scintillating deck reads as weather.
+                //
+                // AND IT DOES NOT TOUCH THE GOLD. The highlight keeps reading the UN-toothed ramp
+                // below, so the extent of the lit-wash gold — which is what round 11's warm white and
+                // its 0.0% cloud clipping are made of — is bit-identical to round 12's. Tapering the
+                // tooth near the top of the ramp instead would have cost it exactly where the deck is
+                // flattest. Modelled over the two open-deck rectangles: clipping stays at 0.000% →
+                // 0.000%, and the near-white band moves +0.006/+0.019 in saturation and +1.7/+4.8 in
+                // R−B — i.e. it does not cool, it warms slightly.
+                // -------------------------------------------------------------------------------
+                float goldRamp = mottle;
+                float tooth =
+                    TarrockGradNoise(p / max(_Tooth0.x, 0.01) + float2(29.7, 88.1)) * _Tooth0.y
+                        * (1.0 - smoothstep(_Tooth0.z, _Tooth0.w, dist))
+                  + TarrockGradNoise(p / max(_Tooth1.x, 0.01) + float2(5.3, 71.7)) * _Tooth1.y
+                        * (1.0 - smoothstep(_Tooth1.z, _Tooth1.w, dist))
+                  + TarrockGradNoise(p / max(_Tooth2.x, 0.01) + float2(61.4, 13.9)) * _Tooth2.y
+                        * (1.0 - smoothstep(_Tooth2.z, _Tooth2.w, dist));
+                mottle = saturate(mottle + tooth * _ToothGain);
+
                 // THE THREE-BAND RAMP (round 5). Round 4 ran one lerp from furrow to crest, which
                 // is a two-colour ramp however many washes are terraced onto it — the deck had a
                 // light end and a shade end and no shadow core, and the critic measured its
@@ -501,7 +579,11 @@ Shader "Tarrock/CloudSea"
                 // Gold on the top wash only. The region's grade is warm LIGHT on cool material, so
                 // the warmth belongs where the light lands and nowhere else; spreading it over the
                 // whole surface (round 2) is how the deck ended up one tinted value.
-                color += _SunFormColor.rgb * saturate(mottle - _SunFormThreshold) * _SunFormStrength;
+                //
+                // ROUND 13: goldRamp, not mottle — the UN-toothed ramp. This is the line that keeps
+                // round 11's win: the highlight's extent is decided before the tooth is laid on, so
+                // adding tooth can neither spread the gold nor push a new pixel into clipping.
+                color += _SunFormColor.rgb * saturate(goldRamp - _SunFormThreshold) * _SunFormStrength;
 
                 // The deck mesh carries a gentle billow of its own beyond the plateau (see
                 // TerrainRegionGenerator.BuildCloudDeckMesh). Reading its height keeps shading and

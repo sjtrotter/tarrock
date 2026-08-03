@@ -777,6 +777,42 @@ namespace Tarrock.Editor
             material.SetFloat("_MottleBands", 8f);
             material.SetFloat("_MottleBandStrength", 0.90f);
             material.SetFloat("_MottleBandSoftness", 0.030f);
+            // ROUND 13 — THE PAINTED TOOTH, and it is the answer to "72.3% of the deck is one code
+            // value across 3x3 neighbourhoods" (measured independently at 74.9% and 76.8% over two
+            // clean open-deck rectangles of round12/v3; the reference board reads 0.0-6.0% on the
+            // same test across cloud and water alike).
+            //
+            // The three washes above are not the problem and the octave sizes are not the problem.
+            // The problem is WHICH SIDE OF THE QUANTISER the texture is applied on. At eight washes,
+            // strength 0.90 and softness 0.030 the terrace is very nearly a hard 8-level quantiser
+            // (step 0.125 in ramp units), and the curd and fleece octaves are added to the ramp
+            // BEFORE it at a combined ±0.03 — a quarter of a step. Over roughly nine tenths of the
+            // surface they never straddle a boundary, so the terrace pulls them straight back out
+            // and the deck is left as eight dead-flat washes. Rounds 2 through 12 answered "the deck
+            // is flat" by adding octaves, and every one of them was added on the losing side of that
+            // quantiser. The fine octaves stay where they are — they still wobble the wash EDGES,
+            // which is worth having — but the deck's surface texture is now laid on afterwards,
+            // where nothing can take it out again. See CloudSea.shader §THE TOOTH.
+            //
+            // 0.22 is chosen at the top of the range that still reads as flat washes with tooth in
+            // them rather than as a continuously textured surface: modelled over the v3 frustum,
+            // 0.30 begins eating the wash economy art-bible.md asks for. At 0.22 the model predicts
+            // the round-13 capture at flat3 7.6% / 1.4% (board 0.0-6.0%) and 8-32 px band energy
+            // 2.60 / 2.16 sRGB code units against round 12's 1.92 / 1.42 and the board's 2.42-5.06
+            // over cloud.
+            material.SetFloat("_ToothGain", 0.22f);
+            // (scale m, weight, fade start m, fade end m). Fine only, and close in only. A coarse
+            // set was modelled first and photographed as windblown snow — at grazing incidence a
+            // metres-wide mark projects to a long horizontal streak, and a streak is the record of
+            // something having moved, which the bound world may not show.
+            //
+            // Every fade is the 2 px SHIMMER FLOOR, the same criterion the octave fades below are
+            // derived from: a world length L at distance d stands 1123·L·H/d² px tall on this lens
+            // (H = 6.3 m at the west rim), so 1.05 m reaches 2 px at 59 m, 0.42 m at 37 m and
+            // 0.18 m at 24 m. Nothing is allowed to survive past the size at which it scintillates.
+            material.SetVector("_Tooth0", new Vector4(1.05f, 0.55f, 30f, 59f));
+            material.SetVector("_Tooth1", new Vector4(0.42f, 0.75f, 16f, 37f));
+            material.SetVector("_Tooth2", new Vector4(0.18f, 0.60f, 8f, 24f));
             material.SetFloat("_WarpScale", 95f);
             material.SetFloat("_WarpAmount", 26f);
             // Banks drawn out along the sun/valley axis (the wind that made them is the wind that

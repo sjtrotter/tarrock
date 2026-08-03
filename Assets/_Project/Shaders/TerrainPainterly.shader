@@ -515,7 +515,11 @@ Shader "Tarrock/TerrainPainterly"
         // Raised from round 2's 0.30: wrapping compresses the ndotl gradient, and a compressed
         // gradient is a smaller step across a facet edge, so this is half of the facet fix and it
         // costs nothing.
-        _ShadeWrap ("Shade Wrap", Range(0,1)) = 0.40
+        // ROUND 13: the default follows the material to 0.36 — Tarrock/GrassTuft's value, so that
+        // ground and the grass growing out of it obey ONE shading law. The argument, the exposure
+        // arithmetic it restores and the measured reason round 12's 0.22 is abandoned are at
+        // TerrainRegionGenerator.Ground.cs's _ShadeWrap write; do not change one without the other.
+        _ShadeWrap ("Shade Wrap", Range(0,1)) = 0.36
         _AmbientBoost ("Ambient Boost", Range(0,2)) = 1.0
         // Authored shade, not emergent: shade cools toward the tint, ambient never reaches black.
         _ShadowTint ("Shadow Tint (cool)", Color) = (0.80, 0.88, 1.06, 1)
@@ -552,7 +556,9 @@ Shader "Tarrock/TerrainPainterly"
         // to change"). This is that change. Same mechanism, same knee, same property names, so a
         // future round can tune ground and grass against each other by reading one pair of numbers.
         //
-        // WHY THE FILL IS BLUER THAN THE GRASS'S (0.44, 0.54, 0.70) against (0.50, 0.55, 0.68).
+        // WHY THE FILL IS BLUER THAN THE GRASS'S — round 9's (0.44, 0.54, 0.70) against GrassTuft's
+        // (0.50, 0.55, 0.68). The triple itself is superseded by the round-13 block below, which is
+        // bluer again for a different reason; the ARGUMENT here still stands and still bounds it.
         // The two shaders do not multiply it by the same thing. GrassTuft's round-8 note records
         // that its fill IS the shaded read — a turned-away blade keeps almost no direct term — and
         // that a bluer fill took its deepest shadow to hue 110°, cyan, which the colour law
@@ -572,8 +578,49 @@ Shader "Tarrock/TerrainPainterly"
         //   frame's hue split went −5.4 → −43.4, past the far end of the Fable band (−33.1). The
         //   triple below has its green closer to its blue for that reason (B/G 1.79 against 2.42),
         //   and it lands v5 at hue 32.6 and split −8.4 — a real cool, and no flip.
-        _ShadeFill ("Shade Fill (dawn sky dome)", Color) = (0.44, 0.54, 0.70, 1)
-        _ShadeFillStrength ("Shade Fill Strength", Range(0, 2)) = 0.18
+        //
+        // ================== ROUND 13: THE CHROMA ROUTE, AND WHY IT IS RED ONLY ==================
+        // (0.44, 0.54, 0.70) @ 0.18 with _ShadeDeepen 0.66  ->  (0.00, 0.552, 0.696) @ 0.30 with
+        // _ShadeDeepen 0.40.  Those six numbers are ONE move and they must be read together.
+        //
+        // THE CONSTRUCTION. Frag's shade ambient is
+        //     ambient = SH * (1 + (_ShadeDeepen - 1) * shadeMix)  +  _ShadeFill * strength * shadeMix
+        // Both terms are LINEAR in shadeMix and both resolve to plain SH at shadeMix = 0. So if the
+        // deepen is lowered and the fill is raised to restore GREEN and BLUE at shadeMix = 1, the
+        // restoration is exact at EVERY shadeMix, not merely in full shade — checked numerically to
+        // 2.4e-5 across the terminator (scratchpad/round13/builder2/chroma13.py). Zeroing the fill's
+        // RED then removes red from the shaded side in proportion to (1 - deepen) and to nothing at
+        // all in the light. Solved on the shipped triple:
+        //     shade ambient  linear (0.0992, 0.1320, 0.2126)  ->  (0.0426, 0.1320, 0.2126)
+        //     cast-shadow ground, pre-fog:  R x0.704   G x1.000   B x1.000   luma x0.958
+        //
+        // WHY RED AND NOT LEVEL, and this reverses the round-12 reading. Re-measured through a
+        // ground mask that can actually see smooth deep shade (the round-8 `metrics.masks()` GROUND
+        // is condemned; the replacement is scratchpad/round13/builder2/groundmask.py), the round-12
+        // capture's ground sits DARKER than the reference board on every level statistic and
+        // BLUER at the bottom, not the other way round:
+        //     floor band, median of nine vs median of the 20 board plates
+        //       sh_L     0.094 vs 0.122      dark5_B  18.2 vs 14.4
+        //       L_p05    0.085 vs 0.095      deep1_B  12.5 vs  6.8
+        //       sh_B-R   -8.1  vs -10.5
+        // So there is nothing to be bought by taking the pedestal's LEVEL down — that is the one
+        // statistic already past the board, and it is the only move that can break the two blue
+        // floors. What is short is the shadow's coolness, and the channel with room is RED.
+        //
+        // WHY NOT _ShadowTint, which is the obvious lever. It is not exposure-safe and this is
+        // measured, not feared: `lerp(_ShadowTint, 1, lit)` still returns 58% of the tint on fully
+        // lit flat ground at a 12° sun, so any move there tints the LIT read. TerrainRegionGenerator
+        // .Lighting.cs records the warm-neutral trial costing +5.8% frame luminance for that exact
+        // reason. This construction touches nothing at shadeMix = 0, by construction.
+        //
+        // THE PRICE, stated: SH is the ONLY normal-dependent term in the shade ambient (the scene
+        // runs AmbientMode.Trilight), so taking the deepen from 0.66 to 0.40 takes SH's share of the
+        // shaded green from 65.5% to 39.7%. Shaded FORM MODELLING is traded for shaded CHROMA. The
+        // sweep is in chroma13.txt and 0.40 is where the predicted floor-band sh_B-R band (-12.0 to
+        // -10.4, before grass/rock dilution) brackets the board's -10.47; 0.35 and below overshoot
+        // it outright, and each further step costs another 5 points of SH share.
+        _ShadeFill ("Shade Fill (dawn sky dome)", Color) = (0.00, 0.552, 0.696, 1)
+        _ShadeFillStrength ("Shade Fill Strength", Range(0, 2)) = 0.30
         // The knee is GrassTuft's 0.35 verbatim and for its reason: a surface only a third reached
         // by the beam already reads as shade, and running the fill in over the whole terminator
         // instead of its last sliver is what stops the boundary snapping into a visible line.
@@ -607,7 +654,14 @@ Shader "Tarrock/TerrainPainterly"
         // 0.18 fill is the LEVEL-NEUTRAL pair — deepen = 1 − strength·lum(fill)/lum(SampleSH), i.e.
         // 1 − 0.18·0.2450/0.1308 = 0.663 — so the fill's luminance is paid for and nothing else is.
         // v3 and v4 are a near-field composition finding, not a lighting one.
-        _ShadeDeepen ("Shade Deepen (ambient kept in full shade)", Range(0.15, 1)) = 0.66
+        //
+        // ROUND 13: 0.66 -> 0.40. It is no longer the level-neutral partner of the fill, because the
+        // fill is no longer a level-neutral term — see the _ShadeFill block above, which owns this
+        // number now. The pair still holds the shade ambient's GREEN and BLUE exactly (that is what
+        // the fill's green and blue were solved for); what the deepen change buys is the removal of
+        // SH's RED from the shaded side, which the fill can no longer supply because its red is 0.
+        // Do not move one of the two without re-solving the other: chroma13.py does the solve.
+        _ShadeDeepen ("Shade Deepen (ambient kept in full shade)", Range(0.15, 1)) = 0.40
 
         // -- ROUND 9: THE GROUND'S OWN FAR FIELD ------------------------------------------------
         //

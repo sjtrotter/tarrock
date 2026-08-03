@@ -82,6 +82,7 @@ Material:
     - _SwellFadeStart: 260
     - _SwellScale: 26
     - _SwellWeight: 0.4
+    - _ToothGain: 0.22
     - _VaultCloudAspect: 0.4
     - _VaultCloudBase: 0.22
     - _VaultCloudBaseLump: 0.075
@@ -104,6 +105,9 @@ Material:
     - _SunDirection: {r: -0.4592125, g: 0.2079117, b: 0.8636531, a: 0}
     - _SunFormColor: {r: 1, g: 0.82, b: 0.52, a: 1}
     - _SunGlowColor: {r: 1, g: 0.82, b: 0.52, a: 1}
+    - _Tooth0: {r: 1.05, g: 0.55, b: 30, a: 59}
+    - _Tooth1: {r: 0.42, g: 0.75, b: 16, a: 37}
+    - _Tooth2: {r: 0.18, g: 0.6, b: 8, a: 24}
     - _VaultCloud0: {r: 288, g: 12, b: 20, a: 0.94}
     - _VaultCloud1: {r: 358, g: 7.5, b: 11, a: 0.82}
     - _VaultCloud2: {r: 234, g: 29, b: 19, a: 0.93}
