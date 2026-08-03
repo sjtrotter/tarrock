@@ -330,3 +330,35 @@ artifacts.
 **Round verdict: SEND BACK → Round 12 = scoped completion (torso waist/ribcage plane,
 knee relief inside the sheet silhouette, pelvis de-dab, chest diagonal, seam
 cleanup). Shoulder girdle/malleoli/clavicle protected.**
+
+---
+
+## Round 12 — scoped completion below the collarbones (2026-08-03)
+
+**Builder (Opus):** overturned the torso premise with sheet re-extraction — the drawn
+waist was ALREADY matched in silhouette (waist min at the same height fraction, ratios
+within 2%); the missing thing was shading-legible plane breaks, now built (costal
+arch two-panel plane change, waist/belly planes, chest lead 7.76 mm vs drawn 8.06).
+Knee three-prominence read inside the drawn width; pelvis erased and rebuilt as one
+crest + one ASIS + two PSIS + glute mass; chest diagonal proven symmetric, erased,
+rebuilt as form; all named seams killed. Protected regions verified at 0.000 mm.
+`Fool-v2-015.blend`.
+
+| Full-figure flat | Back flat |
+|---|---|
+| ![flat](renders/r12-front-flat.png) | ![backflat](renders/r12-back-flat.png) |
+| ![3/4](renders/r12-three-quarter.png) | ![knee](renders/r12-zoom-knee.png) |
+
+**Critic (Opus, fresh) + Codex blind:** **SEND BACK, but the diagnosis is now one
+line: amplitude, not placement.** Forms are in the right places at ~⅓ the contrast
+needed in flat light; the one LOUD feature is the iliac-crest "belt" artifact (louder
+than the clavicles); the costal arch has a midline kink; arms are the quietest region
+on the figure. Codex: style regressed to 3, "mannequin-smooth" a fourth time — but
+its named first-change is exactly the amplitude item. Critic confirms silhouette must
+NOT be re-proportioned (its own measurement, after fixing a crown-registration trap).
+
+**Round verdict: SEND BACK → Round 13 = amplitude round (turn up existing torso
+planes 2–3×, kill the belt, resolve the costal midline; arm relief if cheap). Lead
+pre-commitment: if R13 verifies presence in flat light and the belt is dead, the
+Pass-2 gate closes under the charter's 80–90% rule with arm-relief debt logged —
+Pass 3 and the head-round gates re-judge the whole figure regardless.**
