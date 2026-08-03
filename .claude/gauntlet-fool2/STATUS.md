@@ -222,3 +222,25 @@ fenced by grooves, sternal notch/clavicles overdone, crown facet residual.
 
 **Round verdict: SEND BACK → Round 8 = boundary-blending session (back terrace, neck
 welt, deltoid fencing, clavicle backing-off ~40%, crown egg).**
+
+---
+
+## Round 8 — boundary blending (2026-08-02)
+
+**Builder (Opus):** proved every defect was Round-7 displacement (pre-sculpt render
+was clean), so the fixes smooth Round 7's own delta field rather than the surface —
+bounded by construction. Back terrace: straightness metric 317.6 mm → 26.5 mm
+straight-run (cleaner than the pre-sculpt reference); neck welt traced to two field
+cutoffs meeting, removed; clavicles −40% toward the drawn line; crown fill-only
+(apex untouchable by rule). Method lesson logged: map the residual in 2-D before
+choosing filter radius. 21,858 verts moved, max 3.65 mm; no station pushed past the
+verified ±3 mm. `Fool-v2-011.blend`.
+
+| Back (terrace gone) | Shoulder 3/4 |
+|---|---|
+| ![back](renders/r8-back.png) | ![shoulder](renders/r8-zoom-shoulder-tq.png) |
+
+**Lead verdict (eyes-on + numbers): ACCEPTED.** Carried forward: deltoid final
+integration (still circleable), upper-arm ring banding, jaw/face bands (head-sculpt
+round owns the face). Next: Round 9 = Sculpt Pass 2 — remesh to 2.5 mm + bony
+landmarks ("this is where the character appears") + carried band cleanup.**
