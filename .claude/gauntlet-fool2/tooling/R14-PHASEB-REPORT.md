@@ -127,3 +127,160 @@ single-pixel row scan. Reported, not hidden.
   geometry-space plus the mandatory eyes-on loop above.
 - Blender lane: headless only, one process at a time, governor checked before
   every run; the GUI and port 9876 were never touched.
+
+---
+
+# Cycle 2 -- face-read fixes (second Opus builder)
+
+**Final candidate: `Fool-v2-017h.blend`.** Chain: `017e` -> **`017f`** (mass /
+bands, restores the body from cycle 1's in-file `_preface`) -> **`017g`**
+(eyes / brows / nose / mouth) -> **`017h`** (ears + gates). Machine-readable
+gates: `r14-phaseb-validation.json` (cycle 1's numbers preserved under
+`cycle1_archived`); a standalone copy is `r14-phaseb2-validation.json`.
+Renders: `renders/r14c5-*` (mass, featureless), `r14c6-*` (features),
+`r14c7-*` (ears), **`r14v2final-*`** (final, 4 views x 2 lights).
+Scripts: `scripts/m1_mass.py`, `m2_features.py`, `m3_ears.py`, `m4_gates.py`,
+`r14c2lib.py`, plus the diagnostics `dbg_probe.py` / `dbg_debandonly.py` and
+the machine-protocol wrapper `gov.sh`.
+
+## Method: I restarted the face from the featureless skull
+
+TASK-B2 fix 6 says the band work has to happen BEFORE the fine feature lines are
+re-cut. The cleanest way to obey that was to restore `Fool_SculptBase` from
+cycle 1's own in-file `Fool_SculptBase_preface` (post-skull, post-deband, no
+features) and rebuild the face on top. Cycle 1's finished head is preserved
+in-file as `Fool_SculptBase_c1feat`; nothing was lost.
+
+## THE ROUND'S KEY FINDING -- what the bands actually were
+
+Cycle 1 measured the bands (016 p95 0.521 mm) and concluded they are inherited.
+That is right, but the filter was at the wrong scale and, more importantly, the
+band was being **put back after it was removed**. Measured, in this order:
+
+1. A sigma_z 9 mm smooth-shell reprojection removed ~40% of them. A sigma 6 mm
+   coordinate low-pass that moved **1.8 mm p95** removed almost none. A sigma
+   **15 mm** low-pass that moved **7.2 mm p95** removed almost none. No Gaussian
+   can move 7 mm of material and leave a crisp line -- so the bands could not be
+   surviving the filter.
+2. **Isolation render** (`dbg_debandonly.py`, `scratchpad/lponly.blend`):
+   low-pass ALONE gives a clean skull. Low-pass + contour lock gives a banded
+   one. The lock was the source.
+3. Why: the lock scales r by target/measured per z. The measured side is a
+   per-2.5 mm-slab EXTREME and the drawn side is a **2.015 mm pixel staircase**;
+   ~0.5% of ratio ripple on a 90 mm radius is ~0.45 mm of surface ripple at
+   exactly the observed 10-25 mm scale. Gaussian-smoothing the curves at sigma
+   8 mm, then 20 mm, was not enough -- a degree-8 polynomial over 245 mm can
+   still express ~30 mm structure, i.e. a band.
+4. Fix: the lock now writes its ratio as a **degree-4 polynomial** (finest
+   expressible structure ~60 mm), so it is structurally incapable of writing a
+   band. Order: heavy low-pass -> lock -> light low-pass -> two closing lock
+   passes. Filtering LAST was tried and rejected: it costs 6 mm of contour
+   (sigma^2/2R badly underestimates the shrink at the chin).
+
+**Second finding, for the lead.** The ear renders **perfectly clean in the
+Workbench studio pass and striped in the EEVEE sun rake, from identical
+geometry** (compare `r14v2final-side-studio.png` with `-side-rake.png`). A
+component of what cycle 1 and the blind judge read as banding is shadow-map
+acne in the rake setup, not the mesh. The jaw band at z ~ 1.485 is real -- it
+shows in both engines and in 016 -- but the fine striations are not.
+
+## Gates (measured on the SAVED `Fool-v2-017h.blend`)
+
+| Gate | Required | Measured | |
+|---|---|---|---|
+| Freeze below z 1.30 | <= 0.1 mm | **0.000000 mm**, 714 841 v, count-identical | PASS |
+| z 1.30-1.45 vs 016 | <= 3 mm + manubrium | max 14.00 mm, **entirely** the inherited manubrium field; outside its support max **1.63 mm**, p95 0.00 | PASS |
+| z >= 1.47 drawn contours | +-3 mm | x_half max **1.01** (p95 0.92), y_front max **1.71** (p95 1.40), y_back max **1.48** mm | PASS |
+| Crown Z | 1.717 +- 1 mm | **1.716964 m** | PASS |
+| Webbing probes | 160/160 | **160/160** | PASS |
+| Body one closed manifold | required | 1 012 055 v / 1 011 872 f, **0 non-manifold, 0 boundary, Euler = 2** | PASS |
+| Eyeballs two closed spheres | required | 1986 v each, 0 boundary/non-manifold, r = 35.000 mm, origins exactly (+-0.043, -0.0403, 1.571), smooth, **not joined** | PASS |
+| Socket rim clears globe | ~2 mm radial | **+1.09 mm** (cycle 1: +0.84) -- improved, still short of 2 mm | PARTIAL |
+| All aperture probes show globe | required | **5/5 visible** (dist 31.4-34.8 mm) | PASS |
+| In-file backups | intact | 31, incl. `_prehead`, `_preface`, `_preears`, `_c1feat`, `_c2preface`, `_c2preears` | PASS |
+
+Contour accuracy improved on every axis against cycle 1 (2.33 / 1.99 / 1.92 mm).
+
+## Per-cycle look-log (rendered, then LOOKED, every cycle)
+
+- **c5 v1** sigma 4 mm shell deband + open-loop chin -> bands unchanged, chin
+  still 3.7 mm shy. The chin loop delivers only ~55% of commanded amplitude
+  (envelope + lateral falloff + diffusion each take a share) -- which is exactly
+  how cycle 1 ended 4.6 mm shy. Made it **closed-loop**.
+- **c5 v2** chin overshot 2.5 mm: I had smoothed the MEASURED front line across
+  the chin's bottom edge, biasing it backwards. Reverted to a raw measurement.
+- **c5 v3-v6** the band hunt above; ended with degree-4 lock + two-stage
+  low-pass. Cranium and mid-face read clean; the inherited jaw band at z ~ 1.485
+  survives, softened.
+- **c6 v1** features exploded to 177 mm: the eye fields are functions of (x, z)
+  only, so they also selected the matching patch on the BACK of the skull. Added
+  a hard positional Y gate.
+- **c6 v2** nose read as a rectangular block -- `falloff(X/W, 0.45, 1.10)` is a
+  PLATEAU, which the brief forbids. Also two full-width horizontal creases above
+  and below it: `np.interp` with `left=right=0` is continuous in value but not in
+  SLOPE. Replaced by an analytic raised cosine.
+- **c6 v3** eye opened only on its lateral half. Instrumented it: the nose-root
+  guard was reaching x = 21 mm, across the aperture's medial third, and the tanh
+  cap was 14 mm where the medial socket needs 18. Both fixed.
+- **c6 v4** the eye still read weakly -- in a single-material clay render the
+  globe and the face are the same grey, so the eye is read **entirely from the
+  lid edge**. Added a lash groove inside the upper aperture for the lid to cast
+  onto, and raised the rim to 4.6 mm.
+- **c7** ears as a thin hinged plate with the sphere's pole axis mapped to Y;
+  clean union, no concentric rings, |X| 115.9 mm at z 1.5535.
+
+## Honest self-verdict, per fix item
+
+1. **Primary mass -- GOOD, the round's clearest win.** The muzzle is gone; the
+   cheeks taper continuously into a real chin; the chin/neck junction no longer
+   steps. Chin at z 1.4550 reaches **-74.98 mm against the drawn -76.78** --
+   1.8 mm shy, where cycle 1 was 4.6 mm shy, and the remainder is held back by
+   the gate guard (2.36 mm max motion below z 1.45), not by a crease. The
+   midline S-profile sits on the drawn ink within 0.07 mm from z 1.465 to 1.530.
+2. **Eyes -- IMPROVED, still not the sheet's eye.** Aperture 51 x 33 mm against
+   cycle 1's 48 x 34, floor raised to reduce exposed lower globe, medial canthus
+   now has a lid edge, upper lid is 4.6 mm proud against 1.6 below, globe visible
+   at all five probes, rim clearance up to 1.09 mm. It now reads as an almond
+   with a heavy upper lid rather than a bare ball. But **it is still smaller and
+   rounder than the drawn eye**, and the lower-lid crescent is heavier than the
+   ink. I did not get the wide, near-horizontal upper-lid graphic to dominate.
+3. **Nose -- GOOD.** The triangular spike is gone: bridge shortened 49 -> 31 mm,
+   blade rounded, ~17 mm projection kept, tapers into the brow plane. Reads as a
+   small softly-upturned wedge in both views. The two crease lines it used to
+   throw across the face are gone.
+4. **Mouth -- STILL THE WEAKEST ITEM.** Widened to the drawn 64 mm+ with real lip
+   volume (2.7 mm) over a 1.5 mm split, and it is no longer a scored slit. But in
+   the rake it still reads as more than one line, because the inherited jaw band
+   sits ~10 mm below it and the two read together. **I could not make the mouth
+   read as one clean pair of lips.**
+5. **Ears -- GOOD.** Rebuilt as a thin hinged flap (11 mm core, tapering to the
+   rim) instead of cycle 1's 60 mm lens; one helix ridge and one concha scoop;
+   the UV pole moved to the ear's front/back tips so the concentric rings cycle 1
+   noted **cannot** occur. Extent held: |X| 115.9 mm at z 1.5535. Clean in the
+   studio pass.
+6. **Bands -> planes -- PARTIAL.** The cranium and mid-face bands are gone in
+   both lights. The **jaw band at z ~ 1.485 remains** in both lights; it is the
+   inherited r12 artifact, it sits where my filter has to hand over to the
+   1.30-1.45 gate, and removing it needs a chain-level pass on 016 rather than a
+   head-local one. I did not add decorative cheek/temple planes: the first
+   attempt rendered as visible ellipse rings and I removed it.
+
+**Presence -- self-judged.** In the studio pass this now reads as the sheet's
+character: egg cranium, thin arched brows, almond eyes with a heavy upper lid,
+a small upturned nose, a gentle-smile mouth, a narrow jaw to a rounded chin,
+and modest storybook ears. In the rake pass the jaw band and the shadow-map
+striations still cost it. I would score it clearly above cycle 1 but not yet
+finished.
+
+## Deviations / notes
+
+- Body vert count is now 1 012 055 (was 1 010 144): different ear geometry.
+- The ear boolean re-indexes the mesh, so the z 1.30-1.45 comparison against 016
+  is an order-free BVH closest-point distance, not a vertex-index diff.
+- Socket clearance is 1.09 mm, not the suggested 2 mm. The body inside the
+  aperture sits at 31.4-34.8 mm from the eye centre -- permanently inside an
+  opaque globe, which is the normal game-rig arrangement, but it is not 2 mm of
+  radial air and I am not calling it a pass.
+- Blender lane: headless only, one process at a time, `scripts/gov.sh` run
+  before every invocation; the GUI and port 9876 were never touched; nothing
+  outside the workdir was written.
