@@ -244,3 +244,30 @@ verified ±3 mm. `Fool-v2-011.blend`.
 integration (still circleable), upper-arm ring banding, jaw/face bands (head-sculpt
 round owns the face). Next: Round 9 = Sculpt Pass 2 — remesh to 2.5 mm + bony
 landmarks ("this is where the character appears") + carried band cleanup.**
+
+---
+
+## Round 9 — Sculpt Pass 2: remesh + bony landmarks (2026-08-02)
+
+**Builder (Opus):** both prescribed voxel sizes (2.5/2.0 mm) provably WEB the fingers
+— landed at 1.5 mm, 992,787 verts, webbing 0/102. Full §3 landmark set as unified
+Tier-1 fields (clavicle 6-pt S, knee complex, scapula, malleoli, ulnar head, elbow
+triad, knuckle arc, PSIS/ASIS); arm rings + deltoid fence cleaned; silhouette drift
+≤1.3 mm. `Fool-v2-012.blend`.
+
+| 3/4 | Knee zoom |
+|---|---|
+| ![3/4](renders/r9-three-quarter.png) | ![knee](renders/r9-zoom-knee.png) |
+| ![clavicle](renders/r9-zoom-clavicle-tq.png) | ![back](renders/r9-back.png) |
+
+**Critic (Opus, fresh) + Codex blind:** **SEND BACK — the harshest verdict of the
+run.** The landmarks read as engraved line-work and pin-dots on an unsculpted volume
+(scapula = uniform scratches around a flat region; knee = 5–6 circleable dabs; ASIS
+"a second pair of nipples"); four terraces survive (both shins, sacrum, abdomen,
+head/jaw); Codex blind: "soft adult heavyweight," "mannequin-smooth — narrow and
+articulate the ribcage-to-waist transition." Gate ("reads bony in flat light") NOT
+met. Method fix ordered: build PLATES and MASSES first (Clay-mass + Flatten), let
+lines be the edges of forms; kill terraces by residual removal; flatten the belly so
+the chest leads; de-dab knee/ASIS/PSIS/wrist; re-cut the clavicle as a true S.
+
+**Round verdict: SEND BACK → Round 10 = form-first Pass-2 redo.**

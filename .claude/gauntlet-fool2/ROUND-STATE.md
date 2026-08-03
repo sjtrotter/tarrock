@@ -56,14 +56,37 @@ Run started: 2026-08-02. Lead: Fable (this file is the resume point).
   (small root rotations, rig-friendly standard), hand-only voxel remesh (trial 2.0 /
   1.5 mm), then EXACT boolean union onto Fool_SculptBase at the 25 mm wrist overlap.
 
-## Carried to sculpt (accumulated, from critics + builders)
+## Rounds 6–9 (compressed)
 
-- Inner leg line ~5 mm too thick below z≈0.70 (thigh AND calf).
-- Trapezius/acromion: 10.4 mm low at two stations (steep-slope blip; additive fix).
-- Ankle "boot-cuff" step at calf/foot weld; faint.
-- Face: featureless mask, brow plane +9 mm proud, nose −17 mm, ears absent.
-- Crown +4–5 mm proud at z≈1.708 (slightly square top taper).
-- Jaw pan flat-bottomed; head/jaw band artifact visible in 3/4 render.
+- **R6:** digits fanned 5°/pair (converged −2.4..−5.8° was the root cause), hand remesh
+  1.5 mm (2.0 webbed), EXACT boolean at wrist → ONE watertight figure 153,966 v (009).
+- **R7:** Sculpt Pass 1 all Tier-1 numpy; proportions closed ±3 mm both views (critic +
+  Codex); banding defect class sent back (010).
+- **R8:** banding closed by smoothing R7's own delta field; lead-accepted (011).
+- **R9:** Pass-2 remesh — 2.5/2.0 mm WEB THE FINGERS, landed 1.5 mm, 992,787 verts;
+  full §3 landmark set at ÷2 doses, restraint held; arm rings + deltoid fence fixed;
+  silhouette drift ≤1.3 mm; webbing 0/102 (012).
+
+## Method lessons (paid for — carry into every sculpt brief)
+
+- Gaussian-only profile smoothing (box filters band); map residuals in 2-D before
+  choosing filter radius; r=18 mm residual pass is the proven deband tool.
+- cyl_fair / nearest-bin corrugates oblique surfaces; ring_fix with σ along axis only.
+- Fix defects by smoothing the ROUND'S OWN delta field vs its backup, not the surface.
+- Landmarks: accumulate ALL into one scalar field, blur once, displace once; planes as
+  a SECOND field after refresh. Widen + taper polyline ends or you get "coat hanger".
+- Tier-1 numpy beats brushes for everything tried so far; no Tier-3 stroke needed yet.
+
+## Carried forward
+
+- Face: featureless mask + jaw/head horizontal band; nose absent; ears absent; eye
+  sockets + separate eyeball spheres REQUIRED (charter: rig-ready eyes). Head-sculpt
+  round owns all of it.
+- Pass-3 creases not done (clavicle hollows, sternal line, deltopectoral, inguinal V +
+  ligament, sartorius, glute fold, popliteal, Achilles flanks, wrist creases, lateral
+  knee grooves). Consider masked/local work — global remesh finer than 1.5 mm is heavy.
+- Knee silhouette: sheet wins (narrower than calf); knobbly read lives inside it.
+- 992k verts: residual passes 10–50 s each; prefer region masks over global ops.
 
 ## Progress page (DIRECTOR CHANGE 2026-08-02)
 
