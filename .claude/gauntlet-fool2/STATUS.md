@@ -23,8 +23,8 @@ being re-run, and run tooling now lives in the repo under
 |---|---|
 | References & blockout | DONE (r1–r4) |
 | Merge & sculpt | Pass 1 + Pass 2 DONE (r5–r13; Pass-2 closed by director ruling #2, debts logged); Pass-3 creases deferred |
-| Head sculpt | in progress (Round 14) |
-| Retopo (head, body) | — |
+| Head sculpt | DONE (Round 14; eye/mouth-read + jaw-band debts to retopo/materials) |
+| Retopo (head, body) | head retopo next (Round 15) |
 | Rigging | — |
 | Hair | — |
 | Clothes & accessories | — |
@@ -442,3 +442,56 @@ stands. (The belt region lives under the Fool's clothing layers in-game.) Next:
 **Round 14 — the head sculpt** (cranium/jaw refinement, brow, open eye sockets
 with separate rig-ready eyeballs — spec r=35 mm, IPD 86 mm, eye Z 1.571 m —
 nose, ears, mouth band, neck integration, manubrium debt).
+
+---
+
+## Round 14 — the head sculpt (2026-08-03)
+
+*Pass-2 closed by the director's issue-#2 ruling (belt logged as debt); the head
+round began the same hour. Three builder cycles, two of them full.*
+
+**Phase A (Codex, tooling):** head-zoom render rig (studio + true 30° rake —
+closing the R13 flat-light debt), drawn-face landmark table, eyeball/socket
+spec, 016 freeze-guard baseline. Lead-validated; one number later proved wrong
+(below).
+
+**Cycle 1 (Opus):** skull primary forms, manubrium debt (R9) closed, open
+sockets + separate rig-ready eyeballs, first nose/ears/mouth. **The round's key
+correction:** Phase A's eyeball depth (−48.6 mm) had been measured to the
+nose-root, not the cornea — the sheet's unused third registration circle gives
+−40.3 mm, confirmed by an independent sphere fit; the wrong number would have
+built a bug-eyed face. All hard gates green; blind judge 4/10 (ball-in-socket
+eyes, spike nose, muzzle read) → send back.
+
+**Cycle 2 (Opus):** muzzle reduced, chin to the drawn line, nose a proper small
+wedge, ears rebuilt as thin flaps, mass taper genuinely better. Two instrument
+findings now in the run's law: the contour lock was re-injecting the face bands
+from the drawn ink's own 2 mm pixel treads (fixed with a polynomial lock), and
+part of the "banding" was EEVEE shadow-map acne the Workbench pass never shows.
+Gates green again — but the blind score stayed **4/10**, same first order.
+
+| Before (016) | After (017, front) |
+|---|---|
+| ![before](renders/r14-before-front.png) | ![front](renders/r14-front.png) |
+| ![side](renders/r14-side.png) | ![3/4 rake](renders/r14-three-quarter-rake.png) |
+
+**The diagnosis that ends the round:** cycle 2 passed every geometric gate
+while failing the read because the station gates measure per-height *extremes*
+— the midline profile and outer contour both sit on the drawn ink while the
+cheeks off-midline stay slab-flat. The instrument that sees it (horizontal
+plan-view sections) is now built and in tooling. Cycle 3 attempted the wedge
+reshape, died 20 minutes in, and its sole unvalidated candidate rendered as a
+destroyed face (features wiped) — rejected on sight; the no-credit rule held.
+
+**Round verdict: CLOSED on the cycle-2 candidate — chain advances to
+`Fool-v2-017.blend`** per the pre-committed closure rule (blind score did not
+move above 4; the 80–90% clause applies). Won: skull forms, rig-ready eyes
+(director ruling satisfied), manubrium closed, freeze below z 1.30 exact,
+watertight, webbing 160/160. **Debts, stated plainly:** the eye does not yet
+read as the drawn open almond (hooded rims); the mouth is layered, not one
+crisp line; the off-midline cheek/jaw wedge remains unbuilt; the z ≈ 1.485 jaw
+band (inherited from r12) survives; socket clearance 1.09 mm vs the 2 mm
+suggestion. Eye/mouth/wedge debts go to head retopo + materials, which own the
+face edge loops and the iris/lash graphics a gray sculpt can never show a
+blind judge. *(The director closed the Blender GUI this round; renders here
+remain the viewing channel — no GUI reload was performed.)*

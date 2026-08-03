@@ -260,6 +260,35 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
   smooth polynomial locks); EEVEE rake shows shadow-map acne Workbench does
   not — never chase stripes only the rake shows.
 
+## ROUND 14 CLOSED (2026-08-03): head sculpt → chain Fool-v2-017.blend
+
+- **Chain = workdir Fool-v2-017h.blend (cycle 2)**, promoted per the 037a326
+  pre-commitment (cycle 3 did not move the blind score above 4). Verified at
+  promotion: body 1,012,055 v watertight, freeze below z 1.30 exact 0.000 mm,
+  contours ≤1.71 mm vs ±3, crown 1.716964, webbing 160/160, Fool_Eye_L/R at
+  (±0.043, −0.0403, 1.571) r=35 mm separate/closed, backups prehead +
+  prepass2e + c1feat present.
+- WON: skull primary forms; manubrium R9 debt CLOSED; rig-ready eyes
+  (director ruling satisfied); nose; chin on the ink; eyeball-Y correction
+  (−40.30 not −48.6 — Phase A had measured the nose-root; third registration
+  circle + sphere fit agree; ratified).
+- **DEBTS (blind 4/10 recorded honestly):** eye read (hooded rims, not the
+  drawn open almond); mouth read (layered, not one crisp line); off-midline
+  cheek/jaw WEDGE unbuilt (plan-section instrument exists: seclib/w0_sections
+  in workdir scripts, promote at R15 kickoff if used); jaw band z≈1.485
+  (inherited r12, needs a chain-level pass); socket clearance 1.09 mm vs 2 mm
+  suggestion (rigging stage adjudicates); ear mass slightly heavy. Eye/mouth/
+  wedge → head-retopo + materials stages.
+- Cycle 3 died at ~20 min; its sole candidate 017i rendered as a destroyed
+  face (wedge field wiped features) — REJECTED on sight, retained in workdir.
+  No-credit rule held: nothing unvalidated advanced.
+- **GUI:** director CLOSED the Blender GUI mid-round; the post-promotion GUI
+  reload is retired until further notice — STATUS.md renders are the viewing
+  channel; we may open Blender ourselves if a step genuinely needs it (say so
+  in the report first).
+- R15 = head retopo (pipeline order). The face edge loops built there own the
+  eye/mouth read debts; materials own iris/lash graphics.
+
 ## Progress page (DIRECTOR CHANGE 2026-08-02)
 
 - Artifact abandoned per updated charter (none was ever published — change arrived
