@@ -282,6 +282,37 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
 - Cycle 3 died at ~20 min; its sole candidate 017i rendered as a destroyed
   face (wedge field wiped features) — REJECTED on sight, retained in workdir.
   No-credit rule held: nothing unvalidated advanced.
+
+## ROUND 14 AMENDMENT (2026-08-03, ~1 h after closure): cycle 3 was ALIVE
+
+- The "cycle 3 died" call above was WRONG: the builder's session survived the
+  lead's stop and completed later. 017i was an internal save mid-wedge (the
+  destroyed face was its un-refined first pass — the on-sight rejection was
+  still correct for that file). Final delivery: **Fool-v2-017k.blend**
+  (017i wedge → 017j features → 017k ears).
+- Lead validation + blind judge re-run: gates all green and ≥ 017h on every
+  axis (freeze 0.000, contours ≤1.85, crown 1.716964, webbing 160/160,
+  watertight Euler 2, socket clearance 1.28 best-of-run); plan-section
+  exponent p 2.05→1.41 (muzzle objectively fixed); mouth one crisp 64 mm
+  line; nose 9.5 mm; ears thinned. Blind score **4/10 — flat for the third
+  time** → the 037a326 closure stands; only the carrier changes.
+- **CHAIN AMENDED: Fool-v2-018.blend = workdir Fool-v2-017k.blend.**
+  (Chain Fool-v2-017.blend = 017h remains as the record of the first
+  promotion; retopo candidates renumber to 019a+.)
+- New paid-for lessons: C1 smoothstep envelopes WRITE bands at head scale
+  (6A/W² vs head curvature) — use C∞ envelopes on faces; the z≈1.51 line is
+  a voxel-remesh terrace in inherited topology (curvature already 3/m vs 016's
+  20/m; tangential relaxation moves 0.018 mm) — only retopo/finer remesh can
+  kill it. PROCESS: never declare a background builder dead without checking
+  for its transcript/liveness; 017i taught that an unvalidated mid-save is
+  not the builder's verdict.
+- **LEAD RULING — eye globe-vs-face conflict (builder escalation):** globe
+  stays r = 35 mm at the ratified centres (the rig-ready director ruling and
+  aperture width depend on it). Resolution = option (c): build the ORBITAL
+  REGION forward/outward to the drawn front width at eye rows (sheet cranium
+  half-width ≈ 93 mm at row 126 — the drawing IS broad at eye height; the
+  wedge applies below the cheekbone only). Owned by R15 Phase B (lid loops +
+  orbital fill in the retopo), not another sculpt cycle.
 - **GUI:** director CLOSED the Blender GUI mid-round; the post-promotion GUI
   reload is retired until further notice — STATUS.md renders are the viewing
   channel; we may open Blender ourselves if a step genuinely needs it (say so

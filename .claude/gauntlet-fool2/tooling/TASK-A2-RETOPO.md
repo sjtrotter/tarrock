@@ -3,7 +3,7 @@
 Mechanical phase: NO face-loop judgment — projection + instrumentation only.
 Binding: `R15-BRIEF.md` (same dir). Read `/home/betty/tarrock-gauntlet-work/fool2-r15/DONOR-REPORT.md`
 first. Work ONLY under `/home/betty/tarrock-gauntlet-work/fool2-r15/`.
-Chain source (SACRED, read-only): `/home/betty/Projects/tarrock/docs/design/3d-models-inwork/Fool-v2-017.blend`
+Chain source (SACRED, read-only): `/home/betty/Projects/tarrock/docs/design/3d-models-inwork/Fool-v2-018.blend`
 (body `Fool_SculptBase`; eyes Fool_Eye_L/R separate — leave untouched).
 Donor: `fool2-r15/donor/donor_skin_only.blend` (3,070 v, faces −Y already).
 
@@ -40,7 +40,7 @@ thermal zone < 90000.
      sculpt outline vs wrapped-donor outline per height, PNG per section);
    - wireframe-over-shaded renders, front + side + three-quarter (reuse
      head_render.py framing).
-6. **Save:** `Fool-v2-018a.blend` in the workdir: wrapped head object named
+6. **Save:** `Fool-v2-019a.blend` in the workdir: wrapped head object named
    `Fool_HeadRetopo_draft`, plus the untouched chain objects (link or append —
    state which; the chain FILE is never written). `REPORT-A2.md` (≤100 lines)
    + `r15-a2-validation.json` with every number above.
@@ -49,3 +49,13 @@ thermal zone < 90000.
 Real numbers from real runs only; a masked-region collapse, a registration
 that will not converge, or a projection artifact is a REPORTED finding, not a
 silent fix. The lead validates before Phase B.
+
+## RE-RUN NOTE (lead, post-amendment)
+A previous A2 run executed against the superseded chain head (017h) and was
+killed at lead level; its outputs were moved to `a2-dryrun-017h/`. Treat them
+as a method reference only — every number must be re-produced against chain
+`Fool-v2-018.blend` (the amended cycle-3 head: wedge face, one-line mouth,
+thinner ears). Additional Phase-B context you must record for the report: the
+lead's eye ruling — globe stays r=35 mm; the retopo's orbital region builds
+OUT to the drawn width at eye rows; and the z≈1.51 sculpt line is a remesh
+terrace your retopo surface should simply not reproduce.

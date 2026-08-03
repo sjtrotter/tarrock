@@ -2,7 +2,7 @@
 
 Lead, 2026-08-03. Research: R15-RESEARCH-RETOPO.md (same dir) — its findings are
 adopted as lead rulings below. Workdir `/home/betty/tarrock-gauntlet-work/fool2-r15/`.
-Source: chain `Fool-v2-017.blend` (body `Fool_SculptBase` 1,012,055 v watertight;
+Source: chain `Fool-v2-018.blend` (body `Fool_SculptBase` 1,012,034 v watertight — AMENDED chain, cycle-3 wedge head;
 `Fool_Eye_L/R` r=35 mm at (±43, −40.3, 1571) mm; 1 u = 1 m, faces −Y, X mirror).
 
 ## Lead rulings (logged per charter; industry-standard defaults)
@@ -48,7 +48,7 @@ Source: chain `Fool-v2-017.blend` (body `Fool_SculptBase` 1,012,055 v watertight
 
 ## Protocol (unchanged)
 One Blender lane; governor slots before every run (PAUSE → 15 s poll);
-loadavg < 6; temp < 90 °C; candidates `Fool-v2-018*.blend` in the workdir;
+loadavg < 6; temp < 90 °C; candidates `Fool-v2-019*.blend` in the workdir;
 chain promotion only after lead validation; blends uncommitted; GUI stays
 closed (director) — renders are the channel; never touch `../r14`'s sibling
 dirs of the other session (`fool2-*` only); honest partials beat overreach.

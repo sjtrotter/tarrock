@@ -495,3 +495,28 @@ suggestion. Eye/mouth/wedge debts go to head retopo + materials, which own the
 face edge loops and the iris/lash graphics a gray sculpt can never show a
 blind judge. *(The director closed the Blender GUI this round; renders here
 remain the viewing channel — no GUI reload was performed.)*
+
+### Round 14 amendment — cycle 3 finished after all (chain → `Fool-v2-018.blend`)
+
+The cycle-3 builder had not died — its session survived a lead handover and
+delivered an hour after the round closed. Its wedge instrument fits each
+horizontal head section to a superellipse; the exponent *p* is exactly the
+degree of freedom the station gates cannot see. Cycle 2's face measured as an
+ellipse at every height (*p* ≈ 2.0 — the "muzzle" verbatim); the delivered
+`Fool-v2-017k` takes the lower face to *p* = 1.41–1.47 (an egg pointed at the
+face) with the station gates untouched by construction. Mouth rebuilt as one
+crisp 64 mm line, nose halved to a soft wedge, ears thinned, socket clearance
+the best of the round — and the blind judge still scores **4/10, flat across
+all three cycles**, so the pre-committed closure stands; only the carrier
+changes: **the chain advances to `Fool-v2-018.blend` (= 017k)**, and Round 15
+retopo builds on it. Two lessons enter the run's law: C1 smoothstep envelopes
+mathematically write bands at head curvature (all face envelopes are now C∞),
+and the surviving z ≈ 1.51 line is a voxel-remesh terrace only retopo can
+kill. The eye's globe-vs-face conflict got a lead ruling: the globe stays
+r = 35 mm; the orbital region builds out to the drawn width in the retopo's
+lid work (the drawing is broad at eye height — the wedge applies below the
+cheekbone).
+
+| 017k front | 017k side | 017k 3/4 rake |
+|---|---|---|
+| ![front](renders/r14k-front.png) | ![side](renders/r14k-side.png) | ![tq](renders/r14k-tq-rake.png) |
