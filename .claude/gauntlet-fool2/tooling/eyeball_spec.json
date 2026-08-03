@@ -1,0 +1,51 @@
+{
+  "source_sheet": "Fool-Tpose-ModelSheet-v7.png",
+  "source_mesh": "Fool-v2-016.blend",
+  "sphere_radius_m": 0.035,
+  "centers_m": [
+    [
+      -0.043,
+      -0.048632044999999985,
+      1.571
+    ],
+    [
+      0.043,
+      -0.048632044999999985,
+      1.571
+    ]
+  ],
+  "drawn_cornea": {
+    "row_px": 152.5,
+    "side_col_px": 924.5,
+    "surface_y_m": -0.08363204499999999,
+    "confidence": "HIGH"
+  },
+  "current_face_surface_y_m": {
+    "left": -0.07439452409744263,
+    "right": -0.07434827089309692,
+    "method": "ray from (x,-1,z) toward +Y; first hit"
+  },
+  "socket_geometry": {
+    "sphere_front_y_m": -0.08363204499999999,
+    "center_recession_behind_current_surface_m": {
+      "left": 0.025762479097442642,
+      "right": 0.02571622589309694
+    },
+    "sphere_front_minus_current_surface_m": {
+      "left": -0.009237520902557361,
+      "right": -0.009283774106903064
+    },
+    "interpretation": "negative front-minus-surface means the drawn cornea/sphere projects forward (-Y); center recession is depth from current face surface to eye center"
+  },
+  "lateral_skull_wall_x_m": {
+    "left": -0.08740410208702087,
+    "right": 0.08741295337677002
+  },
+  "lateral_clearance_m": {
+    "left": 0.009404102087020874,
+    "right": 0.00941295337677002
+  },
+  "midline_gap_between_spheres_m": 0.015999999999999986,
+  "geometrically_impossible": false,
+  "flags": []
+}

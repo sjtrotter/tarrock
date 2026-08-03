@@ -1,0 +1,316 @@
+{
+  "source": "/home/betty/Projects/tarrock/docs/design/3d-models-inwork/Fool-Tpose-ModelSheet-v7.png",
+  "scale_m_per_px": 0.00201523,
+  "front_anchor_px": [
+    452,
+    932
+  ],
+  "side_anchor_px": [
+    966,
+    932
+  ],
+  "method": "PIL crop, repaired blue-guide rows, thresholded drawn ink line scans in tight face ROIs",
+  "guide_rows_detected": [
+    78,
+    144,
+    158,
+    159,
+    185,
+    186,
+    228,
+    229,
+    276,
+    277,
+    301,
+    302,
+    400,
+    401,
+    514,
+    515,
+    659,
+    824,
+    825,
+    929,
+    930
+  ],
+  "landmarks": [
+    {
+      "name": "brow_line",
+      "confidence": "HIGH",
+      "reason": "",
+      "px": {
+        "row": 135
+      },
+      "world_mm": {
+        "z": 1606.138
+      }
+    },
+    {
+      "name": "left_eye_aperture",
+      "confidence": "HIGH",
+      "reason": "",
+      "px": {
+        "inner_col": 441,
+        "outer_col": 413,
+        "top_row": 143,
+        "bottom_row": 166
+      },
+      "world_mm": {
+        "inner_x": -22.168,
+        "outer_x": -78.594,
+        "top_z": 1590.016,
+        "bottom_z": 1543.666
+      }
+    },
+    {
+      "name": "right_eye_aperture",
+      "confidence": "HIGH",
+      "reason": "",
+      "px": {
+        "inner_col": 463,
+        "outer_col": 491,
+        "top_row": 143,
+        "bottom_row": 166
+      },
+      "world_mm": {
+        "inner_x": 22.168,
+        "outer_x": 78.594,
+        "top_z": 1590.016,
+        "bottom_z": 1543.666
+      }
+    },
+    {
+      "name": "nose",
+      "confidence": "LOW",
+      "reason": "tiny disconnected stylized strokes; bridge/tip/base assignment is approximate",
+      "px": {
+        "bridge_top_row": 177,
+        "tip_row": 181,
+        "base_nostril_row": 184
+      },
+      "world_mm": {
+        "bridge_top_z": 1521.499,
+        "tip_z": 1513.438,
+        "base_nostril_z": 1507.392
+      }
+    },
+    {
+      "name": "mouth",
+      "confidence": "HIGH",
+      "reason": "",
+      "px": {
+        "row": 190,
+        "left_col": 436,
+        "right_col": 468,
+        "width_px": 32
+      },
+      "world_mm": {
+        "z": 1495.301,
+        "left_x": -32.244,
+        "right_x": 32.244,
+        "width": 64.487
+      }
+    },
+    {
+      "name": "chin",
+      "confidence": "HIGH",
+      "reason": "",
+      "px": {
+        "row": 212
+      },
+      "world_mm": {
+        "z": 1450.966
+      }
+    },
+    {
+      "name": "jaw_corner_front_left",
+      "confidence": "LOW",
+      "reason": "curved jaw has no sharp corner",
+      "px": {
+        "row": 194,
+        "col": 417
+      },
+      "world_mm": {
+        "z": 1487.24,
+        "x": -70.533
+      }
+    },
+    {
+      "name": "jaw_corner_front_right",
+      "confidence": "LOW",
+      "reason": "curved jaw has no sharp corner",
+      "px": {
+        "row": 194,
+        "col": 487
+      },
+      "world_mm": {
+        "z": 1487.24,
+        "x": 70.533
+      }
+    },
+    {
+      "name": "jaw_corner_side",
+      "confidence": "LOW",
+      "reason": "mandible angle is a broad curve",
+      "px": {
+        "row": 196,
+        "side_col": 975
+      },
+      "world_mm": {
+        "z": 1483.209,
+        "side_y": 18.137
+      }
+    },
+    {
+      "name": "ear_vertical",
+      "confidence": "HIGH",
+      "reason": "",
+      "px": {
+        "top_row": 142,
+        "lobe_row": 196
+      },
+      "world_mm": {
+        "top_z": 1592.032,
+        "lobe_z": 1483.209
+      }
+    },
+    {
+      "name": "ear_side_range",
+      "confidence": "HIGH",
+      "reason": "",
+      "px": {
+        "side_col_min": 979,
+        "side_col_max": 1005
+      },
+      "world_mm": {
+        "side_y_min": 26.198,
+        "side_y_max": 78.594
+      }
+    },
+    {
+      "name": "ear_front_extent_left",
+      "confidence": "HIGH",
+      "reason": "",
+      "px": {
+        "col": 395
+      },
+      "world_mm": {
+        "x": -114.868
+      }
+    },
+    {
+      "name": "ear_front_extent_right",
+      "confidence": "HIGH",
+      "reason": "",
+      "px": {
+        "col": 510
+      },
+      "world_mm": {
+        "x": 116.883
+      }
+    },
+    {
+      "name": "skull_back_max",
+      "confidence": "HIGH",
+      "reason": "",
+      "px": {
+        "row_min": 120,
+        "row_max": 135,
+        "side_col": 1026
+      },
+      "world_mm": {
+        "z_min": 1636.367,
+        "z_max": 1606.138,
+        "side_y": 120.914
+      }
+    },
+    {
+      "name": "cranium_max_half_width",
+      "confidence": "HIGH",
+      "reason": "",
+      "px": {
+        "row": 126,
+        "left_col": 405,
+        "right_col": 498
+      },
+      "world_mm": {
+        "z": 1624.275,
+        "left_x": -94.716,
+        "right_x": 92.701
+      }
+    },
+    {
+      "name": "neck_side_row_220",
+      "confidence": "HIGH",
+      "reason": "",
+      "px": {
+        "row": 220,
+        "side_col_front": 957,
+        "side_col_back": 1006
+      },
+      "world_mm": {
+        "z": 1434.844,
+        "side_y_front": -18.137,
+        "side_y_back": 80.609
+      }
+    },
+    {
+      "name": "neck_side_row_228",
+      "confidence": "HIGH",
+      "reason": "",
+      "px": {
+        "row": 228,
+        "side_col_front": 958,
+        "side_col_back": 1010
+      },
+      "world_mm": {
+        "z": 1418.722,
+        "side_y_front": -16.122,
+        "side_y_back": 88.67
+      }
+    },
+    {
+      "name": "neck_side_row_236",
+      "confidence": "LOW",
+      "reason": "back contour approaches shoulder junction",
+      "px": {
+        "row": 236,
+        "side_col_front": 958,
+        "side_col_back": 1014
+      },
+      "world_mm": {
+        "z": 1402.6,
+        "side_y_front": -16.122,
+        "side_y_back": 96.731
+      }
+    },
+    {
+      "name": "nose_tip_protrusion_side",
+      "confidence": "HIGH",
+      "reason": "outer profile line scan",
+      "px": {
+        "nose_tip_side_col": 912,
+        "brow_side_col": 922,
+        "delta_px": -10
+      },
+      "world_mm": {
+        "nose_tip_y": -108.822,
+        "brow_y": -88.67,
+        "protrusion_y": -20.152
+      }
+    },
+    {
+      "name": "side_cornea_surface",
+      "confidence": "HIGH",
+      "reason": "outer profile at pupil row 152.5",
+      "px": {
+        "row": 152.5,
+        "side_col": 924.5
+      },
+      "world_mm": {
+        "z": 1570.872,
+        "y": -83.632
+      }
+    }
+  ]
+}
