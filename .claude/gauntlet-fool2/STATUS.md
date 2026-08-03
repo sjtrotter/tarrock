@@ -13,6 +13,12 @@ retopo → rigging → hair → clothes & accessories → materials → Unity FB
 now the default builder-executor on a headless Blender lane, Claude reserved for lead
 validation and stage-close critique.)*
 
+*(2026-08-03 08:53: machine reboot destroyed the lead session mid-Round-13 and wiped
+/tmp — the in-flight R13 candidate and the run's scratchpad tooling are lost; the
+chain is intact through `Fool-v2-015.blend`. A successor lead has resumed; R13 is
+being re-run, and run tooling now lives in the repo under
+`.claude/gauntlet-fool2/tooling/` so a reboot can never orphan a round again.)*
+
 | Stage | Status |
 |---|---|
 | References & blockout | in progress (body done; arms/hands/neck next) |

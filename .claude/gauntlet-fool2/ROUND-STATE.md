@@ -17,8 +17,12 @@ Run started: 2026-08-02. Lead: Fable (this file is the resume point).
 - **Builder/critic tiers:** Opus builders for geometry; critics = fresh-context Opus
   (for Sonnet-built pieces) or Fable-lead + Codex CLI cross-model blind judge (for
   Opus-built pieces). Codex at every stage-close A/B.
-- Renders + critique material live in the session scratchpad:
-  `/tmp/claude-1000/-home-betty-Projects-tarrock/7cce5e4f-011d-4c4e-83f9-09af7152fd70/scratchpad/`
+- **TOOLING PERSISTENCE (standing rule, 2026-08-03, after the reboot loss):** /tmp is
+  volatile — irreplaceable run tooling (build/measure libs, briefs, metrics/station
+  tables, probe sets) lives under `.claude/gauntlet-fool2/tooling/` in the repo, kept
+  current in the same round it is created or changed. Only bulky intermediates
+  (renders, logs, throwaway workdirs) may stay in the session scratchpad, and
+  anything a future round would need must be promoted before round close.
 
 ## Chain
 
@@ -98,6 +102,15 @@ Run started: 2026-08-02. Lead: Fable (this file is the resume point).
 - Critic's measured RMS map (r12): upper arm 2.03 · abdomen 4.33 · PSIS 5.16 ·
   clavicles 6.16 · belt 8.94 · costal arch 9.74 (reads as scored line).
 
+## DIRECTOR CHANNEL (order 2026-08-03 — charter §Director channel)
+
+Director-only decisions (canon, unsettled quality-vs-scope, hard blockers): open a
+GitHub issue on sjtrotter/tarrock (`gh issue create`) with question + options +
+recommendation, @sjtrotter in the BODY. Keep unblocked work moving; poll
+`gh issue view <n> --comments` at ≥5 min intervals (light lane, throttle rules).
+On ruling: acknowledge on the issue, apply, record here, close. Ordinary judgment
+calls stay with the lead.
+
 ## REGIME CHANGE (director order 2026-08-03 — charter §Usage economy)
 
 - Codex CLI (`codex exec`) = DEFAULT executor for builder/grunt work, driving
@@ -106,7 +119,21 @@ Run started: 2026-08-02. Lead: Fable (this file is the resume point).
 - Claude agents ONLY for: lead planning/validation, stage-close critique, pieces
   Codex failed twice. Lean briefs, lean narration.
 
-## ROUND 13 (next, Codex-executed): amplitude turn-up
+## REBOOT LOSS (2026-08-03 08:53) — lead succession
+
+- Machine reboot destroyed the previous lead's session mid-Round-13. /tmp wiped:
+  the r7–r12 scratchpad tooling libs (r10lib/r11lib/r12lib/r12build, station
+  tables, webbing probe set), the r13 workdir, and the un-promoted R13 candidate
+  016 + its corrective pass are GONE. Chain intact through **Fool-v2-015.blend**
+  (992,787 v, watertight, proportions certified) — nothing after 015 survives.
+- The R13 builder brief was recovered verbatim into
+  `tooling/R13-BRIEF.md` (with [LOST] annotations). **R13 must be RE-RUN**: the
+  dead lead's Codex builder self-reported guard passes but the candidate and
+  report were never validated and no longer exist — no credit is carried.
+- New lead (this session) resumes under the same charter, regime, and gate
+  pre-commitment (commit 7fab0ad). Tooling-persistence rule adopted (above).
+
+## ROUND 13 (RE-RUN, Codex-executed): amplitude turn-up
 
 Pre-committed lead gate: R13 = (1) torso plane contrast ×2–3 (same shapes, more
 gain; abdomen especially), (2) kill the belt (break at spine, fade laterally, RMS
