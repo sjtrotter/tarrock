@@ -2,7 +2,7 @@
 
 The Longroad ran level and pale under an unmoving sky, and for the first stretch of it she rode.
 
-She had not known she could, until she tried it: a thought, half a wish, the shape of reins in an empty hand — and the Chariot answered, the way Triumph had promised it would, an outline of gold dust and old momentum gathering into something with a back broad enough to sit on and a gait like a held breath let out slowly. It did not need to be fed, or thanked, or believed in particularly hard. It simply came when called, all down the long grey ring of road with its bleached banners and its three-hundred-year procession creaking along somewhere off to the south, forever almost arriving nowhere.
+She had not known she could, until she tried it: a thought, half a wish, the shape of reins in an empty hand — and the Chariot answered, the way Triumph had promised it would, an outline of gold dust and old momentum gathering into something with a back broad enough to sit on and a gait like a held breath let out slowly. It did not need to be fed, or thanked, or believed in particularly hard. It simply came when called, all down the long grey ring of road — and away to the south the war-train lay where it had been stopped, a mile of bleached banners folded down over stilled carriages, its marchers gone off wherever pleased them, nothing in front of it any more that it had to almost arrive at.
 
 Pip rode the first half-mile sitting bolt upright between her knees like visiting royalty, then got bored of dignity and ran instead, a small white flag out ahead of her the whole way north-east.
 
@@ -108,9 +108,9 @@ The Fool was quiet a moment, turning that over the way she turned over most thin
 
 Fettle's composure did something complicated and did not fully recover it. "A roll I can't call." Her gloved hand closed, briefly, on nothing. "One honest throw where the wheel owes me nothing at all. I'd sooner be cursed, if you must know — at least the cursed know how their story goes."
 
-"Keep your coins," the Fool said. "I've nowhere to spend them."
+She was waiting, the Fool understood then, to be bargained with — for a purse to be named, a price to be found, some familiar shape the moment could be persuaded to take. The Fool had nowhere to spend a coin and no idea how to say so kindly, and so said nothing at all.
 
-"...No." Fettle's laugh had no humour in it whatsoever. "No, of course you haven't. What a horrifying thing you are — a card with nothing at all to lose. There's no thumb heavy enough for those dice."
+"...No." Fettle's laugh had no humour in it whatsoever. "No, of course not. What a horrifying thing you are — a card with nothing at all to lose. There's no thumb heavy enough for those dice."
 
 She did not physically bar the door. She could not; luck had never made her strong, only comfortable, and she stepped aside, and her voice dropped, on the way past, to something almost honest.
 
@@ -212,7 +212,7 @@ She thought about that, walking out with a fifth rose petal at her belt and an e
 
 *Don't do the arithmetic tonight*, said the Querent, and there was less of the dry showman in it than usual. *Do it tomorrow. Or don't do it at all. There's rarely a good hour for that particular sum.*
 
-The road west ran level and quiet, the procession's dented trumpets fading behind her, and far off on the horizon a forest stood up strange against the unmoving sky: a long dark treeline, every leaf on it hanging the wrong way, downward from the underside of every bough, as if the whole wood had been picked up once and set back down inside out.
+The road west ran level and quiet, the halted train a pale folded seam along the southern edge of everything behind her, and far off on the horizon a forest stood up strange against the unmoving sky: a long dark treeline, every leaf on it hanging the wrong way, downward from the underside of every bough, as if the whole wood had been picked up once and set back down inside out.
 
 The Axis glittered at the world's edge, small and silver and patient, and did not stop turning while she watched it, which she still, after eight cards, had not entirely got used to.
 

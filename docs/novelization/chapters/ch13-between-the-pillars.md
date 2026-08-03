@@ -344,8 +344,8 @@ Blanks whisper, and see what the world hides, and slip behind the veil when stru
 these powers safe for three hundred years by refusing to use them." A pause, almost wry.
 "Do the opposite. It suits you better."
 
-The card went into the second pocket behind her heart, the willed one, and settled as
-though the seam had been waiting for it.
+The card went into the coat with the others, disturbing nothing that was already sitting
+where it belonged, and settled as though the lining had been waiting for it.
 
 *  *  *
 

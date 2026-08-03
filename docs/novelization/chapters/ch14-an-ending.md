@@ -192,7 +192,7 @@ Bettony Marsh's grip tightened. Not gently. She did not appear to know she had d
 
 "Is he in pain?"
 
-"Pain?" Gaffer Corlin's mouth moved. "No, lad. Worse than pain. *Boredom.* Do you know how long three hundred years is when you're too tired to sit up and too stubborn to stop?" A rattle of breath that was unmistakably amusement. "Don't answer. You'll find out soon enough, if you botch this."
+"Pain?" Gaffer Corlin's mouth moved. "No, girl. Worse than pain. *Boredom.* Do you know how long three hundred years is when you're too tired to sit up and too stubborn to stop?" A rattle of breath that was unmistakably amusement. "Don't answer. You'll find out soon enough, if you botch this."
 
 The Fool looked at the two of them: the man who had been ready for a century, the woman who had held him here, and the space between their hands where the thing that should have settled it had been locked shut since before either of them was born.
 
@@ -250,9 +250,9 @@ She lay in four inches of black water and looked up at a sky with nothing in it.
 
 "That's the one," Mortimer called, not unkindly, not moving. "That's the one to live by. Learn it now, friend. I'll not stop showing it to you."
 
-She got up. The water ran off her and the rings it should have made were not there. She spent a petal — felt the white leaf go, and the deep ache in her ribs go with it, and five left where six had been and nothing in this region that would ever give them back — and went at him again, and this time when he half-stepped she was not there to be pulled.
+She got up. The water ran off her and the rings it should have made were not there. She spent a petal — felt the white leaf go, and the deep ache in her ribs go with it, and five left where six had been and nothing between here and the Waystation that would give them back — and went at him again, and this time when he half-stepped she was not there to be pulled.
 
-It went on a long time, and there were no tricks in it. That was what she kept finding, the way a foot keeps finding a step that isn't there: no gimmick to spot, no rose wilting in a buttonhole, no tired one among nine, no lie in the machinery underneath. Twice she reached for the Hermit's lantern in the near pocket, because a raised light had solved four regions for her, and twice she got it up and blazing and it did nothing whatever but throw her own enormous shadow across the sand, there being nothing hidden anywhere on that shore to reveal. The second time she caught the look on his face — pure sympathy, as at a child trying a door that was never locked — and let the light go out, and did not reach for it again.
+It went on a long time, and there were no tricks in it. That was what she kept finding, the way a foot keeps finding a step that isn't there: no gimmick to spot, no rose wilting in a buttonhole, no tired one among nine, no lie in the machinery underneath. Twice she reached for the Hermit's lantern in the near pocket, because a raised light had solved two regions for her, and twice she got it up and blazing and it did nothing whatever but throw her own enormous shadow across the sand, there being nothing hidden anywhere on that shore to reveal. The second time she caught the look on his face — pure sympathy, as at a child trying a door that was never locked — and let the light go out, and did not reach for it again.
 
 So it was hands and feet and the length of a stick against a farmer with a farmer's tool, and there was nothing else in the world.
 

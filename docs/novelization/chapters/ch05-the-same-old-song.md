@@ -282,14 +282,14 @@ is *for*."
 that has never wobbled. You are new, and the new mishear — that is not a sin, it is merely
 a lack, and the hour is patient with lacks. Come. Let it correct you."
 
-He said it with the practiced patience of a man who had corrected ten thousand novices and
+He said it with the practised patience of a man who had corrected ten thousand novices and
 feared not one of them — over the smallest flicker of something that was not patience at
 all, gone before it could properly be named.
 
 Then the wobble she'd bought him, pipe by pipe, roof by roof, opened its first true gap in
 his guard, and she stepped into it.
 
-The fight kept the hymn's own time. His attacks came in strict meter, organ-stabs that
+The fight kept the hymn's own time. His attacks came in strict metre, organ-stabs that
 struck the floor's inlaid staves like struck strings, a sweeping chord that crossed the
 whole drum in a wave she had to duck under on the beat and rise from on the gap; twice
 more bell-headed figures rose out of the tiered stone at his call and had to be silenced —
@@ -375,9 +375,9 @@ may cross, and one litany for when your last petal's spent." He set it into her 
 folded her fingers closed over it. "Take it. A rite's only ever been a kindness people
 forgot to stop performing. Perform it better than I did."
 
-She opened her coat and slid it into the pocket the Chantry's own hour had somehow always
-been waiting to fill, and felt the small, exact click of a truth she would now be able to
-carry on purpose.
+She folded it away in the Bindle beside Union, loose, unslotted, because her small sewn
+spread still had only the two pockets filled — and felt all the same the small, exact
+weight of a truth she would now be able to carry on purpose.
 
 *  *  *
 

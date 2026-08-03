@@ -354,8 +354,8 @@ made to carry each other instead — that was always the whole of my craft. Take
 held the balance long enough. Somebody ought to get to *use* it, instead of just *being*
 it."
 
-The Fool took it, and felt it settle into the coat's third pocket the way the others
-always did — a small private weight, exact.
+The Fool took it, and felt it settle into the coat with the rest of them, changing nothing
+that was already where it belonged — a small private weight, exact.
 
 *  *  *
 
@@ -403,6 +403,13 @@ watch it being built again. Nobody'll ever lay the morning stone." He wasn't ang
 bereft, and gentle about it. "I'm not sorry you did what you did, understand. The world
 had to turn. I just — I mourn the *finishing* of it. Not the work. The end of the work. Is
 that a foolish thing to grieve?"
+
+"What will you build now?"
+
+"Something that can be *finished*, I suppose. Terrifying thought." He put his hand on the
+trowel at his belt and did not take it out. "What I'd want is a bridge that stays half-done,
+to practise on." Something came most of the way up to a laugh and stopped short of it.
+"There aren't any left."
 
 "It wasn't nothing."
 

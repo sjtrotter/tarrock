@@ -17,8 +17,11 @@ afterward. Rules:
 
 1. Third person limited on the Fool, in the Querent's voice. The narrator is fond,
    knowing, a little evasive about where it's all going — exactly the Fable-narrator
-   energy of `characters.md` §The Querent. The narrator may address the reader briefly
-   ("you would have liked her, I think") but sparingly — at most once or twice a chapter.
+   energy of `characters.md` §The Querent. The narrator's first-person "I" and brief
+   reader-addresses ("you would have liked her, I think") are present from page one —
+   they are the buried identity leaking, and they are deliberate. Use them sparingly
+   and only where they earn their place: a handful per chapter at most, never as filler,
+   and never in chapter 14 (where the narrator withdraws entirely).
 2. **The narrator knows the ending and is afraid of it.** Foreshadowing is allowed and
    encouraged, but always deflected with dry warmth ("but that comes later, and I am in
    no hurry to get there").
@@ -36,8 +39,9 @@ afterward. Rules:
      quiet without being told why.
    - Chapter 22 (the Axis) — the narration cuts off mid-sentence at the wreath line,
      exactly as the Querent's voice does in MQ21, and the chapter continues in bare,
-     close, present-tense third person until the Reading scene, where the narrator
-     returns — in first person, "I", for the first time in the book.
+     close, present-tense third person — the narrator's "I", present since page one,
+     withdrawn since the cutoff — until the Reading scene, where the voice returns in
+     open first person and the book's narrator is revealed.
 
 ## The Fool of this playthrough
 

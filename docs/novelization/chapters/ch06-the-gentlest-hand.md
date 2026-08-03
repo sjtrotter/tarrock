@@ -132,9 +132,8 @@ take. And you let it walk off like it cost nothing at all."
 "They all want to live. That's not a reason up here. That's just the sound they make." He
 stood a moment, watching the empty scree, and then something in his shoulders let go — not
 agreement, quite, but adjacent to it — and he picked his spear back up. "Gentle's a fine thing
-to spend when it's not your winter you're spending it out of." A grudging pause. "Frightened's
-not the same as free, mind. But I'll say this — that bear'll live to be frightened another day,
-which is more than I'd have given it an hour back."
+to spend when it's not your winter you're spending it out of." A grudging pause. "Slow work,
+that, mind. I'll give you the arms for it. Not many'd have stayed down that long."
 
 He did not follow further. At the shelf's edge, where his ground ended, he stopped and looked
 up at the small far shape on the ridge.

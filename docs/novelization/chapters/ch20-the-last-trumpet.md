@@ -38,7 +38,7 @@ anything of it.
 
 "You'll be for down there, then." He nodded off the ring, east and inward, where a long
 grassed road dropped out of sight between two shoulders of hill. He knew what she was;
-everybody did now, and had since the marsh. "It's not a frightening place. Only very tidy,
+everybody did now, and had since the Stillmarsh. "It's not a frightening place. Only very tidy,
 and nobody living in it, and it's been waiting a long time on something that hasn't come."
 
 She shouldered the Bindle and whistled the dog off his boot.

@@ -12,7 +12,7 @@ Further in, a whole glade hung the wrong way about — roots combing at a sky th
 
 She let the Bindle down slowly, the way you let down a hand you've been holding over a flame — not sure yet the flame has gone.
 
-Nothing came out of the trees to punish her for it. A squirrel went by along the underside of a bough at a brisk, unbothered trot, entirely unconcerned that its floor and ceiling had swapped places three hundred years back. Pip watched it go, faintly scandalized, and then sat, and kept watching.
+Nothing came out of the trees to punish her for it. A squirrel went by along the underside of a bough at a brisk, unbothered trot, entirely unconcerned that its floor and ceiling had swapped places three hundred years back. Pip watched it go, faintly scandalised, and then sat, and kept watching.
 
 She looped the staff back onto the Bindle. It felt like taking off a coat she hadn't known she was wearing.
 

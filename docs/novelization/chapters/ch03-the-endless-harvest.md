@@ -222,8 +222,8 @@ past reading, bloated soft on three centuries of unharvested plenty.
 They came at her without hurry, which was worse than speed. She met the first clean, and
 felt the world slow by half a beat, a held breath she was learning was hers to spend, and
 stepped inside a lurching swing the way she'd stepped inside a soldier's on the Cliff, a
-lifetime and three days ago. She did not call the reaching hand often; it cost a thread of
-daring, spent and needing to be earned back. Twice, when a blow came too fast to duck
+lifetime and three days ago. She did not call the reaching hand often; it spent Fortune,
+and Fortune came back to her only by daring. Twice, when a blow came too fast to duck
 honestly, she felt for it anyway — closing on a shoulder and hauling it off balance, just
 enough for the Bindle to finish what her hands alone could not. Pip worked the stragglers
 with brisk economy, herding two into a low bough that showered them in apples and briefly
@@ -341,8 +341,8 @@ stay, kindness *moves you along*—"
 
 She did not finish it aloud. The last crown-rose, trembling at the southern face, put out
 every lash-vine it had left, all at once. She fought it with her arms shaking and the Rose
-down to its final petal, spending the ghost-reach twice more, a thread not yet earned back,
-spent anyway because there was nothing left worth being careful with. The last blow landed
+down to its final petal, spending the ghost-reach twice more on Fortune she had not yet dared
+back, spent anyway because there was nothing left worth being careful with. The last blow landed
 clean. The final crown-rose parted at its root with a long, tearing sigh, and the whole roof
 of the bower came down at once, and full daylight reached the Briar Throne from top to
 bottom for the first time since the Stall.

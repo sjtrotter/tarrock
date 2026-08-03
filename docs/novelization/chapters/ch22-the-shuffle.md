@@ -20,7 +20,7 @@ The Hollows had been a graveyard when she first saw it, and it was a garden now:
 bank of turned earth gone over to flowers, every grave shut and green, the grass between
 them shaggy with the untidy energy of ground that has nothing left in it wanting tending.
 Late roses. Bindweed having a marvellous time. A carved trumpet lying flat in the grass
-where somebody finished with it had laid it down, with two nights of dew on it, and a
+where somebody finished with it had laid it down, with the world's first dew on it, and a
 snail.
 
 Nobody stopped her. That is worth saying plainly, because everybody wanted to.
@@ -177,27 +177,30 @@ version of this image on a hundred banners and a hundred coins and it has always
 doing something — turning, looping, catching, the same half-second of it forever. This one
 is only a picture of a man who did a good trick once.
 
-The Empress after it, throne and orchard, still. The Lovers, and nobody choosing, because
-the choosing is done. The Hierophant with his bells hanging at rest. Strength with her
-hand on a lion's jaw, and the lion asleep. The Chariot stopped. The Emperor's stone chair.
-The Wheel, at no number at all. The Hanged Man, upside down and comfortable about it. The
-Hermit's lamp burning low and not walking anywhere. Justice with her scales level and
-empty.
+The High Priestess after it, between her pillars, closed like a book that was read. The
+Empress, throne and orchard, still. The Emperor's stone chair. The Hierophant with his
+bells hanging at rest. The Lovers, and nobody choosing, because the choosing is done. The
+Chariot stopped. Strength with her hand on a lion's jaw, and the lion asleep. The Hermit's
+lamp burning low and not walking anywhere. The Wheel, at no number at all.
 
 She walks it. There is nothing to fight and nothing to pick up and nowhere to turn aside,
 and the approach is long, and it is meant to be.
 
-The High Priestess between her pillars, closed like a book that was read. Death on his
-horse, going at a walk. Temperance pouring, and the cup underneath is full. The Devil, and
-the chains at his feet loose enough to lift over a head, as they always were. The Tower,
-landed. The Star. The Moon with the fog off it. Judgement's trumpet down. The Sun, going
-down.
+Justice with her scales level and empty. The Hanged Man, upside down and comfortable about
+it. Death on his horse, going at a walk. Temperance pouring, and the cup underneath is
+full. The Devil, and the chains at his feet loose enough to lift over a head, as they
+always were. The Tower, landed. The Star. The Moon with the fog off it. The Sun, going
+down. Judgement's trumpet down.
 
-Twenty cards, in card order round the ring — and yet, from where she is standing on the
-long curve of the steps, they do not read in card order at all. From here, left to right,
-they read: Magician. Empress. Lovers. Hierophant. Strength. Chariot. Emperor. Wheel.
-Hanged Man. Hermit. Justice. High Priestess. Death. Temperance. Devil. Tower. Star. Moon.
-Judgement. Sun.
+That is one thing about the ring, and it is the plain one: twenty cards set into the wall
+in their own numbered order, one after the next the whole way round, laid out that way by
+whoever built the place, three hundred years before there was anybody to walk it.
+
+Here is the other. From where she is standing, on the long curve of the steps, with the
+near arc close and the far arc turned a little toward her across the drop, they do not
+read in that order at all. From here, left to right, they read: Magician. Empress. Lovers.
+Hierophant. Strength. Chariot. Emperor. Wheel. Hanged Man. Hermit. Justice. High Priestess.
+Death. Temperance. Devil. Tower. Star. Moon. Judgement. Sun.
 
 Nothing says so. She does not notice. She is looking at the twenty-first alcove, which is
 the only one with nothing in it.
@@ -395,10 +398,10 @@ it was always going toward, and holding there, and stopping.
 And over the top of it comes the sound of a card turning over.
 
 She has heard it twenty times, in a carnival's underworks and a marsh's candlelight and on
-a hillside with the stars coming back. It has never once sounded like this. This is the
-same sound made by something the size of the world, unhurried, absolute, and the noise of
-it goes out across the Spread and is heard in every region there is, and in the Hollows a
-hundred people on garden walls stand up.
+a mountain with the new stars coming back over it. It has never once sounded like this.
+This is the same sound made by something the size of the world, unhurried, absolute, and
+the noise of it goes out across the Spread and is heard in every region there is, and in
+the Hollows a hundred people on garden walls stand up.
 
 *  *  *
 
@@ -475,7 +478,7 @@ chair, somebody who knew her and was fond of her and had got to the end of the s
 before we started. That was all correct. It simply was not very much of it.
 
 Nobody ever asks a voice what it is the voice *of*. She never did either, not once, in a
-hundred regions of asking me everything else. And I had three hundred years to work out
+hundred hours of asking me everything else. And I had three hundred years to work out
 how I would say it when the moment came, and when the moment came I found I could only do
 it the way I do everything, which is sideways, and slowly, and starting with the cards.
 

@@ -207,9 +207,11 @@ Somewhere past the middle she put her head on one side. "Funny. You tend a light
 for someone who ends things." She considered it. "Or not funny. Perhaps that's exactly who
 ought to."
 
-Near the southern end a white briar grew out of the stones — the only growing thing the
-Fool had seen since the road. The Warden cut a length off it with a small knife she kept
-for the purpose, stripping the leaves with her thumbnail as she came back.
+There was one growing thing anywhere near that water, and it was not on the shore at all.
+Back at the near end, where the road gave out and the shingle began, a white briar came out
+of the stones on the last inch of ground the stillness had no claim on. The Warden walked
+back for it, cut a length off with a small knife she kept for the purpose, and stripped the
+leaves with her thumbnail as she came.
 
 "Give me your rose."
 

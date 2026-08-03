@@ -95,9 +95,9 @@ stood out here the best part of my life not going to see for myself. I'd like, j
 once, for somebody to have gone and looked, and come back, and told an old fool who
 never dared it."
 
-She said something back to him then, low, that the wind — real wind, moving for the
-first time in his hearing across that whole stretch of ground — carried off before it
-reached anyone else's ears to record. Rathe nodded, once, as though it had been enough,
+She said something back to him then, low — and there was no wind out there to carry it,
+nor had there ever been in his hearing, so it went no further than the two of them and
+reached nobody else's ears to record. Rathe nodded, once, as though it had been enough,
 and stepped back to his worn patch of earth, and did not follow her one pace further.
 
 *  *  *
@@ -113,7 +113,7 @@ hundred years of unbroken tending that had eaten her whole life and every life b
 hers in the order without once being asked whether it wanted to be spent that way. "All
 this sweeping. All this reverence. I used to lie awake certain that one missed gesture
 would end the world, and do you know — I don't believe that any more. I don't think I've
-believed it in years. It was never us. It was only ever *him*, out there, dancing, and
+believed it in years. It was never us. It was only ever *them*, out there, dancing, and
 we tended stone."
 
 Nobody answered her, which was, for the first time in three hundred years, exactly what

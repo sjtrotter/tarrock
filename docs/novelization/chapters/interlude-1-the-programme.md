@@ -113,7 +113,7 @@ That's a promise.*
 One further line, set by the printer in the smallest type on the bill, easy to miss and
 not meant to be missed twice:
 
-*Third row, aisle. Retired from tonight, and every night after. Held open, in honour of
+*Front row, centre. Retired from tonight, and every night after. Held open, in honour of
 a patron who was here for every single one of the others.*
 
 No name is given. None was thought necessary. The green outside stands empty already,

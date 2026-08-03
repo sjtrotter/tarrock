@@ -83,10 +83,11 @@ delay is attributable to both parties consulting each other, at length, on what 
 meant to happen next.
 
 The Registry records this as **the first offence, by the first offender, in every
-possible sense the city has**, and declines, on this occasion, to publish his name,
-there being some feeling among the clerks that a man's very first attempt at wrongdoing,
-made in good faith and appalling technique, is not quite the same class of record as a
-seasoned villainy, and does not deserve the same permanence in the file. He is warned.
+possible sense the city has**, and enters his name as Loft, called *Sixpence* on his own
+street for reasons no clerk has yet succeeded in establishing. There is some feeling among
+the clerks that a man's very first attempt at wrongdoing, made in good faith and appalling
+technique, is not quite the same class of record as a seasoned villainy, and the file has
+been marked accordingly, in pencil. He is warned.
 He is, by several accounts, already regretting the whole undertaking rather more than
 the apple was worth. The Registry wishes him, in the driest terms available to it, better
 luck, or failing that, less of it.

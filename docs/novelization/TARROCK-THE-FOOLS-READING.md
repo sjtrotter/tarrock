@@ -1267,7 +1267,7 @@ That's a promise.*
 One further line, set by the printer in the smallest type on the bill, easy to miss and
 not meant to be missed twice:
 
-*Third row, aisle. Retired from tonight, and every night after. Held open, in honour of
+*Front row, centre. Retired from tonight, and every night after. Held open, in honour of
 a patron who was here for every single one of the others.*
 
 No name is given. None was thought necessary. The green outside stands empty already,
@@ -1502,8 +1502,8 @@ past reading, bloated soft on three centuries of unharvested plenty.
 They came at her without hurry, which was worse than speed. She met the first clean, and
 felt the world slow by half a beat, a held breath she was learning was hers to spend, and
 stepped inside a lurching swing the way she'd stepped inside a soldier's on the Cliff, a
-lifetime and three days ago. She did not call the reaching hand often; it cost a thread of
-daring, spent and needing to be earned back. Twice, when a blow came too fast to duck
+lifetime and three days ago. She did not call the reaching hand often; it spent Fortune,
+and Fortune came back to her only by daring. Twice, when a blow came too fast to duck
 honestly, she felt for it anyway — closing on a shoulder and hauling it off balance, just
 enough for the Bindle to finish what her hands alone could not. Pip worked the stragglers
 with brisk economy, herding two into a low bough that showered them in apples and briefly
@@ -1621,8 +1621,8 @@ stay, kindness *moves you along*—"
 
 She did not finish it aloud. The last crown-rose, trembling at the southern face, put out
 every lash-vine it had left, all at once. She fought it with her arms shaking and the Rose
-down to its final petal, spending the ghost-reach twice more, a thread not yet earned back,
-spent anyway because there was nothing left worth being careful with. The last blow landed
+down to its final petal, spending the ghost-reach twice more on Fortune she had not yet dared
+back, spent anyway because there was nothing left worth being careful with. The last blow landed
 clean. The final crown-rose parted at its root with a long, tearing sigh, and the whole roof
 of the bower came down at once, and full daylight reached the Briar Throne from top to
 bottom for the first time since the Stall.
@@ -2692,14 +2692,14 @@ is *for*."
 that has never wobbled. You are new, and the new mishear — that is not a sin, it is merely
 a lack, and the hour is patient with lacks. Come. Let it correct you."
 
-He said it with the practiced patience of a man who had corrected ten thousand novices and
+He said it with the practised patience of a man who had corrected ten thousand novices and
 feared not one of them — over the smallest flicker of something that was not patience at
 all, gone before it could properly be named.
 
 Then the wobble she'd bought him, pipe by pipe, roof by roof, opened its first true gap in
 his guard, and she stepped into it.
 
-The fight kept the hymn's own time. His attacks came in strict meter, organ-stabs that
+The fight kept the hymn's own time. His attacks came in strict metre, organ-stabs that
 struck the floor's inlaid staves like struck strings, a sweeping chord that crossed the
 whole drum in a wave she had to duck under on the beat and rise from on the gap; twice
 more bell-headed figures rose out of the tiered stone at his call and had to be silenced —
@@ -2785,9 +2785,9 @@ may cross, and one litany for when your last petal's spent." He set it into her 
 folded her fingers closed over it. "Take it. A rite's only ever been a kindness people
 forgot to stop performing. Perform it better than I did."
 
-She opened her coat and slid it into the pocket the Chantry's own hour had somehow always
-been waiting to fill, and felt the small, exact click of a truth she would now be able to
-carry on purpose.
+She folded it away in the Bindle beside Union, loose, unslotted, because her small sewn
+spread still had only the two pockets filled — and felt all the same the small, exact
+weight of a truth she would now be able to carry on purpose.
 
 *  *  *
 
@@ -3027,9 +3027,8 @@ take. And you let it walk off like it cost nothing at all."
 "They all want to live. That's not a reason up here. That's just the sound they make." He
 stood a moment, watching the empty scree, and then something in his shoulders let go — not
 agreement, quite, but adjacent to it — and he picked his spear back up. "Gentle's a fine thing
-to spend when it's not your winter you're spending it out of." A grudging pause. "Frightened's
-not the same as free, mind. But I'll say this — that bear'll live to be frightened another day,
-which is more than I'd have given it an hour back."
+to spend when it's not your winter you're spending it out of." A grudging pause. "Slow work,
+that, mind. I'll give you the arms for it. Not many'd have stayed down that long."
 
 He did not follow further. At the shelf's edge, where his ground ended, he stopped and looked
 up at the small far shape on the ridge.
@@ -4179,10 +4178,11 @@ delay is attributable to both parties consulting each other, at length, on what 
 meant to happen next.
 
 The Registry records this as **the first offence, by the first offender, in every
-possible sense the city has**, and declines, on this occasion, to publish his name,
-there being some feeling among the clerks that a man's very first attempt at wrongdoing,
-made in good faith and appalling technique, is not quite the same class of record as a
-seasoned villainy, and does not deserve the same permanence in the file. He is warned.
+possible sense the city has**, and enters his name as Loft, called *Sixpence* on his own
+street for reasons no clerk has yet succeeded in establishing. There is some feeling among
+the clerks that a man's very first attempt at wrongdoing, made in good faith and appalling
+technique, is not quite the same class of record as a seasoned villainy, and the file has
+been marked accordingly, in pencil. He is warned.
 He is, by several accounts, already regretting the whole undertaking rather more than
 the apple was worth. The Registry wishes him, in the driest terms available to it, better
 luck, or failing that, less of it.
@@ -4222,7 +4222,7 @@ whole of what everyone in this city is about to have to learn to do.*
 
 The Longroad ran level and pale under an unmoving sky, and for the first stretch of it she rode.
 
-She had not known she could, until she tried it: a thought, half a wish, the shape of reins in an empty hand — and the Chariot answered, the way Triumph had promised it would, an outline of gold dust and old momentum gathering into something with a back broad enough to sit on and a gait like a held breath let out slowly. It did not need to be fed, or thanked, or believed in particularly hard. It simply came when called, all down the long grey ring of road with its bleached banners and its three-hundred-year procession creaking along somewhere off to the south, forever almost arriving nowhere.
+She had not known she could, until she tried it: a thought, half a wish, the shape of reins in an empty hand — and the Chariot answered, the way Triumph had promised it would, an outline of gold dust and old momentum gathering into something with a back broad enough to sit on and a gait like a held breath let out slowly. It did not need to be fed, or thanked, or believed in particularly hard. It simply came when called, all down the long grey ring of road — and away to the south the war-train lay where it had been stopped, a mile of bleached banners folded down over stilled carriages, its marchers gone off wherever pleased them, nothing in front of it any more that it had to almost arrive at.
 
 Pip rode the first half-mile sitting bolt upright between her knees like visiting royalty, then got bored of dignity and ran instead, a small white flag out ahead of her the whole way north-east.
 
@@ -4328,9 +4328,9 @@ The Fool was quiet a moment, turning that over the way she turned over most thin
 
 Fettle's composure did something complicated and did not fully recover it. "A roll I can't call." Her gloved hand closed, briefly, on nothing. "One honest throw where the wheel owes me nothing at all. I'd sooner be cursed, if you must know — at least the cursed know how their story goes."
 
-"Keep your coins," the Fool said. "I've nowhere to spend them."
+She was waiting, the Fool understood then, to be bargained with — for a purse to be named, a price to be found, some familiar shape the moment could be persuaded to take. The Fool had nowhere to spend a coin and no idea how to say so kindly, and so said nothing at all.
 
-"...No." Fettle's laugh had no humour in it whatsoever. "No, of course you haven't. What a horrifying thing you are — a card with nothing at all to lose. There's no thumb heavy enough for those dice."
+"...No." Fettle's laugh had no humour in it whatsoever. "No, of course not. What a horrifying thing you are — a card with nothing at all to lose. There's no thumb heavy enough for those dice."
 
 She did not physically bar the door. She could not; luck had never made her strong, only comfortable, and she stepped aside, and her voice dropped, on the way past, to something almost honest.
 
@@ -4432,7 +4432,7 @@ She thought about that, walking out with a fifth rose petal at her belt and an e
 
 *Don't do the arithmetic tonight*, said the Querent, and there was less of the dry showman in it than usual. *Do it tomorrow. Or don't do it at all. There's rarely a good hour for that particular sum.*
 
-The road west ran level and quiet, the procession's dented trumpets fading behind her, and far off on the horizon a forest stood up strange against the unmoving sky: a long dark treeline, every leaf on it hanging the wrong way, downward from the underside of every bough, as if the whole wood had been picked up once and set back down inside out.
+The road west ran level and quiet, the halted train a pale folded seam along the southern edge of everything behind her, and far off on the horizon a forest stood up strange against the unmoving sky: a long dark treeline, every leaf on it hanging the wrong way, downward from the underside of every bough, as if the whole wood had been picked up once and set back down inside out.
 
 The Axis glittered at the world's edge, small and silver and patient, and did not stop turning while she watched it, which she still, after eight cards, had not entirely got used to.
 
@@ -4455,7 +4455,7 @@ Further in, a whole glade hung the wrong way about — roots combing at a sky th
 
 She let the Bindle down slowly, the way you let down a hand you've been holding over a flame — not sure yet the flame has gone.
 
-Nothing came out of the trees to punish her for it. A squirrel went by along the underside of a bough at a brisk, unbothered trot, entirely unconcerned that its floor and ceiling had swapped places three hundred years back. Pip watched it go, faintly scandalized, and then sat, and kept watching.
+Nothing came out of the trees to punish her for it. A squirrel went by along the underside of a bough at a brisk, unbothered trot, entirely unconcerned that its floor and ceiling had swapped places three hundred years back. Pip watched it go, faintly scandalised, and then sat, and kept watching.
 
 She looped the staff back onto the Bindle. It felt like taking off a coat she hadn't known she was wearing.
 
@@ -5753,8 +5753,8 @@ Blanks whisper, and see what the world hides, and slip behind the veil when stru
 these powers safe for three hundred years by refusing to use them." A pause, almost wry.
 "Do the opposite. It suits you better."
 
-The card went into the second pocket behind her heart, the willed one, and settled as
-though the seam had been waiting for it.
+The card went into the coat with the others, disturbing nothing that was already sitting
+where it belonged, and settled as though the lining had been waiting for it.
 
 *  *  *
 
@@ -6064,7 +6064,7 @@ Bettony Marsh's grip tightened. Not gently. She did not appear to know she had d
 
 "Is he in pain?"
 
-"Pain?" Gaffer Corlin's mouth moved. "No, lad. Worse than pain. *Boredom.* Do you know how long three hundred years is when you're too tired to sit up and too stubborn to stop?" A rattle of breath that was unmistakably amusement. "Don't answer. You'll find out soon enough, if you botch this."
+"Pain?" Gaffer Corlin's mouth moved. "No, girl. Worse than pain. *Boredom.* Do you know how long three hundred years is when you're too tired to sit up and too stubborn to stop?" A rattle of breath that was unmistakably amusement. "Don't answer. You'll find out soon enough, if you botch this."
 
 The Fool looked at the two of them: the man who had been ready for a century, the woman who had held him here, and the space between their hands where the thing that should have settled it had been locked shut since before either of them was born.
 
@@ -6122,9 +6122,9 @@ She lay in four inches of black water and looked up at a sky with nothing in it.
 
 "That's the one," Mortimer called, not unkindly, not moving. "That's the one to live by. Learn it now, friend. I'll not stop showing it to you."
 
-She got up. The water ran off her and the rings it should have made were not there. She spent a petal — felt the white leaf go, and the deep ache in her ribs go with it, and five left where six had been and nothing in this region that would ever give them back — and went at him again, and this time when he half-stepped she was not there to be pulled.
+She got up. The water ran off her and the rings it should have made were not there. She spent a petal — felt the white leaf go, and the deep ache in her ribs go with it, and five left where six had been and nothing between here and the Waystation that would give them back — and went at him again, and this time when he half-stepped she was not there to be pulled.
 
-It went on a long time, and there were no tricks in it. That was what she kept finding, the way a foot keeps finding a step that isn't there: no gimmick to spot, no rose wilting in a buttonhole, no tired one among nine, no lie in the machinery underneath. Twice she reached for the Hermit's lantern in the near pocket, because a raised light had solved four regions for her, and twice she got it up and blazing and it did nothing whatever but throw her own enormous shadow across the sand, there being nothing hidden anywhere on that shore to reveal. The second time she caught the look on his face — pure sympathy, as at a child trying a door that was never locked — and let the light go out, and did not reach for it again.
+It went on a long time, and there were no tricks in it. That was what she kept finding, the way a foot keeps finding a step that isn't there: no gimmick to spot, no rose wilting in a buttonhole, no tired one among nine, no lie in the machinery underneath. Twice she reached for the Hermit's lantern in the near pocket, because a raised light had solved two regions for her, and twice she got it up and blazing and it did nothing whatever but throw her own enormous shadow across the sand, there being nothing hidden anywhere on that shore to reveal. The second time she caught the look on his face — pure sympathy, as at a child trying a door that was never locked — and let the light go out, and did not reach for it again.
 
 So it was hands and feet and the length of a stick against a farmer with a farmer's tool, and there was nothing else in the world.
 
@@ -6429,9 +6429,10 @@ trust my own hand to hold something that important only the once.
 
 **THE ONE WHO OPENED THE DOOR.** No name given, none asked for, none, I think, offered
 lightly to anyone. Came through the landing quiet, did what needed doing at the heart of
-the marsh, and went on again before a soul had properly gathered to thank her for it —
-I am told she looked faintly alarmed at the idea of being thanked, as though gratitude
-were a large dog that might jump up. The small white dog with her was bowed to at every
+the marsh, and then stayed on through the whole emptying and went only when there was
+nobody left who still needed the door held — taking such thanks as were pressed on her,
+and I saw two of them given, with the faint alarm of a woman who suspects gratitude of
+being a large dog that might jump up. The small white dog with her was bowed to at every
 door she passed, as is proper, though not one person doing the bowing could have told
 you why, myself very much included. Small true thing, the truest I have: she is the
 reason every entry above this one has a right-hand column at all.
@@ -6805,8 +6806,8 @@ made to carry each other instead — that was always the whole of my craft. Take
 held the balance long enough. Somebody ought to get to *use* it, instead of just *being*
 it."
 
-The Fool took it, and felt it settle into the coat's third pocket the way the others
-always did — a small private weight, exact.
+The Fool took it, and felt it settle into the coat with the rest of them, changing nothing
+that was already where it belonged — a small private weight, exact.
 
 *  *  *
 
@@ -6854,6 +6855,13 @@ watch it being built again. Nobody'll ever lay the morning stone." He wasn't ang
 bereft, and gentle about it. "I'm not sorry you did what you did, understand. The world
 had to turn. I just — I mourn the *finishing* of it. Not the work. The end of the work. Is
 that a foolish thing to grieve?"
+
+"What will you build now?"
+
+"Something that can be *finished*, I suppose. Terrifying thought." He put his hand on the
+trowel at his belt and did not take it out. "What I'd want is a bridge that stays half-done,
+to practise on." Something came most of the way up to a laugh and stopped short of it.
+"There aren't any left."
 
 "It wasn't nothing."
 
@@ -8184,9 +8192,11 @@ Somewhere past the middle she put her head on one side. "Funny. You tend a light
 for someone who ends things." She considered it. "Or not funny. Perhaps that's exactly who
 ought to."
 
-Near the southern end a white briar grew out of the stones — the only growing thing the
-Fool had seen since the road. The Warden cut a length off it with a small knife she kept
-for the purpose, stripping the leaves with her thumbnail as she came back.
+There was one growing thing anywhere near that water, and it was not on the shore at all.
+Back at the near end, where the road gave out and the shingle began, a white briar came out
+of the stones on the last inch of ground the stillness had no claim on. The Warden walked
+back for it, cut a length off with a small knife she kept for the purpose, and stripped the
+leaves with her thumbnail as she came.
 
 "Give me your rose."
 
@@ -9305,7 +9315,7 @@ anything of it.
 
 "You'll be for down there, then." He nodded off the ring, east and inward, where a long
 grassed road dropped out of sight between two shoulders of hill. He knew what she was;
-everybody did now, and had since the marsh. "It's not a frightening place. Only very tidy,
+everybody did now, and had since the Stillmarsh. "It's not a frightening place. Only very tidy,
 and nobody living in it, and it's been waiting a long time on something that hasn't come."
 
 She shouldered the Bindle and whistled the dog off his boot.
@@ -10596,9 +10606,9 @@ stood out here the best part of my life not going to see for myself. I'd like, j
 once, for somebody to have gone and looked, and come back, and told an old fool who
 never dared it."
 
-She said something back to him then, low, that the wind — real wind, moving for the
-first time in his hearing across that whole stretch of ground — carried off before it
-reached anyone else's ears to record. Rathe nodded, once, as though it had been enough,
+She said something back to him then, low — and there was no wind out there to carry it,
+nor had there ever been in his hearing, so it went no further than the two of them and
+reached nobody else's ears to record. Rathe nodded, once, as though it had been enough,
 and stepped back to his worn patch of earth, and did not follow her one pace further.
 
 *  *  *
@@ -10614,7 +10624,7 @@ hundred years of unbroken tending that had eaten her whole life and every life b
 hers in the order without once being asked whether it wanted to be spent that way. "All
 this sweeping. All this reverence. I used to lie awake certain that one missed gesture
 would end the world, and do you know — I don't believe that any more. I don't think I've
-believed it in years. It was never us. It was only ever *him*, out there, dancing, and
+believed it in years. It was never us. It was only ever *them*, out there, dancing, and
 we tended stone."
 
 Nobody answered her, which was, for the first time in three hundred years, exactly what
@@ -10689,7 +10699,7 @@ The Hollows had been a graveyard when she first saw it, and it was a garden now:
 bank of turned earth gone over to flowers, every grave shut and green, the grass between
 them shaggy with the untidy energy of ground that has nothing left in it wanting tending.
 Late roses. Bindweed having a marvellous time. A carved trumpet lying flat in the grass
-where somebody finished with it had laid it down, with two nights of dew on it, and a
+where somebody finished with it had laid it down, with the world's first dew on it, and a
 snail.
 
 Nobody stopped her. That is worth saying plainly, because everybody wanted to.
@@ -10846,27 +10856,30 @@ version of this image on a hundred banners and a hundred coins and it has always
 doing something — turning, looping, catching, the same half-second of it forever. This one
 is only a picture of a man who did a good trick once.
 
-The Empress after it, throne and orchard, still. The Lovers, and nobody choosing, because
-the choosing is done. The Hierophant with his bells hanging at rest. Strength with her
-hand on a lion's jaw, and the lion asleep. The Chariot stopped. The Emperor's stone chair.
-The Wheel, at no number at all. The Hanged Man, upside down and comfortable about it. The
-Hermit's lamp burning low and not walking anywhere. Justice with her scales level and
-empty.
+The High Priestess after it, between her pillars, closed like a book that was read. The
+Empress, throne and orchard, still. The Emperor's stone chair. The Hierophant with his
+bells hanging at rest. The Lovers, and nobody choosing, because the choosing is done. The
+Chariot stopped. Strength with her hand on a lion's jaw, and the lion asleep. The Hermit's
+lamp burning low and not walking anywhere. The Wheel, at no number at all.
 
 She walks it. There is nothing to fight and nothing to pick up and nowhere to turn aside,
 and the approach is long, and it is meant to be.
 
-The High Priestess between her pillars, closed like a book that was read. Death on his
-horse, going at a walk. Temperance pouring, and the cup underneath is full. The Devil, and
-the chains at his feet loose enough to lift over a head, as they always were. The Tower,
-landed. The Star. The Moon with the fog off it. Judgement's trumpet down. The Sun, going
-down.
+Justice with her scales level and empty. The Hanged Man, upside down and comfortable about
+it. Death on his horse, going at a walk. Temperance pouring, and the cup underneath is
+full. The Devil, and the chains at his feet loose enough to lift over a head, as they
+always were. The Tower, landed. The Star. The Moon with the fog off it. The Sun, going
+down. Judgement's trumpet down.
 
-Twenty cards, in card order round the ring — and yet, from where she is standing on the
-long curve of the steps, they do not read in card order at all. From here, left to right,
-they read: Magician. Empress. Lovers. Hierophant. Strength. Chariot. Emperor. Wheel.
-Hanged Man. Hermit. Justice. High Priestess. Death. Temperance. Devil. Tower. Star. Moon.
-Judgement. Sun.
+That is one thing about the ring, and it is the plain one: twenty cards set into the wall
+in their own numbered order, one after the next the whole way round, laid out that way by
+whoever built the place, three hundred years before there was anybody to walk it.
+
+Here is the other. From where she is standing, on the long curve of the steps, with the
+near arc close and the far arc turned a little toward her across the drop, they do not
+read in that order at all. From here, left to right, they read: Magician. Empress. Lovers.
+Hierophant. Strength. Chariot. Emperor. Wheel. Hanged Man. Hermit. Justice. High Priestess.
+Death. Temperance. Devil. Tower. Star. Moon. Judgement. Sun.
 
 Nothing says so. She does not notice. She is looking at the twenty-first alcove, which is
 the only one with nothing in it.
@@ -11064,10 +11077,10 @@ it was always going toward, and holding there, and stopping.
 And over the top of it comes the sound of a card turning over.
 
 She has heard it twenty times, in a carnival's underworks and a marsh's candlelight and on
-a hillside with the stars coming back. It has never once sounded like this. This is the
-same sound made by something the size of the world, unhurried, absolute, and the noise of
-it goes out across the Spread and is heard in every region there is, and in the Hollows a
-hundred people on garden walls stand up.
+a mountain with the new stars coming back over it. It has never once sounded like this.
+This is the same sound made by something the size of the world, unhurried, absolute, and
+the noise of it goes out across the Spread and is heard in every region there is, and in
+the Hollows a hundred people on garden walls stand up.
 
 *  *  *
 
@@ -11144,7 +11157,7 @@ chair, somebody who knew her and was fond of her and had got to the end of the s
 before we started. That was all correct. It simply was not very much of it.
 
 Nobody ever asks a voice what it is the voice *of*. She never did either, not once, in a
-hundred regions of asking me everything else. And I had three hundred years to work out
+hundred hours of asking me everything else. And I had three hundred years to work out
 how I would say it when the moment came, and when the moment came I found I could only do
 it the way I do everything, which is sideways, and slowly, and starting with the cards.
 

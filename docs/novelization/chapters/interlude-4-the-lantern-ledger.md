@@ -110,9 +110,10 @@ trust my own hand to hold something that important only the once.
 
 **THE ONE WHO OPENED THE DOOR.** No name given, none asked for, none, I think, offered
 lightly to anyone. Came through the landing quiet, did what needed doing at the heart of
-the marsh, and went on again before a soul had properly gathered to thank her for it —
-I am told she looked faintly alarmed at the idea of being thanked, as though gratitude
-were a large dog that might jump up. The small white dog with her was bowed to at every
+the marsh, and then stayed on through the whole emptying and went only when there was
+nobody left who still needed the door held — taking such thanks as were pressed on her,
+and I saw two of them given, with the faint alarm of a woman who suspects gratitude of
+being a large dog that might jump up. The small white dog with her was bowed to at every
 door she passed, as is proper, though not one person doing the bowing could have told
 you why, myself very much included. Small true thing, the truest I have: she is the
 reason every entry above this one has a right-hand column at all.
