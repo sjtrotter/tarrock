@@ -24,8 +24,9 @@ being re-run, and run tooling now lives in the repo under
 | References & blockout | DONE (r1–r4) |
 | Merge & sculpt | Pass 1 + Pass 2 DONE (r5–r13; Pass-2 closed by director ruling #2, debts logged); Pass-3 creases deferred |
 | Head sculpt | DONE (Round 14; eye/mouth-read + jaw-band debts to retopo/materials) |
-| Retopo (head, body) | head retopo next (Round 15) |
-| Rigging | — |
+| Retopo (head, body) | DONE (r15 head, r16 body; YoungAdultMale-base.blend milestone saved) |
+| Head polish (director-ordered) | next (Round 17: nose presence, lip read, aperture, calf width if ruled) |
+| Rigging | — (Round 18) |
 | Hair | — |
 | Clothes & accessories | — |
 | Materials | — |
@@ -564,3 +565,56 @@ lips read insufficiently; both must be fixed before the head is final.
 Donor/CC0 asset downloads are rejected outright (the authored-topology
 approach is confirmed). Scheduled: **Round 17 = head-polish pass** (nose
 presence, lip read, aperture shape) on the retopo mesh, before rigging.
+
+---
+
+## Round 16 — body retopo (2026-08-03/04)
+
+*Mid-round: the run dir moved to `docs/gauntlet-fool/` (director change), the
+usage regime tightened (sub-agents near-exclusively Codex), and the
+carried-twice rule opened issues #5 (arm read) and #6 (calf width).*
+
+**Phase A (Codex):** neck-ring export (72 v, planar Z=1442, centroid
+Y=+21.1 mm), body section/axis extraction, and the round's instruments —
+validated against R15 ground truth. Found this Blender build cannot open the
+916 MB chain as a main file (library-append is the working pattern).
+
+**Phase B (Opus, grandfathered from before the regime change):** authored
+graded charts, no Shrinkwrap anywhere — half-body (chart,i,j) slots mirrored
+by exact negation, ray-fit + relax/snap onto the sculpt. **`Fool_BodyRetopo`:
+4,599 v / 9,124 tris, 100.0% quads, deviation 0.160 mm RMS / 1.06 max
+outside one named divergence, neck seam bonded to the head ring at
+0.0007 mm, 0 self-intersections, mirror exact, sole planar at Z=0, all
+joint-loop counts met, no pole within 15 mm of a bend crease.** The round's
+discovery: the sculpt's four fingers are FUSED (one continuous palmar sheet
+to x≈770 mm) — Phase A's clearances had measured helper shells, not the
+surface. The builder hollowed the mitten into five real digits (the one
+named divergence, 18 mm max, exactly what rigging needs). Four instrument
+defects found and recorded, the loudest: the round rig's "wireframe" renders
+were byte-identical shaded copies (viewport flags don't render headless) —
+a real wireframe rig replaced it and made all eyes-on judgments.
+
+| Front (wire) | Front (shaded) |
+|---|---|
+| ![front wire](renders/r16-front-wire.png) | ![front shaded](renders/r16-front-shaded.png) |
+| ![hand](renders/r16-hand-wire.png) | ![shoulder](renders/r16-shoulder-wire.png) |
+
+**Lead validation:** independent verify_body.py re-run on the saved candidate
+reproduced every builder number exactly. **Codex blind judge: likeness 5/10,
+topology 6/10.** Strongest points: clean orderly quads, sensible limb flow,
+usable separated fingers. Named gaps: (A) the body "reads like a generic base
+body traced to the landmarks" vs the sheet's storybook exaggeration — the
+run's long-standing sculpt-presence complaint, inherited faithfully by a
+0.16 mm-accurate retopo and already under the issue-#2 ruling (re-judged
+dressed); (B) shoulder/armhole loop system may pinch when the arm lowers —
+matches the builder's own honest list, and is exactly what the rigging round
+tests with real poses.
+
+**Round verdict: CLOSED — chain advances to `Fool-v2-020.blend`**, and the
+charter's `YoungAdultMale-base.blend` milestone (clean generic young-adult
+man, game topology) is saved from the same candidate. Debts logged: shoulder
+deformation risk (adjudicated at rigging with an arm-lower pose test), neck
+density collar read, blocky digit bases, toe-cap quad spend, 4 thumb–index
+webbing probes (instrument geometry, argued unpassable). Next: **Round 17 —
+head polish** (director-elevated nose presence + lip read + aperture; calf
+width pending issue #6), then Round 18 rigging.

@@ -434,3 +434,48 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
   authored charts per R15 method, candidates Fool-v2-020a+ in fool2-r16/,
   head/eyes untouched, body-head bond positional this round (join at
   rigging), full instrument suite + eyes-on law binding.
+
+## ROUND 16 CLOSED (2026-08-04): body retopo → chain Fool-v2-020.blend
+
+- **Chain = workdir Fool-v2-020g.blend promoted as Fool-v2-020.blend.**
+  Fool_BodyRetopo 4,599 v / 9,124 tris / 100.0% quads; deviation 0.160 RMS /
+  1.06 max mm outside the ONE named divergence (hand); neck seam 0.0007 mm
+  onto the head's 72-v ring; 0 self-intersections; mirror exact 0; sole
+  z=0 exact; loop spec met (shoulder 4 / elbow 5 / knee 5 / hip 5 / wrist 4 /
+  ankle 3+1, finger hinges 6 stations); 186 poles all accounted, none within
+  15 mm of a crease. Lead re-ran verify_body.py independently on the saved
+  file — every number reproduced. Report: tooling/R16-PHASEB-REPORT.md.
+- **YoungAdultMale-base.blend milestone SAVED** (charter §base mesh) from the
+  same candidate (contains hidden sculpt as reference; uncommitted).
+- **THE ROUND'S FINDING: the sculpt's four fingers are FUSED** (continuous
+  palmar sheet to x≈770; Phase A's 2.9/2.1/1.7 mm clearances measured the
+  HandShell_* helpers, not the surface). Builder hollowed the mitten into
+  five real digits — the named divergence (digit 4.64 RMS / 18.1 max), and
+  the correct rig-ready outcome. R6/R9 webbing probes were shell-derived
+  too; treat historical webbing numbers with suspicion.
+- **Codex blind: likeness 5/10, topology 6/10.** (A)-gap = "generic base
+  body traced to landmarks" — the r12/r13 presence complaint inherited
+  through a faithful retopo; stays under the issue-#2 ruling (re-judge
+  dressed; arms = issue #5). (B)-gap = shoulder/armhole deformation risk —
+  matches builder's own list; ADJUDICATED AT RIGGING via arm-lower pose
+  test before weight painting counts as done.
+- **Instrument lessons (paid for, run's law):** (1) show_wire/show_all_edges
+  do NOTHING in background renders — every "wire" png from render_body.py
+  was a shaded duplicate; real rig = tooling/render_wire.py (Wireframe
+  modifier shell); all wireframe judging uses it now. (2) thumb–index
+  webbing probes at u≥0.5 are geometrically unpassable (corridor ~79° off
+  the digit's lateral axis) — skip pairs whose corridor is within ~30° of
+  either axis. (3) bmesh non_manifold counts boundary edges — subtract
+  is_boundary. (4) matrix_world is stale right after libraries.load until
+  depsgraph update (Phase A's eye bbox was wrong; true eye locs ±43/−40.3/
+  1571 confirmed). (5) Phase A's bend_crease points were synthetic and off
+  the surface — builder met the real pole rule independently.
+- **Debts → later rounds:** shoulder/armhole deformation risk (rigging pose
+  test); neck ribbed-collar density read (head's 72-v ring; revisit only if
+  it shows in dressed renders); blocky 8-sided digit bases; toe-cap quad
+  spend; presence/"mannequin" class unchanged under issue-#2 umbrella.
+- Regime note: Phase B was the grandfathered Opus builder; critique/judging
+  this round were lead + Codex only, per the tightened order.
+- R17 = head polish (director-elevated: nose presence, lip read, aperture;
+  + calf width if issue #6 rules fix). R18 = rigging. Issues #5/#6 still
+  awaiting director comment at close time.
