@@ -17,7 +17,7 @@ validation and stage-close critique.)*
 /tmp — the in-flight R13 candidate and the run's scratchpad tooling are lost; the
 chain is intact through `Fool-v2-015.blend`. A successor lead has resumed; R13 is
 being re-run, and run tooling now lives in the repo under
-`.claude/gauntlet-fool2/tooling/` so a reboot can never orphan a round again.)*
+`docs/gauntlet-fool/tooling/` so a reboot can never orphan a round again.)*
 
 | Stage | Status |
 |---|---|

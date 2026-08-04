@@ -56,8 +56,5 @@ id_rsa*
 auth.json
 credentials*.json
 serviceaccount*.json
-# Claude/Codex session-local state — only the gauntlet charters are repo material
-.claude/*
-!.claude/gauntlet/
-!.claude/gauntlet-fool/
-!.claude/gauntlet-fool2/
+# Claude/Codex session-local state — never commit; gauntlet reporting lives in docs/
+.claude/

@@ -19,7 +19,7 @@ Run started: 2026-08-02. Lead: Fable (this file is the resume point).
   Opus-built pieces). Codex at every stage-close A/B.
 - **TOOLING PERSISTENCE (standing rule, 2026-08-03, after the reboot loss):** /tmp is
   volatile — irreplaceable run tooling (build/measure libs, briefs, metrics/station
-  tables, probe sets) lives under `.claude/gauntlet-fool2/tooling/` in the repo, kept
+  tables, probe sets) lives under `docs/gauntlet-fool/tooling/` in the repo, kept
   current in the same round it is created or changed. Only bulky intermediates
   (renders, logs, throwaway workdirs) may stay in the session scratchpad, and
   anything a future round would need must be promoted before round close.
@@ -323,9 +323,9 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
 ## Progress page (DIRECTOR CHANGE 2026-08-02)
 
 - Artifact abandoned per updated charter (none was ever published — change arrived
-  before Round 1 close). Live page = `.claude/gauntlet-fool2/STATUS.md` + small PNGs in
-  `.claude/gauntlet-fool2/renders/`, committed + pushed to origin/master (`docs:`
-  commits) at every round close. GitHub path: https://github.com/sjtrotter/tarrock/blob/master/.claude/gauntlet-fool2/STATUS.md
+  before Round 1 close). Live page = `docs/gauntlet-fool/STATUS.md` + small PNGs in
+  `docs/gauntlet-fool/renders/`, committed + pushed to origin/master (`docs:`
+  commits) at every round close. GitHub path: https://github.com/sjtrotter/tarrock/blob/master/docs/gauntlet-fool/STATUS.md
 
 ## Blockers / TBD
 
@@ -350,3 +350,41 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
 - R16 = body retopo (reuse authored/graded approach + donor lessons; same
   gates + the new wrap instruments). Then rigging, hair, clothes, materials,
   Unity FBX gate.
+
+## ROUND 16 (OPEN, 2026-08-03, 4th lead): body retopo
+
+- Brief: tooling/R16-BRIEF.md; Phase A = Codex (tooling/TASK-A-BODY.md,
+  workdir `/home/betty/tarrock-gauntlet-work/fool2-r16/`); Phase B = Opus
+  (escalation lesson applied at kickoff, as R14/R15).
+- Lead rulings: AUTHORED graded charts (no shrinkwrap final surface); body
+  budget 8–16k tris (naked figure ≤ 20k with the 3,970-tri head); neck seam
+  bonds VERTEX-EXACT (≤0.01 mm) to the head's 72-v ring, reduction rings
+  below the seam only; full five-finger hands, knuckle loops, webbing probes;
+  feet single-mass pending Phase-A toe verification; ≥3 loops per bend joint,
+  no pole within 15 mm of a bend crease; deviation ≤1.5 RMS / ≤3 max mm excl.
+  named divergences; FULL instrument suite (vertex + face-centroid deviation,
+  inversions, self-intersections, mirror) at every fit gate.
+- **Charter milestone adopted:** at R16 close the promoted naked figure is
+  also saved as `docs/design/3d-models-inwork/YoungAdultMale-base.blend`
+  (the charter's "clean generic young-adult man" save point, fulfilled at
+  retopo; uncommitted like all blends). No prior round did this.
+- Workdir note: bare `r16/` in the work root belongs to the OTHER gauntlet
+  session — ours is `fool2-r16/` per the standing namespacing rule.
+- **Phase A (Codex) VALIDATED** (2026-08-03 ~18:40): inventory (sculpt
+  1,012,034 v watertight Euler 2), neck ring exported (72 v, planar
+  Z=1442.000, centroid Y=+21.104 mm — NOT centered on Y=0), body_axes.json
+  (torso/leg 20 mm + arm 15 mm sections, 5 digit axes), verify_body.py +
+  render_body.py instruments selftested against Fool_HeadRetopo with numbers
+  cross-checking R15 ground truth (mirror 2@0.067 mm, boundary 148,
+  self-int 27 vs 22 explained by stricter edge-adjacency). Findings: digit
+  clearances index–middle 2.902 / middle–ring 2.079 / ring–pinky 1.657 mm
+  (below the nominal 4 mm — webs must stay open); feet = single toe-less
+  mass; crotch apex Z=825 mm. Minor: a-foot-top.png is actually a front
+  view (point-cloud evidence stands). **CRITICAL ENV FINDING: this Blender
+  build terminates opening the 916 MB chain as main file — append
+  datablocks as a library instead** (extract_body.py has the pattern).
+  Instruments + report promoted to tooling/ (R16-PHASEA-REPORT.md).
+- **Phase B (Opus builder) LAUNCHED** with tooling/TASK-B-BODY.md:
+  authored charts per R15 method, candidates Fool-v2-020a+ in fool2-r16/,
+  head/eyes untouched, body-head bond positional this round (join at
+  rigging), full instrument suite + eyes-on law binding.

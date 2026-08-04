@@ -72,8 +72,8 @@ is actually resolved. Non-canon judgment calls are still yours — take the
 industry-standard option and log it; the issue channel is for director-only decisions.
 
 Keep a simple live progress page showing the work evolving round by round — NOT a
-local/claude.ai artifact: maintain `.claude/gauntlet-fool2/STATUS.md` (with round
-renders as small PNGs under `.claude/gauntlet-fool2/renders/`) and commit + push it to
+local/claude.ai artifact: maintain `docs/gauntlet-fool/STATUS.md` (with round
+renders as small PNGs under `docs/gauntlet-fool/renders/`) and commit + push it to
 origin at every round close (`docs:` commits, master), so the director can watch
 remotely on GitHub. Blend files stay uncommitted as ever — only the status page and
 render images get pushed. Fan out sub-agents and ultracode.
