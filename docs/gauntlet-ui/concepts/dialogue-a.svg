@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">Querent dialogue box concept A — Gilded Vine</title><desc id="desc">A broad parchment dialogue panel with black woodcut outlines, gold leaf rails, foliate corners, and a speaker cartouche.</desc>
+  <rect width="1200" height="360" fill="#1d1811"/>
+  <path d="M72 58 L1128 58 L1150 80 L1150 280 L1128 302 L72 302 L50 280 L50 80 Z" fill="#ead9ad" stroke="#211a12" stroke-width="8"/>
+  <path d="M84 72 H1116 L1136 92 V268 L1116 288 H84 L64 268 V92 Z" fill="none" stroke="#b88a2c" stroke-width="12"/>
+  <path d="M100 88 H1100 L1120 104 V256 L1100 272 H100 L80 256 V104 Z" fill="none" stroke="#211a12" stroke-width="4"/>
+  <path d="M105 90 C72 112 79 145 108 149 C88 130 101 110 126 106 C119 126 130 142 151 143 C133 123 140 101 165 90 M1095 90 C1128 112 1121 145 1092 149 C1112 130 1099 110 1074 106 C1081 126 1070 142 1049 143 C1067 123 1060 101 1035 90" fill="#b88a2c" stroke="#211a12" stroke-width="4" stroke-linejoin="miter"/>
+  <path d="M105 270 C72 248 79 215 108 211 C88 230 101 250 126 254 C119 234 130 218 151 217 C133 237 140 259 165 270 M1095 270 C1128 248 1121 215 1092 211 C1112 230 1099 250 1074 254 C1081 234 1070 218 1049 217 C1067 237 1060 259 1035 270" fill="#b88a2c" stroke="#211a12" stroke-width="4" stroke-linejoin="miter"/>
+  <path d="M390 59 L420 36 H780 L810 59 L780 88 H420 Z" fill="#b88a2c" stroke="#211a12" stroke-width="6"/>
+  <path d="M430 51 H770" stroke="#f0dfaa" stroke-width="3"/>
+  <text x="600" y="69" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="bold" font-size="28" letter-spacing="5" fill="#211a12">THE QUERENT</text>
+  <path d="M178 122 V240 M1022 122 V240" stroke="#b88a2c" stroke-width="5"/>
+  <path d="M190 123 C220 145 220 217 190 239 M1010 123 C980 145 980 217 1010 239" fill="none" stroke="#211a12" stroke-width="4"/>
+  <text x="225" y="166" font-family="Georgia, 'Times New Roman', serif" font-size="29" fill="#211a12">The cards are stuck, little Excuse; go turn them loose.</text>
+  <text x="225" y="210" font-family="Georgia, 'Times New Roman', serif" font-size="24" font-style="italic" fill="#5b4725">Placeholder copy — final text supplied by Localization.</text>
+  <path d="M1080 238 l14 14 -14 14 -14-14z" fill="#b88a2c" stroke="#211a12" stroke-width="4"/>
+</svg>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">Querent dialogue box concept B — Tarot Lectern</title><desc id="desc">A pointed manuscript panel with a central tarot sun seal and architectural gold leaf border.</desc>
+  <rect width="1200" height="360" fill="#201910"/>
+  <path d="M55 84 L105 48 H1095 L1145 84 V276 L1095 312 H105 L55 276 Z" fill="#e8d6a8" stroke="#211a12" stroke-width="8"/>
+  <path d="M78 94 L118 66 H1082 L1122 94 V266 L1082 294 H118 L78 266 Z" fill="none" stroke="#b88a2c" stroke-width="11"/>
+  <path d="M96 104 L130 82 H1070 L1104 104 V256 L1070 278 H130 L96 256 Z" fill="none" stroke="#211a12" stroke-width="4"/>
+  <g fill="#b88a2c" stroke="#211a12" stroke-width="4">
+    <path d="M68 72 l36-28 25 21-38 31z M1132 72 l-36-28-25 21 38 31z M68 288 l36 28 25-21-38-31z M1132 288 l-36 28-25-21 38-31z"/>
+    <path d="M600 35 l14 25 29 5-21 21 5 29-27-14-27 14 5-29-21-21 29-5z"/>
+  </g>
+  <circle cx="600" cy="78" r="25" fill="#e8d6a8" stroke="#211a12" stroke-width="4"/>
+  <circle cx="600" cy="78" r="10" fill="#b88a2c" stroke="#211a12" stroke-width="3"/>
+  <path d="M188 118 H420 M780 118 H1012" stroke="#b88a2c" stroke-width="6"/>
+  <path d="M188 127 H420 M780 127 H1012" stroke="#211a12" stroke-width="3"/>
+  <text x="600" y="139" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="bold" font-size="29" letter-spacing="4" fill="#211a12">THE QUERENT</text>
+  <path d="M153 154 l16 25-16 25-16-25z M1047 154 l16 25-16 25-16-25z" fill="#b88a2c" stroke="#211a12" stroke-width="4"/>
+  <text x="208" y="190" font-family="Georgia, 'Times New Roman', serif" font-size="30" fill="#211a12">“By the Deal, you do make an entrance.”</text>
+  <text x="208" y="232" font-family="Georgia, 'Times New Roman', serif" font-size="24" font-style="italic" fill="#5b4725">Placeholder copy — final text supplied by Localization.</text>
+  <path d="M1040 236 l16 0-8 15z" fill="#211a12"/>
+</svg>

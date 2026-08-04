@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="140" viewBox="0 0 620 140" role="img" aria-labelledby="title"><title id="title">Tutorial prompt C — Illuminated Slip</title>
+  <rect width="620" height="140" fill="#1d1811"/><path d="M35 24 H585 V116 H35 L14 94 V46 Z" fill="#ead9ad" stroke="#211a12" stroke-width="7"/>
+  <path d="M49 37 H571 V103 H49 L29 84 V56 Z" fill="none" stroke="#b88a2c" stroke-width="7"/>
+  <rect x="49" y="43" width="76" height="54" fill="#b88a2c" stroke="#211a12" stroke-width="4"/><circle cx="87" cy="70" r="18" fill="#ead9ad" stroke="#211a12" stroke-width="4"/><path d="M87 55 v30 M72 70 h30" stroke="#211a12" stroke-width="4"/>
+  <text x="148" y="79" font-family="Georgia, 'Times New Roman', serif" font-size="27" fill="#211a12">Move the left stick</text>
+  <path d="M540 48 C566 56 566 84 540 92 C552 79 552 61 540 48z" fill="#b88a2c" stroke="#211a12" stroke-width="4"/>
+</svg>

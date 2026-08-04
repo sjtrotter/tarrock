@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">Querent dialogue box concept C — Rose and Thorns</title><desc id="desc">An asymmetrical parchment folio with a gilded initial, rose emblems, thorn rails, and an inset speaker tab.</desc>
+  <rect width="1200" height="360" fill="#1d1811"/>
+  <path d="M72 62 H1128 V298 H72 L48 274 V86 Z" fill="#ead9ad" stroke="#211a12" stroke-width="8"/>
+  <path d="M88 78 H1112 V282 H88 L66 260 V100 Z" fill="none" stroke="#b88a2c" stroke-width="10"/>
+  <path d="M106 94 H1094 V266 H106 L82 244 V116 Z" fill="none" stroke="#211a12" stroke-width="4"/>
+  <path d="M82 106 C135 83 172 113 210 95 C184 122 146 117 118 143 C145 138 164 154 170 178 M1110 254 C1057 277 1020 247 982 265 C1008 238 1046 243 1074 217 C1047 222 1028 206 1022 182" fill="none" stroke="#211a12" stroke-width="5"/>
+  <path d="M110 103 c11-22 43-22 54 0-11 24-43 24-54 0z M1090 257 c-11 22-43 22-54 0 11-24 43-24 54 0z" fill="#b88a2c" stroke="#211a12" stroke-width="4"/>
+  <path d="M288 62 V102 H542 L566 82 542 62 Z" fill="#b88a2c" stroke="#211a12" stroke-width="5"/>
+  <text x="410" y="90" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="bold" font-size="27" letter-spacing="4" fill="#211a12">THE QUERENT</text>
+  <rect x="130" y="142" width="74" height="86" fill="#b88a2c" stroke="#211a12" stroke-width="5"/>
+  <text x="167" y="207" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="bold" font-size="70" fill="#ead9ad">W</text>
+  <text x="230" y="169" font-family="Georgia, 'Times New Roman', serif" font-size="29" fill="#211a12">ell now, little Excuse — the road has noticed you.</text>
+  <text x="230" y="213" font-family="Georgia, 'Times New Roman', serif" font-size="24" font-style="italic" fill="#5b4725">Placeholder copy — final text supplied by Localization.</text>
+  <path d="M1070 229 l12 12-12 12-12-12z" fill="#b88a2c" stroke="#211a12" stroke-width="4"/>
+</svg>
