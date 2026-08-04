@@ -16,6 +16,12 @@ tree.
 
 ---
 
+## MILESTONE — TheCliff.unity · commit `60b4531`
+
+**Tarrock has its first real region scene.** `Regions/TheCliff.unity` — generator-authored, build-registered,
+quest-wired, 77/77 tests green against the shipping scene itself. TerrainProto returns to being what it always was:
+the sandbox. Twenty rounds from a feel-test with a null post-processing profile to this.
+
 ## THE PHASE PIVOT — polish → functional (director, issue #8)
 
 *"Get the scene functional, not polishing every little thing."* Visual-polish rounds pause (sky #8 and ground #9
