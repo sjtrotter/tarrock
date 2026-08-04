@@ -490,6 +490,18 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
   datum for all future presence work: restraint over musculature.
 - Issue #6 (calf width) still open, no comment yet.
 
+## DIRECTOR RULING — issue #6 (2026-08-04, applied + closed)
+
+- **Calves accepted AS-IS**; debt retired; the conditional calf edit is
+  DROPPED from R17 entirely.
+- **STANDING STYLE DATUM (quoted):** "the model doesn't necessarily need to
+  look *EXACTLY* like the reference; in fact, it probably won't match
+  exactly... Too much 'trying' to make it look exact may deform it more
+  anyway." Interpretation for the run: the sheets govern the CHARACTER READ,
+  not a millimetre contract — existing gates stay as internal discipline,
+  but no more rounds spent chasing small sheet deltas for their own sake.
+  (Pairs with the #5 restraint ruling.)
+
 ## ROUND 17 (OPEN, 2026-08-04): head polish — cycle log
 
 - Cycle 1 (Codex, 021c): gates green (neck ring 0.000, eyes/body untouched,
