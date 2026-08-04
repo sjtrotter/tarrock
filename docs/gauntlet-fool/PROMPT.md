@@ -22,6 +22,10 @@ Fool per `~/Downloads/Fool-Orthographic-A-Pose.png`, backed by the other sheets 
 `Fool-Expressions.png`, `Fool-Clothing-Layers-Materials-Colors.png`) — that sheet is
 older, so interpret where it conflicts with the new one. Eyes are rig-ready by director
 ruling: open sockets with separate rotatable eyeball spheres on their own bones.
+EARS by director ruling (standing, re-affirmed 2026-08-04): built from a NEW mirrored
+cube shaped to the ear's outer dimensions then refined and joined — never extruded or
+carved out of the head (relief-sculpted ears failed three blind rounds in the v1 run;
+separate geometry was the only method that ever won).
 
 Final output: `docs/design/3d-models-inwork/Fool.blend`, posed/animation-ready, and
 proven to survive the Blender→Unity trip — research the export path (FBX, scale,
@@ -36,10 +40,14 @@ by the same hand: 40% Fable (original trilogy), 20% Kells/Wolfwalkers, 15% Kena,
 10% Dishonored, 10% illustrated fairy tales, 5% Ghibli. Stylized-simple beats
 anatomical-correct — a prior run died of "gnarled and gross" over-detailed hands.
 
-**Usage economy (director order 2026-08-03):** Claude weekly quota is burning far
-faster than Codex (Codex sits at ~99% remaining). Codex CLI is now the DEFAULT
-executor for grunt work — builder script-writing and iteration, bpy/numpy sculpt
-code, render/measure/report loops — via `codex exec`. Codex CAN drive the GUI MCP
+**Usage economy (director orders 2026-08-03, TIGHTENED 2026-08-04):** Claude weekly
+usage is at 70% and must be RESERVED; Codex has 88% remaining. Sub-agents are now
+ALMOST EXCLUSIVELY Codex — builders, iterators, render/measure loops, blind judges,
+and critique passes all go to `codex exec` by default. Claude is spent ONLY on: the
+lead's own planning/validation turns (kept short and infrequent), and a rare Opus
+builder escalation when Codex has demonstrably failed a judgment-heavy piece twice
+AND the piece blocks the round — each such escalation is justified in ROUND-STATE
+before launch. No Claude critics where a Codex critic can serve. Codex CAN drive the GUI MCP
 socket: configure the blender-mcp stdio server via `-c` overrides (server at
 `~/blender_mcp`, launched with `uv run blender-mcp`, which talks to the GUI addon
 socket on 9876) instead of the usual `-c 'mcp_servers={}'` kill-switch; headless
@@ -70,6 +78,12 @@ poll interval ≥ 5 min). When the director answers: reply on the issue acknowle
 the ruling, apply it, record it in ROUND-STATE.md, and CLOSE the issue once the matter
 is actually resolved. Non-canon judgment calls are still yours — take the
 industry-standard option and log it; the issue channel is for director-only decisions.
+Two standing rules (director, 2026-08-04): (1) **carried-twice rule** — any debt,
+defect, or gap that has been carried forward more than twice gets its own issue at
+that point; the director may have insight that unsticks it. (2) **plain English** —
+write issues for a reader with NO run context: no round numbers, phase letters, or
+metric shorthand without a one-line explanation; describe what the thing looks like
+and what decision or insight is needed, and link the relevant STATUS.md section.
 
 Keep a simple live progress page showing the work evolving round by round — NOT a
 local/claude.ai artifact: maintain `docs/gauntlet-fool/STATUS.md` (with round

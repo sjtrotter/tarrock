@@ -1,0 +1,74 @@
+{
+  "phase": "R18 Phase D weight polish",
+  "status": "PASS_WITH_VISUAL_LIMITATIONS",
+  "final_candidate": "Fool-v2-023m.blend",
+  "baseline_candidate": "Fool-v2-023j.blend",
+  "evaluated_self_intersection_method": "BVH overlap on evaluated posed Fool_Mesh; face pairs sharing any vertex excluded as topological adjacency",
+  "posed_self_intersections": {
+    "baseline": {
+      "rest": 0,
+      "fingers_60x3": 0,
+      "thumb_own_axis_60x3": 0,
+      "a80": 0,
+      "elbow90": 0,
+      "knee90": 0,
+      "hip45": 0,
+      "neck_turn45": 0
+    },
+    "final": {
+      "rest": 0,
+      "fingers_60x3": 0,
+      "thumb_own_axis_60x3": 0,
+      "a80": 0,
+      "elbow90": 0,
+      "knee90": 0,
+      "hip45": 0,
+      "neck_turn45": 0
+    },
+    "finger_gate_le_4": true,
+    "no_pose_worse_than_baseline": true
+  },
+  "geometry_topology": {
+    "baseline_sha256": "89808cace460e5677b9095703b422354309ab23d4c39f7b177b8f66e32a70fee",
+    "final_sha256": "89808cace460e5677b9095703b422354309ab23d4c39f7b177b8f66e32a70fee",
+    "unchanged": true,
+    "vertex_count": 6661,
+    "edge_count": 13286,
+    "face_count": 6625
+  },
+  "rest_identity_max_mm": 0.0001358071,
+  "weights": {
+    "mirror_max_error_distinct_lr_pairs": 0.0000053048,
+    "mirror_gate_le_1e_4": true,
+    "centerline_note": "Self-mapped centerline vertices are excluded from the L/R pair metric; inherited 023j centerline L-vs-R group imbalance was not altered.",
+    "zero_weight_vertices": 0,
+    "max_influences": 4,
+    "normalization_max_error": 0.0000000447
+  },
+  "guards": {
+    "smear_flagged_count": 0,
+    "a80_distal_rigid_lag_max_mm": 0.0008517,
+    "rigid_lag_limit_mm": 30,
+    "note": "Rigid-chain lag is meaningful for the a80 distal arm chain; the other battery poses rotate local articulated chains and use the smear/collision gates."
+  },
+  "shoulder_a80_ring_area_loss_percent": {
+    "x_abs_0.225": 6.0783357,
+    "x_abs_0.289": 0.3434157,
+    "assessment": "The permitted inner armhole area loss increased modestly while the close-up silhouette improved."
+  },
+  "static_regions": {
+    "head_eye_neck_weight_sha256_baseline": "2e89b483879680748ffab19438f4fb32e85919cc6f74af70c03fa5ff47f7ed5e",
+    "head_eye_neck_weight_sha256_final": "2e89b483879680748ffab19438f4fb32e85919cc6f74af70c03fa5ff47f7ed5e",
+    "untouched": true
+  },
+  "bone_edits": "none",
+  "render_whitelist": ["Fool_Mesh", "Fool_Eye_L", "Fool_Eye_R"],
+  "renders_directory": "renders-k",
+  "render_count": 17,
+  "all_renders_eyeballed": true,
+  "iterations": {
+    "023k": "rejected: broad digit/elbow blends caused 25 finger-pose, 34 thumb-pose, and 12 elbow-pose pairs",
+    "023l": "accepted visual weights but rejected as final because global cleanup unnecessarily touched static weights",
+    "023m": "selected: cleanup limited to targeted vertices; all posed intersections returned to zero"
+  }
+}

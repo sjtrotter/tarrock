@@ -585,6 +585,171 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
   five straight fanned separated digits per the sheet. Director defect
   RESOLVED. Evidence renders pushed (r18p0-hand-before/after.png).
 
+## ROUND 18 PROPER (OPEN, 2026-08-04, 5th lead): rigging
+
+- Handoff recommendations ADOPTED as lead rulings (tooling/R18-BRIEF.md):
+  custom deform-only armature authored programmatically (no Rigify), 53-bone
+  Unity-Humanoid-compatible set with Blender .L/.R suffixes + Eye.L/R bones
+  (globes bone-parented, never skinned); head-body join via 72-pair
+  merge-by-distance → `Fool_Mesh`; auto-weights + cleanup; pose battery =
+  the round gate (shoulder −45°/−80° adjudicates the R16 armhole debt;
+  finger 60° hinges; eye aim ±20°; neck; elbow/knee/hip).
+- Phase A (Codex): fool2-r18/TASK-A-RIG.md — join + armature + bind + full
+  battery, candidates Fool-v2-023a+. Promotion target Fool-v2-023.blend.
+- **Phase A result (lead-adjudicated 2026-08-04): structure GOOD, finish
+  CORRUPTED.** Join exact (6,661 v, boundary drop 144 accounted, 0 self-int,
+  rest identity 0.000), 53-bone rig symmetric/identity-transform, eye bones
+  on globe centers, children of Head, deform=False, globes bone-parented.
+  Builder stopped honestly at the finger gate — but its final weight "fix"
+  (023d) applied R16 BODY vertex indices to the reindexed joined mesh:
+  ~394 head/neck verts got finger-bone weights (thumb range landed on the
+  neck seam), producing 440–1000 mm streak wings in the pose renders that
+  the builder's "all renders reviewed" claim missed, and tearing the collar.
+  023d DISCARDED; cycle 2 rebases on 023c (pre-corruption, gates green).
+- **Defects found by lead instruments:** (1) shoulder ring at |x|=0.289
+  measured the rigid arm (0.6–1.1% loss); TRUE armhole ring |x|=0.225 loses
+  10.0%@45° / 18.3%@80° — eyes-on verdict deferred to clean renders;
+  (2) Eye.L bone/globe on −X while body .L=+X (Foot.L +0.135) — Unity
+  Humanoid would cross-map eyes vs hands. Lead ruling: swap bone AND globe
+  names so .L = character's left = +X everywhere (R14 globe naming was
+  screen-side, not anatomical).
+- **Paid-for lessons (rig round):** (a) any vertex-index table dies at a
+  topology-changing operation — after a join/merge, index-based tooling must
+  be re-derived geometrically (same family as R17's rename trap);
+  (b) pose-battery renders must whitelist visible objects, never blacklist
+  (builder hid only backup_*; helpers were innocent this time but the law
+  stands); (c) a smear guard (per-vertex displacement bounded by chord of
+  distance-to-joint) is now a mandatory battery gate — automate what eyes
+  keep missing; (d) eye-clearance-under-rotation is a phantom instrument:
+  a true sphere rotating about its center is surface-invariant (globes
+  measured spherical to ±0.0001 mm; static socket min gap 0.046 mm is the
+  real number, safe by invariance).
+- Phase B (Codex, cycle 2 on the finger piece — fail #1 recorded above):
+  fool2-r18/TASK-B-RIGFIX.md — rebase 023c, geometric digit sets, eye swap,
+  corrected battery + smear guard. A second finger miss = Opus escalation
+  per the tightened regime.
+- **Phase B stopped honestly at the lead's sanity gate — and completed the
+  diagnosis: the 30 phalange bones were placed from R16 body_axes digit
+  stations, captured BEFORE Phase 0 straightened the digits.** Bones follow
+  the old curled axes; tubes moved out from under them (thumb tube to
+  y=−123.8 mm vs bones ending −92.8). Also explains 023c's crumpled fist —
+  curling out-of-tube bones deforms garbage. NOT counted as a finger fail:
+  the stop was the gate working. Phase B2 (TASK-B2-RIGFIX.md) authorized:
+  reposition phalange bones onto ring-centroid axes from backup_BodyRetopo
+  (R16 indices still valid THERE), mirror-exact, then the full TASK-B
+  sequence. Paid-for lesson: bone placement data must postdate every
+  geometry edit — Phase 0 invalidated the R16 digit axes for RIGGING too,
+  not just for weights.
+
+## R18 PHASE B2 + LEAD PATCH (2026-08-04): rig repair LANDED — 023f
+
+- **Phase B2 (Codex) delivered:** 30 phalange bones repositioned onto the
+  straightened tube axes (mirror-exact, digit sets now connected: 49/77/74/
+  74/76 per side), eye sides swapped per ruling, smear guard 0 in all poses,
+  statics green, TRUE armhole loss 9.98%@45° / 18.26%@80°. Honest stop at
+  the fist gate ("open hook, fingertips miss palm, thumb splayed").
+- **Lead adjudication of the stop:** deformation QUALITY passes (volume
+  held, no web tearing, knuckles read) — the open hook is the 60°×3 pose
+  spec itself (a real fist needs more MCP), and the thumb splay is a pose-
+  axis artifact (thumb hinge is diagonal, battery curls about world Y).
+  NOT a Codex fail; gate met as specified by the handoff.
+- **New defect found by lead eyes-on that every instrument missed:** at
+  a80 the hands stretched into ~0.5 m "blades" — 10 palm verts PER SIDE had
+  EMPTY vertex groups (B2's bleed-removal stripped finger weights from
+  verts whose auto-weights were exclusively old-finger-bone; they anchored
+  at rest). The smear guard is blind to UNDER-motion. Lead applied the
+  fully-determined 20-vert patch directly (nearest hand-chain bone, 1.0,
+  mirror-consistent) + full re-validation in one invocation — logged as a
+  deliberate regime deviation: a Codex round-trip for a determined 20-vert
+  fix costs more than it saves. Result 023f: orphans 0, a80 hand lag
+  579 → 1.67 mm, statics green, rest identity 0.0002 mm.
+- **SHOULDER POSE TEST — the R16 armhole debt is ADJUDICATED: PASS** (lead
+  eyes-on clean renders at 45°/80°: continuous deltoid/armhole, armpit
+  reads as compression not collapse; 18.3% ring-area loss does not manifest
+  visually). Residual notes: angular low-poly elbow profile, neck seam
+  density collar — dressed-stage re-judge debts as before.
+- **New instrument law: every pose battery needs BOTH guards — smear
+  (over-motion) AND rigid-lag (under-motion: verts in a rigidly-rotating
+  region must track the rigid transform within ~30 mm).** Zero-weight-vert
+  check runs AFTER every weight edit, not just after binding.
+
+## R18 PHASE C ACCEPTED + BLIND JUDGE + PHASE D (2026-08-04)
+
+- **Phase C (thumb/thenar, Codex) ACCEPTED — 023j.** Move-verts-only held:
+  topology sha unchanged, mirror residual identical, outside-hand movement
+  0.000, straightness ≤0.0004 mm, thumb–index clearance 11.45 mm, thumb
+  bones repositioned onto the edited tube (22.2 mm shift), thenar owned
+  Hand 72–90% w/ Thumb.01 blend, zero-weights 0, lag guard 0.0009 mm.
+  Lead eyes-on: base reads full, restrained thenar ball, real opposition
+  in thumb-curl. Director thumb defect RESOLVED pending dressed re-judge.
+- **Blind judge (Codex, fresh, rig rubric): 4/10.** Named blockers:
+  finger curls intersect/stack w/ sharp hinges; thumb opposition doesn't
+  carry the thenar; shoulder at 80° = squared shell + caved armpit (wants
+  clavicle/torso blend); elbow inner pinch "marginally usable". Judge's
+  own assessment: fixable by weight redistribution WITHOUT geometry.
+- **Phase D launched (TASK-D-WEIGHTPOLISH.md):** the run's first true
+  weight-polish pass (hard per-phalange assignments were never smoothed) —
+  hinge-ring blending, thenar/thumb blend, deltoid/armpit gradient, elbow
+  softening. NEW INSTRUMENT: posed self-intersection counts per battery
+  pose (before/after). Judge fail #1 recorded against the weight-polish
+  piece if D misses.
+
+## ROUND 18 CLOSED (2026-08-04): rigging → chain Fool-v2-023.blend
+
+- **Chain = workdir Fool-v2-023m.blend promoted** (lead verified the copied
+  chain file independently: 6,661 v / 53 bones / 0 zero-weight / Eye.L +X /
+  rig identity). Full lineage: 023a-d Phase A (structure good, weight fix
+  corrupted), 023e Phase B2 (bones repositioned, eye swap), 023f lead
+  orphan patch, 023j Phase C (thumb/thenar), 023m Phase D (weight polish;
+  023k/l rejected by the builder's own posed-intersection instrument).
+- **Phase D results:** shoulder armhole loss 18.26→6.08%@80° w/ visibly
+  rounder deltoid; hinge blending smoothed fingers/elbow; thenar carries
+  in opposition; posed self-intersections 0 in every battery pose (and the
+  0-baseline proved the judge's "intersections" were visual stacking);
+  head/eye/neck weights sha-identical; mirror weight symmetry 5e-6.
+- **Re-judge: 5/10 (from 4/10), biggest gap migrated hands→shoulder read.**
+  Closed under the 80–90% clause + director restraint rulings: remaining
+  complaints are density-bound (boxy elbow, angular digits — R16 budget),
+  instrument-contested (claimed intersections measure 0), or dressed-stage
+  (armpit crease — clothing covers; neck collar). Handoff gates (no
+  shoulder collapse, no finger tearing) PASS by instruments + lead eyes-on.
+- **Debts → dressed re-judge:** armpit crease at extreme arm-lower; boxy
+  elbow; angular digit read; neck seam density collar. Judge's neck-nod
+  axis remark checked: battery math is correct (−30° about X tips forward).
+- Tooling promoted to repo tooling/: all five TASK briefs, four reports,
+  validation JSONs, pose_battery.py, repair_r18b2.py, lead instruments
+  (lead_check_rig / lead_diag_smear / lead_patch_023f).
+- R19 = HAIR + compliant ear rebuild (audit below). Then clothes &
+  accessories, materials (irises/brows — blind-score ceiling lifts),
+  Unity FBX gate ends the run.
+
+## EAR AUDIT (2026-08-04, director ruling re-affirmed in charter): VIOLATION
+
+- Evidence renders fool2-r18/renders-f/ear-side-L.png / ear-tq-back.png /
+  ear-front.png: the current ears are shallow relief discs sculpted/carved
+  into the head side (R14 sculpt → R15 "simplified flap" retopo) — exactly
+  the v1 failure mode the standing ruling bans (ears must be NEW mirrored
+  cube geometry shaped to the ear's outer dimensions, refined, JOINED).
+- **Scheduled: compliant ear rebuild in the HAIR round** (hair coverage
+  determines exposure; builds together). Gates when it runs: separate
+  mirrored construction, joined watertight, head silhouette elsewhere
+  untouched, re-skin ear region to Head bone, straightness/mirror/self-int
+  instruments.
+
+## DIRECTOR DEFECT REPORT (2026-08-04, mid-R18) — thumb base / thenar eminence
+
+- The THUMB is too thin at its base and lacks the thenar 'ball' at the root
+  (palm-side mass). Geometry defect, not weights; matters for the read AND
+  for rigging (thumb opposition collapses flat without the mass).
+- **Lead scheduling ruling: R18 Phase C** — bounded hand-geometry touch-up
+  (thumb-base girth + thenar eminence mound, both hands mirror-exact) runs
+  AFTER Phase B2 lands its bone/weight repair and BEFORE weight polish
+  counts as final: B2's bone-placement + digit-weight machinery is
+  geometric/index-free, so re-running it on the edited mesh is cheap now,
+  costly later. Straightened-finger gates (straightness, clearances,
+  mirror 0, no self-intersections) apply to the edit; thumb bones and
+  digit weights re-derived after the edit; thumb battery re-run.
+
 ## R18 HANDOFF (4th lead retiring at token ceiling — rigging round NOT started)
 
 Successor: charter + this file + STATUS are the resume point, as ever.

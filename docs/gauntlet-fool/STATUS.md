@@ -25,9 +25,9 @@ being re-run, and run tooling now lives in the repo under
 | Merge & sculpt | Pass 1 + Pass 2 DONE (r5–r13; Pass-2 closed by director ruling #2, debts logged); Pass-3 creases deferred |
 | Head sculpt | DONE (Round 14; eye/mouth-read + jaw-band debts to retopo/materials) |
 | Retopo (head, body) | DONE (r15 head, r16 body; YoungAdultMale-base.blend milestone saved) |
-| Head polish (director-ordered) | next (Round 17: nose presence, lip read, aperture, calf width if ruled) |
-| Rigging | — (Round 18) |
-| Hair | — |
+| Head polish (director-ordered) | DONE (Round 17) |
+| Rigging | DONE (Round 18: 53-bone Unity-Humanoid rig, skinned, pose-tested; shoulder debt adjudicated PASS) |
+| Hair (+ compliant ear rebuild) | next (Round 19) |
 | Clothes & accessories | — |
 | Materials | — |
 | Unity FBX gate | — |
@@ -695,3 +695,64 @@ untouched. Independently re-verified; chain advances to `Fool-v2-022.blend`.
 *The rigging round proper (armature, the shoulder pose test that re-judges
 the R16 debt, skinning) opens next under a successor lead — the R18 handoff
 lives in ROUND-STATE.md.*
+
+---
+
+## Round 18 — rigging proper (2026-08-04, 5th lead)
+
+The head and body were joined at the 72-vertex neck seam into one mesh
+(6,661 verts, watertight join, zero self-intersections), a custom 53-bone
+deform-only armature was authored programmatically to the Unity Humanoid
+bone set (Hips→Head chain, arms, 3-bone fingers, legs, and Eye.L/R bones
+carrying the bone-parented eyeball spheres — the rig-ready-eyes director
+ruling, done), and the mesh was skinned and then pose-tested hard. Five
+Codex phases and a stack of new instruments later, the rig survives its
+battery: shoulder lowered 45°/80°, all fingers curled 60° at every hinge,
+thumb opposition about its own axis, eye aim, neck nod/turn, elbow, knee,
+hip.
+
+**The round fought for its evidence.** Three defect classes were caught by
+lead validation that the builders' own instruments and "eyes-on" claims
+missed: (1) stale pre-join vertex indices corrupted ~394 neck verts with
+finger-bone weights — the neck seam grew 0.4–1 m streak "wings" whenever
+the arms moved (left image below); (2) the finger bones had been placed
+from pre-straightening data and sat outside the finger tubes entirely;
+(3) twenty palm vertices were left with NO weights and anchored in space,
+stretching the hands into blades. Each produced a new standing instrument:
+geometric (never index-based) digit sets, a smear guard, a rigid-lag
+guard, and posed-self-intersection counts — all zero on the shipped rig.
+
+Mid-round the director reported the thumb too thin with no thenar 'ball';
+Phase C rebuilt the thumb base and palm mound (move-verts-only, mirror-
+exact, all straightness gates held) and the thumb bones/weights were
+re-derived. A final weight-polish phase answered the blind judge's four
+named blockers; the judge's score moved 4/10 → 5/10 with the biggest-gap
+slot migrating from "hands" to "shoulder read at extreme lower" — which
+the clothing layers cover in-game, so it re-judges dressed.
+
+| Defect caught: weight-smear "wings" | Shipped: arms at 80° |
+|---|---|
+| ![wings](renders/r18-defect-wings.png) | ![a80](renders/r18-a80-front.png) |
+
+| Shoulder zoom at 80° | Fist (60°×3 curl) | Thumb opposition |
+|---|---|---|
+| ![shoulder](renders/r18-shoulder-zoom.png) | ![fist](renders/r18-fist.png) | ![thumb](renders/r18-thumb-curl.png) |
+
+**The R16 shoulder/armhole debt is adjudicated: PASS** — at 80° the
+armhole compresses (6% ring-area loss after polish, was 18%) but does not
+collapse or pinch; lead eyes-on and instruments agree.
+
+**Ear audit (director ruling):** the current ears are relief discs carved
+into the head — the banned v1 method (evidence below). A compliant rebuild
+(separate mirrored geometry, shaped, then joined) is scheduled with the
+hair round, where hair coverage decides how much ear shows.
+
+| Ear audit evidence | Rest T-pose after rigging |
+|---|---|
+| ![ear](renders/r18-ear-audit.png) | ![rest](renders/r18-rest-front.png) |
+
+**Round verdict: CLOSED — chain advances to `Fool-v2-023.blend`** (joined,
+rigged, skinned, pose-tested; rest pose intact to 0.0001 mm). Debts logged
+for the dressed re-judge: armpit crease at extreme arm-lower, boxy elbow
+and angular digits (both quad-budget-bound, R16), neck seam density
+collar. Next: **Round 19 — hair + the compliant ear rebuild.**

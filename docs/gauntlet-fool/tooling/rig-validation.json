@@ -1,0 +1,1027 @@
+{
+  "phase": "R18 Phase A",
+  "status": "FAIL",
+  "final_candidate": "Fool-v2-023d.blend",
+  "stop_reason": "Finger curl gate failed after targeted weight-only repair: visible web tearing/crumpling and inadequate knuckle volume.",
+  "join": {
+    "pre": {
+      "head_vertices": 2134,
+      "body_vertices": 4599,
+      "head_boundary_edges": 148,
+      "body_boundary_edges": 72
+    },
+    "post": {
+      "vertices": 6661,
+      "boundary_edges": 76,
+      "seam_vertices_selected": 144
+    },
+    "boundary_drop": 144
+  },
+  "bones": {
+    "count": 53,
+    "joints": {
+      "Hips": {
+        "head": [
+          0.0,
+          0.002,
+          0.824999988
+        ],
+        "tail": [
+          0.0,
+          0.004,
+          0.964999974
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Spine": {
+        "head": [
+          0.0,
+          0.004,
+          0.964999974
+        ],
+        "tail": [
+          0.0,
+          -0.006,
+          1.184999943
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Chest": {
+        "head": [
+          0.0,
+          -0.006,
+          1.184999943
+        ],
+        "tail": [
+          0.0,
+          0.034000002,
+          1.409999967
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Neck": {
+        "head": [
+          0.0,
+          0.034000002,
+          1.409999967
+        ],
+        "tail": [
+          0.0,
+          -0.005,
+          1.514999986
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Head": {
+        "head": [
+          0.0,
+          -0.005,
+          1.514999986
+        ],
+        "tail": [
+          0.0,
+          -0.012,
+          1.717000008
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Eye.L": {
+        "head": [
+          -0.043000001,
+          -0.0403,
+          1.57099998
+        ],
+        "tail": [
+          -0.043000001,
+          -0.075300001,
+          1.57099998
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Eye.R": {
+        "head": [
+          0.043000001,
+          -0.0403,
+          1.57099998
+        ],
+        "tail": [
+          0.043000001,
+          -0.075300001,
+          1.57099998
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Shoulder.L": {
+        "head": [
+          0.104999997,
+          0.017999999,
+          1.370000005
+        ],
+        "tail": [
+          0.275000006,
+          0.041000001,
+          1.348999977
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "UpperArm.L": {
+        "head": [
+          0.275000006,
+          0.041000001,
+          1.348999977
+        ],
+        "tail": [
+          0.5,
+          0.02,
+          1.330000043
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "LowerArm.L": {
+        "head": [
+          0.5,
+          0.02,
+          1.330000043
+        ],
+        "tail": [
+          0.689999998,
+          -0.006,
+          1.30400002
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Hand.L": {
+        "head": [
+          0.689999998,
+          -0.006,
+          1.30400002
+        ],
+        "tail": [
+          0.716000021,
+          -0.001,
+          1.30400002
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Thumb.01.L": {
+        "head": [
+          0.646033049,
+          -0.009740001,
+          1.293274164
+        ],
+        "tail": [
+          0.669206977,
+          -0.022218002,
+          1.289163947
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Thumb.02.L": {
+        "head": [
+          0.669206977,
+          -0.022218002,
+          1.289163947
+        ],
+        "tail": [
+          0.703097045,
+          -0.041870002,
+          1.279368162
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Thumb.03.L": {
+        "head": [
+          0.703097045,
+          -0.041870002,
+          1.279368162
+        ],
+        "tail": [
+          0.764919996,
+          -0.067845002,
+          1.276566148
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Index.01.L": {
+        "head": [
+          0.711956024,
+          -0.032631002,
+          1.305459976
+        ],
+        "tail": [
+          0.737804055,
+          -0.033716999,
+          1.302800059
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Index.02.L": {
+        "head": [
+          0.737804055,
+          -0.033716999,
+          1.302800059
+        ],
+        "tail": [
+          0.777768016,
+          -0.035636004,
+          1.298758149
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Index.03.L": {
+        "head": [
+          0.777768016,
+          -0.035636004,
+          1.298758149
+        ],
+        "tail": [
+          0.842817068,
+          -0.038347002,
+          1.292045116
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Middle.01.L": {
+        "head": [
+          0.714094043,
+          -0.008912,
+          1.305373073
+        ],
+        "tail": [
+          0.742870986,
+          -0.011221,
+          1.303211093
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Middle.02.L": {
+        "head": [
+          0.742870986,
+          -0.011221,
+          1.303211093
+        ],
+        "tail": [
+          0.787733018,
+          -0.013548001,
+          1.297829032
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Middle.03.L": {
+        "head": [
+          0.787733018,
+          -0.013548001,
+          1.297829032
+        ],
+        "tail": [
+          0.860177994,
+          -0.018052001,
+          1.290342093
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Ring.01.L": {
+        "head": [
+          0.715703011,
+          0.014317001,
+          1.305374026
+        ],
+        "tail": [
+          0.741351068,
+          0.012043001,
+          1.302728057
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Ring.02.L": {
+        "head": [
+          0.741351068,
+          0.012043001,
+          1.302728057
+        ],
+        "tail": [
+          0.781130016,
+          0.008593,
+          1.298689961
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Ring.03.L": {
+        "head": [
+          0.781130016,
+          0.008593,
+          1.298689961
+        ],
+        "tail": [
+          0.84801507,
+          0.002604,
+          1.291772008
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Pinky.01.L": {
+        "head": [
+          0.716413081,
+          0.035478003,
+          1.305431128
+        ],
+        "tail": [
+          0.741011024,
+          0.032822002,
+          1.302294016
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Pinky.02.L": {
+        "head": [
+          0.741011024,
+          0.032822002,
+          1.302294016
+        ],
+        "tail": [
+          0.776843071,
+          0.029352,
+          1.299267054
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Pinky.03.L": {
+        "head": [
+          0.776843071,
+          0.029352,
+          1.299267054
+        ],
+        "tail": [
+          0.836140037,
+          0.023249002,
+          1.293146014
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "UpperLeg.L": {
+        "head": [
+          0.096000001,
+          0.002,
+          0.819999993
+        ],
+        "tail": [
+          0.119999997,
+          0.045000002,
+          0.5
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "LowerLeg.L": {
+        "head": [
+          0.119999997,
+          0.045000002,
+          0.5
+        ],
+        "tail": [
+          0.135000005,
+          0.039999999,
+          0.119999997
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Foot.L": {
+        "head": [
+          0.135000005,
+          0.039999999,
+          0.119999997
+        ],
+        "tail": [
+          0.144999996,
+          -0.075000003,
+          0.055
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Toes.L": {
+        "head": [
+          0.144999996,
+          -0.075000003,
+          0.055
+        ],
+        "tail": [
+          0.144999996,
+          -0.209999993,
+          0.050000001
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Shoulder.R": {
+        "head": [
+          -0.104999997,
+          0.017999999,
+          1.370000005
+        ],
+        "tail": [
+          -0.275000006,
+          0.041000001,
+          1.348999977
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "UpperArm.R": {
+        "head": [
+          -0.275000006,
+          0.041000001,
+          1.348999977
+        ],
+        "tail": [
+          -0.5,
+          0.02,
+          1.330000043
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "LowerArm.R": {
+        "head": [
+          -0.5,
+          0.02,
+          1.330000043
+        ],
+        "tail": [
+          -0.689999998,
+          -0.006,
+          1.30400002
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Hand.R": {
+        "head": [
+          -0.689999998,
+          -0.006,
+          1.30400002
+        ],
+        "tail": [
+          -0.716000021,
+          -0.001,
+          1.30400002
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Thumb.01.R": {
+        "head": [
+          -0.646033049,
+          -0.009740001,
+          1.293274164
+        ],
+        "tail": [
+          -0.669206977,
+          -0.022218002,
+          1.289163947
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Thumb.02.R": {
+        "head": [
+          -0.669206977,
+          -0.022218002,
+          1.289163947
+        ],
+        "tail": [
+          -0.703097045,
+          -0.041870002,
+          1.279368162
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Thumb.03.R": {
+        "head": [
+          -0.703097045,
+          -0.041870002,
+          1.279368162
+        ],
+        "tail": [
+          -0.764919996,
+          -0.067845002,
+          1.276566148
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Index.01.R": {
+        "head": [
+          -0.711956024,
+          -0.032631002,
+          1.305459976
+        ],
+        "tail": [
+          -0.737804055,
+          -0.033716999,
+          1.302800059
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Index.02.R": {
+        "head": [
+          -0.737804055,
+          -0.033716999,
+          1.302800059
+        ],
+        "tail": [
+          -0.777768016,
+          -0.035636004,
+          1.298758149
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Index.03.R": {
+        "head": [
+          -0.777768016,
+          -0.035636004,
+          1.298758149
+        ],
+        "tail": [
+          -0.842817068,
+          -0.038347002,
+          1.292045116
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Middle.01.R": {
+        "head": [
+          -0.714094043,
+          -0.008912,
+          1.305373073
+        ],
+        "tail": [
+          -0.742870986,
+          -0.011221,
+          1.303211093
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Middle.02.R": {
+        "head": [
+          -0.742870986,
+          -0.011221,
+          1.303211093
+        ],
+        "tail": [
+          -0.787733018,
+          -0.013548001,
+          1.297829032
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Middle.03.R": {
+        "head": [
+          -0.787733018,
+          -0.013548001,
+          1.297829032
+        ],
+        "tail": [
+          -0.860177994,
+          -0.018052001,
+          1.290342093
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Ring.01.R": {
+        "head": [
+          -0.715703011,
+          0.014317001,
+          1.305374026
+        ],
+        "tail": [
+          -0.741351068,
+          0.012043001,
+          1.302728057
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Ring.02.R": {
+        "head": [
+          -0.741351068,
+          0.012043001,
+          1.302728057
+        ],
+        "tail": [
+          -0.781130016,
+          0.008593,
+          1.298689961
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Ring.03.R": {
+        "head": [
+          -0.781130016,
+          0.008593,
+          1.298689961
+        ],
+        "tail": [
+          -0.84801507,
+          0.002604,
+          1.291772008
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Pinky.01.R": {
+        "head": [
+          -0.716413081,
+          0.035478003,
+          1.305431128
+        ],
+        "tail": [
+          -0.741011024,
+          0.032822002,
+          1.302294016
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Pinky.02.R": {
+        "head": [
+          -0.741011024,
+          0.032822002,
+          1.302294016
+        ],
+        "tail": [
+          -0.776843071,
+          0.029352,
+          1.299267054
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Pinky.03.R": {
+        "head": [
+          -0.776843071,
+          0.029352,
+          1.299267054
+        ],
+        "tail": [
+          -0.836140037,
+          0.023249002,
+          1.293146014
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "UpperLeg.R": {
+        "head": [
+          -0.096000001,
+          0.002,
+          0.819999993
+        ],
+        "tail": [
+          -0.119999997,
+          0.045000002,
+          0.5
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "LowerLeg.R": {
+        "head": [
+          -0.119999997,
+          0.045000002,
+          0.5
+        ],
+        "tail": [
+          -0.135000005,
+          0.039999999,
+          0.119999997
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Foot.R": {
+        "head": [
+          -0.135000005,
+          0.039999999,
+          0.119999997
+        ],
+        "tail": [
+          -0.144999996,
+          -0.075000003,
+          0.055
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      },
+      "Toes.R": {
+        "head": [
+          -0.144999996,
+          -0.075000003,
+          0.055
+        ],
+        "tail": [
+          -0.144999996,
+          -0.209999993,
+          0.050000001
+        ],
+        "roll": 0.0,
+        "source": "R16 section/axis data and mesh bend stations"
+      }
+    },
+    "lr_endpoint_max_residual_mm": 0.0,
+    "rig_transform": {
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  },
+  "binding": {
+    "operation_succeeded": true,
+    "error": "",
+    "zero_weight_vertices": 0,
+    "max_influences": 4,
+    "weights_below_0.001": 0,
+    "wrong_side_vertices": 0,
+    "head_region_limb_bleed_vertices": 0,
+    "foot_above_knee_bleed_vertices": 0,
+    "cleanup": {
+      "influence_limit": 4,
+      "normalized": true,
+      "prune_threshold": 0.001
+    },
+    "preserve_volume": true,
+    "digit_targeted_fix": "023d"
+  },
+  "eyes": {
+    "before_world_translation": {
+      "Fool_Eye_L": [
+        -0.043000001,
+        -0.0403,
+        1.57099998
+      ],
+      "Fool_Eye_R": [
+        0.043000001,
+        -0.0403,
+        1.57099998
+      ]
+    },
+    "after_world_translation": {
+      "Fool_Eye_L": [
+        -0.043000001,
+        -0.0403,
+        1.57099998
+      ],
+      "Fool_Eye_R": [
+        0.043000001,
+        -0.0403,
+        1.57099998
+      ]
+    },
+    "note": "Source naming is counterintuitive: Fool_Eye_L is at X=-43 mm and Fool_Eye_R at X=+43 mm. Explicit required object-to-bone parenting was honored; each Eye bone head is at its named globe center."
+  },
+  "static_gates": {
+    "vertex_count": {
+      "pass": true,
+      "value": 6661,
+      "required": 6661
+    },
+    "boundary_accounting": {
+      "pass": true,
+      "before_total": 220,
+      "after": 76,
+      "drop": 144
+    },
+    "non_manifold_excluding_boundaries": {
+      "pass": true,
+      "value": 0
+    },
+    "self_intersections": {
+      "pass": true,
+      "face_pairs": 0,
+      "method": "BVHTree.FromBMesh self-overlap minus edge-adjacent faces"
+    },
+    "mirror_residual": {
+      "pass": true,
+      "candidate_mm": 0.13314367970451713,
+      "source_head_mm": 0.13314367970451713,
+      "source_body_mm": 0.0
+    },
+    "bone_count_and_names": {
+      "pass": true,
+      "count": 53,
+      "names": [
+        "Chest",
+        "Eye.L",
+        "Eye.R",
+        "Foot.L",
+        "Foot.R",
+        "Hand.L",
+        "Hand.R",
+        "Head",
+        "Hips",
+        "Index.01.L",
+        "Index.01.R",
+        "Index.02.L",
+        "Index.02.R",
+        "Index.03.L",
+        "Index.03.R",
+        "LowerArm.L",
+        "LowerArm.R",
+        "LowerLeg.L",
+        "LowerLeg.R",
+        "Middle.01.L",
+        "Middle.01.R",
+        "Middle.02.L",
+        "Middle.02.R",
+        "Middle.03.L",
+        "Middle.03.R",
+        "Neck",
+        "Pinky.01.L",
+        "Pinky.01.R",
+        "Pinky.02.L",
+        "Pinky.02.R",
+        "Pinky.03.L",
+        "Pinky.03.R",
+        "Ring.01.L",
+        "Ring.01.R",
+        "Ring.02.L",
+        "Ring.02.R",
+        "Ring.03.L",
+        "Ring.03.R",
+        "Shoulder.L",
+        "Shoulder.R",
+        "Spine",
+        "Thumb.01.L",
+        "Thumb.01.R",
+        "Thumb.02.L",
+        "Thumb.02.R",
+        "Thumb.03.L",
+        "Thumb.03.R",
+        "Toes.L",
+        "Toes.R",
+        "UpperArm.L",
+        "UpperArm.R",
+        "UpperLeg.L",
+        "UpperLeg.R"
+      ]
+    },
+    "rest_pose_identity": {
+      "pass": true,
+      "max_deviation_mm": 0.00016862854805225545,
+      "rounded_3dp_mm": 0.0
+    },
+    "weights": {
+      "pass": true,
+      "zero_weight_vertices": 0,
+      "max_influences": 4,
+      "weights_below_0.001": 0,
+      "wrong_side_vertices": 0,
+      "head_region_limb_bleed_vertices": 0,
+      "foot_above_knee_bleed_vertices": 0
+    }
+  },
+  "pose_battery": {
+    "shoulder": {
+      "pass": true,
+      "45": {
+        "rest_ring_area_mm2": 6452.798607962501,
+        "posed_ring_area_mm2": 6414.546759331167,
+        "area_loss_percent": 0.5927947074643358,
+        "ring_vertex_count": 40
+      },
+      "80": {
+        "rest_ring_area_mm2": 6452.798607962501,
+        "posed_ring_area_mm2": 6381.760597690513,
+        "area_loss_percent": 1.1008868335721644,
+        "ring_vertex_count": 40
+      },
+      "assessment": "Preserve-volume repair reduced measured loss to 0.59% at 45 degrees and 1.10% at 80 degrees; mild angular armhole pinching remains at 80 degrees, no gross collapse."
+    },
+    "fingers": {
+      "pass": false,
+      "curl_degrees_each_hinge": 60,
+      "assessment": "FAIL: close-ups show crumpled digit/web deformation and inadequate knuckle volume after targeted tube-weight repair."
+    },
+    "eyes": {
+      "pass": true,
+      "left": {
+        "minimum_surface_clearance_mm": 0.047429202871964234
+      },
+      "right": {
+        "minimum_surface_clearance_mm": 0.04742135527421248
+      },
+      "up": {
+        "minimum_surface_clearance_mm": 0.030838467912669195
+      },
+      "down": {
+        "minimum_surface_clearance_mm": 0.025956043762905424
+      },
+      "measurement_note": "unsigned nearest lid/head surface distance sampled at globe vertices"
+    },
+    "neck": {
+      "pass": true,
+      "down": {
+        "total_degrees": -30
+      },
+      "up": {
+        "total_degrees": 20
+      },
+      "turn": {
+        "total_degrees": 45
+      },
+      "assessment": "Seam remains bonded; collar is angular but continuous."
+    },
+    "limbs": {
+      "pass": true,
+      "elbow90": {
+        "bone": "LowerArm.L",
+        "degrees": 90
+      },
+      "knee90": {
+        "bone": "LowerLeg.L",
+        "degrees": -90
+      },
+      "hip45": {
+        "bone": "UpperLeg.L",
+        "degrees": -45
+      },
+      "assessment": "No tearing; elbow is the weakest limb bend and remains visibly angular."
+    }
+  },
+  "evidence": {
+    "eyes_on": true,
+    "renders": [
+      "renders/a45-front.png",
+      "renders/a45-back.png",
+      "renders/a45-tq.png",
+      "renders/a80-front.png",
+      "renders/a80-back.png",
+      "renders/a80-tq.png",
+      "renders/fingers-top.png",
+      "renders/fingers-palm-tq.png",
+      "renders/eyes-left.png",
+      "renders/eyes-right.png",
+      "renders/eyes-up.png",
+      "renders/eyes-down.png",
+      "renders/neck-down.png",
+      "renders/neck-up.png",
+      "renders/neck-turn.png",
+      "renders/elbow90.png",
+      "renders/knee90.png",
+      "renders/hip45.png"
+    ],
+    "all_reviewed": true
+  },
+  "open_problems": [
+    "Finger/web deformation fails the required curl gate; needs lead-approved topology/loop or joint-layout rework.",
+    "80-degree shoulder retains mild visible armhole pinching despite acceptable area preservation.",
+    "Elbow 90-degree bend is angular and is the weakest non-hand deformation."
+  ]
+}

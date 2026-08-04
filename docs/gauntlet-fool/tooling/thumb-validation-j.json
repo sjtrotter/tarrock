@@ -1,0 +1,132 @@
+{
+  "source": "Fool-v2-023f.blend",
+  "output": "Fool-v2-023j.blend",
+  "thumb_bones": {
+    "max_station_change_mm": 22.204886,
+    "repositioned": true,
+    "edited_ring_centroids_L_mm": [
+      [
+        687.900782,
+        -51.655561,
+        1276.9835
+      ],
+      [
+        690.701842,
+        -61.672203,
+        1273.381948
+      ],
+      [
+        694.034219,
+        -73.589124,
+        1269.097209
+      ],
+      [
+        697.821677,
+        -87.132975,
+        1264.227748
+      ],
+      [
+        701.820374,
+        -101.43254,
+        1259.086251
+      ],
+      [
+        705.472589,
+        -114.492796,
+        1254.390478
+      ],
+      [
+        708.06849,
+        -123.776287,
+        1251.052499
+      ]
+    ]
+  },
+  "geometry": {
+    "thumb_ring_scales": [
+      1.3,
+      1.25,
+      1.15,
+      1.06,
+      1.0,
+      1.0
+    ],
+    "thenar_peak_mm": 10.5,
+    "thenar_vertices_per_side": 16,
+    "moved_vertices_total": 128,
+    "tip_movement_mm": 0.0,
+    "orphan_assignments": {
+      "1965": {
+        "group": "Thumb.01.L",
+        "distance_mm": 33.552507
+      },
+      "4217": {
+        "group": "Thumb.01.R",
+        "distance_mm": 33.552507
+      }
+    }
+  },
+  "gates": {
+    "topology_before": {
+      "vertices": 6661,
+      "edges": 13286,
+      "faces": 6625,
+      "connectivity_sha256": "7add70d794fb74a9c19bf7a49601222d6d8fc2f512a9729990f904c3063f06ff"
+    },
+    "topology_after": {
+      "vertices": 6661,
+      "edges": 13286,
+      "faces": 6625,
+      "connectivity_sha256": "7add70d794fb74a9c19bf7a49601222d6d8fc2f512a9729990f904c3063f06ff"
+    },
+    "topology_unchanged": true,
+    "mirror_residual_before_mm": 0.133144,
+    "mirror_residual_after_mm": 0.133144,
+    "self_intersections": 0,
+    "outside_hand_bboxes_moved_mm": 0.0,
+    "straightness_mm": {
+      "Thumb.L": 0.000169,
+      "Thumb.R": 0.000169,
+      "Index.L": 0.000137,
+      "Index.R": 0.000137,
+      "Middle.L": 0.00012,
+      "Middle.R": 0.00012,
+      "Ring.L": 0.000391,
+      "Ring.R": 0.000391,
+      "Pinky.L": 0.000435,
+      "Pinky.R": 0.000435
+    },
+    "clearances_mm": {
+      "Thumb-Index.L": 11.451204,
+      "Index-Middle.L": 7.25532,
+      "Middle-Ring.L": 7.698384,
+      "Ring-Pinky.L": 6.894819,
+      "Thumb-Index.R": 11.451204,
+      "Index-Middle.R": 7.25532,
+      "Middle-Ring.R": 7.698384,
+      "Ring-Pinky.R": 6.894819
+    },
+    "rest_identity_max_mm": 0.000136,
+    "zero_weight_vertices": 0,
+    "smear_guard_flagged": {
+      "a80": 0,
+      "fingers_60x3": 0,
+      "elbow90": 0,
+      "thumb_own_axis_60x3": 0
+    },
+    "a80_rigid_lag_max_mm": 0.000905
+  },
+  "renders": [
+    "a80-front.png",
+    "elbow90.png",
+    "fingers-palm-tq.png",
+    "fingers-top.png",
+    "hand-top-L.png",
+    "hand-top-R.png",
+    "rest-palm-L.png",
+    "rest-palm-R.png",
+    "thumb-curl-L.png",
+    "thumb-curl-R.png"
+  ],
+  "status": "PASS"
+}
