@@ -16,14 +16,25 @@ tree.
 
 ---
 
-## Round 17 — the current tells `QUEUED`
+## Round 18 — the staging A/B `QUEUED`
 
-- The judges' tells are being eliminated one per round — round 17 opens by extracting the CURRENT tells verbatim from
-  the round-16 judge texts and attacking those, not last year's.
-- **Awaiting the director's staging ruling** ([issue #3](https://github.com/sjtrotter/tarrock/issues/3)): the hero frame
-  can never show the tree grounded — the knoll's own crest occludes its base, and its shadow throws off the island.
-- Record hygiene: the round-15 false-revert erratum, the refuted grade constant, instrument rebuilds.
+- The director's ruling executed as an experiment: **variant A** (the lane's final stretch rises, kept gradual) vs
+  **variant B** (the tree moves inward onto visible ground) — built as switchable configurations, captured separately,
+  judged as separate blind sets by both model families. The winner ships and closes issue #3.
+- The tree finishes: secondary branching within the frozen crown envelope (the judges' new "stick armature" tell),
+  and a watertightness gate for the mesh.
 
+## Round 17 — the current tells · commit `ac61e3b`
+
+![Round 17 v9](img/thumb-r17-v9-shelf-west.jpg) ![Round 17 v8](img/thumb-r17-v8-deadtree-skyline.jpg)
+
+**The movement round:** after five consecutive rounds ranked last by both blind-judge families, **the hero frame came
+off the bottom in both** (4th on Claude — best of ours — and 5th on Codex). The "blunt flat caps" tell is dead in both
+judges' vocabularies; subject/backdrop contrast fully recovered from round 16's regression. The tell-extraction method
+paid for itself: briefs aimed at the judges' *current* words, verified against source before dispatch.
+**Honest ledger:** the sky and ground goals were falsified by the builders' own two-sided falsifiers (the poured-sand
+ground null is real at every scale — a harder problem than any brief has assumed); the tree's cap-deletion rationale
+was false and mesh watertightness is now gated; the runner accepted three corrections against itself.
 ## Round 16 — light the tree · commit `d8eed26`
 
 ![Round 16 v9](img/thumb-r16-v9-shelf-west.jpg) ![Round 16 v8](img/thumb-r16-v8-deadtree-skyline.jpg)
