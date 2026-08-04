@@ -338,8 +338,10 @@ Shader "Tarrock/TerrainPainterly"
         //
         // The number is not taste, it is the geometry: a 2.6 m bed meets a 30° slope over 5.20 m of
         // surface and a 60° slope over 3.00 m. Beds have to be thin lines or they are shading.
-        _BeddingSlopeStart ("Bedding - slope fade in (deg)", Float) = 50.0
-        _BeddingSlopeEnd ("Bedding - slope full (deg)", Float) = 62.0
+        // ROUND 17: defaults mirror BuildTerrainMaterial's explicit 46/58 gate. The independent
+        // rockT AND remains; see that method for the fixed-ROI board measurement and rationale.
+        _BeddingSlopeStart ("Bedding - slope fade in (deg)", Float) = 46.0
+        _BeddingSlopeEnd ("Bedding - slope full (deg)", Float) = 58.0
 
         [Header(Cavity)]
         // Concavity darkening, AO-like and DELIBERATELY SEPARATE from any line drawing: it is the
@@ -474,7 +476,8 @@ Shader "Tarrock/TerrainPainterly"
         _CavityScale ("Cavity Scale (m)", Float) = 3.4
         _CavityContrast ("Cavity Contrast", Range(0.5,10)) = 4.5
         _CavityDarken ("Cavity Darken - stone", Range(0,1)) = 0.34
-        _CavityGroundDarken ("Cavity Darken - meadow", Range(0,1)) = 0.16
+        // ROUND 17: default mirrors BuildTerrainMaterial's explicit 0.24 setting.
+        _CavityGroundDarken ("Cavity Darken - meadow", Range(0,1)) = 0.24
 
         [Header(Shading normal)]
         // Per-pixel shading normal off the cavity height field (see header note c). Faded out with

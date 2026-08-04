@@ -984,6 +984,10 @@ float3 TarrockSkyColor(float3 dir, TarrockSkyDesc sky)
     // Spend an 8% neutral lift only from 17-78°, plateauing through 25-63°, and weight it by
     // the existing anti-sun term. White is a destination rather than an additive value, so pinned
     // whites cannot exceed white; the zero endpoints preserve the horizon and round-8 zenith.
+    // CORRECTION (round 16 regression, r16/critics/regression/deep.py|.json): the measured peak
+    // lift from this 0.08 display-space lerp is 32.596 final codes, not the refuted 25.19. Neither
+    // value is a linear shader-unit propagation constant; that propagation through the grade is
+    // invalid and must instead be evaluated at the actual changed pixel values.
     float vaultBand = smoothstep(sin(radians(17.0)), sin(radians(25.0)), h)
                     * (1.0 - smoothstep(sin(radians(63.0)), sin(radians(78.0)), h));
     above = lerp(above, 1.0.xxx, TARROCK_VAULT_KEY * antiBearing * vaultBand);

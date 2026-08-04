@@ -79,7 +79,14 @@ namespace Tarrock.Editor
         // a point, so the deeper band is bought almost entirely off the anti-sun vault.
         private static readonly Color SkyHorizonLinear = new Color(1.00f, 0.80f, 0.46f);
         private static readonly Color SkyMidLinear = new Color(0.24f, 0.36f, 0.74f);
-        private static readonly Color SkyZenithLinear = new Color(0.15f, 0.29f, 0.60f);
+        // ROUND 17 — GIVE THE SKY A JOB BEHIND THE HERO. Fixed geometric open-sky polygons on
+        // three board plates span 31.89 / 73.59 / 131.27 final-code Y (median 73.59), while the
+        // fixed v9 hero-band polygon spans 10.14 (r17/sky/board_sky_span.py|.json and
+        // backdrop_metrics.py|.json). Mid-to-zenith was only (0.09, 0.07, 0.14) linear RGB;
+        // 0.15,0.29,0.60 -> 0.10,0.22,0.50 makes that authored travel (0.14,0.14,0.24).
+        // This spends value downward at elevation rather than lifting the whole field: horizon and
+        // far-field seam inputs stay byte-identical, and darker inputs cannot create clipped white.
+        private static readonly Color SkyZenithLinear = new Color(0.10f, 0.22f, 0.50f);
 
         // Below the horizon the Cliff has NO ground: it has the cloud sea (world.md §The Cliff).
         // Fog, the sky's lower hemisphere and the deck's far field all land on this one luminous

@@ -519,8 +519,13 @@ namespace Tarrock.Editor
             // touched, every cell under 50° takes exactly zero, and what keeps its strata is the
             // north refusing wall (55-65°) and the broken edge (~70°) — true rock, where a 2.6 m bed
             // meets the surface over 3.0 m instead of 5.2 m and can be a line rather than a shade.
-            material.SetFloat("_BeddingSlopeStart", 50f);
-            material.SetFloat("_BeddingSlopeEnd", 62f);
+            // ROUND 17 — 50/62 -> 46/58. The six-plate fixed-ROI board audit at
+            // r17/rock/measure_ground_bands.py|baseline.json measures 18.78 final-code low-band
+            // RMS at the median, while v6/v9 are 13.02/11.94. Four degrees buys strata on the
+            // upper mid-slopes without returning to round 3's failed 35-degree contour gate; the
+            // shader's independent rockT AND remains the structural guard against ruled meadow.
+            material.SetFloat("_BeddingSlopeStart", 46f);
+            material.SetFloat("_BeddingSlopeEnd", 58f);
 
             // CAVITY — concavity darkening as its own AO-like term, deliberately NOT baked into the
             // bedding marks. It selects a filled REGION (where the fine relief sits below the broad
@@ -529,7 +534,12 @@ namespace Tarrock.Editor
             material.SetFloat("_CavityScale", 3.4f);
             material.SetFloat("_CavityContrast", 4.5f);
             material.SetFloat("_CavityDarken", 0.34f);
-            material.SetFloat("_CavityGroundDarken", 0.16f);
+            // ROUND 17 — 0.16 -> 0.24. Ground had less than half stone's 0.34 cavity response,
+            // despite the judges independently reading no crevice darkness. The 50% relative lift
+            // acts only on the existing filled 3.4 m cavity regions; no fine fleck/tooth amount,
+            // threshold, or placement changes, so it buys the missing 0.5-5 m structure without
+            // adding sub-0.15 m speckle.
+            material.SetFloat("_CavityGroundDarken", 0.24f);
 
             // SHADING NORMAL — the facet fix. 0.30 m of relief over a 3.4 m field is a gentle
             // undulation, not a bumpy surface; it is sized to break the Gouraud Mach band at a

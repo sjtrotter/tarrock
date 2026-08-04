@@ -33,8 +33,8 @@ Material:
     - _BeddingLineWidth: 0.085
     - _BeddingLip: 0.2
     - _BeddingRough: 0.22
-    - _BeddingSlopeEnd: 62
-    - _BeddingSlopeStart: 50
+    - _BeddingSlopeEnd: 58
+    - _BeddingSlopeStart: 46
     - _BeddingSpacing: 2.6
     - _BeddingWarp: 0.55
     - _BeddingWidthJitter: 0.6
@@ -42,7 +42,7 @@ Material:
     - _BlendFieldScale: 14
     - _CavityContrast: 4.5
     - _CavityDarken: 0.34
-    - _CavityGroundDarken: 0.16
+    - _CavityGroundDarken: 0.24
     - _CavityScale: 3.4
     - _CliffEnd: 0.7243626
     - _CliffStart: 0.5

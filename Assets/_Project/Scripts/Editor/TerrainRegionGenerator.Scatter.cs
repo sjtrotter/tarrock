@@ -369,7 +369,10 @@ namespace Tarrock.Editor
         /// <summary>A limb: a quadratic Bezier from <paramref name="baseP"/> to
         /// <paramref name="tipP"/>, bowed by <paramref name="bend"/> at its middle control point
         /// and built from <paramref name="segments"/> tapered prisms. A STRAIGHT limb is what made
-        /// the round-9 tree read as scaffolding; a bough that bows is what reads as drawn.</summary>
+        /// the round-9 tree read as scaffolding; a bough that bows is what reads as drawn. Round 17
+        /// contracts each terminal ring to a 1 cm closure, except the deliberately snapped P6: the
+        /// offline port measured 2.34-2.36% less silhouette area and kept every bounding face within
+        /// 0.012 m, turning exposed 5-33 cm discs into tapered ends without moving an axis.</summary>
         private static void AddBough(
             List<Vector3> verts, List<Color> cols, List<int> tris,
             Vector3 baseP, Vector3 tipP, Vector3 bend, float baseR, float tipR, int segments, float sway)
@@ -385,7 +388,11 @@ namespace Tarrock.Editor
                 // Radius on t^0.72, not t: a limb keeps its mass and then thins fast, which is the
                 // difference between a bough and a cone at 56 m.
                 float radius = Mathf.Lerp(baseR, tipR, Mathf.Pow(t, 0.72f));
-                AddLimb(verts, cols, tris, previous, point, previousR, radius, sway);
+                bool terminal = i == segments;
+                float terminalRadius = terminal && tipR < SnappedBoughTipRadius
+                    ? Mathf.Min(radius, TerminalLimbRadius)
+                    : radius;
+                AddLimb(verts, cols, tris, previous, point, previousR, terminalRadius, sway, terminal);
                 previous = point;
                 previousR = radius;
             }
@@ -393,10 +400,11 @@ namespace Tarrock.Editor
 
         /// <summary>One tapered prism between two points. SIX-sided: a four-sided prism shows two
         /// facets to any viewer and its silhouette is a pair of straight lines that alias into a
-        /// staircase against a bright sky, which is exactly what round 7-9's tree did.</summary>
+        /// staircase against a bright sky, which is exactly what round 7-9's tree did. Only the
+        /// terminal prism is capped; the old per-segment fans were coincident interior geometry.</summary>
         private static void AddLimb(
             List<Vector3> verts, List<Color> cols, List<int> tris,
-            Vector3 baseP, Vector3 tipP, float baseR, float tipR, float sway)
+            Vector3 baseP, Vector3 tipP, float baseR, float tipR, float sway, bool capTip)
         {
             Vector3 axis = (tipP - baseP).normalized;
             Vector3 side = Vector3.Cross(axis, Mathf.Abs(axis.y) > 0.9f ? Vector3.forward : Vector3.up).normalized;
@@ -427,15 +435,23 @@ namespace Tarrock.Editor
                 tris.AddRange(new[] { b0, t0, b1, b1, t0, t1 });
             }
 
-            // Cap the tip with a fan, so a blunt limb (the snapped bough) is closed.
-            for (int corner = 1; corner < LimbSides - 1; corner++)
+            // Close only the exposed end. Interior ends meet the next segment's base ring, so their
+            // old fans were invisible, coincident geometry (468 triangles across this mesh).
+            if (capTip)
             {
-                tris.AddRange(new[] { start + 1, start + ((corner + 1) * 2) + 1, start + (corner * 2) + 1 });
+                for (int corner = 1; corner < LimbSides - 1; corner++)
+                {
+                    tris.AddRange(new[] { start + 1, start + ((corner + 1) * 2) + 1, start + (corner * 2) + 1 });
+                }
             }
         }
 
-        /// <summary>Cross-section corners on every limb of the dead tree. See AddLimb.</summary>
+        /// <summary>Cross-section corners on every limb of the dead tree. Six remains the measured
+        /// anti-staircase floor from rounds 7-9; terminal topology, not side count, addresses the
+        /// round-17 flat-cap tell, so changing it would spend triangles without targeting the cause.</summary>
         private const int LimbSides = 6;
+        private const float TerminalLimbRadius = 0.010f;
+        private const float SnappedBoughTipRadius = 0.299f;
 
         // Suspended motes — "the one particulate allowed while bound: dust/pollen hanging nearly
         // motionless in light — stasis made visible, not weather" (art-audio.md §The world-state
