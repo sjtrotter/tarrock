@@ -351,6 +351,24 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
   gates + the new wrap instruments). Then rigging, hair, clothes, materials,
   Unity FBX gate.
 
+## DIRECTOR FEEDBACK (2026-08-03, viewing head renders — mid-R16)
+
+- **ELEVATED DEBTS (no longer cosmetic):** (1) the head reads as LACKING A
+  NOSE — the R15 "soft nose" debt is confirmed unacceptable at bar; the nose
+  needs genuine presence; (2) the lips/mouth read is insufficient; (3) the
+  aperture-shape debt rides with them.
+- **Standing approach RE-CONFIRMED + donor ban:** separate UV-painted sphere
+  eyeballs in dug-out sockets with built-out eyelids; authored topology
+  confirmed; **CC0/donor asset downloads are REJECTED — no donor assets ever
+  again** (supersedes any donor language in R15 research/briefs).
+- **LEAD SCHEDULING RULING: R17 = head-polish pass** on the retopo mesh
+  (nose presence, lip read, aperture shape) — cheapest before rigging binds
+  weights to topology; rigging becomes R18. The head is not declared final
+  until this pass lands.
+- STATUS render protocol: renders showing the bare sphere eyes carry the
+  caveat "eyes are blank spheres until the materials stage paints
+  iris/pupil" so the read isn't mistaken for a defect.
+
 ## ROUND 16 (OPEN, 2026-08-03, 4th lead): body retopo
 
 - Brief: tooling/R16-BRIEF.md; Phase A = Codex (tooling/TASK-A-BODY.md,
@@ -384,6 +402,13 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
   build terminates opening the 916 MB chain as main file — append
   datablocks as a library instead** (extract_body.py has the pattern).
   Instruments + report promoted to tooling/ (R16-PHASEA-REPORT.md).
+- **RUN DIR MOVED (director change, commit 402ea6f, mid-R16):** canonical
+  location is now `docs/gauntlet-fool/` (`.claude/` is fully gitignored;
+  the MQ00 gauntlet lives beside it at `docs/gauntlet/`). A symlink at
+  `.claude/gauntlet-fool2 → ../docs/gauntlet-fool` keeps old absolute paths
+  in already-issued briefs/scripts working (the in-flight R16 Phase-B brief
+  resolves through it — verified). All new writing uses the new path.
+  Viewing URL: https://github.com/sjtrotter/tarrock/blob/master/docs/gauntlet-fool/STATUS.md
 - **Phase B (Opus builder) LAUNCHED** with tooling/TASK-B-BODY.md:
   authored charts per R15 method, candidates Fool-v2-020a+ in fool2-r16/,
   head/eyes untouched, body-head bond positional this round (join at

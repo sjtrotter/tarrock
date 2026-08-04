@@ -552,3 +552,15 @@ lower lid minimal; 22 hidden self-intersections in the occluded lid roll-back
 band; judge's mouth-corner-density deformation note — all owned by body
 retopo/rigging/blend-shape and materials rounds (irises arrive with
 materials).
+
+*Note on the eyes in every render above and below: the eyeballs are
+deliberately blank white spheres until the materials stage paints the
+iris/pupil UV textures — the vacant stare is the pipeline order, not a
+defect.*
+
+**Director feedback (2026-08-03, on these renders):** the soft-nose and
+mouth-read debts are ELEVATED — the head reads as lacking a nose, and the
+lips read insufficiently; both must be fixed before the head is final.
+Donor/CC0 asset downloads are rejected outright (the authored-topology
+approach is confirmed). Scheduled: **Round 17 = head-polish pass** (nose
+presence, lip read, aperture shape) on the retopo mesh, before rigging.
