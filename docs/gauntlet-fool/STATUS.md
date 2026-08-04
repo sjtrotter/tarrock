@@ -618,3 +618,60 @@ density collar read, blocky digit bases, toe-cap quad spend, 4 thumb–index
 webbing probes (instrument geometry, argued unpassable). Next: **Round 17 —
 head polish** (director-elevated nose presence + lip read + aperture; calf
 width pending issue #6), then Round 18 rigging.
+
+---
+
+## Round 17 — head polish, director-ordered (2026-08-04)
+
+*The director's render review elevated three head debts to blocking: the
+face read as lacking a nose, the lips read insufficiently, and the aperture
+shape rode along. Both open director issues resolved mid-round: #5 arms
+accepted as-is ("young adult male, not muscle-bound") and #6 calves accepted
+— with the standing guidance that the sheets govern the character read, not
+millimetre exactness.*
+
+**Cycles 1–2 (Codex):** the nose went from literally absent in profile
+(−0.6 mm) to a real 12 mm projection, and every hard gate stayed green both
+cycles (neck seam 0.000 mm, eyes/body untouched, symmetry preserved) — but
+the blind judge held at 4/10 with the same critique twice: lids reading as
+holes with spheres behind them, stacked lip geometry. Codex fail x2 on a
+judgment-heavy, round-blocking piece → the charter's escalation clause.
+
+**Opus escalation:** rebuilt the face from chain coordinates with C-infinity
+envelopes. The apertures became CONSTRUCTED EYELIDS — the boundary loop
+extruded inward into a lid margin with real thickness (2.4 mm overhang at
+the upper peak), analytic almond apertures sized to the sheet's drawn eye
+(46.0 x 32.3 mm vs 46.3 x 34.3 drawn), pointed canthi pulled inside the
+globe silhouette so the lids wrap. Mouth reduced to one analytic seam; nose
+bridge softened to a rounded roof. Self-intersections went 27 (chain) → 0.
+It also caught a validation bug: the round's verifier had been silently
+measuring the CHAIN head instead of the candidate (library-rename trap) —
+cycle 2's "27 = baseline" was an artifact; the true series is 27 → 8 → 0.
+
+| Before (021f) | After — front | After — 3/4 | After — side |
+|---|---|---|---|
+| ![before](renders/r17-before-front.png) | ![front](renders/r17-front.png) | ![tq](renders/r17-tq.png) | ![side](renders/r17-side.png) |
+
+*(Eyes are blank spheres until materials paints iris/pupil — the vacant
+stare is pipeline order, not a defect.)*
+
+**Blind judge (same rubric all three runs): 4/10 — the fourth consecutive
+flat 4 on a gray, bald, blank-eyed head.** But the content moved decisively:
+the eyes flipped from "biggest gap" (twice) to "strongest point — the
+clearest stylistic match to the sheet"; nose now confirmed real and
+plausibly sized by all three judgings. The gap migrated to the mouth/lower
+face ("soft, swollen slit... pinched and under-resolved"), with ears/
+cranium/neck named as secondary. Lead reading, stated plainly: the gray
+medium is saturated — scores have never moved above 4 without subsurf or
+features a sculpt cannot show (irises, brows, hair arrive at materials) —
+and the round's three ordered targets were delivered (nose exists, one-seam
+mouth by construction, lid construction praised). Closing under the 80–90%
+clause rather than chasing a scoreboard the medium caps.
+
+**Round verdict: CLOSED — chain advances to `Fool-v2-021.blend`.** Debts,
+loudly: the mouth/lower-face read is now the head's weakest feature (corner
+facet cluster needs corner retopology — deferred with the blend-shape work);
+nose still blunter than the sheet's; ears still simplified flaps (R15
+debt); neck density collar. Next: **Round 18 — rigging**, opening with the
+director's rig-blocking defect: straightening the curled index/pinkie
+digits (Phase 0) before any weights land.

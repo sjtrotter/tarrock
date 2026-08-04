@@ -530,6 +530,37 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
   piece blocks it. One tightly-scoped Opus cycle on 021f, both blind
   critiques verbatim as targets; same hard gates.
 
+## ROUND 17 CLOSED (2026-08-04): head polish → chain Fool-v2-021.blend
+
+- **Chain = workdir Fool-v2-021n.blend (Opus escalation) promoted.** Gates
+  (lead re-verified independently): neck ring 0.000, eyes/body untouched,
+  symmetry inherited exactly, 2,134 v / 4,122 tri-eq / 99.81% quads, lid
+  clearance 1.45 mm, self-intersections **0** (chain was 27), nose 11.68 mm.
+- Delivered vs the director's three targets: NOSE exists (all three blind
+  runs confirm, "plausibly sized"); LID CONSTRUCTION won — extruded lid
+  margin w/ 2.4 mm overhang, analytic almond 46.0×32.3 vs drawn 46.3×34.3,
+  judge flipped eyes from "biggest gap" ×2 to "strongest point"; MOUTH one
+  analytic seam by construction but still the judge's biggest gap ("soft
+  swollen slit") — the honest miss.
+- **Blind 4/10 — fourth consecutive flat 4 on gray/bald/blank-eyed heads.**
+  Lead closure reasoning (R14 precedent + 80–90% clause): the gray medium is
+  saturated; critique content moved decisively while the scalar didn't;
+  irises/brows/hair arrive at materials. Closed on the run's best face.
+- **INSTRUMENT LESSON (paid for): verify_body.py double-library-load renames
+  the candidate to .001 and silently measures the CHAIN** — cycle-2's
+  "27 = baseline" was an artifact (true series 27 → 8 → 0). Fixed pattern:
+  one head per invocation (verify_head_esc.py, promoted to tooling). Any
+  instrument that loads same-named objects from two files must be assumed
+  broken until proven otherwise.
+- **Debts → later rounds:** mouth/lower-face read (corner facet cluster
+  needs corner retopo — schedule with blend-shape/materials work); nose
+  blunter than sheet; ears simplified flaps (R15); neck density collar;
+  judge's secondary notes (cranium dominance, angular chin) parked under the
+  #6 "read, not exactness" ruling for the dressed re-judge.
+- Escalation postmortem: clause worked as designed — 2 documented Codex
+  fails, justified pre-launch, one Opus cycle delivered the two hardest
+  targets. Usage: this was the round's only Claude sub-agent.
+
 ## DIRECTOR DEFECT REPORT (2026-08-04, mid-R17) — finger curl on chain 020
 
 - From the TOP view, the INDEX and PINKIE digits CURL INWARD on
