@@ -10,6 +10,9 @@ namespace Tarrock.Regions
     /// </summary>
     public static class CliffMarkerIds
     {
+        /// <summary>The old fire-ring cluster in the opening bowl.</summary>
+        public const string CampsiteInspect = "MQ00_CAMPSITE_INSPECT";
+
         /// <summary>The buried wooden-dog keepsake dig spot near the largest old campsite.</summary>
         public const string KeepsakeDigSpot = "MQ00_KEEPSAKE_DIGSPOT";
 

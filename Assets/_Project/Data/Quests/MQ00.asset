@@ -25,8 +25,13 @@ MonoBehaviour:
     _kind: 4
     _dialogueKey: MQ00.QUERENT.WAKE
     _optional: 0
-  - _stepId: MQ00_STEP_CAMPSITE_INSPECT
+  - _stepId: MQ00_STEP_BINDLE
     _markerId: 
+    _kind: 4
+    _dialogueKey: 
+    _optional: 0
+  - _stepId: MQ00_STEP_CAMPSITE_INSPECT
+    _markerId: MQ00_CAMPSITE_INSPECT
     _kind: 0
     _dialogueKey: 
     _optional: 1

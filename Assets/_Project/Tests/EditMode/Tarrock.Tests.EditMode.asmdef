@@ -5,6 +5,7 @@
         "Tarrock.Core",
         "Tarrock.WorldState",
         "Tarrock.Quests",
+        "Tarrock.Regions",
         "Tarrock.Player",
         "Tarrock.Companion",
         "UnityEngine.TestRunner",

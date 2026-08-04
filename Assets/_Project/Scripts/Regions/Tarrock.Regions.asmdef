@@ -5,7 +5,8 @@
         "Tarrock.Core",
         "Tarrock.WorldState",
         "Tarrock.Companion",
-        "Tarrock.Quests"
+        "Tarrock.Quests",
+        "Tarrock.Player"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

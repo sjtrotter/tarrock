@@ -17,8 +17,8 @@ namespace Tarrock.Editor
     /// SCOPE. This is a FEEL TEST, not the shipping Cliff. It rehearses the Cliff's terrain grammar
     /// (high meadow plateau, a valley funnelling west, a refusing edge where the world is broken —
     /// docs/design/world.md §The Cliff) so the sculpted approach is judged against real canon rather
-    /// than an abstract slope. It carries only the dead-tree marker needed by the shelf reveal;
-    /// porting the Cliff's remaining quest markers is a separate pass once the feel is blessed.
+    /// than an abstract slope. MQ00's stable gameplay anchors are deliberately first-pass placements;
+    /// playtest owns their final positions while this generator remains their authoring source.
     ///
     /// Canon this honours (docs/design/art-audio.md §Current build, world.md §The Cliff):
     /// - The Cliff is an ISLAND IN A SEA OF CLOUD (director-blessed 2026-07-26): edged everywhere
@@ -166,6 +166,7 @@ namespace Tarrock.Editor
             // TerrainProto scene can actually fire the camera reveal while preserving the one
             // geometry definition owned by CliffGreyboxGenerator.
             CliffGreyboxGenerator.CreateShelfRevealTrigger(null);
+            BuildMq00Foundation();
             // Dressing, after the landform exists and before the atmosphere: both of these read the
             // finished heightmap to decide where they belong.
             BuildRockOutcrops(terrainData, material);
@@ -188,7 +189,7 @@ namespace Tarrock.Editor
             Debug.Log(
                 $"[Tarrock] Terrain prototype generated at {ScenePath}: {TerrainSize}×{TerrainSize} m, " +
                 $"{HeightmapResolution}² heightmap, max height {TerrainHeight} m, procedural material " +
-                $"'{ShaderName}'. Feel test only — dead-tree marker only (see class doc).");
+                $"'{ShaderName}', with generated MQ00 foundation wiring.");
         }
 
         // -------------------------------------------------------------------------------------

@@ -40,6 +40,23 @@ namespace Tarrock.Editor
             RunEditModeTests();
         }
 
+        /// <summary>Regenerates TerrainProto from its authoring partials, then runs EditMode tests.</summary>
+        public static void Mq00Validate()
+        {
+            try
+            {
+                TerrainRegionGenerator.Generate();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[Tarrock.Ci] MQ00 generation failed before tests: {e}");
+                EditorApplication.Exit(2);
+                return;
+            }
+
+            RunEditModeTests();
+        }
+
         /// <summary>Tests only — no setup chain. Same session-exit contract as FullValidate.</summary>
         public static void TestsOnly() => RunEditModeTests();
 

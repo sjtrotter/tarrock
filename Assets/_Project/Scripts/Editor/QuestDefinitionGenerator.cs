@@ -32,6 +32,7 @@ namespace Tarrock.Editor
         // --- MQ00 step ids (code constants for now; a runtime constants surface can adopt these
         //     once more quests are scaffolded). Ordered required steps plus two optional beats. ---
         private const string StepWake = "MQ00_STEP_WAKE";
+        private const string StepBindle = "MQ00_STEP_BINDLE";
         private const string StepCampsiteInspect = "MQ00_STEP_CAMPSITE_INSPECT";
         private const string StepKeepsake = "MQ00_STEP_KEEPSAKE";
         private const string StepDeadTree = "MQ00_STEP_DEADTREE";
@@ -104,7 +105,8 @@ namespace Tarrock.Editor
             return new[]
             {
                 MakeStep(StepWake, string.Empty, StepKind.Custom, KeyWake, optional: false),
-                MakeStep(StepCampsiteInspect, string.Empty, StepKind.Interact, string.Empty, optional: true),
+                MakeStep(StepBindle, string.Empty, StepKind.Custom, string.Empty, optional: false),
+                MakeStep(StepCampsiteInspect, CliffMarkerIds.CampsiteInspect, StepKind.Interact, string.Empty, optional: true),
                 MakeStep(StepKeepsake, CliffMarkerIds.KeepsakeDigSpot, StepKind.PipSeek, KeyKeepsake, optional: false),
                 MakeStep(StepDeadTree, CliffMarkerIds.DeadTree, StepKind.Dialogue, KeyDeadTree, optional: false),
                 MakeStep(StepBlankAmbush, CliffMarkerIds.BlankAmbush, StepKind.ReachTrigger, KeyBlanks, optional: false),

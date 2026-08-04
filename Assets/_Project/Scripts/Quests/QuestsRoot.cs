@@ -32,6 +32,9 @@ namespace Tarrock.Quests
         /// <summary>The scene's live quest service, or null when no composition root was present.</summary>
         public static QuestService Service { get; private set; }
 
+        public System.Collections.Generic.IReadOnlyList<QuestDefinition> Definitions => _definitions;
+        public QuestDefinition AutoActivate => _autoActivate;
+
         private void Start()
         {
             if (CompositionRoot.Instance == null || CompositionRoot.Instance.WorldState == null)

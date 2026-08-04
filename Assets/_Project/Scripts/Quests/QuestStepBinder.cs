@@ -25,25 +25,73 @@ namespace Tarrock.Quests
         [SerializeField] private QuestDefinition _quest;
         [SerializeField] private string _stepId;
         [SerializeField] private VoidEventChannel _onStepTriggered;
+        [SerializeField] private Transform _bindingAnchor;
 
         private QuestService _service;
+        private VoidEventChannel _subscribedChannel;
 
-        /// <summary>Injects the live quest service. Passing <c>null</c> unbinds (calls become no-ops).</summary>
-        public void Bind(QuestService service) => _service = service;
+        public QuestDefinition Quest => _quest;
+        public string StepId => _stepId;
+        public VoidEventChannel TriggerChannel => _onStepTriggered;
+        public Transform BindingAnchor => _bindingAnchor;
+
+        /// <summary>
+        /// Injects the live quest service and makes the trigger subscription ready immediately.
+        /// This explicit initialization path is safe outside the player lifecycle (for example,
+        /// editor tooling and EditMode tests, where <c>OnEnable</c> is not guaranteed to run).
+        /// Passing <c>null</c> unbinds the service; the lifecycle-owned channel subscription is
+        /// retained until the component is disabled.
+        /// </summary>
+        public void Bind(QuestService service)
+        {
+            _service = service;
+            EnsureSubscribed();
+        }
+
+#if UNITY_EDITOR
+        public void EditorInitialize(
+            QuestDefinition quest,
+            string stepId,
+            VoidEventChannel triggerChannel,
+            Transform bindingAnchor)
+        {
+            _quest = quest;
+            _stepId = stepId;
+            _onStepTriggered = triggerChannel;
+            _bindingAnchor = bindingAnchor;
+        }
+#endif
 
         private void OnEnable()
         {
-            if (_onStepTriggered != null)
-            {
-                _onStepTriggered.Subscribe(OnStepTriggered);
-            }
+            EnsureSubscribed();
         }
 
         private void OnDisable()
         {
-            if (_onStepTriggered != null)
+            if (_subscribedChannel != null)
             {
-                _onStepTriggered.Unsubscribe(OnStepTriggered);
+                _subscribedChannel.Unsubscribe(OnStepTriggered);
+                _subscribedChannel = null;
+            }
+        }
+
+        private void EnsureSubscribed()
+        {
+            if (_subscribedChannel == _onStepTriggered)
+            {
+                return;
+            }
+
+            if (_subscribedChannel != null)
+            {
+                _subscribedChannel.Unsubscribe(OnStepTriggered);
+            }
+
+            _subscribedChannel = _onStepTriggered;
+            if (_subscribedChannel != null)
+            {
+                _subscribedChannel.Subscribe(OnStepTriggered);
             }
         }
 
