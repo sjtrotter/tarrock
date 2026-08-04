@@ -31,6 +31,10 @@ Material:
     m_Floats:
     - _AlphaClip: 0
     - _AmbientBoost: 1
+    - _BarkCrackDepth: 0.62
+    - _BarkRidgeLift: 0.14
+    - _BarkScale: 5.5
+    - _BarkStrength: 1
     - _BrushSoftness: 0.35
     - _BrushSteps: 0
     - _Cutoff: 0.5
@@ -42,6 +46,7 @@ Material:
     - _SwayAmplitude: 0.0015
     - _SwayFrequency: 1.1
     m_Colors:
+    - _BarkSunLift: {r: 0.075, g: 0.045, b: 0.022, a: 1}
     - _BaseColor: {r: 0.07, g: 0.048, b: 0.03, a: 1}
     - _ShadeFill: {r: 0.032, g: 0.047, b: 0.108, a: 1}
     - _ShadowTint: {r: 0.72, g: 0.86, b: 1.24, a: 1}

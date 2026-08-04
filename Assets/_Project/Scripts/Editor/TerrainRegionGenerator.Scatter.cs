@@ -215,6 +215,18 @@ namespace Tarrock.Editor
             bark.SetFloat("_AmbientBoost", 1f);
             bark.SetFloat("_BrushSteps", 0f);
             bark.SetFloat("_BrushSoftness", 0.35f);
+            // ROUND 19: UV-free painted split wood on the actual FoliageWind binding. The mesh
+            // shares each ring's vertices and RecalculateNormals therefore produces smooth honest
+            // normals; the shader uses those normals for tri-planar selection and for the one-sided
+            // sun gate. 5.5 cycles/m gives ~18 cm primary ridges, with rarer cross splits: visible
+            // on the 8-60 px trunk read without turning the 2 px crown twigs into noise.
+            bark.SetFloat("_BarkStrength", 1f);
+            bark.SetFloat("_BarkScale", 5.5f);
+            bark.SetFloat("_BarkCrackDepth", 0.62f);
+            bark.SetFloat("_BarkRidgeLift", 0.14f);
+            // Additive weathered-wood response only where the real Lambert term sees the sun;
+            // cracks mask it out, while the cool shade-side path remains exactly unchanged.
+            bark.SetColor("_BarkSunLift", new Color(0.075f, 0.045f, 0.022f));
             // Sway amplitudes divided by ~13 with the tree's height multiplied by 2: Tarrock/
             // FoliageWind masks by pow(metres above the pivot, 1.5), so a 21.6 m crown is a 100x
             // lever on the same number an 11 m one was a 36x lever on. The tip excursion when the

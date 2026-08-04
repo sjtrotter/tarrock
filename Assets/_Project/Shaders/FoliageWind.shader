@@ -65,6 +65,13 @@ Shader "Tarrock/FoliageWind"
         // Value planes. 0 or 1 = OFF (the ramp is passed through untouched).
         _BrushSteps ("Shade - value planes (0 = off)", Range(0, 10)) = 0
         _BrushSoftness ("Shade - value plane softness", Range(0.02, 1)) = 0.35
+
+        // Opt-in dead-wood grain. Identity at zero so ordinary foliage remains unchanged.
+        _BarkStrength ("Bark - painted relief strength", Range(0, 1)) = 0
+        _BarkScale ("Bark - ridge scale per metre", Float) = 5.5
+        _BarkCrackDepth ("Bark - crack depth", Range(0, 1)) = 0.62
+        _BarkRidgeLift ("Bark - sunward ridge lift", Range(0, 0.5)) = 0.14
+        _BarkSunLift ("Bark - warm sunward lift", Color) = (0,0,0,1)
     }
 
     SubShader
@@ -101,6 +108,11 @@ Shader "Tarrock/FoliageWind"
             float4 _ShadeFill;
             float _BrushSteps;
             float _BrushSoftness;
+            float _BarkStrength;
+            float _BarkScale;
+            float _BarkCrackDepth;
+            float _BarkRidgeLift;
+            float4 _BarkSunLift;
         CBUFFER_END
 
         // GLOBAL wind scalar — deliberately OUTSIDE UnityPerMaterial so Shader.SetGlobalFloat reaches
@@ -167,6 +179,29 @@ Shader "Tarrock/FoliageWind"
             float e = smoothstep(0.5 - soft, 0.5 + soft, f);
             return saturate((level + e) / steps);
         }
+
+        // Hand-painted split wood without a UV dependency. Three object-space projections are
+        // blended by the real mesh normal, so the grain follows the surface without seams and
+        // remains useful on both the upright bole and oblique branches. fwidth widens the inked
+        // cracks as they recede instead of letting sub-pixel ridges turn into shimmer.
+        float TkBarkProfile(float2 p)
+        {
+            float warp = sin(p.y * 0.73 + sin(p.y * 0.19) * 1.7) * 0.42;
+            float across = abs(sin(p.x * 3.14159265 + warp));
+            float crackAA = max(fwidth(across), 0.012);
+            float crack = 1.0 - smoothstep(0.035 - crackAA, 0.105 + crackAA, across);
+
+            // Broken cross-cuts prevent regular corduroy. They are deliberately rarer and softer
+            // than the long splits: broad enough for the 8-60 px contact-lighting read.
+            float crossWave = abs(sin(p.y * 1.17 + sin(p.x * 0.61) * 1.3));
+            float crossAA = max(fwidth(crossWave), 0.012);
+            float crossCrack = (1.0 - smoothstep(0.025 - crossAA, 0.075 + crossAA, crossWave))
+                             * smoothstep(0.42, 0.78, across);
+            crack = saturate(max(crack, crossCrack * 0.72));
+
+            float ridge = smoothstep(0.32, 0.94, across) * (1.0 - crack);
+            return ridge - crack;
+        }
         ENDHLSL
 
         // -----------------------------------------------------------------------------------------
@@ -198,6 +233,8 @@ Shader "Tarrock/FoliageWind"
                 float4 positionHCS : SV_POSITION;
                 float3 normalWS : TEXCOORD0;
                 float2 uv : TEXCOORD1;
+                float3 positionOS : TEXCOORD2;
+                float3 normalOS : TEXCOORD3;
             };
 
             Varyings vert(Attributes IN)
@@ -207,6 +244,8 @@ Shader "Tarrock/FoliageWind"
                 OUT.positionHCS = TransformWorldToHClip(positionWS);
                 OUT.normalWS = TransformObjectToWorldNormal(IN.normalOS);
                 OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
+                OUT.positionOS = IN.positionOS.xyz;
+                OUT.normalOS = IN.normalOS;
                 return OUT;
             }
 
@@ -233,11 +272,28 @@ Shader "Tarrock/FoliageWind"
                 float stepped = TkFoliagePosterize(wrapped, _BrushSteps, _BrushSoftness);
                 float lit = saturate(stepped * mainLight.shadowAttenuation);
 
+                // Bark relief is value paint, not fake geometry: cracks only remove albedo while
+                // ridge lift is gated by the actual sun-facing term. Thus the 12-degree key catches
+                // ridges, crevices stay dark, and the restored cool shaded side is never brightened
+                // by an even/rim function.
+                float3 barkWeights = abs(normalize(IN.normalOS));
+                barkWeights /= max(barkWeights.x + barkWeights.y + barkWeights.z, 0.001);
+                float3 barkP = IN.positionOS * _BarkScale;
+                float barkProfile = TkBarkProfile(barkP.zy) * barkWeights.x
+                                  + TkBarkProfile(barkP.xz) * barkWeights.y
+                                  + TkBarkProfile(barkP.xy) * barkWeights.z;
+                float barkCrack = saturate(-barkProfile);
+                float barkRidge = saturate(barkProfile);
+                float barkValue = 1.0 - barkCrack * _BarkCrackDepth
+                                 + barkRidge * _BarkRidgeLift * lit;
+                baseTex.rgb *= lerp(1.0, barkValue, _BarkStrength);
+
                 float3 direct = mainLight.color * lit;
                 float3 ambient = SampleSH(normalWS) * _AmbientBoost;
                 float3 shade = lerp(_ShadowTint.rgb, float3(1.0, 1.0, 1.0), lit);
                 float3 color = baseTex.rgb * (direct + ambient) * shade
-                             + _ShadeFill.rgb * (1.0 - lit);
+                             + _ShadeFill.rgb * (1.0 - lit)
+                             + _BarkSunLift.rgb * lit * (1.0 - barkCrack) * _BarkStrength;
 
                 return half4(color, 1.0);
             }
