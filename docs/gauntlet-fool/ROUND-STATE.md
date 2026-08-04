@@ -750,6 +750,50 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
   mirror 0, no self-intersections) apply to the edit; thumb bones and
   digit weights re-derived after the edit; thumb battery re-run.
 
+## ROUND 19 (OPEN, 2026-08-04, 5th lead): hair + compliant ear rebuild
+
+- Brief: tooling/R19-BRIEF.md. Rulings: ears FIRST then hair; ears JOIN
+  Fool_Mesh (weld/bridge, re-skin 1.0 Head, old relief discs smoothed
+  away); hair = SEPARATE object Fool_Hair on the Head bone; bald crown
+  1.716964 FROZEN, hair adds ~3–4 cm; chunky storybook masses per the
+  charter mix; candidates Fool-v2-024a+ in fool2-r19/.
+- Phase A (Codex, TASK-A-EARS.md): first launch was BLOCKED READ-ONLY —
+  **paid-for lesson: the Codex workspace-write sandbox needs the workdir
+  to be a git repo; fool2-r18 had .git, fresh workdirs don't — `git init`
+  the workdir before the first Codex launch.** Relaunched after git init
+  (PID 393067). Its read-only audit already measured the drawn ear:
+  height 108.8 mm, side depth 52.4 mm, z 1.483–1.592.
+
+## R19 HANDOFF (5th lead at context ceiling — ear build IN FLIGHT)
+
+Successor: charter + this file + STATUS are the resume point.
+- **Chain head: Fool-v2-023.blend** (joined mesh 6,661 v, 53-bone rig,
+  skinned, pose-tested, thumb/thenar edit in). R18 closed and pushed
+  (e97f17a). Workdir fool2-r18/ retains all candidates/instruments;
+  fool2-r19/ is live.
+- **IN FLIGHT at handoff: R19 Phase A ear rebuild, Codex PID 393067**,
+  log fool2-r19/codex-r19a2.log. On completion VALIDATE per TASK-A-EARS
+  gates (freeze guard outside ear regions, join manifold + 0 self-int,
+  mirror, re-skin, neck-pose sanity, eyes-on: ears read dimensional, not
+  discs; the task's STOP clause re separate-object ears needs a director
+  check if triggered). Check builder liveness before declaring it dead.
+- **Then Phase B hair** (write TASK-B-HAIR from R19-BRIEF ruling 3):
+  blockout vs the A-pose sheet silhouette (both views), separate
+  Fool_Hair, Head-bone binding, blind judge head A/B at close (ears+hair
+  together lift the head read; irises/brows still materials-stage).
+- Chain: promote ears as Fool-v2-024, hair as Fool-v2-025 (or one step if
+  A+B validate together). STATUS + renders push at close as ever.
+- Remaining after R19: clothes & accessories, materials (irises/pupils/
+  brows — the gray-medium blind-score ceiling lifts there), Unity FBX
+  gate ends the run (faces −Y and 1u=1m were chosen for this; verify by
+  FBX inspection, no Unity editor).
+- Instrument laws now standing (see R18 sections): whitelist renders;
+  smear + rigid-lag + posed-self-intersection guards in every battery;
+  geometric (never index-based) vertex sets after ANY topology change;
+  zero-weight check after every weight edit; git-init new Codex workdirs.
+- Open director items: none pending (thumb resolved in R18; ear ruling
+  being executed; issues #2/#5/#6 closed).
+
 ## R18 HANDOFF (4th lead retiring at token ceiling — rigging round NOT started)
 
 Successor: charter + this file + STATUS are the resume point, as ever.
