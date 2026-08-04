@@ -925,6 +925,99 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
   govern; hood note: covers part of back hair). Then materials, then
   Unity FBX gate ends the run.
 
+## ROUND 20 (OPEN, 2026-08-04, 6th lead): clothes & accessories
+
+- Brief: tooling/R20-BRIEF.md. Workdir fool2-r20/ (git-init'd). Launch
+  law reaffirmed twice this round: `-s workspace-write` AND explicit
+  `< /dev/null` on codex exec (first launch hung reading stdin and was
+  killed; second attempt without </dev/null worked but treat the
+  redirect as mandatory).
+- **Phase A (Codex) VALIDATED:** clothing-inventory.json +
+  CLOTHING-INVENTORY-REPORT.txt in fool2-r20/. Calibration law held
+  (ear anchor 0.0 mm, eye line 0.8 mm; single full-figure pixel scale
+  proven impossible — mesh-landmark ratios only). 8 garments skin-out
+  (undershirt, pants, tunic, hood/cowl, harness, waist belt, bracers,
+  boots) + accessories (rose, satchel, pouches, bindle, tankard),
+  ratio-anchored envelopes, verbatim material text captured for the
+  materials stage, ~16,300-tri budget, per-piece gates + battery-pose
+  stress map.
+- **LEAD TBD ADJUDICATIONS (construction/scheduling — no director
+  needed):** (1) ONE hood shell — Hood & Cowl piece owns it, tunic
+  built hoodless; (2) layer numbers = category order, anatomical
+  nesting governs; (3) A-pose sheet precedence: ONE large left-hip
+  satchel + only the pouches visible on the dressed sheet; (4) TANKARD
+  OMITTED this round (not equipped on governing sheet; modular-gear
+  candidate later); (5) bindle: behind-right-shoulder routing per
+  inventory read, builder verifies eyes-on vs dressed back view;
+  (6) tunic: split front panels / continuous back as drawn, center tan
+  = pants; (7) colors + illegible swatch heading → materials stage.
+- **Build fan-out (serialized, ONE Blender lane, Codex-first,
+  escalation budgeted for tunic + hood/cowl):**
+  B1 undershirt+pants → B2 tunic → B3 hood/cowl → B4 boots+bracers
+  (own ref sheets!) → B5 harness+belt → B6 rose+satchel+pouches+bindle.
+  Candidates Fool-v2-026a+; chain steps at lead's call per validated
+  group. Gates per piece (from Phase A + brief): body/hair/rig freeze
+  0.000+sha, rest AND posed no-poke-through (mapped battery poses),
+  posed self-int, zero-weight + >4-influence + rigid-lag guards,
+  silhouette A/B vs A-pose sheet.
+
+## R20 B1 CYCLE LOG (7th lead, 2026-08-04)
+
+- Cycle 1 (Codex, 026a): honest self-fail. Hard gates mostly green
+  (freeze 0.000+sha, budgets 1,323/1,400 each, zero-weights 0, pose
+  poke-through 0) but >4-influence fail (70+9 verts — capped BEFORE
+  decimate, which re-interpolated), posed self-int "not numerically
+  established", and form fail: shirt = skin-tight shell (no collar, no
+  rolled cuffs, sleeves too long), pants = leggings. Lead eyes-on
+  concurs. **Codex fail #1 on the base-layer form piece.**
+- Cycle 2 (Codex, 026g): BOTH hard-gate fixes landed (0 verts over 4;
+  exact tri–tri per pose established, 0 everywhere: garment-body,
+  shirt-pants, self non-adjacent; one pre-existing body pair carried
+  not grown). Form FAIL again, builder-honest + lead-confirmed worse
+  in places: "collar" = detached floating bar in front of the neck +
+  a drawn-on chest crease; cuffs = faceted mid-forearm rings; pants
+  seat baggier but one smooth balloon — no gathered lower-leg tuck.
+  **Codex fail #2 on the base-layer form piece.**
+- **OPUS ESCALATION JUSTIFIED (charter clause, recorded before
+  launch):** base-layer FORM (collar/cuff read, gathered-tuck drape) is
+  judgment-heavy sculptural design; Codex produced two gate-green
+  form-fail cycles with consistent critiques (the known
+  greens-gates-misses-form pattern); B1 is the bottom layer every other
+  garment stacks on, so it blocks the round. One tightly-scoped Opus
+  cycle from 026g (its green gate machinery reusable), both critiques
+  verbatim, eyes-on iteration mandate (R13-D/R19 precedent), same hard
+  gates. Brief: fool2-r20/TASK-B1C3-BASELAYER-OPUS.md, candidates
+  Fool-v2-026h+.
+
+## DIRECTOR HALT (2026-08-04, mid-R20 — run SUSPENDED)
+
+- **Director judgment on the face (elevated, supersedes prior face
+  closures): NOT GOOD ENOUGH — eyes too far apart, no brow ridge, head
+  too skinny.** The director is HAND-MODIFYING the base mesh in the GUI
+  before any dressing continues; the run resumes from whatever mesh the
+  director hands back. The R14/R17 face closures and their 4/10-ceiling
+  reasoning are re-opened by this ruling; face-likeness debts are now
+  director-elevated.
+- Halt sequence executed by 7th lead: B2 tunic NOT launched (brief
+  staged at fool2-r20/TASK-B2-TUNIC.md, unused); the in-flight B1
+  cycle-3 Opus escalation builder was ordered to stop (no headless
+  Blender process was live at halt; any candidate it saved is
+  ABANDONED work); Blender lane surrendered to the director's GUI
+  session (chain Fool-v2-025 loaded for them by the coordinator).
+- **B1 state at halt (for the resume):** cycle 2 (026g) has ALL hard
+  gates green — the influence-cap ordering fix and the exact tri–tri
+  posed self-intersection instrument are proven and reusable
+  (build_b1.py) — but form failed twice (cycle log above); the Opus
+  cycle-3 form pass was mid-flight and unvalidated. NOTHING from B1 is
+  promoted; chain head remains **Fool-v2-025.blend**.
+- **Resume implications:** a director-modified base mesh likely changes
+  head/face geometry → re-verify before reuse: weight transfer sources,
+  ear/hair fit (Fool_Hair ray-cast to scalp), eye-globe placement vs
+  new sockets, freeze-hash baselines (all sha tables reset), and the
+  B1 garments must be refit (they were built against the old body).
+  Treat every envelope/measurement anchored to head landmarks
+  (3.596 mm/px ear calibration etc.) as suspect until re-measured.
+
 ## R19 HANDOFF (5th lead at context ceiling — ear build IN FLIGHT)
 
 Successor: charter + this file + STATUS are the resume point.
