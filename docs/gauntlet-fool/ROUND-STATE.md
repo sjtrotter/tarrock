@@ -369,6 +369,27 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
   caveat "eyes are blank spheres until the materials stage paints
   iris/pupil" so the read isn't mistaken for a defect.
 
+## REGIME TIGHTENED (director order 2026-08-04 — charter §Usage economy re-read)
+
+- Claude at 70% weekly: sub-agents ALMOST EXCLUSIVELY Codex now — builders,
+  iterators, blind judges, AND critics. Claude only for the lead's own short
+  planning/validation turns; Opus escalation only after Codex fails a
+  judgment-heavy piece TWICE and it blocks the round, justified here first.
+- **Grandfather note:** the R16 Phase-B Opus builder was launched before this
+  order; killing it mid-build would waste the spend already made, so it runs
+  to completion. Everything downstream in R16 (critique, blind judge, fix
+  cycles) and all later rounds follow the tightened rule.
+- **Carried-twice rule adopted** (charter §Director channel): any debt carried
+  forward more than twice gets its own PLAIN-ENGLISH GitHub issue.
+- **Audit (2026-08-04):** belt + front garment-class line — already
+  adjudicated by director ruling on issue #2 (debt, re-judged at dressed
+  gates), not stuck, no new issue. Arm relief (carried since r12, 3 failed
+  attempts) → **issue #5**. Calf-top outer edge 3–4 mm narrow (unowned since
+  ~r9) → **issue #6**. Pass-3 creases = scheduled deferral, not stuck.
+  Lid-band self-intersections + mouth-corner check = carried once each.
+  Nose/lips/aperture = covered by 2026-08-03 director feedback + scheduled
+  R17. Poll #5/#6 at ≥5 min intervals; keep working meanwhile.
+
 ## ROUND 16 (OPEN, 2026-08-03, 4th lead): body retopo
 
 - Brief: tooling/R16-BRIEF.md; Phase A = Codex (tooling/TASK-A-BODY.md,
