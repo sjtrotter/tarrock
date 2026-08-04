@@ -675,3 +675,23 @@ nose still blunter than the sheet's; ears still simplified flaps (R15
 debt); neck density collar. Next: **Round 18 — rigging**, opening with the
 director's rig-blocking defect: straightening the curled index/pinkie
 digits (Phase 0) before any weights land.
+
+---
+
+## Round 18, Phase 0 — the director's finger fix (2026-08-04)
+
+The director caught index and pinkie fingers curling inward in the top
+view — a defect inherited from carving digits out of the sculpt's fused
+mitten, and rig-blocking (a curled rest pose bakes into the skinning).
+Fixed by rigid per-ring straightening of all ten digits: straightness to
+0.0004 mm, inter-finger gaps widened 1.2–2.6 mm, topology hash unchanged,
+mirror exact, zero self-intersections; head, eyes, seam, and soles
+untouched. Independently re-verified; chain advances to `Fool-v2-022.blend`.
+
+| Before (top) | After (top) |
+|---|---|
+| ![before](renders/r18p0-hand-before.png) | ![after](renders/r18p0-hand-after.png) |
+
+*The rigging round proper (armature, the shoulder pose test that re-judges
+the R16 debt, skinning) opens next under a successor lead — the R18 handoff
+lives in ROUND-STATE.md.*

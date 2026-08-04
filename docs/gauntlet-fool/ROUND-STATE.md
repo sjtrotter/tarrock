@@ -572,3 +572,56 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
   rotate/straighten each digit tube about its root per the sheet's fan
   angles, re-verify webbing/gaps/mirror, top-view render evidence) ahead of
   armature work. Logged as a debt on chain 020 until then.
+
+## R18 PHASE 0 CLOSED (2026-08-04): fingers straightened → chain Fool-v2-022.blend
+
+- **Chain = workdir Fool-v2-022c.blend promoted.** Rigid per-ring
+  straightening, all 5 digits both hands. Gates (lead re-ran validate_one.py
+  independently on the saved file — every number matched): straightness
+  worst 0.0004 mm; inter-digit clearances INCREASED 1.19–2.64 mm; mirror
+  0.000000; topology sha unchanged (4,599 v / 4,562 q / 0 n-gons);
+  self-intersections 0; head/eyes/neck-seam/sole untouched. Top-view
+  eyes-on: before = index+pinkie hooked inward, thumb hugging palm; after =
+  five straight fanned separated digits per the sheet. Director defect
+  RESOLVED. Evidence renders pushed (r18p0-hand-before/after.png).
+
+## R18 HANDOFF (4th lead retiring at token ceiling — rigging round NOT started)
+
+Successor: charter + this file + STATUS are the resume point, as ever.
+Verified state at handoff: chain head = **Fool-v2-022.blend** (polished head
+2,134 v + straightened body 4,599 v + eyes, all separate objects, seam
+vertex-exact); no background processes (Phase-0 Codex exited; governor PID
+8207 runs machine-wide); Blender lane FREE; GUI closed, renders remain the
+director's channel; Claude near-exclusively reserved (Codex default,
+escalation clause per charter — it fired once in R17 and worked).
+
+The rigging round as I would run it (recommendations, not rulings):
+- **Research first (Codex): Rigify-vs-custom for a Unity URP Humanoid
+  target.** My lean: a CUSTOM deform-only armature authored
+  programmatically — it fits the run's authored-and-instrumented method,
+  avoids Rigify's control-rig export mess, and the Unity Humanoid bone set
+  is small: hips/spine/chest/neck/head, shoulder+upper+lower arm+hand ×2,
+  3-bone fingers ×5 ×2, upper+lower leg+foot+toe ×2. PLUS eye bones
+  (director ruling: eyes rotate on their own bones — parent the globe
+  objects, do not skin them). Head-body JOIN at skinning time (R16 ruling):
+  merge-by-distance the 72 seam pairs, verify watertight + 0 non-manifold,
+  re-run the standard instruments after the join.
+- **Shoulder pose test — the gate that adjudicates the R16 debt (blind
+  judge + builder both flagged it):** pose upper arm at −45° and −80°
+  (lowered), render front/back/three-quarter; FAIL = visible collapse/pinch
+  at armhole/deltoid; measure deltoid-ring cross-section area loss. If it
+  pinches, targeted armhole rework happens BEFORE weights count as done.
+- **Finger hinge test:** curl each digit 60° at each hinge; no collapse,
+  no web tearing; knuckle loops are in place for this (R16 loop spec).
+- Weights: auto-weights + targeted cleanup is fine at this budget; judge
+  by pose-test renders (geometry-space + eyes-on, per the run's law).
+- FBX/Unity gate at the end of rigging or as its own round: faces −Y and
+  1 u = 1 m were chosen exactly for this trip; verify by FBX inspection,
+  not the Unity editor (charter).
+- Carried debts live in the R16/R17 close sections above; mouth/lower-face
+  corner retopo is scheduled with blend-shape/materials work, NOT rigging.
+- Workdir fool2-r18/ has gov.sh, validate_one.py (single-file instrument —
+  respect the double-library-load rename trap), body_axes/neck_ring links,
+  and the Phase-0 scripts. Remaining stages after rigging: hair, clothes &
+  accessories, materials (irises/pupils + the STATUS blank-eye caveat
+  retires there), Unity FBX gate ends the run.
