@@ -16,14 +16,24 @@ tree.
 
 ---
 
-## Round 19 — bark, and the leaner machine `QUEUED`
+## Round 20 — the cloud, again and properly `QUEUED`
 
-- New architecture per the director's economics order: no Claude round-runners — the lead orchestrates Codex builders,
-  captures, and Codex judges directly.
-- First target: the bark material (issue #7 — the judges' converged current tell). Sky (#8) and ground (#9) issues
-  posted per the carried-twice rule; director insight welcome on all three.
-- Staging retry (gentler combined move, real terrain instruments) awaits a go-ahead on issue #3.
+- Both round-19 blind passes re-named the cloud ("placeholder-grade", "blurry cardboard") — it returns as the top
+  unblocked tell, with director insight invited on issue #8 (the empty sky).
+- The stand-in Fool remains the judges' other constant complaint — excluded here; the parallel Fool-sculpt gauntlet
+  owns the real model, and its import will be a bigger jump than any environment round.
 
+## Round 19 — bark, on the second pass · commit `4b9fdc6`
+
+![Round 19b v8](img/thumb-r19-v8-deadtree-skyline.jpg) ![Round 19b v9](img/thumb-r19-v9-shelf-west.jpg)
+
+**The lean machine's first round** (no Claude runner — Codex builders, inline capture, Codex-only judging; zero Claude
+subagent tokens): the bark landed on the second pass. First capture: technically articulated but near-black — the
+Codex regression critic prescribed the fix (brighten the sun side, keep crevices and cool shade), and round19b's tree
+finally reads as warm weathered wood. v1–v8 confirmed regression-clean; the v9 "mismatch" was the critic comparing
+against the shelved variant camera. Issues #3 closed by director ruling (accept staging, playtest decides); #7 rides
+with this round's work; #8/#9 await insight. Blind passes still rank board 1-2-3 — the remaining tells are the cloud
+and the placeholder character.
 ## Round 18 — the staging A/B · commit `0c3f72f`
 
 ![Round 18-A v9](img/thumb-r18-v9-shelf-west.jpg) ![Round 18-A v8](img/thumb-r18-v8-deadtree-skyline.jpg)
