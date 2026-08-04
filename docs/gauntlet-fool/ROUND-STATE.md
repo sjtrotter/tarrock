@@ -1018,6 +1018,26 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
   Treat every envelope/measurement anchored to head landmarks
   (3.596 mm/px ear calibration etc.) as suspect until re-measured.
 
+## HALT AMENDMENT — Opus builder stop confirmed + root-cause findings
+
+- The B1 cycle-3 Opus builder confirmed the halt BEFORE any Blender
+  execution: no candidate saved (workdir head is still 026g), no
+  renders, chain untouched. Inert files left: fool2-r20/inspect_c3.py
+  + inspect_c3.json (read-only pre-edit measurements — KEEP) and
+  build_c3.py (never run; its hardcoded landmark/radius tables go
+  STALE the moment the director edits the mesh — re-run inspect_c3.py
+  on the new chain head as the cheap first step on resume).
+- **Root-cause findings for the resume brief (diagnosis, not
+  critique):** (1) the rig is effectively T-posed — elbow x=0.500,
+  wrist x=0.690 — and cycle 2's sleeve terminated at x=0.457, 43 mm
+  ABOVE the elbow: a LANDMARK error; specify the sleeve/cuff end
+  relative to the measured elbow or the miss recurs. (2) Cycles 1–2
+  displaced the shell THEN decimated to budget; collapse decimation
+  preferentially smooths exactly the fold frequencies the sheet draws
+  (why the pants stayed a smooth balloon regardless of fold tuning).
+  Correct order: finalize topology first (decimate, subdivide only
+  the detail bands), displace second, weights last.
+
 ## R19 HANDOFF (5th lead at context ceiling — ear build IN FLIGHT)
 
 Successor: charter + this file + STATUS are the resume point.
