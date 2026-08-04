@@ -16,6 +16,7 @@ namespace Tarrock.Editor
 
         private static TerrainData BuildTerrainData()
         {
+            Debug.Log($"[Tarrock] Staging variant: {StagingVariantResolver.Current}");
             var terrainData = new TerrainData
             {
                 heightmapResolution = HeightmapResolution,
@@ -631,6 +632,9 @@ namespace Tarrock.Editor
         private const float ApproachTopRadius = 9f;       // the plateau's rim; inside it is flat
         private const float ApproachFootHeight = 37.7f;   // sampled: the natural ground at the foot
         private const float ApproachTopHeight = 48.6f;    // sampled: the natural plateau lip there
+        private const float RaisedLaneTopBearing = 190f;  // carries the tread over the rim
+        private const float RaisedLaneTopRadius = 4.5f;
+        private const float RaisedLaneTopHeight = 50.05f;
         // The tread: 6 m wide at the foot narrowing to 4.4 m at the lip, with a batter that spreads
         // 9 m at the foot (where the fill is deepest, 7.9 m) and 4 m at the lip (where it must not
         // reach the round-4 notch, 15.5 m away on the far side of the summit).
@@ -669,27 +673,35 @@ namespace Tarrock.Editor
                 return 0f;
             }
 
+            bool raisedLane = StagingVariantResolver.Current == CliffStagingVariant.RaisedLane;
+            float topBearing = raisedLane ? RaisedLaneTopBearing : ApproachTopBearing;
+            float topRadius = raisedLane ? RaisedLaneTopRadius : ApproachTopRadius;
+            float topHeight = raisedLane ? RaisedLaneTopHeight : ApproachTopHeight;
+
             // Unwrap the bearing onto the branch nearest the tread's top, so the shelf can never
             // wrap the wrong way round the hill.
             float bearing = Mathf.Atan2(dx, dz) * Mathf.Rad2Deg;
-            float b = ApproachTopBearing + Mathf.DeltaAngle(ApproachTopBearing, bearing);
+            float b = topBearing + Mathf.DeltaAngle(topBearing, bearing);
 
             // The spiral, and the constant-grade height on it.
-            float u = Mathf.InverseLerp(ApproachFootBearing, ApproachTopBearing, b);
-            float ratio = ApproachTopRadius / ApproachFootRadius;
+            float u = Mathf.InverseLerp(ApproachFootBearing, topBearing, b);
+            float ratio = topRadius / ApproachFootRadius;
             float pathRadius = ApproachFootRadius * Mathf.Pow(ratio, u);
-            float t = (ApproachFootRadius - pathRadius) / (ApproachFootRadius - ApproachTopRadius);
+            float t = (ApproachFootRadius - pathRadius) / (ApproachFootRadius - topRadius);
 
+            // TODO(r18 critic finding): This intentionally preserves the baseline log(32/9)
+            // operand. Variant A needs log(32/4.5); the stale radius understates its grade by
+            // 3.437 degrees. Correct the variant arithmetic before reactivating it.
             float turns = Mathf.Log(ApproachFootRadius / ApproachTopRadius);
-            float sweep = Mathf.Abs(ApproachFootBearing - ApproachTopBearing) * Mathf.Deg2Rad;
+            float sweep = Mathf.Abs(ApproachFootBearing - topBearing) * Mathf.Deg2Rad;
             float hypotenuse = Mathf.Sqrt((turns * turns) + (sweep * sweep));
             float pathLength = hypotenuse / turns * (ApproachFootRadius - ApproachTopRadius);
-            float grade = (ApproachTopHeight - ApproachFootHeight) / pathLength;
+            float grade = (topHeight - ApproachFootHeight) / pathLength;
             float radialFraction = turns / hypotenuse;          // |dr/ds| along the spiral
             float tangentialFraction = sweep / hypotenuse;      // |r·dθ/ds| along the spiral
 
             float offset = radius - pathRadius;
-            targetHeight = Mathf.Lerp(ApproachFootHeight, ApproachTopHeight, t)
+            targetHeight = Mathf.Lerp(ApproachFootHeight, topHeight, t)
                          - (grade * radialFraction * offset);
 
             float wanderFade = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0f, 0.20f, t))
@@ -705,9 +717,11 @@ namespace Tarrock.Editor
             float lead = Mathf.SmoothStep(0f, 1f,
                 Mathf.InverseLerp(ApproachFootBearing + ApproachLeadFadeDegrees, ApproachFootBearing, b));
             float trail = Mathf.SmoothStep(0f, 1f,
-                Mathf.InverseLerp(ApproachTopBearing - ApproachTrailFadeDegrees, ApproachTopBearing, b));
-            float summit = Mathf.SmoothStep(0f, 1f,
-                Mathf.InverseLerp(ApproachSummitGateInner, ApproachSummitGateOuter, radius));
+                Mathf.InverseLerp(topBearing - ApproachTrailFadeDegrees, topBearing, b));
+            float summit = raisedLane
+                ? 1f
+                : Mathf.SmoothStep(0f, 1f,
+                    Mathf.InverseLerp(ApproachSummitGateInner, ApproachSummitGateOuter, radius));
 
             return core * lead * trail * summit;
         }

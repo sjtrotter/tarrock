@@ -162,12 +162,18 @@ namespace Tarrock.EditorTools
         // ApproachFootBearing 275°, ApproachFootRadius 32 m from KnollCentre). DERIVED there,
         // restated here for the same reason SpawnX/KnollX are — those constants are private to the
         // generator. If the shelf's bearing or radius move, move these with them and say so.
-        private const float ShelfFootX = 118.12f;
-        private const float ShelfFootZ = 60.79f;
+        private static float ShelfFootX =>
+            StagingVariantResolver.Current == CliffStagingVariant.RaisedLane ? 141.37f : 118.12f;
+        private static float ShelfFootZ =>
+            StagingVariantResolver.Current == CliffStagingVariant.RaisedLane ? 50.72f : 60.79f;
         // Eleven metres up the tread from the foot, on the spiral's own centreline: the mark the
         // stand-in walks to in v9. Sampled from the shipped spiral, not eyeballed.
-        private const float ShelfWalkX = 125.22f;
-        private const float ShelfWalkZ = 52.74f;
+        private static float ShelfWalkX =>
+            StagingVariantResolver.Current == CliffStagingVariant.RaisedLane ? 147.76f : 125.22f;
+        private static float ShelfWalkZ =>
+            StagingVariantResolver.Current == CliffStagingVariant.RaisedLane ? 52.49f : 52.74f;
+        private static float ShelfWalkYaw =>
+            StagingVariantResolver.Current == CliffStagingVariant.RaisedLane ? 22.1f : 78f;
         // Three metres above the trunk's ground, which is where the v9 lens is aimed. NOT the
         // crown lift v8 uses: v9 stands 37 m out and 12 m BELOW the tree, so aiming at the crown
         // would pitch the lens up past the shelf the shot exists to show. See the vantage.
@@ -324,7 +330,9 @@ namespace Tarrock.EditorTools
             Vantage.ThirdPersonLookingAt(
                     "v9-shelf-west", pivotX: ShelfFootX, pivotZ: ShelfFootZ,
                     targetX: KnollX, targetZ: KnollZ, targetLift: ShelfAimLift)
-                .WithStandIn(ShelfWalkX, ShelfWalkZ, yawDegrees: 78f),
+                .WithStandIn(
+                    ShelfWalkX, ShelfWalkZ,
+                    yawDegrees: ShelfWalkYaw),
 
             // There is deliberately no v10 reveal frame. The reveal restores, for the player, the
             // framing the capture rig always had: v9 already aims at the runtime nudge's shared

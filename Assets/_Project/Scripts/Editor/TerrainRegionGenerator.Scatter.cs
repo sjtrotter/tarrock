@@ -62,7 +62,8 @@ namespace Tarrock.Editor
         private static void BuildDeadTree()
         {
             Physics.SyncTransforms();
-            var origin = new Vector3(KnollCentre.x, 200f, KnollCentre.y);
+            Vector2 treePosition = StagingVariantResolver.DeadTreePosition;
+            var origin = new Vector3(treePosition.x, 200f, treePosition.y);
             if (!Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 400f))
             {
                 Debug.LogWarning("[Tarrock] Dead-tree raycast missed the knoll; tree skipped.");
@@ -245,8 +246,8 @@ namespace Tarrock.Editor
             trunkCollider.radius = 0.90f;
         }
 
-        /// <summary>One gnarled bare tree, 21.6 m tall with a 19.9 x 19.6 m crown: 38 hand-placed
-        /// boughs, each a CURVED tapering limb built from six-sided prisms. Hardcoded
+        /// <summary>One gnarled bare tree, 21.6 m tall with a 19.9 x 19.6 m crown: 38 original
+        /// silhouette boughs plus 30 internal forks, each a CURVED tapering six-sided limb. Hardcoded
         /// (art-directed), not randomised — the landmark should be a drawing, not a dice roll.
         /// </summary>
         /// <remarks>
@@ -274,6 +275,7 @@ namespace Tarrock.Editor
             var verts = new List<Vector3>();
             var cols = new List<Color>();
             var tris = new List<int>();
+            _deadTreeSnappedBoughCount = 0;
 
             // ---- THE BOLE: two lengths, kinked, leaning west toward the light and the leap ----
             AddBough(verts, cols, tris, new Vector3(0.00f, 0.00f, 0.00f), new Vector3(-0.42f, 5.90f, 0.24f),
@@ -299,7 +301,7 @@ namespace Tarrock.Editor
             AddBough(verts, cols, tris, new Vector3(-1.15f, 10.20f, -0.14f), new Vector3(-2.35f, 18.90f, 0.94f),
                 new Vector3(-0.75f, 0.70f, 0.41f), 0.525f, 0.138f, 6, 0.45f); // P5-leader
             AddBough(verts, cols, tris, new Vector3(-0.62f, 7.70f, 0.11f), new Vector3(-3.30f, 8.30f, -3.92f),
-                new Vector3(-0.35f, 0.55f, -0.47f), 0.438f, 0.300f, 4, 0.20f); // P6-snapped
+                new Vector3(-0.35f, 0.55f, -0.47f), 0.438f, 0.300f, 4, 0.20f, true); // P6-snapped
             // ---- SECONDARIES: two or three off each primary, forking up and out --------------
             AddBough(verts, cols, tris, new Vector3(-3.10f, 9.20f, 0.74f), new Vector3(-6.90f, 15.60f, 0.14f),
                 new Vector3(-0.70f, 1.20f, -0.47f), 0.275f, 0.088f, 5, 0.60f); // S1a
@@ -327,6 +329,67 @@ namespace Tarrock.Editor
                 new Vector3(0.50f, 0.85f, -0.27f), 0.237f, 0.062f, 5, 0.72f); // S5b
             AddBough(verts, cols, tris, new Vector3(-2.25f, 17.40f, 0.74f), new Vector3(-3.90f, 20.90f, 2.43f),
                 new Vector3(-0.35f, 0.60f, 0.47f), 0.188f, 0.050f, 4, 0.80f); // S5c
+            // ---- INNER FORKS: readable branch hierarchy, with air left between clusters -------
+            AddBough(verts, cols, tris, new Vector3(-4.25f, 10.35f, 0.99f), new Vector3(-7.35f, 13.10f, -1.72f),
+                new Vector3(-0.48f, 0.58f, -0.46f), 0.255f, 0.072f, 3, 0.78f); // F1a
+            AddBough(verts, cols, tris, new Vector3(-5.10f, 12.15f, 1.18f), new Vector3(-7.72f, 15.35f, 3.08f),
+                new Vector3(-0.42f, 0.62f, 0.38f), 0.234f, 0.065f, 3, 0.82f); // F1b
+            AddBough(verts, cols, tris, new Vector3(-5.75f, 13.55f, 0.62f), new Vector3(-8.45f, 16.05f, -0.42f),
+                new Vector3(-0.38f, 0.52f, -0.32f), 0.202f, 0.058f, 3, 0.86f); // F1c
+            AddBough(verts, cols, tris, new Vector3(3.25f, 10.15f, -1.24f), new Vector3(5.92f, 13.35f, 1.12f),
+                new Vector3(0.46f, 0.60f, 0.42f), 0.255f, 0.072f, 3, 0.78f); // F2a
+            AddBough(verts, cols, tris, new Vector3(4.28f, 12.05f, -1.58f), new Vector3(7.28f, 15.05f, -3.35f),
+                new Vector3(0.44f, 0.58f, -0.36f), 0.234f, 0.065f, 3, 0.82f); // F2b
+            AddBough(verts, cols, tris, new Vector3(5.12f, 12.55f, -1.20f), new Vector3(7.65f, 14.90f, 2.35f),
+                new Vector3(0.35f, 0.48f, 0.52f), 0.202f, 0.058f, 3, 0.86f); // F2c
+            AddBough(verts, cols, tris, new Vector3(-2.72f, 12.75f, 4.72f), new Vector3(-5.72f, 15.35f, 6.62f),
+                new Vector3(-0.44f, 0.55f, 0.42f), 0.234f, 0.065f, 3, 0.82f); // F3a
+            AddBough(verts, cols, tris, new Vector3(-2.88f, 14.15f, 5.92f), new Vector3(0.10f, 16.65f, 7.58f),
+                new Vector3(0.42f, 0.50f, 0.38f), 0.212f, 0.061f, 3, 0.86f); // F3b
+            AddBough(verts, cols, tris, new Vector3(-3.72f, 15.05f, 5.12f), new Vector3(-6.42f, 17.60f, 7.72f),
+                new Vector3(-0.36f, 0.48f, 0.46f), 0.194f, 0.054f, 3, 0.88f); // F3c
+            AddBough(verts, cols, tris, new Vector3(1.22f, 13.05f, -3.55f), new Vector3(4.72f, 15.55f, -5.42f),
+                new Vector3(0.48f, 0.54f, -0.40f), 0.234f, 0.065f, 3, 0.82f); // F4a
+            AddBough(verts, cols, tris, new Vector3(1.62f, 14.45f, -5.15f), new Vector3(-1.10f, 16.80f, -7.02f),
+                new Vector3(-0.40f, 0.46f, -0.42f), 0.212f, 0.061f, 3, 0.86f); // F4b
+            AddBough(verts, cols, tris, new Vector3(2.42f, 15.05f, -4.25f), new Vector3(5.52f, 17.25f, -6.72f),
+                new Vector3(0.42f, 0.44f, -0.44f), 0.194f, 0.054f, 3, 0.88f); // F4c
+            AddBough(verts, cols, tris, new Vector3(-2.08f, 15.00f, -0.82f), new Vector3(-5.32f, 17.15f, 0.72f),
+                new Vector3(-0.45f, 0.48f, 0.34f), 0.238f, 0.065f, 3, 0.82f); // F5a
+            AddBough(verts, cols, tris, new Vector3(-1.62f, 16.55f, 0.22f), new Vector3(1.82f, 18.45f, 1.95f),
+                new Vector3(0.46f, 0.42f, 0.36f), 0.212f, 0.061f, 3, 0.86f); // F5b
+            AddBough(verts, cols, tris, new Vector3(-2.72f, 17.72f, 1.02f), new Vector3(-5.82f, 19.35f, -0.52f),
+                new Vector3(-0.42f, 0.38f, -0.34f), 0.191f, 0.054f, 3, 0.90f); // F5c
+            AddBough(verts, cols, tris, new Vector3(-3.92f, 16.25f, 0.12f), new Vector3(-7.05f, 18.15f, 2.25f),
+                new Vector3(-0.40f, 0.40f, 0.40f), 0.176f, 0.050f, 3, 0.90f); // F6a
+            AddBough(verts, cols, tris, new Vector3(3.82f, 14.85f, -2.82f), new Vector3(6.75f, 17.05f, -0.35f),
+                new Vector3(0.38f, 0.44f, 0.42f), 0.176f, 0.050f, 3, 0.90f); // F6b
+            AddBough(verts, cols, tris, new Vector3(-0.85f, 18.10f, 0.55f), new Vector3(2.35f, 20.05f, 2.62f),
+                new Vector3(0.40f, 0.38f, 0.38f), 0.166f, 0.047f, 3, 0.92f); // F6c
+            AddBough(verts, cols, tris, new Vector3(-6.15f, 14.15f, 0.25f), new Vector3(-8.25f, 16.65f, 2.12f),
+                new Vector3(-0.32f, 0.42f, 0.34f), 0.165f, 0.050f, 3, 0.90f); // F7a
+            AddBough(verts, cols, tris, new Vector3(-5.35f, 15.05f, 2.82f), new Vector3(-7.55f, 17.65f, 4.82f),
+                new Vector3(-0.34f, 0.44f, 0.36f), 0.155f, 0.047f, 3, 0.92f); // F7b
+            AddBough(verts, cols, tris, new Vector3(5.45f, 13.85f, -0.72f), new Vector3(7.82f, 16.35f, -2.62f),
+                new Vector3(0.35f, 0.42f, -0.35f), 0.165f, 0.050f, 3, 0.90f); // F8a
+            AddBough(verts, cols, tris, new Vector3(4.52f, 15.45f, -4.12f), new Vector3(6.65f, 18.05f, -5.85f),
+                new Vector3(0.32f, 0.44f, -0.34f), 0.155f, 0.047f, 3, 0.92f); // F8b
+            AddBough(verts, cols, tris, new Vector3(-3.55f, 15.82f, 5.62f), new Vector3(-4.62f, 18.55f, 8.02f),
+                new Vector3(-0.22f, 0.45f, 0.40f), 0.150f, 0.045f, 3, 0.92f); // F9a
+            AddBough(verts, cols, tris, new Vector3(-1.92f, 16.45f, 7.05f), new Vector3(0.35f, 18.72f, 8.82f),
+                new Vector3(0.34f, 0.38f, 0.32f), 0.142f, 0.042f, 3, 0.94f); // F9b
+            AddBough(verts, cols, tris, new Vector3(1.45f, 15.45f, -5.75f), new Vector3(3.82f, 17.82f, -7.72f),
+                new Vector3(0.34f, 0.40f, -0.36f), 0.150f, 0.045f, 3, 0.92f); // F10a
+            AddBough(verts, cols, tris, new Vector3(0.42f, 16.15f, -6.52f), new Vector3(-1.82f, 18.35f, -8.18f),
+                new Vector3(-0.32f, 0.38f, -0.32f), 0.142f, 0.042f, 3, 0.94f); // F10b
+            AddBough(verts, cols, tris, new Vector3(-4.18f, 17.25f, -1.62f), new Vector3(-6.72f, 19.35f, -1.02f),
+                new Vector3(-0.36f, 0.36f, 0.20f), 0.145f, 0.043f, 3, 0.94f); // F11a
+            AddBough(verts, cols, tris, new Vector3(0.72f, 17.55f, -1.12f), new Vector3(3.72f, 19.52f, 0.42f),
+                new Vector3(0.38f, 0.34f, 0.28f), 0.145f, 0.043f, 3, 0.94f); // F11b
+            AddBough(verts, cols, tris, new Vector3(-3.05f, 18.65f, 1.65f), new Vector3(-5.15f, 20.42f, 0.22f),
+                new Vector3(-0.30f, 0.30f, -0.26f), 0.132f, 0.040f, 3, 0.95f); // F12a
+            AddBough(verts, cols, tris, new Vector3(-1.52f, 19.05f, 0.42f), new Vector3(0.82f, 20.82f, 1.65f),
+                new Vector3(0.32f, 0.30f, 0.24f), 0.132f, 0.040f, 3, 0.95f); // F12b
             // ---- TWIGS: the outline's teeth. Short, clawing, and never parallel ---------------
             AddBough(verts, cols, tris, new Vector3(-6.30f, 14.20f, 0.41f), new Vector3(-8.70f, 17.10f, 1.22f),
                 new Vector3(-0.30f, 0.45f, 0.27f), 0.112f, 0.037f, 3, 0.90f); // T1
@@ -357,6 +420,13 @@ namespace Tarrock.Editor
             AddBough(verts, cols, tris, new Vector3(-2.30f, 18.90f, 0.94f), new Vector3(-1.20f, 21.60f, -0.81f),
                 new Vector3(0.15f, 0.30f, -0.27f), 0.075f, 0.025f, 3, 1.00f); // T14
 
+            if (_deadTreeSnappedBoughCount != ExpectedSnappedBoughs)
+            {
+                Debug.LogError($"[Tarrock] DeadTree snapped-bough count {_deadTreeSnappedBoughCount}; expected {ExpectedSnappedBoughs}.");
+            }
+
+            LogDeadTreeTopologyErrors(verts, tris);
+
             var mesh = new Mesh { name = "DeadTree" };
             mesh.SetVertices(verts);
             mesh.SetColors(cols);
@@ -375,74 +445,130 @@ namespace Tarrock.Editor
         /// 0.012 m, turning exposed 5-33 cm discs into tapered ends without moving an axis.</summary>
         private static void AddBough(
             List<Vector3> verts, List<Color> cols, List<int> tris,
-            Vector3 baseP, Vector3 tipP, Vector3 bend, float baseR, float tipR, int segments, float sway)
+            Vector3 baseP, Vector3 tipP, Vector3 bend, float baseR, float tipR, int segments, float sway,
+            bool snapped = false)
         {
+            if (snapped) _deadTreeSnappedBoughCount++;
             Vector3 mid = ((baseP + tipP) * 0.5f) + bend;
-            Vector3 previous = baseP;
-            float previousR = baseR;
+            var points = new Vector3[segments + 1];
+            var radii = new float[segments + 1];
+            var tangents = new Vector3[segments + 1];
+            points[0] = baseP;
+            radii[0] = baseR;
             for (int i = 1; i <= segments; i++)
             {
                 float t = i / (float)segments;
                 float u = 1f - t;
-                Vector3 point = (u * u * baseP) + (2f * t * u * mid) + (t * t * tipP);
+                points[i] = (u * u * baseP) + (2f * t * u * mid) + (t * t * tipP);
                 // Radius on t^0.72, not t: a limb keeps its mass and then thins fast, which is the
                 // difference between a bough and a cone at 56 m.
-                float radius = Mathf.Lerp(baseR, tipR, Mathf.Pow(t, 0.72f));
-                bool terminal = i == segments;
-                float terminalRadius = terminal && tipR < SnappedBoughTipRadius
-                    ? Mathf.Min(radius, TerminalLimbRadius)
-                    : radius;
-                AddLimb(verts, cols, tris, previous, point, previousR, terminalRadius, sway, terminal);
-                previous = point;
-                previousR = radius;
+                radii[i] = Mathf.Lerp(baseR, tipR, Mathf.Pow(t, 0.72f));
+            }
+
+            for (int i = 0; i <= segments; i++)
+            {
+                Vector3 before = points[Mathf.Max(0, i - 1)];
+                Vector3 after = points[Mathf.Min(segments, i + 1)];
+                tangents[i] = (after - before).normalized;
+            }
+
+            // Rotation-minimising frame: carry the first cross-section by the shortest rotation
+            // between successive tangents. Unlike rebuilding from world-up, this cannot twist or
+            // mismatch the shared join ring when the Bezier changes direction.
+            Vector3 reference = Mathf.Abs(tangents[0].y) > 0.9f ? Vector3.forward : Vector3.up;
+            Vector3 side = Vector3.Cross(tangents[0], reference).normalized;
+            int start = verts.Count;
+            float jitterSeed = Vector3.Dot(baseP, new Vector3(12.9898f, 78.233f, 37.719f));
+            for (int ring = 0; ring <= segments; ring++)
+            {
+                if (ring > 0)
+                {
+                    side = Quaternion.FromToRotation(tangents[ring - 1], tangents[ring]) * side;
+                    side = (side - (tangents[ring] * Vector3.Dot(side, tangents[ring]))).normalized;
+                }
+
+                Vector3 side2 = Vector3.Cross(tangents[ring], side);
+                float endRadius = ring == segments && !snapped
+                    ? Mathf.Min(radii[ring], TerminalLimbRadius)
+                    : radii[ring];
+                float jitter = ring == 0 || ring == segments
+                    ? 1f
+                    : 1f + (RingHash(jitterSeed + ring * 19.19f) * 2f - 1f) * LimbRadiusJitter;
+                for (int corner = 0; corner < LimbSides; corner++)
+                {
+                    float a = (corner + 0.5f) * Mathf.PI * 2f / LimbSides;
+                    Vector3 dir = (side * Mathf.Cos(a)) + (side2 * Mathf.Sin(a));
+                    float breakDepth = snapped && ring == segments && (corner & 1) == 0
+                        ? SnappedBreakDepth
+                        : 0f;
+                    Vector3 vertex = points[ring] - (tangents[ring] * breakDepth) + (dir * endRadius * jitter);
+                    verts.Add(ClampToDeadTreeEnvelope(vertex));
+                    cols.Add(new Color(0.5f, 0.5f, 0.5f, sway));
+                }
+            }
+
+            for (int ring = 0; ring < segments; ring++)
+            {
+                for (int corner = 0; corner < LimbSides; corner++)
+                {
+                    int b0 = start + ring * LimbSides + corner;
+                    int b1 = start + ring * LimbSides + ((corner + 1) % LimbSides);
+                    int t0 = b0 + LimbSides;
+                    int t1 = b1 + LimbSides;
+                    tris.AddRange(new[] { b0, t0, b1, b1, t0, t1 });
+                }
+            }
+
+            // Only the two true ends are capped. Every interior join indexes one shared ring.
+            int tipStart = start + segments * LimbSides;
+            for (int corner = 1; corner < LimbSides - 1; corner++)
+            {
+                tris.AddRange(new[] { start, start + corner + 1, start + corner });
+                tris.AddRange(new[] { tipStart, tipStart + corner, tipStart + corner + 1 });
             }
         }
 
-        /// <summary>One tapered prism between two points. SIX-sided: a four-sided prism shows two
-        /// facets to any viewer and its silhouette is a pair of straight lines that alias into a
-        /// staircase against a bright sky, which is exactly what round 7-9's tree did. Only the
-        /// terminal prism is capped; the old per-segment fans were coincident interior geometry.</summary>
-        private static void AddLimb(
-            List<Vector3> verts, List<Color> cols, List<int> tris,
-            Vector3 baseP, Vector3 tipP, float baseR, float tipR, float sway, bool capTip)
+        private static float RingHash(float value)
         {
-            Vector3 axis = (tipP - baseP).normalized;
-            Vector3 side = Vector3.Cross(axis, Mathf.Abs(axis.y) > 0.9f ? Vector3.forward : Vector3.up).normalized;
-            Vector3 side2 = Vector3.Cross(axis, side);
-            int start = verts.Count;
+            return Mathf.Repeat(Mathf.Sin(value) * 43758.5453f, 1f);
+        }
 
-            // Tarrock/FoliageWind reads the vertex colour's ALPHA and nothing else off it (it is
-            // the wind mask, multiplied by the world-height ramp), so the rgb here is documentation
-            // and the alpha is the only channel that does anything. Round 9 wrote 0.9/1.1 greys
-            // with the comment "tips catch the light"; they never did, and the alpha it left at 1
-            // meant the bole was as free to sway as the twigs.
-            for (int corner = 0; corner < LimbSides; corner++)
+        private static Vector3 ClampToDeadTreeEnvelope(Vector3 point)
+        {
+            return new Vector3(
+                Mathf.Clamp(point.x, -10.206762f, 9.707346f),
+                Mathf.Clamp(point.y, -0.194243f, 21.605843f),
+                Mathf.Clamp(point.z, -9.326262f, 10.266161f));
+        }
+
+        private static void LogDeadTreeTopologyErrors(List<Vector3> verts, List<int> tris)
+        {
+            var incidence = new Dictionary<(int, int), int>();
+            for (int i = 0; i < tris.Count; i += 3)
             {
-                float a = (corner + 0.5f) * Mathf.PI * 2f / LimbSides;
-                Vector3 dir = (side * Mathf.Cos(a)) + (side2 * Mathf.Sin(a));
-                verts.Add(baseP + (dir * baseR));
-                cols.Add(new Color(0.5f, 0.5f, 0.5f, sway));
-                verts.Add(tipP + (dir * tipR));
-                cols.Add(new Color(0.5f, 0.5f, 0.5f, sway));
+                CountEdge(tris[i], tris[i + 1]);
+                CountEdge(tris[i + 1], tris[i + 2]);
+                CountEdge(tris[i + 2], tris[i]);
             }
 
-            for (int corner = 0; corner < LimbSides; corner++)
+            int boundary = 0;
+            int nonManifold = 0;
+            foreach (int count in incidence.Values)
             {
-                int b0 = start + (corner * 2);
-                int t0 = b0 + 1;
-                int b1 = start + (((corner + 1) % LimbSides) * 2);
-                int t1 = b1 + 1;
-                tris.AddRange(new[] { b0, t0, b1, b1, t0, t1 });
+                if (count == 1) boundary++;
+                else if (count > 2) nonManifold++;
             }
 
-            // Close only the exposed end. Interior ends meet the next segment's base ring, so their
-            // old fans were invisible, coincident geometry (468 triangles across this mesh).
-            if (capTip)
+            if (boundary != 0 || nonManifold != 0)
             {
-                for (int corner = 1; corner < LimbSides - 1; corner++)
-                {
-                    tris.AddRange(new[] { start + 1, start + ((corner + 1) * 2) + 1, start + (corner * 2) + 1 });
-                }
+                Debug.LogError($"[Tarrock] DeadTree topology is open: boundary={boundary}, nonManifold={nonManifold}; tolerance=0.");
+            }
+
+            void CountEdge(int a, int b)
+            {
+                var edge = a < b ? (a, b) : (b, a);
+                incidence.TryGetValue(edge, out int count);
+                incidence[edge] = count + 1;
             }
         }
 
@@ -451,7 +577,10 @@ namespace Tarrock.Editor
         /// round-17 flat-cap tell, so changing it would spend triangles without targeting the cause.</summary>
         private const int LimbSides = 6;
         private const float TerminalLimbRadius = 0.010f;
-        private const float SnappedBoughTipRadius = 0.299f;
+        private const float LimbRadiusJitter = 0.060f;
+        private const float SnappedBreakDepth = 0.120f;
+        private const int ExpectedSnappedBoughs = 1;
+        private static int _deadTreeSnappedBoughCount;
 
         // Suspended motes — "the one particulate allowed while bound: dust/pollen hanging nearly
         // motionless in light — stasis made visible, not weather" (art-audio.md §The world-state
@@ -1352,7 +1481,7 @@ namespace Tarrock.Editor
             // shoulder — PlaceRock sinks it by steepness, the uphill side goes under, and what shows
             // is a wedge with no mass behind it. The summit shoulder is exactly the band that
             // produces it, and it is now off limits to the scatter.
-            if (Vector2.Distance(point, KnollCentre) < 9f)
+            if (Vector2.Distance(point, StagingVariantResolver.DeadTreePosition) < 9f)
             {
                 return false;   // the dead tree's own ground
             }
