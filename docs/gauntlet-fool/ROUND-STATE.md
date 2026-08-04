@@ -479,3 +479,26 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
 - R17 = head polish (director-elevated: nose presence, lip read, aperture;
   + calf width if issue #6 rules fix). R18 = rigging. Issues #5/#6 still
   awaiting director comment at close time.
+
+## DIRECTOR RULING — issue #5 (2026-08-04, applied + closed)
+
+- **Arms accepted AS-IS**: "remember it's a young adult male. we shouldn't
+  try to make him muscle-bound... it can be re-addressed later if an issue
+  arises." The arm-relief debt (carried since r12, 3 failed attempts) is
+  RETIRED from the ledger — no further arm-presence work; revisit only if a
+  later whole-figure/dressed review surfaces a real problem. Also a style
+  datum for all future presence work: restraint over musculature.
+- Issue #6 (calf width) still open, no comment yet.
+
+## ROUND 17 (OPEN, 2026-08-04): head polish — cycle log
+
+- Cycle 1 (Codex, 021c): gates green (neck ring 0.000, eyes/body untouched,
+  symmetry, 99.8% quads; "new self-intersection" adjudicated as detector
+  noise — standard instrument: 27 pairs chain AND candidate, identical
+  sites). Nose now EXISTS front+side (was −0.6 mm, now +11.6 mm projection)
+  but blunt; mouth puffier not crisper; aperture still roundish/ragged.
+  Blind 4/10. = Codex fail #1 on the face-read piece.
+- Cycle 2 (Codex, PID 312954, launched w/ judge critique verbatim): narrow/
+  soften nose keeping projection; one clean smile line; true almond
+  apertures w/ smooth rim curves. If it misses → Codex fail #2 → Opus
+  escalation becomes justified per the tightened regime.
