@@ -16,14 +16,28 @@ tree.
 
 ---
 
-## Round 18 — the staging A/B `QUEUED`
+## Round 19 — bark, and the leaner machine `QUEUED`
 
-- The director's ruling executed as an experiment: **variant A** (the lane's final stretch rises, kept gradual) vs
-  **variant B** (the tree moves inward onto visible ground) — built as switchable configurations, captured separately,
-  judged as separate blind sets by both model families. The winner ships and closes issue #3.
-- The tree finishes: secondary branching within the frozen crown envelope (the judges' new "stick armature" tell),
-  and a watertightness gate for the mesh.
+- New architecture per the director's economics order: no Claude round-runners — the lead orchestrates Codex builders,
+  captures, and Codex judges directly.
+- First target: the bark material (issue #7 — the judges' converged current tell). Sky (#8) and ground (#9) issues
+  posted per the carried-twice rule; director insight welcome on all three.
+- Staging retry (gentler combined move, real terrain instruments) awaits a go-ahead on issue #3.
 
+## Round 18 — the staging A/B · commit `0c3f72f`
+
+![Round 18-A v9](img/thumb-r18-v9-shelf-west.jpg) ![Round 18-A v8](img/thumb-r18-v8-deadtree-skyline.jpg)
+
+**Shipped:** the tree mesh, unconditionally — watertight (1,632 open edges → 0, independently verified), +21% crown
+occupancy from secondary branching inside the frozen envelope. The r17 "coincident geometry" rationale formally
+falsified; the mesh gate renamed to admit it only logs.
+**Not shipped:** either staging variant. The experiment failed informatively — raising the path decapitates the crown
+and turns the approach into an arrival; moving the tree erases it from the skyline. The pre-registered decision rule
+proved vacuous (the board swept every pass, forcing ties). Both variants parked behind a baseline-default switch;
+issue #3 stays open with a gentler combined proposal. The staging builder's contract checks turned out to be
+hard-coded fakes — caught by the critic, corrected in the record; real terrain instruments are a precondition for the
+retry. **The judges' attention moved again:** grounding complaints gone; all four seats now name bark material and
+contact lighting.
 ## Round 17 — the current tells · commit `ac61e3b`
 
 ![Round 17 v9](img/thumb-r17-v9-shelf-west.jpg) ![Round 17 v8](img/thumb-r17-v8-deadtree-skyline.jpg)
