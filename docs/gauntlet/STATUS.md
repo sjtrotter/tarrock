@@ -16,13 +16,20 @@ tree.
 
 ---
 
-## Round 20 — the cloud, again and properly `QUEUED`
+## THE PHASE PIVOT — polish → functional (director, issue #8)
 
-- Both round-19 blind passes re-named the cloud ("placeholder-grade", "blurry cardboard") — it returns as the top
-  unblocked tell, with director insight invited on issue #8 (the empty sky).
-- The stand-in Fool remains the judges' other constant complaint — excluded here; the parallel Fool-sculpt gauntlet
-  owns the real model, and its import will be a bigger jump than any environment round.
+*"Get the scene functional, not polishing every little thing."* Visual-polish rounds pause (sky #8 and ground #9
+parked with their directions pre-agreed); the loop now wires MQ00's beats playable, with **EditMode tests as the
+critic**. The blind art judges return when polish resumes.
 
+## Round 20 — the quest skeleton · commit `acb6290`
+
+**76/76 tests green.** The generator now authors the quest layer: MQ00 activates on scene start, every beat has a
+live marker and trigger (first-pass placements — playtesting will move them), and steps advance through the morning:
+wake → Bindle → keepsake → tree → Waystation → ambush → edge → the Leap. The test gate caught two real bugs before
+they shipped — a missing step in the quest data, and an advancement mechanism that silently never fired (a defect
+that would have broken every future quest). Next rounds, in dependency order: the wake/Bindle interactions, campsite
+props and Pip's dig, the Waystation, the ambush, the edge dialogue, and the Leap itself.
 ## Round 19 — bark, on the second pass · commit `4b9fdc6`
 
 ![Round 19b v8](img/thumb-r19-v8-deadtree-skyline.jpg) ![Round 19b v9](img/thumb-r19-v9-shelf-west.jpg)
