@@ -756,3 +756,68 @@ rigged, skinned, pose-tested; rest pose intact to 0.0001 mm). Debts logged
 for the dressed re-judge: armpit crease at extreme arm-lower, boxy elbow
 and angular digits (both quad-budget-bound, R16), neck seam density
 collar. Next: **Round 19 — hair + the compliant ear rebuild.**
+
+## Round 19 — the ears earn their place, and the hair goes on (2026-08-04)
+
+The round executed the director's standing ear ruling — ears built as NEW
+separate geometry shaped to the drawn dimensions and joined, never carved
+from the head — and then the hair stage. Both pieces resisted: each took
+the escalation clause (two honest Codex misses, then one Opus cycle) to
+land, and both Opus cycles delivered.
+
+**Ears.** The old relief discs were deleted outright (216 vertices) and a
+free-rim closed-shell ear was built into the opening on each side —
+helix, concha hollow, small lobe, 442 triangles per ear, mirror-exact,
+zero new self-intersections, not one existing vertex moved. Along the way
+the lead's own measurement of the drawn ear proved wrong (57 mm — the
+tape stopped at the tragus notch); the builder's ratio measure was right,
+and the corrected ear is 79 mm tall, 30.8% of head height against the
+sheet's 30.3%. The failed attempts are worth one line each for the
+record: a satellite dish, then a furniture plug — form is where the
+judgment lives, and where the escalation clause keeps earning its keep.
+
+| Ear A/B vs the sheet (side) | Ear close-up | Ears, front |
+|---|---|---|
+| ![ear ab](renders/r19-ear-ab-side.png) | ![ear](renders/r19-ear-close.png) | ![front](renders/r19-ears-front.png) |
+
+**Hair.** A separate solid-mesh object (`Fool_Hair`): a skull-hugging
+under-cap that meets the measured hairline everywhere, plus 49
+overlapping shingle clumps swept from the crown whorl — 2,466 triangles,
+top at 1.750 m (the drawn 1.75 m guide is to hair), rigid on the Head
+bone, and the sculpt underneath untouched to 0.000 mm. The builder
+measured the sheet envelope itself, ear-anchored, and verified its scale
+against the eye line to within a millimetre. The first two attempts — a
+leaf hood, then a boulder cap — earned the escalation; the third wraps
+AND flows.
+
+| Hair A/B vs the sheet (front) |
+|---|
+| ![hair front](renders/r19-hair-ab-front.png) |
+
+| Hair A/B vs the sheet (side) |
+|---|
+| ![hair side](renders/r19-hair-ab-side.png) |
+
+| Back (no ref governs) | Fold strip covered | Full figure |
+|---|---|---|
+| ![back](renders/r19-hair-back.png) | ![fold](renders/r19-fold-covered.png) | ![figure](renders/r19-figure.png) |
+
+Blind judge on the round's work: ears 6/10 (up from 5), hair 5/10 — with
+the named gaps split cleanly into what the materials stage owns (feathery
+tapered locks, airy negative space — unshowable in flat-gray solid mesh),
+what the triangle budget owns (faceted plates), and one genuine carry
+(the back mass is a touch swollen with a residual rosette rhythm — a view
+no reference governs, and one the costume's hood will partly cover).
+A long-standing defect also died quietly this round: the head fold above
+the ears, disclosed by two builders, is covered by the hair by design —
+verified at every standard angle and in pose.
+
+**Round verdict: CLOSED — chain advances through `Fool-v2-024.blend`
+(ears) to `Fool-v2-025.blend` (ears + hair).** Debts to the dressed
+re-judge: hair back-mass/rosette, faceted plate read (materials/density),
+stray wisps (alpha-card question for materials). Next: **Round 20 —
+clothes & accessories**, then materials (where the blank eyes finally get
+irises and the gray-medium score ceiling lifts), then the Unity FBX gate.
+
+*(Caveat, standing: eyes are blank spheres until the materials stage
+paints iris/pupil — a render read, not a defect.)*

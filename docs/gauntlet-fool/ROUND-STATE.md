@@ -764,6 +764,167 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
   (PID 393067). Its read-only audit already measured the drawn ear:
   height 108.8 mm, side depth 52.4 mm, z 1.483–1.592.
 
+## R19 PHASE A CYCLE LOG (6th lead, 2026-08-03/04)
+
+- Attempt 2 (PID 393067) exited with NO candidate: launch omitted
+  `-s workspace-write`, so the whole session ran read-only (git init alone
+  is not the fix — **paid-for lesson: Codex needs BOTH the workdir git
+  repo AND the `-s workspace-write` flag; check the log header's
+  `sandbox:` line before trusting a launch**). Not a builder fail. Its
+  read-only audit measured the ear envelope — later found WRONG (below).
+- Attempt 3 (workspace-write) delivered 024a with an HONEST STOP: hard
+  gates green (freeze 0.000 outside ear set, mirror exact, boundary 76,
+  re-skin 1.0 Head, zero-weights 0, +194 v/+246 f) but self-judged the
+  read failed. Lead eyes-on CONFIRMS: flat concentric discs/paddles,
+  no helix/lobe, and ~2x oversized. **Codex fail #1 on the ear piece.**
+- **LEAD MEASUREMENT CORRECTION (authoritative):** the audited "108.823 mm
+  ear height" double-counted jaw/shadow ink. Native-sheet re-measure
+  (cross-check: eye row converts to z 1.5749 vs known 1.571): drawn ear
+  height ~57 mm, z 1.535–1.592; side depth ~35–40 mm; front protrusion
+  ~15–20 mm beyond skull side. Recorded for all future ear/hair work.
+- Cycle 2 launched (log codex-r19a4.log): rebuild from chain 023 to the
+  corrected envelope, C-shell form directives (rim/hollow/lobe, no radial
+  fan topology), exact tri–tri self-intersection proof required,
+  sheet-crop A/B gate. Candidates 024b+.
+
+- Cycle 2 RESULT (024b, honest STOP): structural gates ALL green (exact
+  ear-region tri–tri intersections 0, mirror 0.000, freeze 0, boundary 76,
+  zero-weights 0, envelope ~58 mm conformant; one PRE-EXISTING exact
+  intersection pair disclosed in untouched source body geometry — carried,
+  must not grow). Lead eyes-on + sheet A/B: form FAILED again — reads as a
+  round grommet/plug (flat-faced disc + rim ring) proud of a moat/crater
+  at the root; no C-shape, no lobe taper, no backward tilt. **Codex fail
+  #2 on the ear-form piece.**
+- **OPUS ESCALATION JUSTIFIED (charter clause, recorded before launch):**
+  ear FORM is judgment-heavy sculptural design; Codex produced two
+  gate-green but form-fail candidates (paddle-disc, then grommet-plug)
+  with consistent self-and-lead critiques; ears block Phase B hair
+  (coverage decisions need real ears) so the piece blocks the round. One
+  tightly-scoped Opus cycle from chain 023, both critiques verbatim,
+  eyes-on iteration mandate (R13-D precedent), same hard gates.
+  Brief: fool2-r19/TASK-A3-EARS-OPUS.md, candidates 024c+.
+
+- Cycle 3 (OPUS, 024c) — FORM BREAKTHROUGH: side view reads as the drawn
+  ear (C-silhouette, rolled helix, hollow, lobe, tilt 10.4°; join
+  invisible; all structural gates green, freeze 0 verts moved, 286
+  tris/ear, +46 v). Builder flagged two lead items, both upheld:
+  (1) head half-width is 91.5 mm (lead's 98 was stale — builder's number
+  adopted); (2) **lead envelope correction #2: the 57 mm ear height was an
+  UNDER-measure** (lead stopped at the tragus notch, missing the lobe's
+  extent) — drawn ear ≈ 31–33% of head height ≈ 78–82 mm, z ≈ 1.512–1.592
+  (top anchored). Builder correctly refused to resize on its own
+  authority. Front view reads as a pointy wedge, not the sheet's rounded
+  almond — structural to a fully-flush relief-style shell.
+- **LEAD RULING — free helix edge:** a JOINED ear whose upper/back helix
+  rim stands slightly off the skull (real gap behind the rim) is
+  COMPLIANT with the director's separate-geometry ruling: the ban is on
+  carved/relief ears and the failures were free-standing DISCS; a
+  dimensional ear rooted at the head with a free rim is the standard
+  construction. Authorized for cycle 4.
+- Cycle 4 (same Opus agent, resumed): scale to the corrected envelope
+  (~80 mm, proportional depth/protrusion, top anchored ~1.592), round
+  the front-view read via the free-helix allowance, re-run all gates +
+  A/B. Candidates 024d+.
+
+## R19 PHASE A CLOSED (2026-08-04): ears → chain Fool-v2-024.blend
+
+- **Chain = workdir Fool-v2-024d.blend (Opus cycle 4) promoted**
+  (sha-verified copy). Free-rim closed-shell construction on the hole
+  left by deleting the relief discs (216 verts deleted, +202 v/+280 f,
+  442 tris/ear, min shell clearance 2.93 mm): freeze 0 verts moved,
+  mirror 0.000, exact tri–tri new 0 (pre-existing pair 9028/9031 carried
+  not grown), boundary 76, re-skin 1.0 Head, zero-weights 0, rest hash
+  identical, pose sanity clean. Envelope all-pass (height 79.12 mm, top
+  1.5918, depth 50.02, protrusion 24.44, tilt 10.42°); A/B ratio 30.8%
+  vs sheet 30.3% (ear/head), 1.238 vs 1.239 (outer/half-width).
+  Director separate-geometry ear ruling EXECUTED — relief ears dead.
+- Lead eyes-on: side read = the drawn ear (helix/concha/lobe, slightly
+  fuller than ink); front = rounded almond, slightly craggy silhouette.
+- **Blind judge 5/10** (size/placement/style "broadly close"): named gaps
+  all map to owned classes — top notch + upper-root seam = the
+  PRE-EXISTING HEAD FOLD above the ear (verts 5223/5241, ~11 mm apart in
+  x; cycle 3+4 both disclosed; ear ramps across it); "more protruding
+  than drawn" = instrument-contested (measured ratios match the sheet);
+  faceted lower edge = density-bound. Promoted per R14/R17 precedent +
+  the #6 "read, not exactness" ruling.
+- **DEBT (hair-conditioned): the head fold above/behind the ear** —
+  bright flap edge in neck-45/side angles. If Phase B hair covers the
+  strip, debt retires at the dressed re-judge; if not, a dedicated
+  fold-repair task runs (builder rec: repair fold, rebuild ear top on
+  the repaired head — build_ear_d.py is parametric and re-runnable).
+- Builder's REPORT-A4-EARS.md was harness-blocked from disk both at
+  builder and lead level; full verbatim content lives in the lead
+  transcript + this summary; machine record = ear-validation-d.json +
+  build_ear_d.py + renders-a4/ (16 d-* + 88 iteration renders).
+- Paid-for lessons: (1) lead measurements are not exempt from the
+  instrument rule — the 57 mm ear envelope under-measure cost one full
+  Opus cycle; cross-check ratios (feature/head-height) before issuing
+  envelopes. (2) codex `-i` images require the prompt BEFORE the -i
+  flags or stdin-read hangs. (3) Claude subagent harness blocks .md
+  report writes — builders must return report text in their final
+  message; lead records it in ROUND-STATE.
+
+## R19 PHASE B (hair) — cycle log
+
+- Cycle 1 (Codex, 025b): hard gates GREEN (hair top 1.7520, crown
+  +35.0 mm, 1,280 tris, Fool_Mesh freeze 0.000 + sha unchanged, rig
+  untouched, rigid Head binding, no scalp gaps, FOLD COVERED with ears
+  exposed — the Phase-A debt's coverage condition is met by this design).
+  FORM send-back (lead eyes-on vs A-pose sheet): uniform vertical
+  teardrop petals hanging to eye level (leaf-hood read), side petals
+  curtaining ears, spiky nape, same-size clumps meeting at crease seams —
+  the sheet draws shaggy laterally-swept layered shingles with outward
+  flicks, fringe above the eyebrows. **Codex fail #1 on the hair-form
+  piece.**
+- Cycle 2 launched (codex-r19b2.log, candidates 025c+): flow-direction /
+  shingle-layering / size-variety / ear-exposure / nape-flick directives;
+  keep all green gates. A second form miss = Opus escalation per regime.
+
+- Cycle 2 RESULT (025c): gates green again (hair top 1.75692, freeze
+  0.000/sha unchanged, 1,920 tris, rigid binding, 3 documented look
+  cycles) but form FAILED opposite-wise: boulder-pile cap PERCHED on the
+  crown — hairline too high (bare temples/forehead), hair floating above
+  the ears (fold strip re-exposed), occiput bare; no directional sweep
+  visible. Cycle 1 = drooping petals, cycle 2 = perched boulders.
+  **Codex fail #2 on the hair-form piece.**
+- **OPUS ESCALATION JUSTIFIED (charter clause, recorded before launch):**
+  hair form is judgment-heavy sculptural design (same class as the ear
+  escalation, which delivered); Codex produced two gate-green form-fail
+  candidates with opposite failure modes; hair blocks R19 close. One
+  Opus cycle, both critiques verbatim, coverage-envelope mandate
+  (builder-measured from the sheet with ratio cross-checks — mm envelopes
+  from the lead are banned after the ear under-measure lesson), eyes-on
+  iteration. Brief: fool2-r19/TASK-B3-HAIR-OPUS.md, candidates 025d+.
+
+## ROUND 19 CLOSED (2026-08-04, 6th lead): ears + hair → chain Fool-v2-025.blend
+
+- **Phase B cycle 3 (OPUS, 025d) promoted as chain Fool-v2-025.blend**
+  (sha-verified). Fool_Hair = skull-hugging under-cap (16x5, ray-cast to
+  scalp) + 49 overlapping shingle clumps in 3 tiers; 2,466 tris / 1,333 v /
+  0 non-manifold; hair top 1750.05 mm; armature-modifier binding all-1.0
+  Head; Fool_Mesh freeze 0.000 + sha unchanged; rig/eyes untouched;
+  17 look cycles; deterministic build (found+fixed per-process hash()
+  jitter — check earlier cycles' scripts for the same trap if re-run).
+- Builder self-measured the sheet envelope ear-anchored (3.596 mm/px,
+  eye-line cross-check 0.8 mm); ratio table in hair-validation-d.json.
+  Lead adjudications: EARS STAY EXPOSED (drawn A-pose front hides them;
+  v7 front shows them; director ear investment + #6 read-ruling win —
+  11–29% width shortfall below ear line accepted); NO stray wisps
+  (alpha-card = materials stage); ear_box_verts=79 is proximity, not
+  intersection.
+- **FOLD DEBT RETIRED**: hair covers the fold strip at all standard
+  angles + poses (d-fold.png evidence) — the Phase-A condition met.
+- Blind judge: hair 5/10, ears 6/10. Gap classes: materials-bound
+  (feathery/tapered/airy), density-bound (faceted plates), one real
+  carry: back mass swollen + residual rosette (no ref governs the back;
+  costume hood partly covers). Closed per 80–90% + restraint rulings.
+- **Debts → dressed re-judge:** hair back-mass/rosette; faceted plate
+  read; wisps question at materials. (Plus standing pre-R19 debts.)
+- STATUS.md Round-19 section + 8 renders pushed at close.
+- **R20 = clothes & accessories** (A-pose sheet + clothing-layers sheet
+  govern; hood note: covers part of back hair). Then materials, then
+  Unity FBX gate ends the run.
+
 ## R19 HANDOFF (5th lead at context ceiling — ear build IN FLIGHT)
 
 Successor: charter + this file + STATUS are the resume point.
