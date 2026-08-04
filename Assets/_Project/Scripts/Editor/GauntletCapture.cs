@@ -6,6 +6,7 @@ namespace Tarrock.EditorTools
     using System.IO;
     using Tarrock.Editor;
     using Tarrock.Player;
+    using Tarrock.Regions;
     using Unity.Cinemachine;
     using UnityEditor;
     using UnityEditor.SceneManagement;
@@ -53,7 +54,7 @@ namespace Tarrock.EditorTools
     /// </summary>
     public static class GauntletCapture
     {
-        private const string ScenePath = "Assets/_Project/Scenes/Sandbox/TerrainProto.unity";
+        private const string ScenePath = RegionScenePaths.TerrainPrototype;
         private const string DefaultOutputDirectory = "Assets/Screenshots/gauntlet/round1";
         private const string OutputDirectoryVariable = "TARROCK_CAPTURE_DIR";
         private const string LogPrefix = "[Tarrock.Gauntlet]";

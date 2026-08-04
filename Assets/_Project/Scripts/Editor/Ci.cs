@@ -40,12 +40,27 @@ namespace Tarrock.Editor
             RunEditModeTests();
         }
 
-        /// <summary>Regenerates TerrainProto from its authoring partials, then runs EditMode tests.</summary>
+        /// <summary>Generates and saves the shipping MQ00 region scene.</summary>
+        public static void BuildTheCliff()
+        {
+            try
+            {
+                TerrainRegionGenerator.GenerateTheCliff();
+                EditorApplication.Exit(0);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[Tarrock.Ci] TheCliff generation failed: {e}");
+                EditorApplication.Exit(2);
+            }
+        }
+
+        /// <summary>Regenerates the shipping MQ00 scene, then runs EditMode tests against it.</summary>
         public static void Mq00Validate()
         {
             try
             {
-                TerrainRegionGenerator.Generate();
+                TerrainRegionGenerator.GenerateTheCliff();
             }
             catch (System.Exception e)
             {

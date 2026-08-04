@@ -5,6 +5,7 @@ namespace Tarrock.Tests.EditMode
     using System.IO;
     using System.Text.RegularExpressions;
     using NUnit.Framework;
+    using Tarrock.Regions;
     using UnityEditor;
 
     /// <summary>
@@ -59,10 +60,10 @@ namespace Tarrock.Tests.EditMode
         /// scene's required Tarrock components by presence.
         /// </summary>
         [Test]
-        public void CliffSceneContainsRequiredTarrockComponents()
+        public void ShippingMq00SceneContainsRequiredTarrockComponents()
         {
-            const string scenePath = ScenesRoot + "/Regions/Cliff.unity";
-            Assert.That(File.Exists(scenePath), Is.True, $"Cliff scene missing at {scenePath}");
+            const string scenePath = RegionScenePaths.Mq00TheCliff;
+            Assert.That(File.Exists(scenePath), Is.True, $"MQ00 scene missing at {scenePath}");
             string sceneText = File.ReadAllText(scenePath);
 
             string[] requiredScripts =

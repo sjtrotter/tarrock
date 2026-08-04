@@ -9,16 +9,14 @@ namespace Tarrock.Editor
     using UnityEngine;
 
     /// <summary>
-    /// Builds a sculpted-terrain prototype region (<c>TerrainProto.unity</c>) — the replacement for
-    /// the retired hex-tile approach. Deterministic: the whole landform is derived from the explicit
-    /// constants and shape functions in this file plus hash-based noise, never unseeded randomness,
-    /// so re-running produces the identical region.
+    /// Builds the sculpted Cliff region into either the <c>TerrainProto.unity</c> sandbox or the
+    /// shipping <c>TheCliff.unity</c> region scene. Deterministic: the whole landform is derived from
+    /// the explicit constants and shape functions in this file plus hash-based noise, never unseeded
+    /// randomness, so both targets receive identical generated content.
     ///
-    /// SCOPE. This is a FEEL TEST, not the shipping Cliff. It rehearses the Cliff's terrain grammar
-    /// (high meadow plateau, a valley funnelling west, a refusing edge where the world is broken —
-    /// docs/design/world.md §The Cliff) so the sculpted approach is judged against real canon rather
-    /// than an abstract slope. MQ00's stable gameplay anchors are deliberately first-pass placements;
-    /// playtest owns their final positions while this generator remains their authoring source.
+    /// <para><c>Generate()</c> remains the default feel-test sandbox entry point. Shipping promotion
+    /// uses <c>GenerateTheCliff()</c>; the target path is the only difference, keeping this generator
+    /// the sole authoring source for the landform, dressing, MQ00 layer, and spawn.</para>
     ///
     /// Canon this honours (docs/design/art-audio.md §Current build, world.md §The Cliff):
     /// - The Cliff is an ISLAND IN A SEA OF CLOUD (director-blessed 2026-07-26): edged everywhere
@@ -37,8 +35,6 @@ namespace Tarrock.Editor
     /// </summary>
     public static partial class TerrainRegionGenerator
     {
-        private const string ScenePath = "Assets/_Project/Scenes/Sandbox/TerrainProto.unity";
-        private const string SceneDir = "Assets/_Project/Scenes/Sandbox";
         private const string MaterialDir = "Assets/_Project/Materials";
         private const string TerrainMaterialPath = MaterialDir + "/TerrainPainterly.mat";
         private const string SkyMaterialPath = MaterialDir + "/TerrainProtoSky.mat";
@@ -99,16 +95,37 @@ namespace Tarrock.Editor
         [MenuItem("Tarrock/Setup/Generate Terrain Prototype Region")]
         public static void Generate()
         {
+            GenerateInto(RegionScenePaths.TerrainPrototype, registerInBuildSettings: false);
+        }
+
+        [MenuItem("Tarrock/Setup/Generate MQ00 The Cliff Region")]
+        public static void GenerateTheCliff()
+        {
+            if (!GenerateInto(RegionScenePaths.Mq00TheCliff, registerInBuildSettings: true))
+            {
+                throw new System.InvalidOperationException(
+                    $"Shipping scene generation did not complete: {RegionScenePaths.Mq00TheCliff}");
+            }
+        }
+
+        private static bool GenerateInto(string scenePath, bool registerInBuildSettings)
+        {
             Shader shader = Shader.Find(ShaderName);
             if (shader == null)
             {
                 Debug.LogError(
                     $"[Tarrock] Shader '{ShaderName}' not found. If it was just added, let the editor " +
                     "finish importing/compiling and re-run.");
-                return;
+                return false;
             }
 
-            EnsureDirectory(SceneDir);
+            string sceneDirectory = Path.GetDirectoryName(scenePath);
+            if (string.IsNullOrEmpty(sceneDirectory))
+            {
+                throw new System.ArgumentException("Scene path has no directory.", nameof(scenePath));
+            }
+
+            EnsureDirectory(sceneDirectory);
             EnsureDirectory(MaterialDir);
             EnsureDirectory(TerrainDataDir);
 
@@ -175,21 +192,56 @@ namespace Tarrock.Editor
             BuildRegionWind();
 
             EditorSceneManager.MarkSceneDirty(scene);
-            EditorSceneManager.SaveScene(scene, ScenePath);
+            EditorSceneManager.SaveScene(scene, scenePath);
             AssetDatabase.SaveAssets();
 
             // Reuse the real rig + orbit camera rather than a second copy that would drift from it.
-            KayKitCharacterInstaller.InstallInto(ScenePath, SpawnHint, SpawnFacing);
+            KayKitCharacterInstaller.InstallInto(scenePath, SpawnHint, SpawnFacing);
             PipInstaller.Install();
 
             // After the installers, because it hangs off their roots: the Fool and Pip are the only
             // things that move the Cliff's grass while it is bound.
             BuildGrassBenders();
 
+            if (registerInBuildSettings)
+            {
+                RegisterMq00SceneInBuildSettings();
+            }
+
             Debug.Log(
-                $"[Tarrock] Terrain prototype generated at {ScenePath}: {TerrainSize}×{TerrainSize} m, " +
+                $"[Tarrock] Sculpted Cliff generated at {scenePath}: {TerrainSize}×{TerrainSize} m, " +
                 $"{HeightmapResolution}² heightmap, max height {TerrainHeight} m, procedural material " +
                 $"'{ShaderName}', with generated MQ00 foundation wiring.");
+            return true;
+        }
+
+        private static void RegisterMq00SceneInBuildSettings()
+        {
+            var scenes = new List<EditorBuildSettingsScene>();
+            bool found = false;
+            foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes)
+            {
+                if (scene.path != RegionScenePaths.Mq00TheCliff)
+                {
+                    scenes.Add(scene);
+                    continue;
+                }
+
+                if (!found)
+                {
+                    scenes.Add(new EditorBuildSettingsScene(RegionScenePaths.Mq00TheCliff, true));
+                }
+
+                found = true;
+            }
+
+            if (!found)
+            {
+                scenes.Add(new EditorBuildSettingsScene(RegionScenePaths.Mq00TheCliff, true));
+            }
+
+            EditorBuildSettings.scenes = scenes.ToArray();
+            Debug.Log($"[Tarrock] Registered MQ00 scene in build settings: {RegionScenePaths.Mq00TheCliff}");
         }
 
         // -------------------------------------------------------------------------------------

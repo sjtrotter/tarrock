@@ -16,7 +16,7 @@ namespace Tarrock.Tests.EditMode
     public sealed class Mq00FoundationTests
     {
         private const string QuestPath = "Assets/_Project/Data/Quests/MQ00.asset";
-        private const string ScenePath = "Assets/_Project/Scenes/Sandbox/TerrainProto.unity";
+        private const string ScenePath = RegionScenePaths.Mq00TheCliff;
         private const string WakeChannelPath =
             "Assets/_Project/Data/Events/MQ00/MQ00_STEP_WAKE_Triggered.asset";
 
@@ -68,6 +68,17 @@ namespace Tarrock.Tests.EditMode
             }
 
             Assert.IsNull(service.CurrentStep(quest.Id));
+        }
+
+        [Test]
+        public void ShippingScene_IsEnabledOnceInBuildSettings()
+        {
+            EditorBuildSettingsScene[] matches = EditorBuildSettings.scenes
+                .Where(scene => scene.path == ScenePath)
+                .ToArray();
+
+            Assert.AreEqual(1, matches.Length);
+            Assert.IsTrue(matches[0].enabled);
         }
 
         [Test]
