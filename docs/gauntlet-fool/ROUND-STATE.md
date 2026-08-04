@@ -514,3 +514,30 @@ AND the belt is dead; arm-relief debt loggable. Outcome:
   soften nose keeping projection; one clean smile line; true almond
   apertures w/ smooth rim curves. If it misses → Codex fail #2 → Opus
   escalation becomes justified per the tightened regime.
+- Cycle 2 RESULT (021f): all hard gates green (neck 0.000, eyes/body
+  untouched, 27/27 intersections, lid clearance 1.55 mm, nose 11.98 mm,
+  quads 99.8%). Lead eyes-on: real improvement (calmer mouth, smoother
+  almond rims, softer nose). Blind judge: **4/10 again** — nose "blunt
+  triangular wedge" (size now plausible), mouth "stacked, protruding lip
+  geometry" not one line, eyes "inserted spheres... incomplete apertures";
+  biggest gap = eye-and-lid CONSTRUCTION. **= Codex fail #2 on the
+  face-read piece.**
+- **OPUS ESCALATION JUSTIFIED (charter clause, recorded before launch):**
+  the piece (face read: lid construction / mouth line / nose softening) is
+  judgment-heavy sculptural design; Codex produced two gate-green but
+  blind-flat cycles (4/10, 4/10) with consistent critiques; the round is
+  director-ordered ("must land before the head is declared final") so the
+  piece blocks it. One tightly-scoped Opus cycle on 021f, both blind
+  critiques verbatim as targets; same hard gates.
+
+## DIRECTOR DEFECT REPORT (2026-08-04, mid-R17) — finger curl on chain 020
+
+- From the TOP view, the INDEX and PINKIE digits CURL INWARD on
+  Fool_BodyRetopo — must not happen; T-pose digits are straight/fanned per
+  the sheet. Likely inherited from the fused-finger carve-out (the digit
+  axes were estimated from shells while the true surface was fused).
+- **RIG-BLOCKING (director order): fingers must be straightened BEFORE any
+  skinning weights land.** Scheduled as **R18 Phase 0** (Codex, mechanical:
+  rotate/straighten each digit tube about its root per the sheet's fan
+  angles, re-verify webbing/gaps/mirror, top-view render evidence) ahead of
+  armature work. Logged as a debt on chain 020 until then.
