@@ -1,0 +1,71 @@
+extends Node2D
+
+const SPEED := 230.0
+const FOLLOW_DISTANCE := 120.0
+const RESUME_DISTANCE := 165.0
+
+const DIRECTIONS := ["east", "southeast", "south", "southwest", "west", "northwest", "north", "northeast"]
+
+const DIRECTION_TEXTURES := {
+	"south": preload("res://art/game-ready-sprites-v1/frames/pip/directions/south.png"),
+	"southwest": preload("res://art/game-ready-sprites-v1/frames/pip/directions/southwest.png"),
+	"west": preload("res://art/game-ready-sprites-v1/frames/pip/directions/west.png"),
+	"northwest": preload("res://art/game-ready-sprites-v1/frames/pip/directions/northwest.png"),
+	"north": preload("res://art/game-ready-sprites-v1/frames/pip/directions/north.png"),
+	"northeast": preload("res://art/game-ready-sprites-v1/frames/pip/directions/northeast.png"),
+	"east": preload("res://art/game-ready-sprites-v1/frames/pip/directions/east.png"),
+	"southeast": preload("res://art/game-ready-sprites-v1/frames/pip/directions/southeast.png"),
+}
+
+const PIP_OFFSETS := {
+	"south": Vector2(-24.5, -219.0),
+	"southwest": Vector2(-9.5, -219.0),
+	"west": Vector2(32.5, -215.0),
+	"northwest": Vector2(45.0, -217.0),
+	"north": Vector2(-18.5, -115.0),
+	"northeast": Vector2(-18.5, -120.0),
+	"east": Vector2(30.0, -110.0),
+	"southeast": Vector2(53.0, -111.0),
+}
+
+@export var target_path: NodePath = NodePath("../Fool")
+
+@onready var _sprite: Sprite2D = $Sprite
+
+var _target: Node2D
+var _moving := false
+
+
+func _ready() -> void:
+	_target = get_node_or_null(target_path) as Node2D
+
+
+func _physics_process(delta: float) -> void:
+	step_follow(delta)
+
+
+func step_follow(delta: float) -> void:
+	if not is_instance_valid(_target):
+		return
+
+	var to_target := _target.global_position - global_position
+	var distance := to_target.length()
+	if distance > RESUME_DISTANCE:
+		_moving = true
+	elif distance <= FOLLOW_DISTANCE:
+		_moving = false
+
+	if not _moving or to_target.is_zero_approx():
+		return
+
+	var direction := to_target.normalized()
+	var distance_to_travel := minf(SPEED * delta, maxf(distance - FOLLOW_DISTANCE, 0.0))
+	global_position += direction * distance_to_travel
+	_update_facing(direction)
+
+
+func _update_facing(direction: Vector2) -> void:
+	var direction_index := wrapi(roundi(direction.angle() / (PI / 4.0)), 0, 8)
+	var facing: String = DIRECTIONS[direction_index]
+	_sprite.texture = DIRECTION_TEXTURES[facing]
+	_sprite.offset = PIP_OFFSETS[facing]

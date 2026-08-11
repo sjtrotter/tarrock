@@ -10,8 +10,8 @@ config_version=5
 
 [application]
 
-config/name="Tarrock Godot Eval"
-run/main_scene="res://main.tscn"
+config/name="Tarrock"
+run/main_scene="res://scenes/the_cliff.tscn"
 config/features=PackedStringArray("4.7")
 
 [display]
@@ -24,7 +24,7 @@ window/stretch/mode="canvas_items"
 
 [dotnet]
 
-project/assembly_name="Tarrock Godot Eval"
+project/assembly_name="Tarrock"
 
 [input]
 
