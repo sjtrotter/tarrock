@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "format": "PNG RGBA, straight alpha",
+  "direction_atlas": {
+    "size": [1536, 1024],
+    "grid": [4, 2],
+    "cell": [384, 512],
+    "order": ["south", "southwest", "west", "northwest", "north", "northeast", "east", "southeast"]
+  },
+  "action_atlas": {
+    "size": [1280, 1280],
+    "grid": [4, 4],
+    "cell": [320, 320],
+    "order": "row-major"
+  },
+  "environment": {
+    "atlas_size": [1280, 1280],
+    "grid": [4, 4],
+    "cell": [320, 320],
+    "terrain_atlas": "atlases/cliff-terrain.png",
+    "terrain_order": ["meadow-0", "meadow-1", "meadow-2", "meadow-3", "path-horizontal", "path-vertical", "path-bend", "path-crossroads", "cliff-north", "cliff-east", "cliff-outside-corner", "cliff-inside-corner", "detail-flowers", "detail-stones", "detail-ivy", "detail-disturbed-earth"],
+    "props_atlas": "atlases/cliff-props.png",
+    "props_order": ["dead-campfire", "fool-bindle", "old-fire-ring", "lean-to", "old-boot", "bent-cup", "walking-stick", "wooden-dog", "dead-tree", "standing-stone-left", "standing-stone-right", "waystation", "offering-bowl", "disturbed-earth", "cliff-lip", "haywain"]
+  },
+  "characters": {
+    "fool": {
+      "direction_atlas": "atlases/fool-directions.png",
+      "action_atlas": "atlases/fool-actions.png",
+      "rows": [
+        {"name": "walk", "frames": 4, "fps": 8, "loop": true},
+        {"name": "attack", "frames": 4, "fps": 10, "loop": false},
+        {"name": "dodge", "frames": 4, "fps": 12, "loop": false},
+        {"name": "idle", "frames": 4, "fps": 4, "loop": true}
+      ]
+    },
+    "pip": {
+      "direction_atlas": "atlases/pip-directions.png",
+      "action_atlas": "atlases/pip-actions.png",
+      "rows": [
+        {"name": "trot", "frames": 4, "fps": 10, "loop": true},
+        {"name": "seek", "frames": 4, "fps": 6, "loop": true},
+        {"name": "dig", "frames": 4, "fps": 8, "loop": true},
+        {"name": "idle", "frames": 4, "fps": 4, "loop": true}
+      ]
+    },
+    "blank_sword_two": {
+      "direction_atlas": "atlases/blank-sword-two-directions.png",
+      "action_atlas": "atlases/blank-sword-two-actions.png",
+      "rows": [
+        {"name": "walk", "frames": 4, "fps": 7, "loop": true},
+        {"name": "attack", "frames": 4, "fps": 9, "loop": false},
+        {"name": "hit", "frames": 4, "fps": 8, "loop": false},
+        {"name": "defeat", "frames": 4, "fps": 7, "loop": false}
+      ]
+    }
+  }
+}
