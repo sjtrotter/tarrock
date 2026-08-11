@@ -11,6 +11,8 @@
 
 # IDE solution/project files (generated per-machine)
 *.csproj
+# ...except the hand-authored shared library projects, which are source of truth
+!shared/**/*.csproj
 *.sln
 *.slnx
 *.suo
@@ -26,8 +28,17 @@ sysinfo.txt
 crashlytics-build.properties
 
 # Addressables/build caches inside Assets that should not be versioned
-Assets/AddressableAssetsData/*/link.xml
-Assets/StreamingAssets/aa/
+unity/Assets/AddressableAssetsData/*/link.xml
+unity/Assets/StreamingAssets/aa/
+
+# --- Godot (godot/) ---
+godot/.godot/
+
+# --- Shared C# library build output (shared/) ---
+# Redirected out of the Unity package folder by shared/Directory.Build.props.
+shared/.artifacts/
+shared/**/bin/
+shared/**/obj/
 
 # OS noise
 .DS_Store
@@ -39,10 +50,10 @@ Thumbs.db
 *.zip
 
 # Screenshot tool output (test artifacts)
-Assets/Screenshots/
+unity/Assets/Screenshots/
 Screenshots/
 *.blend1
-Assets/Screenshots.meta
+unity/Assets/Screenshots.meta
 
 # --- Secrets & machine-local state (never commit) ---
 .env

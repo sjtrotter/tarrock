@@ -86,9 +86,9 @@ asmdef (EditMode tests referencing only the runtime asmdef, not `.Editor`).
 
 ### Assets/ folder tree
 
-The Unity project root is the **repository root** (Unity 6, URP template with PC +
-Mobile renderer assets, Input System package installed) — open the repo folder itself
-in Unity Hub. The tree below applies under `Assets/`.
+The Unity project root is the repo's **`unity/` subfolder** (Unity 6, URP template with
+PC + Mobile renderer assets, Input System package installed) — open `unity/` in Unity
+Hub. The tree below applies under `unity/Assets/`.
 
 ```
 Assets/
@@ -253,7 +253,7 @@ exists as a `WorldStateDefinition` asset), not the full state machine.
 ## Headless validation workflow
 
 All agent/CI validation uses **one Unity launch, not three**:
-`Unity -batchmode -nographics -projectPath <repo root> -executeMethod Tarrock.Editor.Ci.FullValidate -logFile <log>`
+`Unity -batchmode -nographics -projectPath <repo>/unity -executeMethod Tarrock.Editor.Ci.FullValidate -logFile <log>`
 (no `-quit` — the session exits itself: 0 = setup + all EditMode tests green, 1 = test
 failures, 2 = setup threw). `Ci.TestsOnly` skips the setup chain. Editor performance
 settings (parallel out-of-process import, async shader compilation) are applied by

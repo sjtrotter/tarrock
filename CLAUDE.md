@@ -10,9 +10,11 @@ Tone: Fable/MediEvil storybook — warm, dry, gently mournful.
 only where the design supports it. Start every task by reading
 [`docs/README.md`](docs/README.md) (the doc map and SSOT rules), then the specific
 docs your task touches. [`docs/GLOSSARY.md`](docs/GLOSSARY.md) owns every canonical
-term and spelling. The Unity project lives at the **repository root** (URP, Input
-System; PC and Mobile renderer assets) — `Assets/` is where `docs/design/technical.md`'s
-folder layout applies. Open the repo root in Unity Hub.
+term and spelling. The repo is a multi-engine monorepo: the **Unity project lives in
+`unity/`** (URP, Input System; PC and Mobile renderer assets) — `unity/Assets/` is where
+`docs/design/technical.md`'s folder layout applies, and you open `unity/` in Unity Hub.
+The **Godot 4.7 project lives in `godot/`**, and `shared/` holds the engine-agnostic C#
+library (`Tarrock.Shared`) consumed by both.
 
 ## Staffing model (how work gets done here)
 
