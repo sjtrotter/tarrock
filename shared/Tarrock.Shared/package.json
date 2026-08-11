@@ -1,0 +1,10 @@
+{
+  "name": "com.tarrock.shared",
+  "version": "0.1.0",
+  "displayName": "Tarrock.Shared",
+  "description": "Engine-agnostic Tarrock logic shared by the Unity project (unity/) and the Godot project (godot/). Pure C#, no engine references.",
+  "unity": "6000.0",
+  "author": {
+    "name": "Tarrock"
+  }
+}

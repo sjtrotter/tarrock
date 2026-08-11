@@ -1,0 +1,14 @@
+<Project>
+
+  <!--
+    shared/Tarrock.Shared/ is a Unity local UPM package: Unity imports every file
+    under it. Default bin/ and obj/ folders would put a second copy of
+    Tarrock.Shared.dll inside the package and collide with the asmdef-compiled
+    assembly, so all MSBuild output is redirected outside the package folder.
+  -->
+  <PropertyGroup>
+    <BaseOutputPath>$(MSBuildThisFileDirectory).artifacts/$(MSBuildProjectName)/bin/</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory).artifacts/$(MSBuildProjectName)/obj/</BaseIntermediateOutputPath>
+  </PropertyGroup>
+
+</Project>
