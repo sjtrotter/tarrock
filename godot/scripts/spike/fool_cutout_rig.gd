@@ -622,6 +622,36 @@ func play_live(clip_name: String) -> void:
 	_player.play(clip_name)
 
 
+## SPIKE C addendum (anim-stepped): a crude "hand-held line" test for the
+## stepped-pose comparison. Nudges every sprite by a small deterministic
+## offset, keyed so the SAME `key` always produces the SAME offsets - the
+## caller (scripts/spike/stepped_walk_stage.gd) passes the current held-pose
+## index, so the jitter is rigid for the whole hold and only reshuffles when
+## the pose itself steps to the next one.
+func apply_jitter(key: int, amount_px: float = 1.0) -> void:
+	build()
+	for bone_name in _bones.keys():
+		var sprite := (_bones[bone_name] as Bone2D).get_node_or_null("Art") as Sprite2D
+		if sprite == null:
+			continue
+		var rng := RandomNumberGenerator.new()
+		rng.seed = hash("%d|%s" % [key, bone_name])
+		sprite.position = Vector2(
+			rng.randf_range(-amount_px, amount_px), rng.randf_range(-amount_px, amount_px)
+		)
+
+
+## Undo apply_jitter. Not needed by any panel today (every stepped-walk panel
+## owns its own rig instance), kept because "how do I turn this back off" is
+## the obvious next question when reading apply_jitter.
+func clear_jitter() -> void:
+	build()
+	for bone_name in _bones.keys():
+		var sprite := (_bones[bone_name] as Bone2D).get_node_or_null("Art") as Sprite2D
+		if sprite != null:
+			sprite.position = Vector2.ZERO
+
+
 func bone(bone_name: String) -> Bone2D:
 	build()
 	return _bones.get(bone_name, null)
