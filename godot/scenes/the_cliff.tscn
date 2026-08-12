@@ -1,7 +1,8 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://scripts/the_cliff.gd" id="1_cliff"]
 [ext_resource type="Script" path="res://scripts/cliff_ground.gd" id="2_ground"]
+[ext_resource type="Script" path="res://scripts/grass_field.gd" id="19_grass"]
 [ext_resource type="PackedScene" path="res://scenes/fool.tscn" id="3_fool"]
 [ext_resource type="PackedScene" path="res://scenes/pip.tscn" id="4_pip"]
 [ext_resource type="Texture2D" path="res://art/game-ready-sprites-v1/frames/environment/props/dead-campfire.png" id="5_dead_campfire"]
@@ -155,6 +156,10 @@ offset = Vector2(0, -84)
 position = Vector2(1100, 600)
 texture = ExtResource("18_cliff_lip")
 offset = Vector2(0, -89)
+
+[node name="TallGrass" type="Node2D" parent="World"]
+y_sort_enabled = true
+script = ExtResource("19_grass")
 
 [node name="Fool" parent="World" instance=ExtResource("3_fool")]
 position = Vector2(3820, 2560)
