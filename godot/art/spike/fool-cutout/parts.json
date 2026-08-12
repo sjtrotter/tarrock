@@ -15,283 +15,231 @@
     431.0
   ],
   "figure_height_px": 434,
-  "note": "spike-quality cutout parts; see docs in tools/spike/segment_fool_east.py",
+  "note": "production-quality purpose-drawn cutout parts (Codex-generated, iterated); see docs/design (anim-parts). Replaces the sliced spike parts; adds a real far arm and knee-cap overlay pieces.",
   "parts": {
     "head": {
       "file": "head.png",
       "size": [
-        88,
-        99
-      ],
-      "origin": [
-        48,
-        0
-      ],
-      "pivot": [
-        103.0,
-        96.0
+        199,
+        268
       ],
       "offset": [
-        -55.0,
-        -96.0
+        -124.38,
+        -259.88
       ],
       "rig_position": [
         23.0,
         -335.0
-      ]
+      ],
+      "source_part": "head_scarf"
     },
     "torso": {
       "file": "torso.png",
       "size": [
         171,
-        186
-      ],
-      "origin": [
-        0,
-        93
-      ],
-      "pivot": [
-        98.0,
-        120.0
+        268
       ],
       "offset": [
         -98.0,
-        -27.0
+        -38.9
       ],
       "rig_position": [
         18.0,
         -311.0
-      ]
+      ],
+      "source_part": "torso"
     },
     "arm_upper": {
       "file": "arm_upper.png",
       "size": [
-        61,
-        99
-      ],
-      "origin": [
-        59,
-        111
-      ],
-      "pivot": [
-        90.0,
-        122.0
+        107,
+        211
       ],
       "offset": [
-        -31.0,
-        -11.0
+        -54.38,
+        -23.44
       ],
       "rig_position": [
         10.0,
         -309.0
-      ]
+      ],
+      "source_part": "arm_near_upper"
     },
     "arm_lower": {
       "file": "arm_lower.png",
       "size": [
-        52,
-        66
-      ],
-      "origin": [
-        99,
-        131
-      ],
-      "pivot": [
-        102.0,
-        206.0
+        194,
+        117
       ],
       "offset": [
-        -3.0,
-        -75.0
+        -11.19,
+        -132.95
       ],
       "rig_position": [
         22.0,
         -225.0
-      ]
-    },
-    "leg_far_thigh": {
-      "file": "leg_far_thigh.png",
-      "size": [
-        39,
-        79
       ],
-      "origin": [
-        42,
-        258
-      ],
-      "pivot": [
-        62.0,
-        262.0
-      ],
-      "offset": [
-        -20.0,
-        -4.0
-      ],
-      "rig_position": [
-        -18.0,
-        -169.0
-      ]
-    },
-    "leg_far_shin": {
-      "file": "leg_far_shin.png",
-      "size": [
-        38,
-        71
-      ],
-      "origin": [
-        42,
-        330
-      ],
-      "pivot": [
-        64.0,
-        333.0
-      ],
-      "offset": [
-        -22.0,
-        -3.0
-      ],
-      "rig_position": [
-        -16.0,
-        -98.0
-      ]
-    },
-    "leg_far_foot": {
-      "file": "leg_far_foot.png",
-      "size": [
-        52,
-        37
-      ],
-      "origin": [
-        46,
-        396
-      ],
-      "pivot": [
-        58.0,
-        400.0
-      ],
-      "offset": [
-        -12.0,
-        -4.0
-      ],
-      "rig_position": [
-        -22.0,
-        -31.0
-      ]
+      "source_part": "arm_near_lower"
     },
     "leg_near_thigh": {
       "file": "leg_near_thigh.png",
       "size": [
-        72,
-        79
-      ],
-      "origin": [
-        71,
-        258
-      ],
-      "pivot": [
-        98.0,
-        262.0
+        143,
+        233
       ],
       "offset": [
-        -27.0,
-        -4.0
+        -53.62,
+        -11.8
       ],
       "rig_position": [
         18.0,
         -169.0
-      ]
+      ],
+      "source_part": "leg_near_thigh"
     },
     "leg_near_shin": {
       "file": "leg_near_shin.png",
       "size": [
-        43,
-        71
-      ],
-      "origin": [
-        71,
-        330
-      ],
-      "pivot": [
-        104.0,
-        333.0
+        130,
+        249
       ],
       "offset": [
-        -33.0,
-        -3.0
+        -99.77,
+        -10.52
       ],
       "rig_position": [
         24.0,
         -98.0
-      ]
+      ],
+      "source_part": "leg_near_shin_boot"
     },
-    "leg_near_foot": {
-      "file": "leg_near_foot.png",
+    "leg_far_thigh": {
+      "file": "leg_far_thigh.png",
       "size": [
-        70,
-        38
-      ],
-      "origin": [
-        72,
-        396
-      ],
-      "pivot": [
-        100.0,
-        400.0
+        113,
+        218
       ],
       "offset": [
-        -28.0,
-        -4.0
+        -57.95,
+        -11.04
       ],
       "rig_position": [
-        20.0,
-        -31.0
-      ]
+        -18.0,
+        -169.0
+      ],
+      "source_part": "leg_far_thigh"
     },
-    "bag": {
-      "file": "bag.png",
+    "leg_far_shin": {
+      "file": "leg_far_shin.png",
       "size": [
-        67,
-        143
-      ],
-      "origin": [
-        0,
-        38
-      ],
-      "pivot": [
-        58.0,
-        66.0
+        116,
+        244
       ],
       "offset": [
-        -58.0,
-        -28.0
+        -67.16,
+        -10.31
       ],
       "rig_position": [
-        -22.0,
-        -365.0
-      ]
+        -16.0,
+        -98.0
+      ],
+      "source_part": "leg_far_shin_boot"
     },
     "stick": {
       "file": "stick.png",
       "size": [
-        118,
-        169
-      ],
-      "origin": [
-        53,
-        58
-      ],
-      "pivot": [
-        133.0,
-        160.0
+        195,
+        245
       ],
       "offset": [
-        -80.0,
-        -102.0
+        -132.2,
+        -147.87
       ],
       "rig_position": [
         53.0,
         -271.0
-      ]
+      ],
+      "source_part": "bindle_stick"
+    },
+    "bag": {
+      "file": "bag.png",
+      "size": [
+        131,
+        196
+      ],
+      "offset": [
+        -113.4,
+        -38.38
+      ],
+      "rig_position": [
+        -22.0,
+        -365.0
+      ],
+      "source_part": "bindle_bag"
+    },
+    "arm_far_upper": {
+      "file": "arm_far_upper.png",
+      "size": [
+        96,
+        240
+      ],
+      "offset": [
+        -48.79,
+        -26.67
+      ],
+      "rig_position": [
+        4.0,
+        -311.0
+      ],
+      "source_part": "arm_far_upper"
+    },
+    "arm_far_lower": {
+      "file": "arm_far_lower.png",
+      "size": [
+        128,
+        230
+      ],
+      "offset": [
+        -7.38,
+        -261.36
+      ],
+      "rig_position": [
+        16.0,
+        -227.0
+      ],
+      "source_part": "arm_far_lower"
+    },
+    "knee_cap_near": {
+      "file": "knee_cap_near.png",
+      "size": [
+        62,
+        65
+      ],
+      "offset": [
+        -31.0,
+        -32.5
+      ],
+      "rig_position": [
+        24.0,
+        -98.0
+      ],
+      "source_part": "knee_cap_near"
+    },
+    "knee_cap_far": {
+      "file": "knee_cap_far.png",
+      "size": [
+        61,
+        65
+      ],
+      "offset": [
+        -30.5,
+        -32.5
+      ],
+      "rig_position": [
+        -16.0,
+        -98.0
+      ],
+      "source_part": "knee_cap_far"
     }
   }
 }

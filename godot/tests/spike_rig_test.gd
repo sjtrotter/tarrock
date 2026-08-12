@@ -63,8 +63,10 @@ func _check_parts() -> void:
 	var parts: Dictionary = manifest["parts"]
 	var expected := [
 		"head", "torso", "arm_upper", "arm_lower", "stick", "bag",
-		"leg_near_thigh", "leg_near_shin", "leg_near_foot",
-		"leg_far_thigh", "leg_far_shin", "leg_far_foot",
+		"leg_near_thigh", "leg_near_shin",
+		"leg_far_thigh", "leg_far_shin",
+		"arm_far_upper", "arm_far_lower",
+		"knee_cap_near", "knee_cap_far",
 	]
 	var missing := []
 	for key in expected:
@@ -93,11 +95,15 @@ func _check_rig_structure(rig: FoolCutoutRig) -> void:
 	_ok(present, "the spine chain hips -> spine -> chest -> head exists")
 	var legs := true
 	for side in ["Near", "Far"]:
-		for segment in ["Thigh", "Shin", "Foot"]:
+		for segment in ["Thigh", "Shin"]:
 			legs = legs and rig.bone("Leg%s%s" % [side, segment]) != null
-	_ok(legs, "both legs have thigh, shin and foot bones")
-	# A profile cutout has no far arm to swing - see the rig's own note.
-	_ok(rig.bone("ArmFarUpper") == null, "no far arm is faked from the near arm's drawing")
+		legs = legs and rig.bone("KneeCap%s" % side) != null
+	_ok(legs, "both legs have thigh and shin bones plus a knee-cap overlay")
+	# Production update: the far arm is now a real, purpose-drawn limb.
+	_ok(
+		rig.bone("ArmFarUpper") != null and rig.bone("ArmFarLower") != null,
+		"the far arm is a real purpose-drawn limb, not faked from the near arm's drawing"
+	)
 	_ok(
 		rig.animation_player().get_animation_list().size() == 2,
 		"the rig carries both a walk and an idle"
@@ -218,13 +224,34 @@ func _check_stride(rig: FoolCutoutRig) -> void:
 ## On the treadmill the ground moves at `walk_speed_px()`. A foot that is
 ## planted must therefore travel backwards, relative to the body, by exactly
 ## one step length over its stance phase. Anything else is the boot sliding.
+## There is no ankle bone any more (the boot is fused onto the shin - see
+## BONE_TREE); reconstruct the ankle's world x from the shin bone's global
+## transform plus its fixed SHIN_LEN, the same way the rig's own IK solve
+## does internally.
+##
+## The shin's baked rotation is solved_angle - shin_rest (see
+## _add_leg_tracks), where shin_rest is the shin's own rest-direction angle
+## as drawn in rig space; add it back to recover the true world angle before
+## rotating the fixed-length shin vector. shin_rest equals the shin bone's
+## own local (rest) position angle, since fool_cutout_rig.gd defines it as
+## thigh_rest = knee_local.angle() and reuses that same value for the shin.
+func _ankle_x(rig: FoolCutoutRig) -> float:
+	var shin := rig.bone("LegNearShin")
+	var shin_rest := shin.position.angle()
+	var true_shin_angle := shin.global_rotation + shin_rest
+	var ankle := shin.global_position + Vector2(FoolCutoutRig.SHIN_LEN, 0.0).rotated(
+		true_shin_angle
+	)
+	return ankle.x
+
+
 func _check_skate(rig: FoolCutoutRig) -> void:
 	# Stance for the near leg runs from heel strike to toe-off.
 	var stance_end := 0.50
 	rig.scrub("walk", 0.0)
-	var start_x := rig.bone("LegNearFoot").global_position.x
+	var start_x := _ankle_x(rig)
 	rig.scrub("walk", stance_end * FoolCutoutRig.WALK_CYCLE)
-	var end_x := rig.bone("LegNearFoot").global_position.x
+	var end_x := _ankle_x(rig)
 	var travelled := start_x - end_x
 	var ideal := FoolCutoutRig.cycle_distance_px() * stance_end
 	var error := absf(travelled - ideal) / ideal * 100.0
@@ -239,7 +266,7 @@ func _check_skate(rig: FoolCutoutRig) -> void:
 	for index in range(1, 17):
 		var phase := stance_end * float(index) / 16.0
 		rig.scrub("walk", phase * FoolCutoutRig.WALK_CYCLE)
-		var here := rig.bone("LegNearFoot").global_position.x
+		var here := _ankle_x(rig)
 		if here > previous + 0.5:
 			monotonic = false
 		previous = here
@@ -279,11 +306,16 @@ func _check_south() -> void:
 	root.add_child(rig)
 	rig.build()
 
-	var bones := ["Hips", "Chest", "Head", "LegLeft", "LegRight", "FootLeft", "FootRight"]
+	var bones := [
+		"Hips", "Chest", "Head",
+		"LegLeftThigh", "LegLeftShin", "KneeCapLeft", "FootLeft",
+		"LegRightThigh", "LegRightShin", "KneeCapRight", "FootRight",
+		"ArmLeftUpper", "ArmLeftLower", "ArmRightUpper", "ArmRightLower",
+	]
 	var present := true
 	for bone_name in bones:
 		present = present and rig.bone(bone_name) != null
-	_ok(present, "the south rig builds its own skeleton")
+	_ok(present, "the south rig builds its own skeleton (thigh/shin legs, upper/lower arms, knee caps)")
 	_ok(
 		rig.clip_length("walk") == FoolCutoutRig.WALK_CYCLE,
 		"south runs the east rig's timing exactly (%.2f s)" % rig.clip_length("walk")
@@ -314,8 +346,8 @@ func _check_south() -> void:
 	var right_depth: Array[float] = []
 	for index in 60:
 		rig.scrub("walk", float(index) / 60.0 * FoolCutoutRig.WALK_CYCLE)
-		left_depth.append(rig.bone("LegLeft").position.y)
-		right_depth.append(rig.bone("LegRight").position.y)
+		left_depth.append(rig.bone("LegLeftThigh").position.y)
+		right_depth.append(rig.bone("LegRightThigh").position.y)
 	var depth_range: float = left_depth.max() - left_depth.min()
 	_ok(depth_range > 15.0, "a swung leg moves %.0f px of screen depth" % depth_range)
 	var left_mid: float = (left_depth.max() + left_depth.min()) * 0.5

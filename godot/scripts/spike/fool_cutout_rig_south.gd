@@ -38,6 +38,15 @@ const FORWARD := -1.0
 const FIGURE_HEIGHT_PX := 435.0
 
 ## name -> [parent, part key or ""]
+##
+## Production update (purpose-drawn Codex parts, replacing the sliced spike
+## art): each leg and arm is now drawn as two purpose-drawn parts (thigh/shin,
+## upper/lower) instead of one fused image, plus a small knee-cap overlay.
+## Minimal re-keying: the new Shin/Lower/KneeCap bones are static children -
+## they carry no animation track of their own and simply ride rigidly with
+## their parent Thigh/Upper bone, exactly as the old fused single-image leg
+## and arm did. Only the bone names in _add_leg/_build_walk/_build_idle
+## changed (LegLeft -> LegLeftThigh, ArmRight -> ArmRightUpper, etc).
 const BONE_TREE := [
 	["Hips", "", ""],
 	["Spine", "Hips", ""],
@@ -45,13 +54,19 @@ const BONE_TREE := [
 	["Head", "Chest", "head"],
 	["Stick", "Chest", "stick"],
 	["BindleBag", "Stick", "bag"],
-	["LegLeft", "Hips", "leg_left"],
-	["FootLeft", "LegLeft", "foot_left"],
-	["LegRight", "Hips", "leg_right"],
-	["FootRight", "LegRight", "foot_right"],
+	["LegLeftThigh", "Hips", "leg_left_thigh"],
+	["LegLeftShin", "LegLeftThigh", "leg_left_shin"],
+	["KneeCapLeft", "LegLeftShin", "knee_cap_left"],
+	["FootLeft", "LegLeftShin", "foot_left"],
+	["LegRightThigh", "Hips", "leg_right_thigh"],
+	["LegRightShin", "LegRightThigh", "leg_right_shin"],
+	["KneeCapRight", "LegRightShin", "knee_cap_right"],
+	["FootRight", "LegRightShin", "foot_right"],
 	["Torso", "Chest", "torso"],
-	["ArmRight", "Chest", "arm_right"],
-	["ArmLeft", "Chest", "arm_left"],
+	["ArmRightUpper", "Chest", "arm_right_upper"],
+	["ArmRightLower", "ArmRightUpper", "arm_right_lower"],
+	["ArmLeftUpper", "Chest", "arm_left_upper"],
+	["ArmLeftLower", "ArmLeftUpper", "arm_left_lower"],
 ]
 
 const EXTRA_PIVOTS := {
@@ -62,8 +77,9 @@ const EXTRA_PIVOTS := {
 
 const DRAW_ORDER := [
 	"BindleBag",
-	"LegLeft", "FootLeft", "LegRight", "FootRight",
-	"Torso", "ArmRight", "Stick", "ArmLeft", "Head",
+	"LegLeftThigh", "LegLeftShin", "KneeCapLeft", "FootLeft",
+	"LegRightThigh", "LegRightShin", "KneeCapRight", "FootRight",
+	"Torso", "ArmRightUpper", "ArmRightLower", "Stick", "ArmLeftUpper", "ArmLeftLower", "Head",
 ]
 
 # --- cheat tables (phase 0..1 of FoolCutoutRig.WALK_CYCLE) ------------------
@@ -254,8 +270,10 @@ func _add_curve(
 
 
 ## One leg, all cheats: depth slide, foreshortening, and the drawn foot swap.
+## Only the thigh bone is animated - the shin and knee-cap are static children
+## of it (see BONE_TREE) and ride along rigidly, same as the old fused image.
 func _add_leg(anim: Animation, side: String, offset: float, cycle: float) -> void:
-	var leg := "Leg" + side
+	var leg := "Leg" + side + "Thigh"
 	var foot := "Foot" + side
 	var rest_position: Vector2 = _bones[leg].position
 
@@ -338,23 +356,24 @@ func _build_walk() -> Animation:
 	_add_leg(anim, "Left", 0.0, cycle)
 	_add_leg(anim, "Right", 0.5, cycle)
 
-	# The free arm mirrors the opposite leg.
-	var arm_rest: Vector2 = _bones["ArmRight"].position
+	# The free arm mirrors the opposite leg. ArmRightLower/ArmLeftLower are
+	# static children of the Upper bones (see BONE_TREE) and ride along.
+	var arm_rest: Vector2 = _bones["ArmRightUpper"].position
 	_add_curve(
-		anim, _bone_path("ArmRight") + ":position", ARM_DEPTH_KEYS, cycle,
+		anim, _bone_path("ArmRightUpper") + ":position", ARM_DEPTH_KEYS, cycle,
 		func(v): return arm_rest + Vector2(0.0, v)
 	)
 	_add_curve(
-		anim, _bone_path("ArmRight") + ":scale", ARM_SCALE_KEYS, cycle,
+		anim, _bone_path("ArmRightUpper") + ":scale", ARM_SCALE_KEYS, cycle,
 		func(v): return Vector2(1.0, v)
 	)
 	_add_curve(
-		anim, _bone_path("ArmRight") + ":rotation_degrees", ARM_SWING_KEYS, cycle,
+		anim, _bone_path("ArmRightUpper") + ":rotation_degrees", ARM_SWING_KEYS, cycle,
 		func(v): return v
 	)
 	# The bindle arm is pinned to the stick, so it only counter-swings a little.
 	_add_curve(
-		anim, _bone_path("ArmLeft") + ":rotation_degrees",
+		anim, _bone_path("ArmLeftUpper") + ":rotation_degrees",
 		FoolCutoutRig.scaled(ARM_SWING_KEYS, -0.35), cycle,
 		func(v): return v
 	)
@@ -393,16 +412,16 @@ func _build_idle() -> Animation:
 		IDLE_CYCLE, func(v): return v
 	)
 	_add_curve(
-		anim, _bone_path("ArmRight") + ":rotation_degrees", [[0.0, 0.0], [1.0, 0.0]],
+		anim, _bone_path("ArmRightUpper") + ":rotation_degrees", [[0.0, 0.0], [1.0, 0.0]],
 		IDLE_CYCLE, func(v): return v
 	)
-	var arm_rest: Vector2 = _bones["ArmRight"].position
+	var arm_rest: Vector2 = _bones["ArmRightUpper"].position
 	_add_curve(
-		anim, _bone_path("ArmRight") + ":position", [[0.0, 0.0], [1.0, 0.0]],
+		anim, _bone_path("ArmRightUpper") + ":position", [[0.0, 0.0], [1.0, 0.0]],
 		IDLE_CYCLE, func(v): return arm_rest + Vector2(0.0, v)
 	)
 	_add_curve(
-		anim, _bone_path("ArmRight") + ":scale", [[0.0, 1.0], [1.0, 1.0]],
+		anim, _bone_path("ArmRightUpper") + ":scale", [[0.0, 1.0], [1.0, 1.0]],
 		IDLE_CYCLE, func(v): return Vector2(1.0, v)
 	)
 	_add_curve(
@@ -412,20 +431,20 @@ func _build_idle() -> Animation:
 	)
 	# Legs and feet back to rest, or the idle inherits a mid-stride pose.
 	for side in ["Left", "Right"]:
-		var rest_position: Vector2 = _bones["Leg" + side].position
+		var rest_position: Vector2 = _bones["Leg" + side + "Thigh"].position
 		_add_curve(
-			anim, _bone_path("Leg" + side) + ":position", [[0.0, 0.0], [1.0, 0.0]],
+			anim, _bone_path("Leg" + side + "Thigh") + ":position", [[0.0, 0.0], [1.0, 0.0]],
 			IDLE_CYCLE, func(v): return rest_position + Vector2(0.0, v)
 		)
 		_add_curve(
-			anim, _bone_path("Leg" + side) + ":scale", [[0.0, 1.0], [1.0, 1.0]],
+			anim, _bone_path("Leg" + side + "Thigh") + ":scale", [[0.0, 1.0], [1.0, 1.0]],
 			IDLE_CYCLE, func(v): return Vector2(1.0, v)
 		)
 		_add_curve(
 			anim, _bone_path("Foot" + side) + ":scale", [[0.0, 1.0], [1.0, 1.0]],
 			IDLE_CYCLE, func(v): return Vector2(1.0, v)
 		)
-		for joint in ["Leg" + side, "Foot" + side]:
+		for joint in ["Leg" + side + "Thigh", "Foot" + side]:
 			_add_curve(
 				anim, _bone_path(joint) + ":rotation_degrees", [[0.0, 0.0], [1.0, 0.0]],
 				IDLE_CYCLE, func(v): return v

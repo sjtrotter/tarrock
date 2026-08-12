@@ -46,6 +46,10 @@ const FIGURE_HEIGHT_PX := 434.0
 const PIXELS_PER_METRE := 248.0
 ## Hip pivot to sole - what a step length has to be measured against.
 const HIP_HEIGHT_PX := 169.0
+## Knee to ankle, measured off the pre-fusion spike geometry. The shin+boot
+## part has no ankle child bone to read a rest length from any more (see
+## BONE_TREE), so this is the IK solve's fixed second segment length.
+const SHIN_LEN := 71.0
 
 ## One full cycle - two steps. 0.6 s is brisk for a real walk (a life-accurate
 ## cycle is nearer 1.0 s) but it is the storybook-game read the brief asks for.
@@ -59,6 +63,14 @@ const IDLE_CYCLE := 2.8
 
 ## Bones that carry a sprite, and where their rest transform comes from.
 ## name -> [parent, part key or "" for a jointless bone]
+##
+## Production update (purpose-drawn Codex parts, replacing the sliced spike
+## art): the foot is no longer its own bone - "leg_near_shin" and
+## "leg_far_shin" are now fused shin+boot pieces drawn as one rigid part (see
+## docs in the anim-parts generation brief), so the separate ankle-pitch
+## track is gone too. In exchange there is now a REAL far arm (purpose-drawn,
+## not a tinted duplicate) and a small knee-cap overlay piece per leg that
+## sits over the thigh/shin seam.
 const BONE_TREE := [
 	["Hips", "", ""],
 	["Spine", "Hips", ""],
@@ -68,11 +80,13 @@ const BONE_TREE := [
 	["BindleBag", "Stick", "bag"],
 	["LegFarThigh", "Hips", "leg_far_thigh"],
 	["LegFarShin", "LegFarThigh", "leg_far_shin"],
-	["LegFarFoot", "LegFarShin", "leg_far_foot"],
+	["KneeCapFar", "LegFarShin", "knee_cap_far"],
 	["LegNearThigh", "Hips", "leg_near_thigh"],
 	["LegNearShin", "LegNearThigh", "leg_near_shin"],
-	["LegNearFoot", "LegNearShin", "leg_near_foot"],
+	["KneeCapNear", "LegNearShin", "knee_cap_near"],
 	["Torso", "Chest", "torso"],
+	["ArmFarUpper", "Chest", "arm_far_upper"],
+	["ArmFarLower", "ArmFarUpper", "arm_far_lower"],
 	["ArmNearUpper", "Chest", "arm_upper"],
 	["ArmNearLower", "ArmNearUpper", "arm_lower"],
 ]
@@ -88,20 +102,18 @@ const EXTRA_PIVOTS := {
 ## Back to front. The far limbs sit behind the tunic, the near ones in front.
 const DRAW_ORDER := [
 	"BindleBag", "Stick",
-	"LegFarThigh", "LegFarShin", "LegFarFoot",
-	"LegNearThigh", "LegNearShin", "LegNearFoot",
+	"LegFarThigh", "LegFarShin", "KneeCapFar",
+	"ArmFarUpper", "ArmFarLower",
+	"LegNearThigh", "LegNearShin", "KneeCapNear",
 	"Torso", "ArmNearUpper", "ArmNearLower", "Head",
 ]
 
-## The far leg is the sliver of second leg the painting actually draws, pushed
-## back with a flat tint.
-##
-## There is deliberately NO far ARM in this rig. The painting is a strict
-## profile: the far arm is not drawn, and a tinted copy of the near arm - which
-## is bent around the bindle stick - swings out from behind the tunic as a dark
-## angular blob. A production version needs a purpose-drawn far arm; a spike
-## should not pretend otherwise. See the report.
-const FAR_TINT := Color(0.78, 0.75, 0.78, 1.0)
+## Production update: the far arm and far leg are now purpose-drawn parts
+## (see the anim-parts generation brief), not silhouette slices of the near
+## limb. They still get a light recede tint - not because the art is fake,
+## but because a same-lit far limb reads as popping forward of the torso it
+## should be sitting behind.
+const FAR_TINT := Color(0.86, 0.85, 0.87, 1.0)
 
 # --- the legs: a foot path, solved with IK ----------------------------------
 #
@@ -137,11 +149,6 @@ const FOOT_H_KEYS := [
 	[0.00, 38.0], [0.06, 31.0], [0.36, 31.0], [0.44, 35.0],
 	[0.50, 47.0], [0.60, 70.0], [0.72, 72.0], [0.85, 56.0],
 	[0.94, 42.0], [1.00, 38.0],
-]
-## Foot pitch in world terms, positive = toe up. Heel strike, roll flat, push.
-const FOOT_PITCH_KEYS := [
-	[0.00, 13.0], [0.06, 0.0], [0.36, 0.0], [0.44, -10.0],
-	[0.50, -26.0], [0.62, -8.0], [0.75, 0.0], [0.88, 9.0], [1.00, 13.0],
 ]
 ## How finely the solved angles are baked into the animation. 40 keys a cycle
 ## is a key every 15 ms, so the tracks can interpolate linearly and still
@@ -409,24 +416,31 @@ static func solve_leg(hip: Vector2, ankle: Vector2, thigh_len: float, shin_len: 
 	return [thigh, (ankle - knee).angle()]
 
 
-## Bake one leg's solved angles into three rotation tracks.
+## Bake one leg's solved angles into rotation tracks.
 ##
 ## Every bone in this rig has a zero rest rotation, so a bone's world rotation
 ## is just the sum of its own and its ancestors'. That is what makes unwinding
-## the IK result into local bone rotations three subtractions instead of a
-## matrix chain.
+## the IK result into local bone rotations subtraction instead of a matrix
+## chain.
+##
+## Production update: the shin bone now carries a fused shin+boot part (see
+## BONE_TREE), so there is no separate ankle bone/track any more - the boot
+## rides the shin's IK-solved angle rigidly. That trades away the old rig's
+## heel-strike roll (FOOT_PITCH_KEYS), which is an intentional, named
+## simplification: see the anim-parts report for the residual-gap note.
 func _add_leg_tracks(anim: Animation, side: String, phase_offset: float) -> void:
 	var hip_local: Vector2 = _bones["Leg%sThigh" % side].position
 	var knee_local: Vector2 = _bones["Leg%sShin" % side].position
-	var ankle_local: Vector2 = _bones["Leg%sFoot" % side].position
 	var thigh_len := knee_local.length()
-	var shin_len := ankle_local.length()
+	var shin_len := SHIN_LEN
 	var thigh_rest := knee_local.angle()
-	var shin_rest := ankle_local.angle()
+	# No ankle child left to read a "natural" shin direction from; the fused
+	# shin+boot part is drawn hanging straight from the knee, continuing the
+	# thigh's own rest direction, so reuse thigh_rest as the shin's too.
+	var shin_rest := thigh_rest
 
 	var thigh_keys: Array = []
 	var knee_keys: Array = []
-	var ankle_keys: Array = []
 	for index in LEG_SAMPLES + 1:
 		var phase := float(index) / float(LEG_SAMPLES)
 		var leg_phase := fposmod(phase + phase_offset, 1.0)
@@ -436,14 +450,11 @@ func _add_leg_tracks(anim: Animation, side: String, phase_offset: float) -> void
 		var hips_rotation: float = hips.get_rotation()
 		var thigh_world: float = solved[0] - thigh_rest
 		var shin_world: float = solved[1] - shin_rest
-		var foot_world := deg_to_rad(FORWARD * sample_curve(FOOT_PITCH_KEYS, leg_phase))
 		thigh_keys.append([phase, thigh_world - hips_rotation])
 		knee_keys.append([phase, shin_world - thigh_world])
-		ankle_keys.append([phase, foot_world - shin_world - hips_rotation])
 
 	_add_solved_track(anim, "Leg%sThigh" % side, thigh_keys)
 	_add_solved_track(anim, "Leg%sShin" % side, knee_keys)
-	_add_solved_track(anim, "Leg%sFoot" % side, ankle_keys)
 
 
 ## Solved angles go in as radians, already signed, and interpolate linearly:
@@ -522,15 +533,22 @@ func _build_walk() -> Animation:
 	_add_leg_tracks(anim, "Near", 0.0)
 	_add_leg_tracks(anim, "Far", 0.5)
 
-	# Only the near arm exists, and it is holding the bindle: it counter-swings
-	# against its own leg, but at a quarter amplitude - a grip adjusting, not a
-	# free arm.
+	# The near arm is holding the bindle: it counter-swings against its own
+	# leg, but at a quarter amplitude - a grip adjusting, not a free arm.
 	_add_rotation_track(
 		anim, "ArmNearUpper", scaled(lag(ARM_SWING_KEYS, 0.5), NEAR_ARM_SCALE), WALK_CYCLE
 	)
 	_add_rotation_track(
 		anim, "ArmNearLower", scaled(lag(ARM_ELBOW_KEYS, 0.5), NEAR_ARM_SCALE), WALK_CYCLE
 	)
+
+	# The far arm is now a real, purpose-drawn limb (not a silhouette), so it
+	# gets the full free-swing the near arm can't: same phase relationship as
+	# the near arm (it is the "free" counterpart swinging with the near leg,
+	# per the original design note), but without NEAR_ARM_SCALE's grip-
+	# adjustment damping.
+	_add_rotation_track(anim, "ArmFarUpper", lag(ARM_SWING_KEYS, 0.5), WALK_CYCLE)
+	_add_rotation_track(anim, "ArmFarLower", lag(ARM_ELBOW_KEYS, 0.5), WALK_CYCLE)
 
 	_add_rotation_track(anim, "Stick", lag(STICK_KEYS, STICK_LAG), WALK_CYCLE)
 	_add_rotation_track(anim, "BindleBag", lag(BAG_KEYS, BAG_LAG), WALK_CYCLE)
@@ -548,13 +566,14 @@ func _build_idle() -> Animation:
 	_add_rotation_track(anim, "BindleBag", lag(IDLE_BAG, 0.09), IDLE_CYCLE)
 	_add_rotation_track(anim, "Stick", scaled(IDLE_BAG, 0.35), IDLE_CYCLE)
 	_add_rotation_track(anim, "ArmNearUpper", scaled(IDLE_ARM, -0.6), IDLE_CYCLE)
+	_add_rotation_track(anim, "ArmFarUpper", scaled(IDLE_ARM, 0.45), IDLE_CYCLE)
 	# Every leg bone has to be written, not just the knees: the walk drives the
-	# thighs and feet, so an idle that ignores them leaves the Fool standing
-	# still with one boot still mid-stride.
+	# thighs, so an idle that ignores them leaves the Fool standing still with
+	# one leg still mid-stride. There is no separate foot bone any more (the
+	# boot is fused onto the shin - see BONE_TREE), so the knee sway is the
+	# only leg motion idle needs.
 	_add_rotation_track(anim, "LegNearThigh", IDLE_STILL, IDLE_CYCLE)
 	_add_rotation_track(anim, "LegFarThigh", IDLE_STILL, IDLE_CYCLE)
-	_add_rotation_track(anim, "LegNearFoot", IDLE_STILL, IDLE_CYCLE)
-	_add_rotation_track(anim, "LegFarFoot", IDLE_STILL, IDLE_CYCLE)
 	_add_rotation_track(anim, "LegNearShin", IDLE_KNEE, IDLE_CYCLE)
 	_add_rotation_track(anim, "LegFarShin", scaled(IDLE_KNEE, 0.7), IDLE_CYCLE)
 	return anim

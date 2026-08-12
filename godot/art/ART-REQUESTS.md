@@ -143,6 +143,65 @@ facing is ambiguous.
 
 ---
 
+## (f) Fool rig cutout parts — status
+
+`feat/anim-spike` shipped a Skeleton2D cutout rig built from parts SLICED out of the
+painted stills (`tools/spike/segment_fool_east.py`, `segment_fool_south.py`) — quick
+enough to test the rigging idea, too crude to judge on art quality (a fake far arm
+tinted from the near arm's silhouette, no far leg art, hard cut-line seams at the
+knee). `feat/anim-parts` replaces those with PURPOSE-DRAWN parts generated and iterated
+against the reference stills via Codex, then integrated back into the rig.
+
+**Done — rigged and shipping in the spike:**
+
+- **east** (profile, 15→14-bone rig) — `art/spike/fool-cutout/parts.json`. Purpose-drawn
+  far arm (`arm_far_upper`/`arm_far_lower`, was faked in the spike) with real
+  counter-swing animation; near/far knee-cap overlay pieces
+  (`knee_cap_near`/`knee_cap_far`) hide the thigh/shin seam; shin+boot fused into one
+  rigid part (the separate ankle-roll bone from the spike is gone — a named
+  simplification, see the anim-parts report). 2 Codex rounds (round 1 had a torso
+  armhole rendering as a dark void instead of cream undershirt fabric; fixed with a
+  targeted single-cell re-prompt).
+- **south** (front, 13→19-bone rig) — `art/spike/fool-cutout-south/parts.json`. Legs and
+  arms are now two bones each (thigh/shin, upper/lower) instead of one fused image, plus
+  knee-cap overlays and the existing 3-position boot swap library
+  (`foot_<side>`/`foot_<side>_lift`/`foot_<side>_fwd`) re-pointed at new art. 2 Codex
+  rounds (round 1 had an unwanted diagonal bandolier strap across the tunic not present
+  in the reference; fixed with a targeted single-cell re-prompt).
+- Both facings pass `tests/spike_rig_test.gd` (41 checks) and re-captured GIF evidence
+  (`tools/spike/capture_spike.gd` layouts `rig_walk`, `rig_idle`, `rig_south_walk`,
+  `rig_south_idle`, `rig_walk_gamesize`, `rig_south_gamesize`, `facings`) with no cut-line
+  artifacts, no knee bulge, and a real far arm.
+
+**Done — production stock, not yet rigged:**
+
+- **southeast**, **northeast**, **north** part sheets, 1 Codex round each (no re-prompt
+  needed — the armhole/strap lessons from east and south round 1 carried forward and
+  the first attempt passed clean review) → `art/fool-parts-v1/<facing>/*.png` +
+  `art/fool-parts-v1/manifest.json` (part → file, pivot, z-order, facing). southeast/
+  northeast follow the east profile's 14-part list (near/far arm + leg + knee caps,
+  stick, bag); north follows south's 20-part list (left/right arm + leg + knee caps,
+  stick, bag, 3-position boot swap library) since it is a symmetric bilateral view like
+  south, just from behind. Pivots for these three are ESTIMATED (borrowed fraction from
+  the sibling rigged facing's equivalent joint) — verify by eye before wiring a rig to
+  them, per the note in `manifest.json`.
+
+**Still missing:**
+
+- **west**, **northwest**, **southwest** part sheets — not generated this round.
+  Mirroring east/southeast/northeast horizontally is the cheap path (the reference
+  stills themselves look like true mirrors — worth confirming before assuming the art
+  can be flipped rather than redrawn) rather than a fresh Codex pass.
+- Rigs for southeast/northeast/north: no Skeleton2D built yet, no walk/idle animation
+  authored, no GIF evidence. The east and south rigs are the director's decision
+  evidence for whether the cutout approach ships at all; the diagonal and back facings
+  were explicitly loop-only production stock for this round, gated on that decision.
+- The knee-cap pieces on `north` read visually flatter/more geometric (a plain rounded
+  puck) than the ones on east/south/southeast/northeast (fabric folds, shading) — a
+  minor style-consistency gap worth a touch-up pass before `north` ships.
+
+---
+
 ## Open naming decision
 
 The existing south-east cycles are named without a direction
