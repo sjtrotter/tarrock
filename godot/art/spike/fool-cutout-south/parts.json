@@ -1,0 +1,342 @@
+{
+  "source": "../game-ready-sprites-v1/frames/fool/directions/south.png",
+  "crop": [
+    145,
+    17,
+    329,
+    452
+  ],
+  "crop_size": [
+    184,
+    435
+  ],
+  "origin": [
+    92.0,
+    433.0
+  ],
+  "note": "spike-quality south cutout; three swapped foot drawings per side, see tools/spike/segment_fool_south.py",
+  "parts": {
+    "head": {
+      "file": "head.png",
+      "size": [
+        102,
+        129
+      ],
+      "origin": [
+        45.0,
+        0.0
+      ],
+      "pivot": [
+        100.0,
+        124.0
+      ],
+      "offset": [
+        -55.0,
+        -124.0
+      ],
+      "rig_position": [
+        8.0,
+        -309.0
+      ]
+    },
+    "torso": {
+      "file": "torso.png",
+      "size": [
+        179,
+        179
+      ],
+      "origin": [
+        5.0,
+        118.0
+      ],
+      "pivot": [
+        100.0,
+        140.0
+      ],
+      "offset": [
+        -95.0,
+        -22.0
+      ],
+      "rig_position": [
+        8.0,
+        -293.0
+      ]
+    },
+    "arm_left": {
+      "file": "arm_left.png",
+      "size": [
+        61,
+        74
+      ],
+      "origin": [
+        26.0,
+        133.0
+      ],
+      "pivot": [
+        62.0,
+        144.0
+      ],
+      "offset": [
+        -36.0,
+        -11.0
+      ],
+      "rig_position": [
+        -30.0,
+        -289.0
+      ]
+    },
+    "arm_right": {
+      "file": "arm_right.png",
+      "size": [
+        49,
+        160
+      ],
+      "origin": [
+        132.0,
+        133.0
+      ],
+      "pivot": [
+        150.0,
+        144.0
+      ],
+      "offset": [
+        -18.0,
+        -11.0
+      ],
+      "rig_position": [
+        58.0,
+        -289.0
+      ]
+    },
+    "leg_left": {
+      "file": "leg_left.png",
+      "size": [
+        62,
+        127
+      ],
+      "origin": [
+        34.0,
+        276.0
+      ],
+      "pivot": [
+        66.0,
+        284.0
+      ],
+      "offset": [
+        -32.0,
+        -8.0
+      ],
+      "rig_position": [
+        -26.0,
+        -149.0
+      ]
+    },
+    "leg_right": {
+      "file": "leg_right.png",
+      "size": [
+        76,
+        127
+      ],
+      "origin": [
+        96.0,
+        276.0
+      ],
+      "pivot": [
+        123.0,
+        284.0
+      ],
+      "offset": [
+        -27.0,
+        -8.0
+      ],
+      "rig_position": [
+        31.0,
+        -149.0
+      ]
+    },
+    "foot_left": {
+      "file": "foot_left.png",
+      "size": [
+        46,
+        39
+      ],
+      "origin": [
+        27.0,
+        396.0
+      ],
+      "pivot": [
+        54.0,
+        399.0
+      ],
+      "offset": [
+        -27.0,
+        -3.0
+      ],
+      "rig_position": [
+        -38.0,
+        -34.0
+      ]
+    },
+    "foot_right": {
+      "file": "foot_right.png",
+      "size": [
+        57,
+        35
+      ],
+      "origin": [
+        110.0,
+        396.0
+      ],
+      "pivot": [
+        131.0,
+        399.0
+      ],
+      "offset": [
+        -21.0,
+        -3.0
+      ],
+      "rig_position": [
+        39.0,
+        -34.0
+      ]
+    },
+    "bag": {
+      "file": "bag.png",
+      "size": [
+        57,
+        136
+      ],
+      "origin": [
+        0.0,
+        47.0
+      ],
+      "pivot": [
+        40.0,
+        74.0
+      ],
+      "offset": [
+        -40.0,
+        -27.0
+      ],
+      "rig_position": [
+        -52.0,
+        -359.0
+      ]
+    },
+    "stick": {
+      "file": "stick.png",
+      "size": [
+        58,
+        150
+      ],
+      "origin": [
+        43.0,
+        47.0
+      ],
+      "pivot": [
+        78.0,
+        168.0
+      ],
+      "offset": [
+        -35.0,
+        -121.0
+      ],
+      "rig_position": [
+        -14.0,
+        -265.0
+      ]
+    },
+    "foot_left_lift": {
+      "file": "foot_left_lift.png",
+      "size": [
+        48,
+        27
+      ],
+      "origin": [
+        25.919999999999998,
+        396.9
+      ],
+      "pivot": [
+        54.0,
+        399.0
+      ],
+      "offset": [
+        -28.080000000000002,
+        -2.1000000000000227
+      ],
+      "rig_position": [
+        -38.0,
+        -34.0
+      ]
+    },
+    "foot_left_fwd": {
+      "file": "foot_left_fwd.png",
+      "size": [
+        49,
+        42
+      ],
+      "origin": [
+        25.11,
+        395.79
+      ],
+      "pivot": [
+        54.0,
+        399.0
+      ],
+      "offset": [
+        -28.89,
+        -3.2099999999999795
+      ],
+      "rig_position": [
+        -38.0,
+        -34.0
+      ]
+    },
+    "foot_right_lift": {
+      "file": "foot_right_lift.png",
+      "size": [
+        59,
+        24
+      ],
+      "origin": [
+        109.16,
+        396.9
+      ],
+      "pivot": [
+        131.0,
+        399.0
+      ],
+      "offset": [
+        -21.840000000000003,
+        -2.1000000000000227
+      ],
+      "rig_position": [
+        39.0,
+        -34.0
+      ]
+    },
+    "foot_right_fwd": {
+      "file": "foot_right_fwd.png",
+      "size": [
+        61,
+        37
+      ],
+      "origin": [
+        108.53,
+        395.79
+      ],
+      "pivot": [
+        131.0,
+        399.0
+      ],
+      "offset": [
+        -22.47,
+        -3.2099999999999795
+      ],
+      "rig_position": [
+        39.0,
+        -34.0
+      ]
+    }
+  }
+}
