@@ -20,6 +20,14 @@ hair at y=8 and the boot soles at y=435. The rig origin is the ground point
 (92, 433), midway between the two ankles.
 
 Run:  python3 godot/tools/spike/segment_fool_south.py
+
+
+SUPERSEDED. The rigs now read the purpose-drawn parts baked by
+tools/spike/build_cutout_parts.py, which writes to this same output folder.
+Running this script again overwrites them with the original hand-sliced
+spike art and breaks the rest-pose gate in tests/spike_rig_test.gd. It is
+kept because its hand-authored masks are the measured record of where the
+painting puts each part.
 """
 
 from __future__ import annotations

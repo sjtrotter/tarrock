@@ -15,231 +15,217 @@
     431.0
   ],
   "figure_height_px": 434,
-  "note": "production-quality purpose-drawn cutout parts (Codex-generated, iterated); see docs/design (anim-parts). Replaces the sliced spike parts; adds a real far arm and knee-cap overlay pieces.",
+  "note": "baked by tools/spike/build_cutout_parts.py - placement measured against the still, transform baked into the art, so sprites are drawn at unit scale and zero rest rotation",
   "parts": {
     "head": {
       "file": "head.png",
       "size": [
-        199,
-        268
+        93,
+        132
       ],
       "offset": [
-        -124.38,
-        -259.88
+        -60.2,
+        -99.88
       ],
       "rig_position": [
         23.0,
-        -335.0
-      ],
-      "source_part": "head_scarf"
+        -331.0
+      ]
     },
     "torso": {
       "file": "torso.png",
       "size": [
-        171,
-        268
+        103,
+        194
       ],
       "offset": [
-        -98.0,
-        -38.9
+        -56.49,
+        -42.51
       ],
       "rig_position": [
-        18.0,
-        -311.0
-      ],
-      "source_part": "torso"
+        15.0,
+        -306.0
+      ]
     },
     "arm_upper": {
       "file": "arm_upper.png",
       "size": [
-        107,
-        211
+        70,
+        117
       ],
       "offset": [
-        -54.38,
-        -23.44
+        -16.74,
+        -5.38
       ],
       "rig_position": [
-        10.0,
-        -309.0
-      ],
-      "source_part": "arm_near_upper"
+        9.0,
+        -313.0
+      ]
     },
     "arm_lower": {
       "file": "arm_lower.png",
       "size": [
-        194,
-        117
+        64,
+        67
       ],
       "offset": [
-        -11.19,
-        -132.95
+        -12.26,
+        -59.59
       ],
       "rig_position": [
-        22.0,
-        -225.0
-      ],
-      "source_part": "arm_near_lower"
-    },
-    "leg_near_thigh": {
-      "file": "leg_near_thigh.png",
-      "size": [
-        143,
-        233
-      ],
-      "offset": [
-        -53.62,
-        -11.8
-      ],
-      "rig_position": [
-        18.0,
-        -169.0
-      ],
-      "source_part": "leg_near_thigh"
-    },
-    "leg_near_shin": {
-      "file": "leg_near_shin.png",
-      "size": [
-        130,
-        249
-      ],
-      "offset": [
-        -99.77,
-        -10.52
-      ],
-      "rig_position": [
-        24.0,
-        -98.0
-      ],
-      "source_part": "leg_near_shin_boot"
-    },
-    "leg_far_thigh": {
-      "file": "leg_far_thigh.png",
-      "size": [
-        113,
-        218
-      ],
-      "offset": [
-        -57.95,
-        -11.04
-      ],
-      "rig_position": [
-        -18.0,
-        -169.0
-      ],
-      "source_part": "leg_far_thigh"
-    },
-    "leg_far_shin": {
-      "file": "leg_far_shin.png",
-      "size": [
-        116,
-        244
-      ],
-      "offset": [
-        -67.16,
-        -10.31
-      ],
-      "rig_position": [
-        -16.0,
-        -98.0
-      ],
-      "source_part": "leg_far_shin_boot"
-    },
-    "stick": {
-      "file": "stick.png",
-      "size": [
-        195,
-        245
-      ],
-      "offset": [
-        -132.2,
-        -147.87
-      ],
-      "rig_position": [
-        53.0,
-        -271.0
-      ],
-      "source_part": "bindle_stick"
-    },
-    "bag": {
-      "file": "bag.png",
-      "size": [
-        131,
-        196
-      ],
-      "offset": [
-        -113.4,
-        -38.38
-      ],
-      "rig_position": [
-        -22.0,
-        -365.0
-      ],
-      "source_part": "bindle_bag"
+        20.0,
+        -228.0
+      ]
     },
     "arm_far_upper": {
       "file": "arm_far_upper.png",
       "size": [
-        96,
-        240
+        46,
+        105
       ],
       "offset": [
-        -48.79,
-        -26.67
+        -23.2,
+        -8.8
       ],
       "rig_position": [
-        4.0,
-        -311.0
-      ],
-      "source_part": "arm_far_upper"
+        3.0,
+        -315.0
+      ]
     },
     "arm_far_lower": {
       "file": "arm_far_lower.png",
       "size": [
-        128,
-        230
+        39,
+        70
       ],
       "offset": [
-        -7.38,
-        -261.36
+        -9.75,
+        -5.0
       ],
       "rig_position": [
-        16.0,
-        -227.0
+        11.0,
+        -233.0
+      ]
+    },
+    "leg_near_thigh": {
+      "file": "leg_near_thigh.png",
+      "size": [
+        53,
+        90
       ],
-      "source_part": "arm_far_lower"
+      "offset": [
+        -28.38,
+        -22.58
+      ],
+      "rig_position": [
+        18.0,
+        -169.0
+      ]
+    },
+    "leg_near_shin": {
+      "file": "leg_near_shin.png",
+      "size": [
+        83,
+        108
+      ],
+      "offset": [
+        -37.92,
+        -3.0
+      ],
+      "rig_position": [
+        18.0,
+        -100.0
+      ]
+    },
+    "leg_far_thigh": {
+      "file": "leg_far_thigh.png",
+      "size": [
+        47,
+        83
+      ],
+      "offset": [
+        -19.32,
+        -20.96
+      ],
+      "rig_position": [
+        -14.0,
+        -169.0
+      ]
+    },
+    "leg_far_shin": {
+      "file": "leg_far_shin.png",
+      "size": [
+        68,
+        101
+      ],
+      "offset": [
+        -23.34,
+        -16.0
+      ],
+      "rig_position": [
+        -14.0,
+        -100.0
+      ]
     },
     "knee_cap_near": {
       "file": "knee_cap_near.png",
       "size": [
-        62,
-        65
+        39,
+        40
       ],
       "offset": [
-        -31.0,
-        -32.5
+        -21.83,
+        -14.51
       ],
       "rig_position": [
-        24.0,
-        -98.0
-      ],
-      "source_part": "knee_cap_near"
+        18.0,
+        -100.0
+      ]
     },
     "knee_cap_far": {
       "file": "knee_cap_far.png",
       "size": [
-        61,
-        65
+        36,
+        38
       ],
       "offset": [
-        -30.5,
-        -32.5
+        -15.77,
+        -32.71
       ],
       "rig_position": [
-        -16.0,
-        -98.0
+        -14.0,
+        -100.0
+      ]
+    },
+    "bag": {
+      "file": "bag.png",
+      "size": [
+        69,
+        132
       ],
-      "source_part": "knee_cap_far"
+      "offset": [
+        -42.77,
+        -34.34
+      ],
+      "rig_position": [
+        -36.0,
+        -365.0
+      ]
+    },
+    "stick": {
+      "file": "stick.png",
+      "size": [
+        136,
+        182
+      ],
+      "offset": [
+        -93.73,
+        -122.3
+      ],
+      "rig_position": [
+        53.0,
+        -271.0
+      ]
     }
   }
 }

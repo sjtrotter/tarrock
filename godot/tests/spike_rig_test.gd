@@ -25,6 +25,18 @@ const SouthScript := preload("res://scripts/spike/fool_cutout_rig_south.gd")
 
 const SAMPLES := 240
 
+## The rest-pose gate. Every attachment on this rig is placed by measurement
+## against the direction stills, and a placement bug is invisible in a bone
+## graph: the first purpose-drawn pass shipped a Fool wearing his bindle as a
+## backpack with the stick buried inside the torso, and every structural check
+## above still passed. So the assembled rest pose is compared to the painting
+## it was cut from. 0.88 leaves room for the parts that are genuinely drawn at
+## slightly different proportions; anything that moves a limb, swaps a hand or
+## re-orders a layer falls well below it.
+const REST_IOU_MIN := 0.88
+const EAST_STILL := "res://art/game-ready-sprites-v1/frames/fool/directions/east.png"
+const SOUTH_STILL := "res://art/game-ready-sprites-v1/frames/fool/directions/south.png"
+
 var _all_passed := true
 var _frame := 0
 
@@ -50,6 +62,7 @@ func _process(_delta: float) -> bool:
 	_check_stride(rig)
 	_check_skate(rig)
 	_check_overlap(rig)
+	_check_rest_pose(rig)
 	_check_south()
 	_check_painted()
 	_check_stage()
@@ -300,6 +313,102 @@ func _check_overlap(rig: FoolCutoutRig) -> void:
 	_ok(head_range > 1.0, "the idle glances (head turns %.1f deg)" % head_range)
 
 
+## Composite the rig's own rest pose the way the renderer will: every sprite's
+## texture, at the bone's rest world position plus the sprite's offset, in the
+## rig's own draw order.
+func _rest_silhouette(rig: Node2D, draw_order: Array, manifest: Dictionary) -> Image:
+	rig.call("pose_rest")
+	var crop: Array = manifest["crop"]
+	var origin := Vector2(float(manifest["origin"][0]), float(manifest["origin"][1]))
+	var canvas := Image.create(
+		int(crop[2]) - int(crop[0]), int(crop[3]) - int(crop[1]), false, Image.FORMAT_RGBA8
+	)
+	for bone_name in draw_order:
+		var bone: Bone2D = rig.call("bone", bone_name)
+		if bone == null:
+			continue
+		var sprite := bone.get_node_or_null("Art") as Sprite2D
+		if sprite == null or sprite.texture == null:
+			continue
+		var art := Image.load_from_file(sprite.texture.resource_path)
+		var at := bone.global_position + sprite.offset + origin
+		canvas.blend_rect(
+			art, Rect2i(Vector2i.ZERO, art.get_size()),
+			Vector2i(roundi(at.x), roundi(at.y))
+		)
+	return canvas
+
+
+func _still_region(path: String, manifest: Dictionary) -> Image:
+	var crop: Array = manifest["crop"]
+	return Image.load_from_file(path).get_region(Rect2i(
+		int(crop[0]), int(crop[1]), int(crop[2]) - int(crop[0]), int(crop[3]) - int(crop[1])
+	))
+
+
+func _alpha_iou(a: Image, b: Image) -> float:
+	var intersection := 0
+	var union := 0
+	for y in a.get_height():
+		for x in a.get_width():
+			var in_a := a.get_pixel(x, y).a > 0.19
+			var in_b := b.get_pixel(x, y).a > 0.19
+			if in_a or in_b:
+				union += 1
+				if in_a and in_b:
+					intersection += 1
+	return float(intersection) / maxf(float(union), 1.0)
+
+
+func _check_rest_pose(east: FoolCutoutRig) -> void:
+	var east_iou := _alpha_iou(
+		_rest_silhouette(east, FoolCutoutRig.DRAW_ORDER, RigScript.load_parts()),
+		_still_region(EAST_STILL, RigScript.load_parts())
+	)
+	_ok(
+		east_iou >= REST_IOU_MIN,
+		"east rest pose matches the still: silhouette IoU %.3f (>= %.2f)"
+			% [east_iou, REST_IOU_MIN]
+	)
+
+	var south: FoolCutoutRigSouth = SouthScript.new()
+	root.add_child(south)
+	south.build()
+	var south_iou := _alpha_iou(
+		_rest_silhouette(south, FoolCutoutRigSouth.DRAW_ORDER, SouthScript.load_parts()),
+		_still_region(SOUTH_STILL, SouthScript.load_parts())
+	)
+	_ok(
+		south_iou >= REST_IOU_MIN,
+		"south rest pose matches the still: silhouette IoU %.3f (>= %.2f)"
+			% [south_iou, REST_IOU_MIN]
+	)
+	south.queue_free()
+
+	# The bindle is the attachment that went wrong, so pin it directly: the bag
+	# hangs BEHIND the shoulder line and the stick is drawn in FRONT of the
+	# tunic, not buried behind it.
+	east.call("pose_rest")
+	var bag := east.bone("BindleBag")
+	var chest := east.bone("Chest")
+	_ok(
+		bag.global_position.x < chest.global_position.x - 20.0,
+		"the bindle bag hangs behind the shoulder (%.0f px back of the chest)"
+			% (chest.global_position.x - bag.global_position.x)
+	)
+	var order: Array = FoolCutoutRig.DRAW_ORDER
+	_ok(
+		order.find("Stick") > order.find("Torso")
+			and order.find("Stick") < order.find("ArmNearLower"),
+		"the stick is drawn over the tunic and under the fist that grips it"
+	)
+	_ok(
+		order.find("KneeCapNear") < order.find("LegNearThigh")
+			and order.find("KneeCapFar") < order.find("LegFarThigh"),
+		"the knee caps are gap fillers behind the limbs, not pads in front"
+	)
+
+
 ## The south facing: the cutout approach on the case that should break it.
 func _check_south() -> void:
 	var rig: FoolCutoutRigSouth = SouthScript.new()
@@ -308,14 +417,14 @@ func _check_south() -> void:
 
 	var bones := [
 		"Hips", "Chest", "Head",
-		"LegLeftThigh", "LegLeftShin", "KneeCapLeft", "FootLeft",
-		"LegRightThigh", "LegRightShin", "KneeCapRight", "FootRight",
+		"LegLeftThigh", "KneeCapLeft", "FootLeft",
+		"LegRightThigh", "KneeCapRight", "FootRight",
 		"ArmLeftUpper", "ArmLeftLower", "ArmRightUpper", "ArmRightLower",
 	]
 	var present := true
 	for bone_name in bones:
 		present = present and rig.bone(bone_name) != null
-	_ok(present, "the south rig builds its own skeleton (thigh/shin legs, upper/lower arms, knee caps)")
+	_ok(present, "the south rig builds its own skeleton (thigh+boot legs, upper/lower arms, knee caps)")
 	_ok(
 		rig.clip_length("walk") == FoolCutoutRig.WALK_CYCLE,
 		"south runs the east rig's timing exactly (%.2f s)" % rig.clip_length("walk")

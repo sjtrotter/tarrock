@@ -94,18 +94,26 @@ const BONE_TREE := [
 ## Bones with no part of their own need an explicit rest point, in the crop
 ## space parts.json uses (the source's alpha bbox, 171 x 434).
 const EXTRA_PIVOTS := {
-	"Hips": Vector2(80, 262),
+	"Hips": Vector2(82, 262),
 	"Spine": Vector2(86, 225),
-	"Chest": Vector2(98, 120),
+	"Chest": Vector2(95, 125),
 }
 
-## Back to front. The far limbs sit behind the tunic, the near ones in front.
+## Back to front, read off the painting.
+##
+## Two orderings here were wrong in the first pass and both were visible in
+## motion. The STICK belongs in FRONT of the tunic and the upper sleeve and
+## BEHIND the fist that grips it - the painting shows it crossing the chest and
+## the rose - not buried at the very back, where it disappeared entirely and
+## left the Fool wearing his bindle as a backpack. And the KNEE CAPS are gap
+## fillers: they sit BEHIND the thigh and shin so they only show through the
+## wedge that opens at a bent knee, instead of reading as knee pads at rest.
 const DRAW_ORDER := [
-	"BindleBag", "Stick",
-	"LegFarThigh", "LegFarShin", "KneeCapFar",
+	"BindleBag",
+	"KneeCapFar", "LegFarThigh", "LegFarShin",
 	"ArmFarUpper", "ArmFarLower",
-	"LegNearThigh", "LegNearShin", "KneeCapNear",
-	"Torso", "ArmNearUpper", "ArmNearLower", "Head",
+	"KneeCapNear", "LegNearThigh", "LegNearShin",
+	"Torso", "ArmNearUpper", "Stick", "ArmNearLower", "Head",
 ]
 
 ## Production update: the far arm and far leg are now purpose-drawn parts
@@ -595,6 +603,17 @@ func scrub(clip_name: String, time: float) -> void:
 		_player.play(_clip)
 	_player.pause()
 	_player.seek(fposmod(time, clip_length(clip_name)), true)
+
+
+## Freeze every bone on its rest transform. This is the pose the art was
+## measured in, and the pose the rest-pose regression test renders.
+func pose_rest() -> void:
+	build()
+	_player.stop()
+	for entry in BONE_TREE:
+		var bone: Bone2D = _bones[entry[0]]
+		bone.transform = bone.rest
+		bone.scale = Vector2.ONE
 
 
 func play_live(clip_name: String) -> void:

@@ -168,10 +168,21 @@ against the reference stills via Codex, then integrated back into the rig.
   (`foot_<side>`/`foot_<side>_lift`/`foot_<side>_fwd`) re-pointed at new art. 2 Codex
   rounds (round 1 had an unwanted diagonal bandolier strap across the tunic not present
   in the reference; fixed with a targeted single-cell re-prompt).
-- Both facings pass `tests/spike_rig_test.gd` (41 checks) and re-captured GIF evidence
+- Both facings pass `tests/spike_rig_test.gd` and re-captured GIF evidence
   (`tools/spike/capture_spike.gd` layouts `rig_walk`, `rig_idle`, `rig_south_walk`,
   `rig_south_idle`, `rig_walk_gamesize`, `rig_south_gamesize`, `facings`) with no cut-line
   artifacts, no knee bulge, and a real far arm.
+- **Placement is baked, not inferred.** The rig-ready art under
+  `art/spike/fool-cutout{,-south}/` is generated from the untouched Codex drawings in
+  `art/spike/fool-cutout-src/<facing>/` by `tools/spike/build_cutout_parts.py`, which
+  carries the measured per-part transform onto the direction still. Edit placement
+  there and re-run it; do NOT re-run `tools/spike/segment_fool_{east,south}.py`, which
+  still writes the original hand-sliced spike art into the same folders. A rest-pose
+  silhouette-IoU gate in `tests/spike_rig_test.gd` (>= 0.88 against the still, currently
+  0.944 east / 0.919 south) fails if any attachment moves.
+- The `art/fool-parts-v1/{east,south}/` copies of these two facings are the earlier,
+  wrongly-rescaled export and their `manifest.json` pivots are unreliable; the rigs no
+  longer read them. Treat `fool-cutout-src/` as the source of truth for east and south.
 
 **Done — production stock, not yet rigged:**
 

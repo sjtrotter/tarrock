@@ -40,13 +40,17 @@ const FIGURE_HEIGHT_PX := 435.0
 ## name -> [parent, part key or ""]
 ##
 ## Production update (purpose-drawn Codex parts, replacing the sliced spike
-## art): each leg and arm is now drawn as two purpose-drawn parts (thigh/shin,
-## upper/lower) instead of one fused image, plus a small knee-cap overlay.
-## Minimal re-keying: the new Shin/Lower/KneeCap bones are static children -
-## they carry no animation track of their own and simply ride rigidly with
-## their parent Thigh/Upper bone, exactly as the old fused single-image leg
-## and arm did. Only the bone names in _add_leg/_build_walk/_build_idle
-## changed (LegLeft -> LegLeftThigh, ArmRight -> ArmRightUpper, etc).
+## art): each arm is drawn as two parts (upper/lower) and each leg as a trouser
+## thigh plus a swappable boot, with a knee-cap gap filler behind the two.
+##
+## There is deliberately NO shin bone. The Codex "foot" drawings are whole
+## knee-high boots, not feet: the first pass squeezed one into the ~38 px the
+## painting gives the foot and used a separate shin drawing for the shaft,
+## which stacked two boots on each leg. Boot = shin, so the boot hangs straight
+## off the thigh and the three drawn poses swap the whole thing.
+##
+## The Lower/KneeCap bones are static children - they carry no animation track
+## and ride rigidly with their parent Thigh/Upper bone.
 const BONE_TREE := [
 	["Hips", "", ""],
 	["Spine", "Hips", ""],
@@ -55,13 +59,11 @@ const BONE_TREE := [
 	["Stick", "Chest", "stick"],
 	["BindleBag", "Stick", "bag"],
 	["LegLeftThigh", "Hips", "leg_left_thigh"],
-	["LegLeftShin", "LegLeftThigh", "leg_left_shin"],
-	["KneeCapLeft", "LegLeftShin", "knee_cap_left"],
-	["FootLeft", "LegLeftShin", "foot_left"],
+	["KneeCapLeft", "LegLeftThigh", "knee_cap_left"],
+	["FootLeft", "LegLeftThigh", "foot_left"],
 	["LegRightThigh", "Hips", "leg_right_thigh"],
-	["LegRightShin", "LegRightThigh", "leg_right_shin"],
-	["KneeCapRight", "LegRightShin", "knee_cap_right"],
-	["FootRight", "LegRightShin", "foot_right"],
+	["KneeCapRight", "LegRightThigh", "knee_cap_right"],
+	["FootRight", "LegRightThigh", "foot_right"],
 	["Torso", "Chest", "torso"],
 	["ArmRightUpper", "Chest", "arm_right_upper"],
 	["ArmRightLower", "ArmRightUpper", "arm_right_lower"],
@@ -70,16 +72,21 @@ const BONE_TREE := [
 ]
 
 const EXTRA_PIVOTS := {
-	"Hips": Vector2(92, 284),
+	"Hips": Vector2(94, 284),
 	"Spine": Vector2(96, 240),
 	"Chest": Vector2(100, 140),
 }
 
+## Back to front. The stick sits in front of the tunic and the near sleeve and
+## behind the fist that holds it; drawn any further back it vanishes into the
+## torso, which is exactly what the first pass did.
 const DRAW_ORDER := [
 	"BindleBag",
-	"LegLeftThigh", "LegLeftShin", "KneeCapLeft", "FootLeft",
-	"LegRightThigh", "LegRightShin", "KneeCapRight", "FootRight",
-	"Torso", "ArmRightUpper", "ArmRightLower", "Stick", "ArmLeftUpper", "ArmLeftLower", "Head",
+	"KneeCapLeft", "LegLeftThigh", "FootLeft",
+	"KneeCapRight", "LegRightThigh", "FootRight",
+	"Torso",
+	"ArmRightUpper", "ArmRightLower",
+	"ArmLeftUpper", "Stick", "ArmLeftLower", "Head",
 ]
 
 # --- cheat tables (phase 0..1 of FoolCutoutRig.WALK_CYCLE) ------------------
@@ -463,6 +470,21 @@ func _build_idle() -> Animation:
 
 func clip_length(clip_name: String) -> float:
 	return IDLE_CYCLE if clip_name == "idle" else FoolCutoutRig.WALK_CYCLE
+
+
+## Freeze every bone on its rest transform - the pose the art was measured in.
+func pose_rest() -> void:
+	build()
+	_player.stop()
+	for entry in BONE_TREE:
+		var bone: Bone2D = _bones[entry[0]]
+		bone.transform = bone.rest
+		bone.scale = Vector2.ONE
+	for side in ["Left", "Right"]:
+		var sprite := (_bones["Foot" + side] as Bone2D).get_node_or_null("Art") as Sprite2D
+		var part: Dictionary = _parts["foot_" + side.to_lower()]
+		sprite.texture = load(ART_DIR + str(part["file"]))
+		sprite.offset = Vector2(part["offset"][0], part["offset"][1])
 
 
 func scrub(clip_name: String, time: float) -> void:
