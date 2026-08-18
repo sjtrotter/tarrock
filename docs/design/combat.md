@@ -294,7 +294,8 @@ scoring/rank layer) is **TBD** — a decision for closer to the combat-prototype
 ## Accessibility
 
 - Full input remapping.
-- Hold/toggle options for held inputs (block-step, charged heavy, sprint).
+- Hold/toggle options for held inputs (block-step, charged heavy, sprint, Focus, the Pip
+  command wheel).
 - A **Fool's Chance timing-window slider**, independent of difficulty mode — a player on
   Story or Journey can widen the perfect-dodge window without changing anything else
   about combat balance.
