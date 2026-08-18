@@ -207,11 +207,52 @@ revive-class Future rule that `arcana.md` §XX assigned to it (`cfdab91`).
 **Director asks:** issue #11 (health vs petals) still open — round 7 builds to option 1
 (health pool + petals as manual heals) as the working assumption, flagged in code.
 
-## Round 7 — Combat (open 2026-08-18)
+## Round 7 — Combat (CLOSED 2026-08-18)
 
-**Goal:** the Bindle moveset in 2D (light string, heavy arc, charged heavy = stagger
-launcher, running attack), Focus lock + 8-way strafe with directional dodges (roll / side
-hop / the grand backflip), block-step, i-frames and **Fool's Chance** (perfect dodge → slow
-world, Fool at normal speed, next Present free), hit/hurt boxes, damage with difficulty,
-the defeat loop, accessibility window slider; proven headlessly against a training dummy.
+**Shipped (`4b83004`; `8d1b004` docs):** `CombatRules` (hand-authored, doc-regex
+drift-tested; canon numbers pinned, everything else TBD by name); `MovesetController` — a
+pure, headless state machine for the whole Bindle: 3-hit light string with a combo
+window, heavy arc, **charged heavy = stagger launcher**, running lunge, Focus directional
+dodges (roll / side hop / **the grand backflip**) sharing one i-frame window,
+out-of-Focus roll, block-step absorbing exactly one hit, no jump, no cancels;
+`FocusTargeting` (lock, live re-acquire, `focus_cycle` action); `HoldOrToggle`
+accessibility; Combatant/Hurtbox/Hitbox nodes; `FoolCombat` on the Fool with time
+compensation so **the Fool moves at normal speed through the slowed world**;
+`CombatService` — perfect window = rules × difficulty + an accessibility bonus
+independent of mode; **Fool's Chance** slows the world on a real-seconds timer, arms the
+free Present cast, pays Fortune; hits trickle; plain dodges pay nothing; the Rose heals by
+a petal; defeat → revive at the Waystation with the Rose regrown. Built to the working
+ruling on issue #11 (health pool + petals as manual heals), flagged in code.
+
+**Proof:** 661 unit tests (131 new) + a real-physics arena test: light string hits and
+earns, charged heavy staggers and the follow-up pays bonus, block-step absorbs for 0,
+early dodge = plain dodge, perfect dodge → time_scale 0.3 → Trump I cast free with the
+meter unmoved, Story halves damage, zero health → defeated → revive. Critic mutations all
+caught (i-frames covering the whole dodge; any-dodge-perfect; time_scale never restored;
+no stagger; block-step taking damage; Story ×1.0; chain without window; bonus scaled by
+difficulty; revive not regrowing; attacks not locking movement). **Blocking catches
+fixed:** the Fool's body wasn't compensated during slow-mo; a plain dodge paid 2.5× a
+hit's Fortune ("dodging early and often" is what Fool's Chance exists not to reward);
+the block-step absorbed unlimited hits; the perfect-dodge band was measured from dodge
+start (Trial ≈ 24 ms) — now from when i-frames open, with a data-level floor.
+
+**Art requests (for the director's Codex lane):** the Fool animation states listed in
+`godot/systems/combat/README.md` (Bindle_Light_1/2/3, Heavy_Sweep, Charge_Hold, Launcher,
+Lunge, Dodge_Roll, Focus_Side_Hop, Grand_Backflip, Block_Step, Focus_Ready/Strafe,
+Hit_React, Defeat_Collapse/Rise, Rose_Petal_Heal). Nothing is wired to a clip yet.
+
+**Debt / owed:** soft target-assist outside Focus (combat.md §Philosophy) not built; no
+input buffer (stated decision); Trump effect execution still owed (cast_present emits);
+the defeat presentation (fall, Pip's lick, fade, Querent pool) and the teleport to the last
+Waystation belong to rounds 9/10/13.
+
+**Director asks:** issue #11 still open (built to option 1).
+
+## Round 8 — Enemies (open 2026-08-18)
+
+**Goal:** the Blanks as data (suit × rank, generated from combat.md's tables; stats from
+one tuning resource), a pure `BlankBrain` (aware → approach → telegraph → attack →
+recover; Page flees to alert, Queen auras, Cups lobs, Coins shields), pooled Blank scenes
+with the card-flutter defeat, `Encounter` gates, Beasts/Fog-masks stubs on their flags, and
+**the MQ00 ambush placed for real in the Cliff** (three Twos: Cups, Swords, Wands).
 _In progress._
