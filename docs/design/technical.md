@@ -309,13 +309,13 @@ text lives.
 The InputMap action list gameplay code may read (device-agnostic, all rebindable):
 
 `move_left`, `move_right`, `move_up`, `move_down`, `sprint`, `interact`, `attack_light`,
-`attack_heavy`, `dodge`, `block_step`, `focus`, `rose`, `pip_wheel`, `spread`, `almanack`,
-`pause`.
+`attack_heavy`, `dodge`, `block_step`, `focus`, `focus_cycle`, `rose`, `pip_wheel`, `spread`,
+`almanack`, `pause`.
 
 Godot's built-in `ui_*` actions are for menu navigation only; gameplay code never reads
 them (`godot/scripts/player.gd`'s current `ui_*` use is migrated). Verbs map to
-[`combat.md`](combat.md): `focus` holds the Focus stance, `dodge` is the roll and its
-directional variants inside Focus, `block_step` is the hop-guard, `sprint` is held (or
+[`combat.md`](combat.md): `focus` holds the Focus stance (`focus_cycle` steps the lock to the next target), `dodge`
+is the roll and its directional variants inside Focus, `block_step` is the hop-guard, `sprint` is held (or
 toggled, per §Accessibility); there is deliberately **no jump action** in the top-down
 grammar.
 

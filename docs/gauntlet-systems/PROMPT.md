@@ -76,8 +76,8 @@ is the truth.
    `tr()` keys, no player-facing literal in code or in dialogue resources. A lint test
    greps for offenders.
 7. **Input**: named InputMap actions (`move_*`, `sprint`, `interact`, `attack_light`,
-   `attack_heavy`, `dodge`, `block_step`, `focus`, `rose`, `pip_wheel`, `spread`,
-   `almanack`, `pause`), device-agnostic, rebindable; gameplay code never reads raw keys.
+   `attack_heavy`, `dodge`, `block_step`, `focus`, `focus_cycle`, `rose`, `pip_wheel`,
+   `spread`, `almanack`, `pause`), device-agnostic, rebindable; gameplay code never reads raw keys.
    `player.gd` migrates from `ui_*` to `move_*` in round 1.
 8. **2D combat translation** (recorded in the combat.md amendment): Focus = target
    lock + strafing in 8 directions; heavy = radial arc; charged heavy = a *stagger
