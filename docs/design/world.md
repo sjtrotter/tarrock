@@ -44,6 +44,22 @@ south-east: dawn-side, as it should be.
 - **The Undervault** is underground, entered from the western regions; the only region
   with no sky.
 
+**Adjacency, read from the diagram (the SSOT for which regions touch; the picture above
+stays the picture).** Regions touch by *road* unless marked. Clockwise around the rim from
+the north: Bastion – Assize – Noonlands – Prestige – Bower – Divide – Chantry – Maw –
+Confluence – Stillmarsh – Mere – Mirrormarsh – Gallowwood – Dim – Spire – (Bastion).
+Every rim region's main road also meets the **Longroad** (a spoke each). The
+**Wheelhouse** and the **Veil** sit *on* the causeway and are reached along it (whether
+they also touch their nearest rim neighbours: **TBD**). The **Undervault** is off the
+surface rim: three descents, from the Mirrormarsh, the Gallowwood, and the Dim. Inner:
+Longroad – Hollows (gated: Death unbound, per §Hard and soft gates), Hollows – Axis, and
+an ungated road Longroad – Axis (the finale is always open). The **Cliff** touches
+nothing: its only exit is the one-way leap to the Prestige crossroads (MQ00), and it is
+outside the Waystation network — no fast travel returns there. The Mirrormarsh's true-
+light gate is applied on entry to the region from any neighbour (the interior loop-back
+is the presentation of that refusal); the Confluence delta caves are a sub-area gate
+inside the Confluence, not a region edge.
+
 ## Hydrology rule (waterways must be physically possible)
 
 Every waterway in the Spread obeys real gravity-fed logic, because players who look

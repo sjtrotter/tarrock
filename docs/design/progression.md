@@ -130,7 +130,10 @@ Wayside shrines, one per region and along the Longroad, are the game's rest poin
 - **Respec the Pocket Spread** — save, name, and switch between full loadouts.
 - **Fast travel** — Waystations become fast-travel points world-wide once
   `WS_CHARIOT_UNBOUND` fires (see [`world.md`](world.md) §World-state matrix); before
-  that they are rest-only, keeping early traversal grounded in the physical world.
+  that they are rest-only, keeping early traversal grounded in the physical world. Fast
+  travel departs from a Waystation the Fool is standing at and arrives only at
+  Waystations the Fool has already rested at (the network is the shrines you know); the
+  Cliff's Waystation is outside the network ([`world.md`](world.md) §Layout).
 
 ## Currency, shops, and gear-lite
 

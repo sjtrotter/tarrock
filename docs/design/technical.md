@@ -234,7 +234,8 @@ This is the docs' own "nothing else may mutate the matrix" rule, compiled.
 - **Persistent layer:** the `Services` autoload plus the Fool, Pip, the `Camera2D`, and
   the UI root live above the swapped scene and are never freed by a region change.
 - **One scene per region**, matching `world.md` §Regions one-to-one, with adjacency read
-  from `RegionDefinition` (`world.md` §Layout) — never hardcoded in a scene.
+  from the `RegionGraph` data (hand-authored from `world.md` §Layout's adjacency table,
+  every edge citing its sentence; gates are data on edges) — never hardcoded in a scene.
 - **`RegionService` is the only system allowed to load or free a region scene.** A
   transition frees the outgoing scene, instances the incoming one under the persistent
   layer, and re-anchors the Fool and Pip at the arrival Waystation or edge marker; every
