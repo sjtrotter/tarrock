@@ -51,7 +51,7 @@ needs to know, relevant world situations and other quests.>
 
 ### INT./EXT. <LEAD LOCATION>: <SPECIFIC LOCATION> — <DAY / NIGHT / STATE-DEPENDENT>
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 <Specific player actions that progress the quest.>
 

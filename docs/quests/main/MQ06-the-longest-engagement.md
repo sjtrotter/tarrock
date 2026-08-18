@@ -39,7 +39,7 @@ what a Fool who finishes the journey is bringing.
 
 ### EXT. THE DIVIDE: The East Ferry Landing — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The road ends at a lip of rock and simply gives up. Below, a canyon so deep the bottom
 is lost to blue haze; above, strung between two clifftop towns, an unfinished bridge —
@@ -143,7 +143,7 @@ visited in any order.]**
 
 ### INT./EXT. THE DIVIDE: The East Town, the Bride's Hall — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The east town climbs the cliff in salt-bleached tiers of blue and shell-white, open
 collars and open doors — Cups folk to the bone, a town that greets before it asks a name.
@@ -230,7 +230,7 @@ vessel out again. Ready. Always ready.
 
 ### INT./EXT. THE DIVIDE: The West Town, the Groom's Hall — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Across the gorge — a short ferry, or a long look — the west town is stone where the east
 is timber: a proud grey terrace climbing to a great ancestral hall, banners on every
@@ -314,7 +314,7 @@ the same page. The arrangements wait. Everything here waits.
 
 ### EXT. THE DIVIDE: The Broken Span — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The way to the bridge's end is no way at all — no finished path leads there any more than a
 finished bridge does. The Fool reaches it by a rope-and-scaffold traverse rigged over the
@@ -569,7 +569,7 @@ END CUT SCENE
 
 ### EXT. THE DIVIDE: The Two Banks — DAYS LATER
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Over the following in-game days the canyon changes in a way three centuries could not
 manage overnight: the bridge *completes*. The two half-spans grow toward each other and
@@ -623,7 +623,7 @@ lifetime.
 
 ### EXT. THE DIVIDE: The Old Ferry Landing — DAYS LATER
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 At the foot of the cliffs, the ferry landing is deserted. The traffic that was Pell's whole
 trade walks over his head now, across the bridge, and the flat-bottomed boat knocks its post
@@ -669,7 +669,7 @@ He is quiet a moment. Then, because he is Pell, he finds the dry end of it.
 
 ### EXT. THE DIVIDE: The Finished Bridge — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The bridge stands whole for the first time in three hundred years, spanning the gap that was
 never a matter of stone. The Fool walks out onto it — past the halfway mark, past the seam

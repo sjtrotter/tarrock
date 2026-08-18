@@ -46,7 +46,7 @@ END CUT SCENE
 
 ### EXT. THE CLIFF: The High Meadow — DAWN
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The screen brightens on a dead campfire, embers just gone grey, smoke thinning into a
 sky the colour of a robin's egg. The Fool lies beside it. **[Player regains control:
@@ -75,7 +75,7 @@ completely empty of anyone else.
 
 ### EXT. THE CLIFF: The Old Campsites — DAWN
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Fool crosses the meadow toward a scatter of old fire-rings, each one long cold. Some
 are barely rings at all any more — just a blackened circle in the grass, softened by
@@ -124,7 +124,7 @@ toward the meadow's far side.
 
 ### EXT. THE CLIFF: The Dead Tree — MORNING
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The ground rises to a modest knoll, and on it stands the only tree on the whole plateau
 — bare, black-branched, bark peeling in long dry curls. Everything else on the Cliff is
@@ -151,7 +151,7 @@ A beat. Wind in the dead branches, dry as paper.
 
 ### EXT. THE CLIFF: The Waystation Approach — MORNING
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The path narrows between two standing stones, and ahead — first sign of anything
 built by hand — a modest wayside shrine sits half-swallowed in ivy: the Cliff's
@@ -188,7 +188,7 @@ grass, already walking off in a new direction entirely.
 
 ### EXT. THE CLIFF: The First Waystation — MIDDAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The shrine up close: a stone basin, a scatter of old offerings gone to moss, a low arch
 worn soft at the edges by hands the Fool will never meet. The White Rose, held near it,
@@ -213,7 +213,7 @@ menu is introduced but empty — no Trump yet to slot.]**
 
 ### EXT. THE CLIFF: The Cliff's Edge — AFTERNOON
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Past the Waystation the meadow simply stops — a long, clean edge of turf and then sky,
 the drop beneath it lost in haze. This is as far as the plateau goes. The Fool can walk
@@ -268,7 +268,7 @@ labeled, nothing to do here yet but ask questions of the only voice available.
 
 ### EXT. THE CLIFF: The Edge of the World — DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The light goes long and gold. Pip trots past the Fool's legs to stand right at the
 lip of the drop, ears up, tail wagging with the frank enthusiasm of a dog who has done

@@ -33,7 +33,7 @@ visit from the Fool means, and its key scenes carry `[If CONFESSED: …]` varian
 
 ### EXT. THE CONFLUENCE: The Unfinished Bridge — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The road out of the last region ends at the foot of a bridge that has been almost finished
 for three hundred years. Scaffolding still stands against it, the poles weathered smooth and
@@ -64,7 +64,7 @@ declines to cross the plank until the Fool goes first.
 
 ### EXT. THE CONFLUENCE: The Public Benches — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Past the bridge the city proper begins: narrow stone wharves, mixing-houses with their
 doors thrown open, steam and cold-mist trading places in the air over a hundred little
@@ -116,7 +116,7 @@ END CUT SCENE
 
 ### EXT. THE CONFLUENCE: The Wharf Waystation — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 A Waystation sits at the wharf's end where the first of the delta channels forks off: a
 worn stone basin fed by a trickle that has clearly been trickling, at exactly this rate,
@@ -138,7 +138,7 @@ other visited Waystation.]
 
 ### EXT. THE CONFLUENCE: Delphine's Mixing-House — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 An open-fronted mixing-house on a low wharf, its shelves ranked with copper and glass. Two
 small cups stand on the counter — one scalding, steam rolling off it in ropes; one frosted
@@ -194,7 +194,7 @@ END CUT SCENE
 
 **If the Fool asked "Show me how to steer it":**
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[Tutorial: the tempering mini-challenge. Two hazard sources — one scald, one frost — pulse
 on offset beats. The Fool redirects each pour into the other on its rising beat to cut a
@@ -221,7 +221,7 @@ Delphine lets out a breath she has plainly been holding for weeks.
 
 ### EXT. THE CONFLUENCE: The Flooding Channels — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 To reach the twin-cup plaza the Fool must cross the outer delta, where the two rivers run
 close enough to throw their tempers into the air. The channels here don't flood with water
@@ -258,7 +258,7 @@ anyone bothered to count.
 
 ### EXT. THE CONFLUENCE: The Final Span — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The last approach to the plaza runs across the great half-bridge itself — the famous one,
 the largest of the Confluence's unfinished spans, reaching out toward the twin cups and
@@ -327,7 +327,7 @@ thing he knows how to do.
 
 ### EXT. THE CONFLUENCE: The Twin-Cup Plaza — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The plaza is the delta's heart, and it is not a plaza so much as the inside of the pour
 itself. The two colossal cups tilt toward one another overhead, and between them, astride
@@ -372,7 +372,7 @@ END CUT SCENE
 
 ### THE ENCOUNTER — Phase One: the flood *(per `arcana.md` §XIV)*
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Mixer pours, and the arena floods in alternating bands of scald and frost sweeping
 across the floor in time with her jugs. Standing in a scald band burns; standing in a frost
@@ -390,7 +390,7 @@ enough to close distance and strike.]**
 
 ### THE ENCOUNTER — Phase Two: tempering
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The counter is not to dodge her pours but to *redirect* them — to catch a scald pour and
 turn it into the path of a frost pour, and the frost into the scald, so the two cancel and a
@@ -415,7 +415,7 @@ quite calm)*
 
 ### THE ENCOUNTER — the falter
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Pressed enough times, conducted enough times, her pour finally misses a beat. Just once. A
 thread of scald that should have met the frost overshoots it and falls, harmlessly, into the
@@ -487,7 +487,7 @@ END CUT SCENE
 
 ### EXT. THE CONFLUENCE: The Twin-Cup Plaza — LATER
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 With the pour stopped, the two great cups finish tipping — the last of three hundred years
 of held blend running out between them and down into the delta, at last, toward the sea. The
@@ -504,7 +504,7 @@ change plays across return visits, not in one shot.]**
 
 ### EXT. THE CONFLUENCE: The Draining Delta — OVER FOLLOWING HOURS
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Across return visits the delta pulls back. Mudflats that were channel-bottom firm into
 grassland, green coming up through the silt with the speed of a held breath let go. The
@@ -539,7 +539,7 @@ submerged Confluence delta caves become enterable (`world.md` §Hard and soft ga
 
 ### EXT. THE CONFLUENCE: The Finished Bridge — DAYS LATER
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The great half-bridge is a half-bridge no longer. With the delta drained, the far bank has
 risen to meet the laid stone, and the span — the famous, unfinishable span — simply reaches
@@ -584,7 +584,7 @@ span, in the middle of it, and looks at the far bank for a good long while.
 
 ### EXT. THE CONFLUENCE: The Mixing-Houses — DAYS LATER
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Along the wharves the mixing-houses have changed their whole rhythm. Where benches once held
 blends forever nearly-done, mixers now brew things *through* — proper elixirs, poured out,
@@ -610,7 +610,7 @@ Mixer's-apprentice Calling shifts to orders that can be *finished* (`callings.md
 
 ### EXT. THE CONFLUENCE: The Drained Delta Overlook — DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 From the wharf where the old bench sits, the whole drained delta lies out under a lowering
 light — mudbanks gone to grass, the risen rooftops of the old city catching the last of the

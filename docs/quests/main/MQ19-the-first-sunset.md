@@ -38,7 +38,7 @@ to duel the one card that ends things, and delighted anyway.
 
 ### EXT. THE NOONLANDS: The Grain Road — HIGH NOON *(the only hour there is)*
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The road tops a rise and the whole of the Noonlands opens out flat and gold to a horizon
 that shimmers with standing heat. Fields of sunflowers stretch in every direction, and
@@ -142,7 +142,7 @@ resolve her — she is Sunny Loft, SQ-NOONLANDS-02's)*
 
 ### EXT. THE NOONLANDS: The Sunflower Coliseum, The Challenge Gate — HIGH NOON
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Coliseum is not built of stone. It is built of sunflowers — a vast living ring of
 them, grown improbably tall and packed shoulder to shoulder into a wall two storeys high,
@@ -167,7 +167,7 @@ name with.]**
 
 ### EXT. THE NOONLANDS: The Sunflower Coliseum, The Lists — HIGH NOON
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The qualifying bouts: a short ladder of the Coliseum's standing champions, tourney Blanks
 in bright tabards bearing high Coins cards — Pages, then Knights — who have held their
@@ -192,7 +192,7 @@ the sanded floor of the great ring lies open and empty, waiting.
 
 ### EXT. THE NOONLANDS: The Sunflower Coliseum, The Practice Pell — HIGH NOON
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Before the champion's gate, a squire's practice-pell stands in the sand: a straw dummy in
 dented tourney plate, and — bolted above it on a bent armature — a bright disc of polished
@@ -214,7 +214,7 @@ by reading the shadow to clear the pell and open the champion's gate.]**
 
 ### EXT. THE NOONLANDS: The Sunflower Coliseum, The Champion's Gate — HIGH NOON
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The champion's gate — twin sunflowers grown into an arch — swings open, and the whole ring
 of ten thousand gold flower-faces seems to lean in at once.
@@ -300,7 +300,7 @@ a full and terrifying gallop.
 
 ### EXT. THE NOONLANDS: The Sunflower Coliseum, The Ring — HIGH NOON *(the duel)*
 
-THIRD PERSON GAMEPLAY — SETPIECE DUEL
+GAMEPLAY — SETPIECE DUEL
 
 **[The single mechanic, taught once, tested for real: Aurel's radiance whites out his body
 and his lance — the player cannot read his attacks by watching him. The pony-and-rider
@@ -370,7 +370,7 @@ END CUT SCENE
 
 ### EXT. THE NOONLANDS: The Sunflower Coliseum, The Ring — THE FIRST SUNSET *(set-piece)*
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[The trailer sequence. Play it in real, visible time — no fade, no cut over the change.
 The player keeps control and can walk the ring while it happens; nothing attacks. This is
@@ -438,7 +438,7 @@ END CUT SCENE
 
 ### EXT. THE NOONLANDS: The Sunflower Coliseum — THE FIRST NIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The amber goes to violet, the violet to a deep and unfamiliar blue, and the sun slides
 under the western fields and is, for the first time in three hundred years, simply *gone*.
@@ -487,7 +487,7 @@ here; let her fear stand unanswered.)*
 
 ### EXT. THE NOONLANDS: The West Fields, The Festival's Edge — THE FIRST NIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Away from the crowd, at the browning edge of the west fields where nobody was ever meant
 to look, Bramble Coss stands alone in the dark with her clipboard of tallies hanging
@@ -538,7 +538,7 @@ END CUT SCENE
 
 ### EXT. THE NOONLANDS: The Grain Road — THE FIRST NIGHT *(the world registers it)*
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[Montage note — do not script other regions' scenes; this is a single reactive beat
 carried by the world-state bark layer (npc-system.md §rumor propagation, layer 3 keyed to

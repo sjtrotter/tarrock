@@ -9,15 +9,19 @@ fight. The equip system (staff heads, Rose graftings, respec) belongs to
 
 ## Philosophy
 
-Tarrock is **real-time, third-person action combat — never turn-based** — readable and
-deliberate: Fable's rhythm, not a character-action mash. (Boss docs sometimes describe
-an enemy's "rota," "beat," or "bell" — those are telegraphed real-time attack rhythms
-the player reads and answers live, not turn-taking.) Every enemy telegraphs before it commits; every player action
+Tarrock is **real-time action combat in the 2D top-down grammar — never turn-based** —
+readable and deliberate: Fable's rhythm, not a character-action mash. The form is the one
+`GDD.md` §Theme / Setting / Genre states: oblique top-down, with side-view sequences as punctuation; the
+combat rules below are written for that grammar and do not change inside a side-view
+sequence. (Boss docs sometimes describe an enemy's "rota," "beat," or "bell" — those are
+telegraphed real-time attack rhythms the player reads and answers live, not turn-taking.)
+Every enemy telegraphs before it commits; every player action
 has a clear windup, a clear active frame, and recovery the player can feel. There is no
 combo-counter, no style meter, and no button-mash reward loop: pressing more buttons
 faster never beats pressing the right button at the right time. Lock-on is available but
-optional — the camera assists tracking without forcing a hard-lock, so fights against
-multiple Blanks stay legible without feeling like a rail shooter.
+optional — outside Focus the game assists target tracking without forcing a hard-lock, so
+fights against multiple Blanks stay legible without the player having to hold a stance to
+stay alive.
 
 The measure of a good Tarrock fight: a player who has never played it before can *watch*
 a skilled player fight and understand what happened. Nothing is hidden in numbers.
@@ -33,9 +37,13 @@ knows, rather than a new weapon to relearn.
 |---|---|
 | **Light string** | Three-hit staff combo, fast and precise. The Fool's default answer to single targets and openings. |
 | **Heavy** | Wide crowd sweep — the bundle end drags through the strike, hitting everything in an arc. Answer to groups. |
-| **Charged heavy** | Held heavy attack; releases into a launcher that pops enemies airborne, opening aerial follow-up. |
+| **Charged heavy** | Held heavy attack; releases into the **stagger launcher** — the target is lifted off its feet into a brief helpless stagger that opens bonus follow-ups. The opener the launcher always was, without an aerial moveset. |
 | **Running attack** | A forward lunge strike, closes distance and interrupts. |
-| **Aerial attack** | Available after a launcher or a fall/jump; keeps combat readable in vertical spaces without becoming a second moveset. |
+
+**No aerial moveset.** In the top-down grammar there is no jump verb and nothing to
+attack from mid-air; vertical play belongs to the side-view sequences (see **Traversal in
+the top-down grammar** below). The stagger launcher gives the opener a launcher gives —
+a helpless window and a follow-up — on the ground plane, where it stays readable.
 
 **Staff heads**, found or bought across the Spread, swap onto the Bindle and lightly
 retune this moveset (reach, a different heavy shape, an elemental tag) rather than
@@ -45,33 +53,58 @@ replacing it — full detail, list, and acquisition is owned by
 ## Focus (stance and targeting)
 
 Combat maneuvering lives inside a held **Focus** stance (hold the focus input —
-OoT-style Z-targeting grammar): the Fool drops into a readable ready-crouch, the camera
-squares up behind (and, when enemies are present, locks to a target), and movement
-becomes camera-relative strafing. Focus is what separates *traveling* from *fighting*:
+OoT-style Z-targeting grammar): the Fool drops into a readable ready-crouch, locks onto a
+target when enemies are present, and movement becomes **8-direction strafing around that
+target** — the Fool keeps facing the target while circling, backing off, or closing.
+Focus is what separates *traveling* from *fighting*:
 
 - **In Focus, the dodge input is directional:** forward or neutral = the dodge roll
   (below); left/right = a strafing side-hop; backward = a backflip. All directional
   dodges share the roll's i-frame rules and can trigger Fool's Chance.
-- **Out of Focus, the same input is a jump** — plain traversal (and the entry point for
-  aerial attacks per the Bindle moveset table).
-- **Crouched jump = the grand backflip**: jumping from the crouch performs a high,
-  deliberately *majestic* backflip — taller than a normal jump, carrying the Fool
-  roughly 1.5 body-widths backward, finished with an emphatic landing. Distinct from
-  the focus back-dodge (which is a quick evasive flip); this one is theater, and a
-  natural candidate for the learned-skill pool above.
+- **Out of Focus, the same input is the plain roll** — a travel dodge, nothing more.
+  There is no jump verb: ledge drops are contextual (walk off a marked ledge and the Fool
+  drops), and true vertical play lives in the side-view sequences.
+- **The grand backflip is the Focus back-dodge**: the backward dodge is performed as a
+  high, deliberately *majestic* flip — taller than any other evasion, carrying the Fool
+  roughly 1.5 body-widths back, finished with an emphatic landing. It is theater as much
+  as evasion (the crouched-jump version is gone with the jump verb; the flourish
+  survives here), and a natural candidate for the learned-skill pool below.
 - Advanced maneuvers beyond the base roll (the backflip and later additions) may ship
   as **learned skills** rather than defaults — taught in the world (a move teacher or
   similar), not necessarily Trump-granted. Acquisition model: **TBD**, to be settled in
   [`progression.md`](progression.md) before any skill is gated.
-- **Climb-lite: TBD.** `GDD.md` §Traversal commits to "climb-lite" and `world.md` soft-
-  gates by "climbable but punishing ridges", but the mechanic itself is undecided
-  (punishing steep-slope traversal? stamina-limited scramble? Trump-gated?). Whatever
-  it becomes, it must not break the terrain grammar: **true cliffs always refuse**
-  (`art-audio.md` swap rule 5) — climb-lite applies to the punishing-slope band between
-  walkable and refused, never to sheer faces. Free-climbing (climb-anything) is ruled
-  out; it would dissolve every geographic gate in `world.md`. Scripted climbs (the
-  Emperor colossus, taught in miniature in MQ04) are set-pieces, not this verb. Until
-  decided, the build's controller slope limit stands in for the walkable/punishing line.
+
+## Traversal in the top-down grammar
+
+The 2D form resolves the old **climb-lite TBD**: there is no climbing verb.
+
+- **Elevation reads on the ground plane.** Terraces, ledges, ramps, and drops are level
+  design the player walks — the "climbable but punishing ridges" `world.md` soft-gates by
+  are *routes* (longer, more exposed, guarded) rather than a stamina minigame. The
+  terrain grammar is unchanged: **true cliffs always refuse** (`art-audio.md` swap rule
+  5), and free-climbing was and remains ruled out — it would dissolve every geographic
+  gate in `world.md`.
+- **Drops are contextual.** Walking off a marked ledge drops the Fool; nothing is
+  climbed back up that the level design did not provide a way up for.
+- **Scripted climbs stay set-pieces**, not a verb: the Emperor colossus (taught in
+  miniature in MQ04) and the Spire ascent are authored sequences — both on the canon list
+  of side-view sequences owned by [`world.md`](world.md) §Side-view sequences.
+
+### Overturn in 2D
+
+The Hanged Man's Trump is the one power whose meaning is tied to the gravity axis; the
+effect itself is owned by [`arcana.md`](arcana.md) §XII, and this is only how the 2D
+grammar expresses it.
+
+- **Upright feather-fall** (the Past slot's "traversal headline", owned by
+  [`arcana.md`](arcana.md) §XII, which states its top-down reading) is a real traversal
+  power in an elevation-readable world, and it is what soft-gates the routes `world.md`
+  reserves for it.
+- **Inside the side-view sequences the Trump is literal and at full strength** — the
+  Gallowwood ordeal is where the card lives, and gravity inversion is native there.
+- **Outside side-view spaces, the Present slot's gravity bubble is TBD** — see **Open
+  questions** below. It is never to be resolved by whatever falls out of an
+  implementation; the doc decides first.
 
 ## Defense
 
@@ -161,8 +194,8 @@ The standard enemy is the **Blank** — a humanoid soldier-figure with a blank o
 one of the casualties of the Stall. Blanks are not literal walking cards: each *bears*
 a card whose face went blank — worn as a tabard or heraldic plate carrying its suit and
 rank — and the card, not the body, is what the Stall keeps re-arming. The body is a
-vessel the card raises; the metaphor stays a metaphor. One base rig family carries every suit and rank, keeping the whole game's
-enemy roster simple and legible by design, not by budget necessity (see
+vessel the card raises; the metaphor stays a metaphor. One base art and animation family carries every suit and rank, keeping the
+whole game's enemy roster simple and legible by design, not by budget necessity (see
 [`GDD.md`](../GDD.md) §Iteration clause).
 
 **Suit flavors** shape *behavior*:
@@ -209,8 +242,8 @@ world-states — see [`world.md`](world.md) for the regions themselves:
   advantage world-wide. Before that state, they read and fight as their masks, not as
   the people beneath — the reveal is a world-state event, not a combat-time twist.
 
-Both families are intentionally small rosters — one or two rigs each, reskinned by
-region — for the same reason as the Blanks: craft and legibility, not budget (see
+Both families are intentionally small rosters — one or two art families each, reskinned
+by region — for the same reason as the Blanks: craft and legibility, not budget (see
 [`GDD.md`](../GDD.md) §Iteration clause).
 
 ## Boss philosophy
@@ -226,7 +259,7 @@ owned by [`arcana.md`](arcana.md).
 **Why this philosophy (it's craft, not economy):** arena + gimmick + character moves a
 fight's identity from *animation quantity* to *idea quality* — the fights players
 remember from any era are remembered for their one idea, not their move-count. Every
-Arcana is a fully bespoke character (unique model, rig, and animation set — see
+Arcana is a fully bespoke character (unique design, silhouette, and animation set — see
 [`GDD.md`](../GDD.md) §Iteration clause and `arcana.md` design rule 7); the discipline
 of one central mechanical idea per fight is what keeps 21 bespoke bosses *coherent* and
 gives each one room to be iterated to polish. "Some Arcana are not fights" is likewise
@@ -271,3 +304,18 @@ scoring/rank layer) is **TBD** — a decision for closer to the combat-prototype
 Further accessibility scope (colorblind palettes for enemy tells, subtitle/caption
 detail for combat barks) is owned jointly with [`art-audio.md`](art-audio.md) once that
 doc exists — not restated here.
+
+## Open questions (TBD)
+
+- **Overturn's gravity bubble outside side-view spaces.** The Present slot inverts gravity
+  in a bubble (`arcana.md` §XII); inside the side-view sequences that is literal and
+  needs no reinterpretation, but on the top-down ground plane "invert gravity" has no
+  self-evident meaning. Candidate readings (a suspend/hold field, a reversed-pull zone
+  that drags enemies to its center, a lift that sets up the stagger launcher's window)
+  are **undecided**. It is resolved here, in this doc — never by whatever an
+  implementation happens to do first. Until it is decided, no code implements the Present
+  slot of Overturn outside a side-view sequence.
+- **Whether Trial mode adds any mechanic beyond tighter numbers** — see
+  **Difficulty modes** above; a decision for the combat-prototype milestone.
+- **The learned-skill acquisition model** — see **Focus**; settled in
+  [`progression.md`](progression.md) before any skill is gated.

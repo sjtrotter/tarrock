@@ -36,7 +36,7 @@ later. `requires` is empty: MQ11 may be played in any order, so its scenes carry
 
 ### EXT. THE ASSIZE: The Court Approach — PERPETUAL GREY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The road out of the fog resolves, slowly, into architecture: court complexes stacked on
 court complexes, all the same wet grey stone, all under the same flat foglight that has
@@ -160,7 +160,7 @@ with a reverence usually reserved for relics, and slides it under the brass.
 
 ### INT. THE ASSIZE: The Lower Cloister — GREY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 A smaller court, wood-panelled, warm by Assize standards. Two petitioners stand at
 opposite benches, mid-argument, and have plainly been mid-argument long enough that a
@@ -210,7 +210,7 @@ left it.
 
 ### INT. THE ASSIZE: The Mock Court — GREY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 A drilling-room dressed as a courtroom: a dock, a bench, and above the bench a modest set
 of brass scales on a chain, plainly a training rig. A single BAILIFF BLANK stands in the
@@ -242,7 +242,7 @@ Stair grinds open behind it for the first time in a very long time.
 
 ### INT. THE ASSIZE: The High Stair — GREY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The stair climbs past courtroom after courtroom, each one emptier and grander than the
 last, the queues thinning to nothing, the knitting left behind on abandoned stools, until
@@ -310,7 +310,7 @@ END CUT SCENE
 
 ### INT. THE ASSIZE: The Highest Courtroom — THE FIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[Combat per `arcana.md` §XI — real-time, like every fight. The loop, exactly as
 rehearsed in the mock court:]**
@@ -438,7 +438,7 @@ END CUT SCENE
 
 ### INT./EXT. THE ASSIZE: The Emptying Courts — GREY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The verdict does not stay in the highest room. It runs downhill through the whole Assize
 at once — a spreading, ringing sound, every silent verdict-bell in every abandoned
@@ -475,7 +475,7 @@ Not everyone is glad. That is the point of the place, and the game does not soft
 
 ### EXT. THE ASSIZE: The Prison Yard — GREY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The verdict empties the cells as surely as the queues. Most who walk out of the Assize's
 prison are the merely-accused, blinking, harmless, going home. Three are not. The camera
@@ -512,7 +512,7 @@ appraising look is all.)*
 
 ### INT. THE ASSIZE: The Docketing Hall — GREY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The wall of pigeonholes is emptying itself. Rolls of paper — cases opened and never
 closed — untie their own ribbons and go still, resolved, filed *shut* at last, until the
@@ -554,7 +554,7 @@ END CUT SCENE
 
 ### EXT. THE ASSIZE: The Court Approach — GREY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The fog is the same fog. The light is the same flat grey it has always been — the sun does
 not come to the Assize until a much later card is turned. But the colonnade the Fool

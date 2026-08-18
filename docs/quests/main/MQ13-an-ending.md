@@ -35,7 +35,7 @@ post-confession lines are reacting to.
 
 ### EXT. THE STILLMARSH: The Ferry Landing — TIMELESS DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The road out of the last region simply lowers, and keeps lowering, until it is a plank
 jetty over black, unmoving water. The Stillmarsh opens flat to every horizon: reed-beds
@@ -123,7 +123,7 @@ pole and nods the Fool ashore.
 
 ### EXT. THE STILLMARSH: The Lantern Lanes — TIMELESS DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The far bank is a scatter of low houses on stilts and raised board-walks, lantern-lit,
 strung together by plank causeways that run out over the reeds. People move slowly here,
@@ -155,7 +155,7 @@ dog who is used to it, and keeps walking.
 
 ### INT. THE STILLMARSH: Mortimer's Hearth — TIMELESS DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The heart of the marsh is a broad, low house, open on all sides to the reeds, with a fire
 in a stone ring and a kettle already on it and more mismatched chairs than one household
@@ -218,7 +218,7 @@ in the plain animal comfort of a man with a guest and a warm drink, and lets the
 
 ### INT. THE STILLMARSH: The Vigil-House — TIMELESS DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Down one of the longer causeways stands a great raftered house full of low beds and low
 talk — a *vigil-house*, one of several where the Stillmarsh's dying have gathered to wait
@@ -282,7 +282,7 @@ what the Fool has come to do.
 
 ### EXT. THE STILLMARSH: The Ferryman's Errand — TIMELESS DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 On the way back toward the heart of the marsh, TARN LOACH — Old Sallow's young ferryman's
 mate, a battered book under one arm — steps out onto the causeway and stops the Fool. He
@@ -315,7 +315,7 @@ his eyes for a while.
 
 ### INT. THE STILLMARSH: Bettony's Door — TIMELESS DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The last house before the heart of the marsh has its door open and its lamp trimmed low.
 Inside, a woman sits at a bedside she has plainly not left in longer than is reasonable —
@@ -358,7 +358,7 @@ Gaffer Corlin's dry eyes follow the Fool to the door.
 
 ### EXT. THE STILLMARSH: Mortimer's Hearth — TIMELESS DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Back at the heart of the marsh, Mortimer is on his feet again, rested for once, and there
 is a different quality to him now — not grimmer, but readier, a man who has let his guest
@@ -394,7 +394,7 @@ END CUT SCENE
 
 ### EXT. THE STILLMARSH: The Candle-Ring — TIMELESS DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The flattest shore in the marsh, where the black water goes out to nothing and the sky
 comes down to meet it, has been ringed with candles — dozens of the same low, level,
@@ -419,7 +419,7 @@ back. The candle-ring holds. When the Fool commits, phase one begins.]**
 
 ### EXT. THE STILLMARSH: The Candle-Ring — TIMELESS DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Mortimer rises in one unhurried motion, and the scythe comes up with him, and the kindest
 man in the world becomes the hardest fight in it. This is the pure duel, exactly as
@@ -513,7 +513,7 @@ END CUT SCENE
 
 ### EXT. THE STILLMARSH: The Candle-Ring — TIMELESS DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Phase two is the same duel and a different one. Mortimer fights harder and cleaner —
 faster sweeps, tighter pulls, the reap chained now into follow-ups that ask everything the
@@ -586,7 +586,7 @@ END CUT SCENE
 
 ### EXT. THE STILLMARSH: The Lantern Lanes — DAY ONE
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The change arrives the way the office left — not with spectacle, but with a hush going out
 of the air. Across the marsh, all at once and very quietly, the ones who were ready begin
@@ -618,7 +618,7 @@ the honest joke, in the same breath, refusing to be separated.
 
 ### EXT. THE STILLMARSH: Across the Marsh — DAYS LATER
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Over the following in-game days, the Stillmarsh empties the way a lamp lowers — slowly,
 without drama, one light at a time. The lantern lanes thin. The vigil-houses go quiet room
@@ -650,7 +650,7 @@ the still black water, which is, at last, allowed to carry them away.
 
 ### INT. THE STILLMARSH: Bettony's Door — DAYS LATER
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Some days on, the lamp at Bettony's door is out. Inside, the bed is neatly made and empty,
 and the window is open to the turning cold, and Bettony Marsh sits in the chair beside it
@@ -703,7 +703,7 @@ END CUT SCENE
 
 ### EXT. THE STILLMARSH: The Far Shore — DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The quest's last word belongs, as it always would, to the ferry. Old Sallow is at his pole
 where the Fool first met him, poling the same black lanes past the same low lanterns — but

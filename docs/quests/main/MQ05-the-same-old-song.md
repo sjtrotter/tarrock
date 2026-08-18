@@ -36,7 +36,7 @@ everyone in the Chantry knows what a visit from the Fool finally costs.
 
 ### EXT. THE CHANTRY: The Lychgate — THE SACRED HOUR
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The road ends at a lychgate of grey stone, and past it the Chantry rises in tiers — nave,
 cloister, and above it all the great pierced drum of the organ-colosseum, every window a
@@ -123,7 +123,7 @@ the Fool follows — the first time in three centuries she has led anyone anywhe
 
 ### INT. THE CHANTRY: The Nave, the Endless Service — THE SACRED HOUR
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Inside, the service is always in progress and never in conclusion. Rows of choristers
 hold a chord that resolves and re-begins without a seam; the congregation sits in the
@@ -201,7 +201,7 @@ prompt.]
 
 ### EXT. THE CHANTRY: The Rooftops and Bell-Towers — THE SACRED HOUR
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Above the nave, the town's music is fed by choir-pipes — great copper throats mounted
 along the ridge-lines and the bell-towers, each piping one held voice into the endless
@@ -231,7 +231,7 @@ chorister falters and recovers.
 
 ### EXT. THE CHANTRY: The Town Square — THE SACRED HOUR
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The square sits under the shadow of the colosseum drum. With the harmony loosened, one
 bell-Blank has come unmoored from the hymn entirely — its cracked handbell tolling a
@@ -273,7 +273,7 @@ it.
 
 ### INT. THE CHANTRY: The Organ-Colosseum — THE SACRED HOUR
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The doors of the colosseum stand open — they have never once been shut, because no one
 who understood the hymn ever thought to try to enter and end it. Inside is a great round
@@ -434,7 +434,7 @@ END CUT SCENE
 
 ### INT./EXT. THE CHANTRY: The Town — THE FIRST NEW HOUR
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Fool comes down out of the colosseum into a town that does not know what to do with
 silence, and is finding out. For a long moment the bells hang still. Then — tentatively,
@@ -529,7 +529,7 @@ END CUT SCENE
 
 ### EXT. THE CHANTRY: The Square — THE NEW HOUR (idle, post-unbinding)
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[The Fool may leave whenever ready. The town is now audibly learning: false starts,
 laughter, a wedding party assembling that has plainly waited a very long time to assemble.

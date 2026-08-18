@@ -31,7 +31,7 @@ so long is quite literally being carried away in crates. Both timings are writte
 
 ### INT. THE PRESTIGE: House of Mirrors, Front of House — NIGHT (perpetual showtime)
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Fool follows Flick's tip past the ring-toss stalls to a canvas archway painted with
 chipped stars. Inside, a modest crowd sits frozen mid-gasp around a tall mirrored
@@ -109,7 +109,7 @@ Bram unlatches the cabinet's rear panel, hands shaking slightly, and steps aside
 
 ### INT. THE PRESTIGE: House of Mirrors — Backstage Maze — CONTINUOUS
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Behind the cabinet, the House of Mirrors reveals its works: a cramped switchback corridor
 walled in salvaged glass, some warped, some spider-cracked, each one catching the Fool's

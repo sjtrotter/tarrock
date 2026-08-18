@@ -36,7 +36,7 @@ coming, and lays this one down gladly before the rest arrive.
 
 ### EXT. THE MAW: The Border Camps — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The path out of the lowlands turns to bare limestone and keeps climbing. The Maw rises
 ahead in grey vertical crags, scored and pitted like something that has been *chewed* —
@@ -126,7 +126,7 @@ though he alone has read ahead to the ending and knows how it goes.
 
 ### EXT. THE MAW: The Narrow Crag — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The trail pinches to a single-file ledge between a sheer drop and a wall of fissured
 limestone. Halfway along, a mountain cat — lean, ash-grey, twice the length of a hound —
@@ -159,7 +159,7 @@ mark left on anyone.
 
 ### EXT. THE MAW: The Cull-Trap — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The trail opens onto a shelf of broken ground where a deadfall cull-trap has done its
 work: a young bear, hind leg pinned under a baited log-weight, ribs heaving, too spent now
@@ -221,7 +221,7 @@ shelf where his ground ends and the pilgrim-trail to the ridge begins.
 
 ### BARKS — the pilgrim shrines *(the climb to the ridge)*
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The trail steepens into a switchback stair worn by three centuries of feet that only ever
 came to *look*. It is lined with shrines — but they degrade as they climb, from the lower
@@ -257,7 +257,7 @@ the dog nor the game offers any explanation at all.
 
 ### EXT. THE MAW: The Tableau — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Up close, the stillness resolves into detail no shrine ever captured. The lion is
 enormous, pale gold gone grey with weather, its jaws stopped open around a bite it has been
@@ -330,7 +330,7 @@ shudder, and the full living weight of it drops into the Fool's arms.
 
 ### EXT. THE MAW: The Tableau — CONTINUOUS
 
-THIRD PERSON GAMEPLAY — THE HOLDING
+GAMEPLAY — THE HOLDING
 
 **[The encounter, exactly per `arcana.md` §VIII. This is a grapple-duel, not a fight. There
 is no health bar on the lion and no health bar to drain — the win condition is CALM, tracked
@@ -447,7 +447,7 @@ END CUT SCENE
 
 ### EXT. THE MAW: The Ridge — CONTINUOUS
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Maud walks down off the ridge the ordinary way, on ordinary legs, and does not look back —
 already, visibly, just a woman on a mountain, indistinguishable within a dozen steps from
@@ -479,7 +479,7 @@ watches them go with the specific longing of a dog who would very much like to m
 
 ### EXT. THE MAW: Coz Yarrow's Camp — DAYS LATER
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The border camp is quiet in a way it never was. The hide-frames stand empty. The whetstone is
 silent. Coz Yarrow sits on an upturned trap-log with the culling-spear across his knees, turning
@@ -515,7 +515,7 @@ as if its owner means to come back for it, and isn't sure he will.
 
 ### EXT. THE MAW: The High Pass — DAYS LATER
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[This beat fires when the Fool next crosses the Maw's high pass after the unbinding — the
 region's quiet closing image.]**

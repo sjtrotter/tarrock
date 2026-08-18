@@ -36,7 +36,7 @@ scenes below carry their `[If CONFESSED: …]` variants.
 
 ### EXT. THE LONGROAD: The Ring-Causeway — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The road the Fool steps onto is wider than any road has a right to be — a raised stone
 causeway, four wagons abreast, curving away in both directions until the curve becomes a
@@ -62,7 +62,7 @@ toll-fort, upstream of the dust.]**
 
 ### EXT. THE LONGROAD: Pike's Toll-Fort — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The toll-fort is a squat stone gatehouse straddling the road, a counterweighted gate-arm
 raised over the causeway and a brazier gone cold beside it. It is built to make travellers
@@ -130,7 +130,7 @@ over the causeway — and to the dust, closing the ring, coming round again.
 
 ### EXT. THE LONGROAD: The Chase — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The dust arrives ahead of the column and then the column arrives inside the dust: rank on
 rank of marchers, a river of parade steel pouring past the fort at a pace no walking has any
@@ -157,7 +157,7 @@ grudgingly, to close.
 
 ### EXT. THE LONGROAD: The Gate-Arm Leap — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The near fort's gate-arm hangs out over the road at the perfect wrong height — a
 counterweighted beam, raised, level, close enough to the passing carriage roofs to be an
@@ -185,7 +185,7 @@ everything now is moving, and will not stop moving until somebody makes it.
 
 ### EXT. THE WAR-TRAIN: The Rear Carriages — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Up close, the triumph is a corpse that forgot to fall down. The banners overhead — great
 regimental colours, once every shade a proud army owns — have bleached to a uniform bone
@@ -213,7 +213,7 @@ They come on in step, of course. They have never done anything else.
 
 ### EXT. THE WAR-TRAIN: The Carriage Roofs and Banner Rigging — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[Combat traversal setpiece: fight forward along the length of the train toward the head.
 The direction of progress is always the same — forward, into the wind, toward the
@@ -238,7 +238,7 @@ back.
 
 ### EXT. THE WAR-TRAIN: The Charioteer's Box — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The head of the train is a high open chariot-platform, more throne than driver's box, and on
 it stands THE CHARIOTEER: tall in tarnished ceremonial armour, a laurel gone black on his
@@ -292,7 +292,7 @@ Bindle will not win this. The reins will.]**
 
 ### EXT. THE WAR-TRAIN: The Reins — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[Setpiece: close the last of the distance and seize the reins directly from the
 Charioteer's free hand. This becomes a sustained grab-and-pull — the Fool's grip closing
@@ -408,7 +408,7 @@ END CUT SCENE
 
 ### EXT. THE LONGROAD: The Stilled Road — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The causeway is a different world stopped than it ever was moving. Where the dust used to
 circle there is only a long, settling haze and a mile of halted train, its marchers standing
@@ -447,7 +447,7 @@ Waystations connect.]**
 
 ### EXT. THE LONGROAD: Widow Tallow's Inn — DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 A little way round the ring stands a roadside inn — long, low, and built wrong, the player
 slowly realises: built to serve a road going *past*, not a road going anywhere. Its whole
@@ -503,7 +503,7 @@ it full, and set it on the counter for whoever the new road brings.
 
 ### EXT. THE LONGROAD: Pike's Toll-Fort — DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Back at the near fort, Corporal Pike is exactly where the Fool left him — boots off, helmet
 in his lap — but he is no longer looking down the road for the dust. There is no dust to

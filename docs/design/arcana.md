@@ -25,15 +25,17 @@ personalities live in [`characters.md`](characters.md); their world-state change
    drawback theme per card, applied to whichever slot it occupies). This is an equip
    system, **not time travel** — the slots are named for tarot spread positions
    ([`progression.md`](progression.md) owns the rules).
-6. **All combat is real-time third-person action** — never turn-based. Where an entry
-   below speaks of a boss's "rota," "beat," or "riposte," it describes a telegraphed
-   real-time rhythm the player reads and answers live, exactly like any action-game
-   boss pattern.
-7. **Every Arcana is bespoke.** Each boss is a unique character: own model, own rig,
-   own silhouette, own animation set, sized to their encounter. Rig-sharing is a
-   Blanks-only (mook) strategy ([`combat.md`](combat.md)). Where the card is more than
-   one being, the boss is more than one character — the Lovers are two full duelists;
-   the Moon's Anti-Fool wears the *player's* rig by design, not by thrift.
+6. **All combat is real-time action in the 2D top-down grammar** — never turn-based
+   ([`combat.md`](combat.md) §Philosophy). Where an entry below speaks of a boss's
+   "rota," "beat," or "riposte," it describes a telegraphed real-time rhythm the player
+   reads and answers live, exactly like any action-game boss pattern.
+7. **Every Arcana is bespoke.** Each boss is a unique character: own design, own
+   silhouette, own animation set, sized to their encounter. The medium may change (the
+   shipping game is 2D, `GDD.md` §Theme / Setting / Genre); the bespoke-quality rule does not. Sharing an
+   art and animation family is a Blanks-only (mook) strategy
+   ([`combat.md`](combat.md)). Where the card is more than one being, the boss is more
+   than one character — the Lovers are two full duelists; the Moon's Anti-Fool wears the
+   *player's* own art set by design, not by thrift.
 8. **Encounter tiers** for planning iteration depth: **S** = systemic (built mostly
    from existing mechanics), **M** = one bespoke arena gimmick, **L** = setpiece
    (multiple bespoke systems). Tiers schedule iteration effort; they never cap quality.
@@ -321,9 +323,9 @@ both answers.
 **Trump XII — Overturn.**
 | Slot | Upright |
 |---|---|
-| Past | Feather-fall, always. Fall damage ceases to exist. **Traversal headline #2.** |
-| Present | Invert gravity in a bubble for 4s: puzzles, ambushes, juggling Coins-rank bruisers. |
-| Future | Struck while airborne: right yourself instantly with a beat of slow-motion. |
+| Past | Feather-fall, always. Fall damage ceases to exist. In the top-down grammar this reads as: no fall damage anywhere, a float off ledges rather than a drop, and drifting across **marked** gaps that cannot otherwise be crossed (`combat.md` §Overturn in 2D); literal at full strength inside side-view sequences (`world.md` §Side-view sequences). **Traversal headline #2.** |
+| Present | Invert gravity in a bubble for 4s: puzzles, ambushes, juggling Coins-rank bruisers. Literal inside side-view sequences; **its top-down reading is TBD** (`combat.md` §Open questions) — not implemented outside side-view spaces until decided. |
+| Future | Struck while airborne: right yourself instantly with a beat of slow-motion. (2D: "airborne" = floating/drifting under the Past slot or inside a side-view sequence.) |
 
 **Reversed burden — *surrender*:** the bubble grows and holds 8s — and includes you.
 Commit.

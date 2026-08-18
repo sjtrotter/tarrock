@@ -21,7 +21,11 @@ this document links to them rather than restating them.
 - **Setting:** The Spread — a storybook-medieval land that is literally a stalled tarot
   reading. Each region grew around one Major Arcana card; the common folk are the Minor
   Arcana. Nothing has truly ended here for 300 years.
-- **Genre:** Third-person open-world action-adventure. Boss-driven. Single-player.
+- **Genre:** Oblique top-down 2D storybook action-adventure in the *A Link to the Past*
+  tradition — isometric composition as flavor, side-view sequences as punctuation.
+  Open-world, boss-driven, single-player. (Form and decision record:
+  [`final-claude-2d.md`](final-claude-2d.md) §3; engine split:
+  [`design/technical.md`](design/technical.md) §Engine status.)
 
 ### Core Gameplay Mechanics (Brief)
 
@@ -52,25 +56,33 @@ this document links to them rather than restating them.
 
 ### Project Scope
 
+- **2D v1 decision (2026-08-11):** Tarrock v1 ships as a complete 2D game — all 22
+  regions, all 21 Arcana, all three endings. The decision lives here; the reasoning,
+  the perspective audit, and the amendment list are recorded in
+  [`final-claude-2d.md`](final-claude-2d.md) (a report, not canon). A 3D Tarrock remains
+  a possible later *retelling*, never a replacement.
 - **Team & staffing model:** one human creative director, with Claude Fable as design
   lead and validator, delegating implementation to Opus- and Sonnet-level agents (never
   Haiku). Planning and validation happen at the top level; execution fans out. The
   binding constraint is therefore **iteration count and coherence, not headcount or
   asset budget** — we have time, and we iterate until it's polished.
-- **Playtime target:** 20–30 hours main journey, 40+ completionist.
+- **Playtime target:** 12–20 hours main journey ([`final-claude-2d.md`](final-claude-2d.md)
+  §1; the earlier 20–30 h figure was the 3D-scale estimate). The completionist figure is
+  **TBD** until the v1 side-quest subset is fixed.
 - **Build order (sequence, not a poverty plan — ship value at every rung):**
   1. **Vertical slice:** the Cliff + the Prestige — MQ00, MQ01, one side quest, core
      combat, Pocket Spread with 1 Trump, one world-state change firing end-to-end.
   2. **First act:** 5 regions / 5 Arcana, Renown, economy, save system.
   3. **Full spread:** all 22 regions, all 21 Arcana, all endings.
 - **Iteration clause:** nothing ships below the quality bar; things ship *later* instead.
-  Efficiency choices in this design (one Blank rig family for mooks; world-state changes
+  Efficiency choices in this design (one Blank art family for mooks; world-state changes
   expressed through lighting/audio/prop state; arena + gimmick + character boss design)
   are kept because they are *good craft* — they buy iteration time for what matters —
   not because we can't afford more. Where the design calls for bespoke work, it gets
-  bespoke work: **every Arcana is a unique character with their own model, rig, and
-  animation set** (see Assets below). Any scope pressure reduces region *size*, never
-  boss *count* or boss *quality* — the 21 Arcana are the product.
+  bespoke work: **every Arcana is a unique character with their own design, silhouette,
+  and animation set** (see Assets below; medium-independent, per
+  [`design/arcana.md`](design/arcana.md) design rule 7). Any scope pressure reduces
+  region *size*, never boss *count* or boss *quality* — the 21 Arcana are the product.
 
 ### Influences
 
@@ -99,8 +111,8 @@ journey.
 
 ### Project Description (Brief)
 
-Tarrock is a third-person open-world action-adventure in which the player, as the Fool of
-the tarot, must defeat ("unbind") the other 21 Major Arcana. The world is a stalled tarot
+Tarrock is an oblique top-down 2D open-world action-adventure in which the player, as the
+Fool of the tarot, must defeat ("unbind") the other 21 Major Arcana. The world is a stalled tarot
 reading: the final card was never turned, so nothing — days, verdicts, harvests, deaths —
 has been able to end for three centuries. Each Arcana rules a region shaped by their card,
 and each unbinding permanently transforms the world: the first sunset in 300 years, a
@@ -159,7 +171,7 @@ possible and legendary, while full preparation earns the true ending.
 
 Summaries only — each links to its SSOT.
 
-1. **Combat** — staff-based third-person action: light/heavy/charged strings, dodge,
+1. **Combat** — staff-based real-time top-down action: light/heavy/charged strings, dodge,
    block-step, Fool's Chance perfect-dodge, Pip commands, Fortune-fueled Trump powers.
    Enemy backbone is the Blanks (blank-faced humanoid soldiers bearing the cards of
    four suits and four ranks),
@@ -171,9 +183,13 @@ Summaries only — each links to its SSOT.
    recorded in the world-state matrix; quests declare which states they require and which
    they alter. → [`design/world.md`](design/world.md),
    [`design/arcana.md`](design/arcana.md)
-4. **Open-world traversal** — climb-lite, glide-lite (the Hanged Man's feather-fall),
-   the Chariot mount, and gravity inversion open the map in layers.
-   → [`design/world.md`](design/world.md)
+4. **Open-world traversal** — the Hanged Man's feather-fall (Overturn, per
+   [`design/arcana.md`](design/arcana.md) §XII), the Chariot mount, and gravity inversion
+   inside its marked spaces open the map in layers; the viewpoint turns to profile only in
+   the side-view sequences listed in [`design/world.md`](design/world.md). Elevation reads on the ground plane rather than being
+   climbed: in the 2D grammar the old "climb-lite" verb dissolves into level design, and
+   true cliffs still refuse. → [`design/world.md`](design/world.md),
+   [`design/combat.md`](design/combat.md) §Traversal in the top-down grammar
 5. **Renown & the Minors** — four suit-cultures with per-suit reputation; Fable-style
    villager reactivity to your deeds and to the world-state.
    → [`design/progression.md`](design/progression.md),
@@ -196,14 +212,17 @@ Summaries only — each links to its SSOT.
 
 ## Assets Needed (High Level)
 
-- **2D:** card art for all 22 Majors (UI + collectible), suit iconography, UI set
-  (illuminated-manuscript frames), region emblems, world map as a dealt spread.
-- **3D:** the Fool + Pip; one Blank base rig × 4 suits × 4 ranks (material/prop
-  variants — the *only* place enemy rigs are shared); **21 fully bespoke Arcana** —
-  unique model, rig, silhouette, and animation set each, sized to their encounter, and
-  more than one character where the card demands it (the Lovers are two duelists; the
-  Moon's Anti-Fool deliberately wears the player's own rig); 22 region kits built
-  from a shared medieval-storybook kit + per-region signature props; the Chariot mount.
+- **UI & card art:** card art for all 22 Majors (UI + collectible), suit iconography, UI
+  set (illuminated-manuscript frames), region emblems, world map as a dealt spread.
+- **Characters, enemies, and places:** the Fool + Pip; one Blank base art family × 4 suits
+  × 4 ranks (palette/prop variants — the *only* place enemy art is shared); **21 fully
+  bespoke Arcana** — unique design, silhouette, and animation set each, sized to their
+  encounter, and more than one character where the card demands it (the Lovers are two
+  duelists; the Moon's Anti-Fool deliberately wears the player's own sprite set); 22
+  region kits built from a shared medieval-storybook kit + per-region signature props;
+  the Chariot mount. Production standards for the 2D art itself are being set in
+  `godot/art/ART-REQUESTS.md` and promoted into
+  [`design/art-bible.md`](design/art-bible.md) as they settle.
 - **Sound:** region ambiences in two states (bound/unbound — the audio *is* the world
   change half the time); combat foley; Pip; 22 Arcana leitmotifs over one journey theme.
 - **Code:** see [`design/technical.md`](design/technical.md) — data-driven cards,
@@ -219,7 +238,7 @@ Summaries only — each links to its SSOT.
 | M1 — Greybox slice | Cliff + Prestige greybox, combat prototype | MQ00→MQ01 playable start to finish, ugly |
 | M2 — Vertical slice | Slice with art/audio/UI pass, 1 Trump, 1 world change | A stranger can play 90 min and want more |
 | M3 — Act I | 5 regions, 5 Arcana, save system, Renown | Alpha; order-independence proven |
-| M4 — Full spread | All content, both endings | Beta; full playthrough possible |
+| M4 — Full spread | All content, all three endings | Beta; full playthrough possible |
 | M5 — Ship | Polish, difficulty modes, accessibility | Steam release |
 
 Timeboxes are set when M1 begins; the docs phase does not pretend to know them.

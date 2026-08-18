@@ -40,7 +40,7 @@ real, non-metaphorical masonry on a town that only ever half-believed it could.
 
 ### EXT. THE SPIRE: The Undertown — OVERCAST, STORM-THREAT (state-dependent)
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Fool comes up a switchback road into the undertown — a ring of narrow houses all
 built with the same architectural flinch, roofs pitched away from the tower, doors and
@@ -69,7 +69,7 @@ him have agreed not to.
 
 ### EXT. THE SPIRE: The Market Square — OVERCAST
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The square hums with the small business of a town that has decided, collectively and
 permanently, that everything is fine. A rope-and-pulley contraption stands bolted to the
@@ -160,7 +160,7 @@ hammer that will never strike. It is the most eloquent thing she can find to do.
 
 ### EXT. THE SPIRE: The Lower Tiers — OVERCAST
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 A ramp of fallen roof-slate leads up into the tower's stable base — the first storeys,
 which lean but do not float, solid enough to teach a body how to climb the rest. The stone
@@ -183,7 +183,7 @@ and read the beat. No lightning here yet. The catastrophe is only ever a floor a
 
 ### EXT. THE SPIRE: The Broken Landing — OVERCAST
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The stable tiers give out at a landing where a staircase simply ends — sheared off, the
 next flight hanging in the air a body's length away, a step frozen mid-fall. Looped over
@@ -222,7 +222,7 @@ once, then looks up the shaft, ears pricked, ready.
 
 ### EXT. THE SPIRE: The Frozen Ascent — OVERCAST, LIGHTNING (state-dependent)
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Past the broken landing the tower comes apart around the Fool: staircases hang in
 mid-topple, whole rooms float unmoored, a chandelier the size of a cottage drifts sideways
@@ -244,7 +244,7 @@ lower tiers are now demanded together and at speed.]**
 
 ### EXT. THE SPIRE: The Storm-Tier — LIGHTNING
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Higher, the strikes stop being scattered and start being a *pattern*. The lightning crawls
 the ruin on a rota — a sweep of forked light left to right, a beat, a sweep back — slow
@@ -264,7 +264,7 @@ drop from lethal into survivable — an optional mercy, not a requirement.]**
 
 ### EXT. THE SPIRE: The Summit — LIGHTNING
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The last drift of rubble sets the Fool onto the summit: a shattered crown of a room, open
 to the sky on every side, its floor a slab of throne-hall hanging over a very long way
@@ -318,7 +318,7 @@ The Warden brings his empty hands together, and the summit's held breath finally
 
 ### EXT. THE SPIRE: The Summit Duel — LIGHTNING
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[Boss duel — short and desperate on purpose. The Warden fights bare-handed, a crowned
 man swinging for a ruin, drawing the tower's lightning through his own body to strike and
@@ -379,7 +379,7 @@ END CUT SCENE
 
 ### EXT. THE SPIRE: The Fall — LIGHTNING → CLEARING
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[Scripted descent. The Spire comes down entire, and the Fool rides it — a vertical
 setpiece of cascading masonry, the climb run in reverse and at terminal speed. All players
@@ -412,7 +412,7 @@ be this unafraid.
 
 ### EXT. THE SPIRE: The Undertown, After — CLEARING, FIRST REAL WEATHER
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Fool lands — hard, safe, breathless — in the settling dust of a tower that has, at
 long last, finished falling. Where the Spire stood is a low, smoking cairn of its own
@@ -494,7 +494,7 @@ END CUT SCENE
 
 ### EXT. THE SPIRE: The New Skyline — CLEARING
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Fool walks out through a changed town under a moving sky. Where the ascent began,
 fresh gaps have opened in the cairn of fallen masonry — **new routes into caves the tower

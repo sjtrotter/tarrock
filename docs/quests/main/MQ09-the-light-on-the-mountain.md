@@ -36,7 +36,7 @@ grief is hers: found at last, the Dim needs a great deal less finding.
 
 ### EXT. THE DIM: The Lowland Trailhead — DUSK (PERMANENT)
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The path up from the lowlands crosses a treeline and simply stops climbing into daylight.
 Above the last stunted pines the whole mountain lies under a blue-grey dusk that never
@@ -65,7 +65,7 @@ just cold, and glad of the company, breath smoking.
 
 ### EXT. THE DIM: Widow Fenner's Waypoint Shack — DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 A little further on, a light that *doesn't* move: a low stone shack with a lit window and
 smoke standing straight up from its chimney in the windless cold. A Waystation shrine
@@ -145,7 +145,7 @@ practical possible kindness, and she does not make a thing of it.
 
 ### EXT. THE DIM: The Scree Slope — DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The ground tilts up into a long fan of loose grey scree, treacherous underfoot, running
 with the faint smell of old smoke. Someone has come this way — recently, and often.
@@ -172,7 +172,7 @@ faster than a walk, going away. Not fleeing. Just keeping its one ridge.
 
 ### EXT. THE DIM: The Star-Blind Valley — DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The gully opens into a wide, flat valley floored in fog to the knee, walled by ridges on
 every side that all, in the flat blue dark, look exactly like one another. Overhead:
@@ -201,7 +201,7 @@ dog and the dirt and it lets you through.
 
 ### EXT. THE DIM: The Cairn Field — DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Beyond the valley the slope is studded with cairns — dozens of them, hand-stacked stones
 of every age, some fresh, some slumped with centuries. Not grave-markers. Turning-points:
@@ -268,7 +268,7 @@ speed but by refusing to turn back where every cairn says one should.]
 
 ### EXT. THE DIM: The Tightening — DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Past the last cairn — the highest one anyone ever built, the furthest anyone in three
 hundred years ever came before turning round — there are no more cairns. Only unmarked
@@ -297,7 +297,7 @@ for the first time in three centuries, someone still coming.
 
 ### EXT. THE DIM: The Hermit's Fire — DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Over the last rise, in a hollow out of the wind, a small fire burns. Beside it, on a flat
 stone, sits the lantern — set *down*, for the first time in three hundred years, its light
@@ -420,7 +420,7 @@ END CUT SCENE
 
 ### EXT. THE DIM: The Slopes — AFTER
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The change comes over the mountain the way dawn would, if the Dim had ever been allowed
 one. The lid of dusk thins, and *pricks*, and fills — stars, hundreds of them, then
@@ -461,7 +461,7 @@ everyone but the one who was never actually lost. (Seeds SQ-DIM-02.)]
 
 ### EXT. THE DIM: Widow Fenner's Waypoint Shack — AFTER
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The shack, when the Fool comes back down, is emptying. The cots are being stripped by their
 own occupants, folk shrugging into coats and out the door with a nod, headed for the newly-

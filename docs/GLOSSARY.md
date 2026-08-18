@@ -36,6 +36,8 @@ code identifiers use these exact spellings. Add new terms here **before** using 
 | **The White Rose** | The Fool's healing item. Petals are healing charges; the rose regrows at Waystations. |
 | **The Bindle** | The Fool's weapon and inventory: a traveler's bundle on a quarterstaff. |
 | **Fool's Chance** | Perfectly-timed dodge: brief slow-motion window and a free Trump cast. |
+| **Stagger launcher** | The Bindle's charged heavy in the 2D grammar: lifts the target into a brief helpless stagger that opens bonus follow-ups — the opener a launcher gives, with no aerial moveset. See `design/combat.md` §The Bindle. |
+| **Side-view sequence** | One of the canon-designated set-pieces where the oblique top-down view turns to profile for the drama's sake (the leap, the under-stage, the colossus, the carriage roofs, the Gallowwood, the Spire). The list lives in `design/world.md` §Side-view sequences. |
 | **Waystations** | Wayside shrines: rest, respec the Pocket Spread, regrow the Rose. Become fast-travel points after MQ07 (Chariot). |
 | **Renown** | Per-suit reputation with the Minors. Governs prices, greetings, and some quest branches. |
 | **The Almanack** | The Fool's journal: quest log, Bestiary, collected Trumps, and found lore, styled as a hand-annotated manuscript. See `design/art-audio.md`. |

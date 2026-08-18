@@ -205,6 +205,15 @@ art direction). Boss animation sets are budgeted per Arcana in `arcana.md`.
 
 ## Production standards
 
+**2D production (2026-08-17).** The shipping game is 2D (`GDD.md` §Theme / Setting / Genre), so the
+benchmark *procedures* below — render-at-camera-distance, Blender/Unity scale contracts,
+Humanoid-compatible rigs — belong to the historical / 3D telling. Their *intent* transfers
+intact and still gates work in 2D: silhouette first, the fill-black test read at gameplay
+size, clarity over detail, and the shape-language, materials, and costume rules above.
+The 2D sprite and animation standards that replace the procedures are being worked out in
+`godot/art/ART-REQUESTS.md` and `godot/art/fool-walk-production-v1/ANIMATION-BIBLE.md`,
+and get promoted into this section by the art lane as they settle.
+
 ### Characters
 
 - **Silhouette benchmark (the gate for "modeling done"):** render the asset as a

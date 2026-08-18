@@ -79,9 +79,32 @@ Hard gates are few and diegetic:
 | The Axis inner sanctum | None — always open | BotW rule: the finale is a right, not a reward. It scales instead (see `arcana.md` §XXI). |
 | The Confluence delta caves | Temperance unbound | Physically underwater until the rivers drain. |
 
-Everything else is soft-gated by difficulty band, geography (climbable but punishing
-ridges), and traversal Trumps (Chariot mount for distance, Hanged Man feather-fall for
-descents, Overturn gravity-flip for specific puzzle spaces).
+Everything else is soft-gated by difficulty band, geography (steep, exposed, punishing
+routes — read on the ground plane; there is no climbing verb, `combat.md` §Traversal in
+the top-down grammar), and traversal Trumps (Chariot mount for distance, Hanged Man
+feather-fall for descents and marked gaps, Overturn gravity-flip inside its marked
+spaces).
+
+## Side-view sequences (2D form)
+
+The shipping game is oblique top-down (`GDD.md` §Theme / Setting / Genre); the viewpoint
+turns to profile only in these canon-designated set-pieces, each for the drama's own
+reason. This list is the SSOT for *where* the form changes; adding one is a canon change
+made here first.
+
+1. **The Cliff** — the leap (MQ00): the game's opening image.
+2. **The Prestige** — the Magician's proscenium, including the mid-fight flip to the
+   under-stage (MQ01).
+3. **The Bastion** — the Emperor colossus climb (MQ04).
+4. **The Longroad** — the Chariot's carriage roofs (MQ07).
+5. **The Gallowwood** — the inverted ordeal (MQ12), where Overturn is literal.
+6. **The Spire** — the ascent and the ride down (MQ16).
+- *Framing moment, not a sequence:* the Fool's silhouette against the first sunset
+  (MQ19).
+- *Optional:* the Undervault's descent framed as a cross-section reveal on entry.
+
+Combat rules do not change inside a sequence (`combat.md` §Philosophy); Overturn is at
+full literal strength inside them (`combat.md` §Overturn in 2D).
 
 ## Regions
 
@@ -143,8 +166,8 @@ art detail belongs to [`art-audio.md`](art-audio.md) and the quest docs.
   for their chains — comfort, appetite, debt — and will tell you they're very happy,
   thanks. Opulent, claustrophobic, the game's darkest comedy.
 - **The Spire (XVI):** A lightning-struck tower frozen mid-collapse: rubble hangs in
-  the air, staircases end in sky. Vertical dungeon-region climbed through suspended
-  debris. The Stall's violence made visible.
+  the air, staircases end in sky. Vertical dungeon-region ascended through suspended
+  debris — a side-view sequence (§Side-view sequences). The Stall's violence made visible.
 - **The Mere (XVII):** Night-locked lakeland under one impossible star. Wish-wells,
   pilgrim jetties, water like held breath. The game's quiet, beautiful sanctuary
   region.

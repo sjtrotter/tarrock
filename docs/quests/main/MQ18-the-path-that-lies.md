@@ -49,7 +49,7 @@ the marsh already knows what the Fool's coming means, and the key scenes carry t
 
 ### EXT. THE MIRRORMARSH: The Fog-Line — DUSK (STATE-DEPENDENT)
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The last dry ground of the border settlement gives out onto a wall of fog that stands
 where a horizon should be — not rolling, not drifting, just *there*, grey and upright and
@@ -109,7 +109,7 @@ rope-line alone.
 
 ### EXT. THE MIRRORMARSH: The Border, the Rope-Line — DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The fog-warden works the near end of the rope-line: NETTLE VANCE, weathered and unhurried,
 coiling a length of guide-rope over one arm with the flat competence of someone who has
@@ -170,7 +170,7 @@ then takes it back, because past the fog-line the rope is one more thing that li
 
 ### EXT. THE MIRRORMARSH: The Border Waystation — DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 A low wayside shrine stands on the last patch of dry ground, half-drowned in reed and
 mist — the Mirrormarsh's Waystation, and the final honest rest before the fog. The White
@@ -196,7 +196,7 @@ refusing the fog in the same steady look.
 
 ### EXT. THE MIRRORMARSH: The Fog-Line, Crossing — NIGHT (STATE-DEPENDENT)
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Fool steps past the rope-line into the fog.
 
@@ -240,7 +240,7 @@ lie waits exactly one pace out, all the way in.
 
 ### EXT. THE MIRRORMARSH: The Lying Path — NIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The first true traversal. Two signposts contradict each other across a single fork; a
 third, further on, contradicts them both. A boardwalk bridge crosses a channel of still
@@ -271,7 +271,7 @@ the marsh does not kill; it only unmakes your certainty.
 
 ### EXT. THE MIRRORMARSH: The Deep Reeds — NIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Shapes stand in the reeds ahead: human-sized, human-shaped, wearing faces. Not blank ovals
 like the Blanks — *faces*, borrowed and ill-fitting, a stranger's kind eyes worn a size too
@@ -297,7 +297,7 @@ quiet, and something about the quiet is worse than the fight was.
 
 ### EXT. THE MIRRORMARSH: The Deepening Fog — NIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The path narrows and darkens and leads, always, down. The black water shows more often
 between the reeds now, flat as poured glass. The true light holds its honest yard. And then,
@@ -367,7 +367,7 @@ END CUT SCENE
 
 ### EXT. THE MIRRORMARSH: The Black Glass Water — NIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The reeds fall away. The Fool stands at the edge of a flat black mere, still as poured
 glass, and above it — the only thing the fog will not veil — hangs the Moon, fixed, full,
@@ -517,7 +517,7 @@ deepens, doubled and doubly costly, and while you are a lie, Pip cannot find you
 
 ### EXT. THE MIRRORMARSH: The Fog Lifting — DAWN
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The fog does not blow away. It *thins* — the way a lie thins when nobody's left keeping it
 — and the Mirrormarsh resolves, for the first time in three hundred years, into simply a
@@ -562,7 +562,7 @@ END CUT SCENE
 
 ### EXT. THE MIRRORMARSH: The Cleared Reeds — MORNING
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Among the found people, one sits apart on a reed-hummock, knees drawn up, watching the fog
 go with an expression that is not relief. IVY ASHBY, hollow-cheeked and newly herself,

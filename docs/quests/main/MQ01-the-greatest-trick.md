@@ -36,7 +36,7 @@ visit from the Fool means.
 
 ### EXT. THE PRESTIGE: The Crossroads Gate — DUSK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Striped canvas rises ahead like a fairground cathedral, gaslit and warm against a sky
 gone the colour of a bruise. Banners that should have faded decades ago snap crisp in a
@@ -102,7 +102,7 @@ Menagerie, the High Wire, each listed with a little box for a stub to be stamped
 
 ### INT. THE PRESTIGE: The Grand Tent, Audience Rows — NIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Passing the main tent on the way to the side-shows, the Fool crosses rows and rows of
 audience benches, packed shoulder to shoulder with folk in three-hundred-year-old
@@ -266,7 +266,7 @@ specifically.
 
 ### INT. THE PRESTIGE: The Main Tent — NIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[Tutorial prompt: present all three stubs at the main tent gate to enter.]**
 
@@ -404,7 +404,7 @@ END CUT SCENE
 
 ### EXT. THE PRESTIGE: Backstage, the Bataleur's Office — NIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Backstage, past the ropes and the crated confetti, an old office door — long jammed,
 now hanging loose on a cracked hinge — opens onto a cramped room of unopened mail,
@@ -431,7 +431,7 @@ clutched in one hand — lingers at the edge of the group, not quite able to lea
 
 ### EXT. THE PRESTIGE: The Crossroads — DAYS LATER
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Over the following in-game days, the carnival visibly comes down around the player:
 canvas struck and folded, gaslamps dismantled and crated, the WELCOME arch's soft-worn

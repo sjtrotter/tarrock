@@ -34,7 +34,7 @@ courage to hear it.
 
 ### EXT. THE AXIS: The Threshold — STATE-DEPENDENT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The approach to the Axis runs in from the Hollows' terraces and the wreath-order's
 outer rim, past the last of the telescope-makers' workshops and the worn standing-spot
@@ -112,7 +112,7 @@ END CUT SCENE
 
 ### EXT. THE AXIS: The Approach — TIMELESS
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The wreath is an amphitheater, though there is no audience and never has been — a long
 curved sweep of white stone falling away toward the dance floor at its heart. Set into
@@ -145,7 +145,7 @@ slowly nearer.
 
 ### EXT. THE AXIS: The Dance Floor — TIMELESS
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 At the heart of the wreath, on a floor of the same pale stone worn faintly circular by
 three hundred years of the same steps, the Dancer turns. Close, now. Close enough to see
@@ -222,7 +222,7 @@ back. The wreath holds. When the Fool commits, the fight begins.]**
 
 ### EXT. THE AXIS: The Dance Floor — TIMELESS
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[This entire sequence plays only if one or more Arcana remain bound. A fully-unbound
 save (all 21) skips part one entirely and goes straight to THE DUEL below — the Dancer
@@ -266,7 +266,7 @@ arrives here directly.]**
 
 ### EXT. THE AXIS: The Dance Floor — TIMELESS
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 With nothing left to borrow, the finale becomes what `arcana.md` §XXI and
 [`narrative.md`](../../design/narrative.md) §Endings always promised: two Fools, and no
@@ -561,7 +561,7 @@ END CUT SCENE
 
 ### EXT. THE AXIS: The Dance Floor — TIMELESS
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[If True Shuffle path (all 21 unbound): the reserved final line plays here, after the
 Querent's answer and before the choice prompt appears. This is the Querent's single
@@ -837,7 +837,7 @@ END CUT SCENE
 
 ### EXT. THE SPREAD: Wherever The Fool Goes Next — CURRENT STATE
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Play continues, exactly where it was, at whatever world-state the player had reached. No
 flag fires; `WS_WORLD_UNBOUND` is not set. The world stays alive-but-paused-again at the

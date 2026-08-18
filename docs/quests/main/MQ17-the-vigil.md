@@ -36,7 +36,7 @@ Sun-and-Star order motif, so the aftermath is written both ways (`[If WS_SUN_UNB
 
 ### EXT. THE MERE: The Shoreline Road — NIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The road comes down out of low hills and simply stops being a road, becoming instead a
 long spit of pale shingle at the edge of black, unmoving water. There is no sun to have
@@ -66,7 +66,7 @@ on the whole Spread he was walking toward.
 
 ### EXT. THE MERE: The Jetty Head — NIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 At the head of the longest jetty a woman stands with her back to the Fool, pouring water
 from one shallow bowl into another and back again, slow and even, the way a person tends
@@ -164,7 +164,7 @@ the quest to the vigil's end.]**
 
 ### EXT. THE MERE: The Wish-Lights — NIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[Vigil task 1. The shoreline holds a row of wish-lanterns, all dark. The Warden walks
 the row with her two bowls; the Fool follows and lights each lantern in turn — a single
@@ -196,7 +196,7 @@ control returns.]**
 
 ### EXT. THE MERE: The Jetty — NIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[Vigil task 2. Over the course of the night, three pilgrims come down to the water,
 one at a time, each unnamed. Each is a short vignette with a Fool choice set. They may
@@ -320,7 +320,7 @@ edge of frame.]**
 
 ### EXT. THE MERE: The Jetty's End — NIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[Vigil task 3. The wordless one. Pip is still lying at the jetty's end where he settled.
 The only prompt offered is: *sit*. When the player sits, the camera eases back and low,
@@ -464,7 +464,7 @@ out.
 
 ### EXT. THE MERE: The Woken Water — NIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[If the vigil was kept:]**
 
@@ -514,7 +514,7 @@ region simply keeps the memory in how empty it is.
 
 ### EXT. THE MERE: The Shingle — NIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The old soldier is buttoning his campaign coat to go, the new stars coming in over the
 water behind him. He stops beside the Fool on his way up the shingle.

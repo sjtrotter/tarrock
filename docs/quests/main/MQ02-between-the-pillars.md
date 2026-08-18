@@ -35,7 +35,7 @@ to.
 
 ### EXT. THE VEIL: The Causeway — PERPETUAL MOONLIT MIST
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Longroad's western spur narrows to a single pale causeway, and the mist comes up to
 meet it. Within a dozen strides the road behind the Fool is gone, the sky is gone, the
@@ -72,7 +72,7 @@ two stone giants like washing on a line, all sealed doors and shuttered windows.
 
 ### EXT. THE VEIL: The Gatehouse — MOONLIT MIST
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The causeway ends at a low gatehouse arch, its keystone carved with a crescent worn
 nearly smooth. No guard. No bell to ring, yet. Just an open dark doorway and, half-hidden
@@ -134,7 +134,7 @@ feet out of three centuries of habit.
 
 ### INT. THE VEIL: The Sleeping Scriptorium — MOONLIT MIST
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Beyond the arch, a long vaulted hall of writing-desks stretches into the mist, and at
 every desk sits a nun — bent over a page, quill in hand, absolutely still. Not resting.
@@ -193,7 +193,7 @@ TRANSITION TO CUT SCENE — the Fool reaches the far door and the spiral stair.
 
 ### INT. THE VEIL: The Bell-Walk — MOONLIT MIST
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The stair climbs to an open gallery strung between the two pillars — the Bell-Walk, a
 rank of a dozen cloister bells hung along a stone rail, each the size of a cauldron,
@@ -240,7 +240,7 @@ END CUT SCENE
 
 ### INT. THE VEIL: Between the Pillars — MOONLIT MIST
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The inner cloister proper: a round chamber open to the frozen sky, floored in a great
 moon-dial of pale flagstones, walled on every side by shelves — and every shelf sealed
@@ -306,7 +306,7 @@ at the end of Task Three.]
 
 ### EXT. THE VEIL: The Bell Tower, Owl's Nest — MOONLIT MIST *(Task One: bring what the Veil lost)*
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 A second stair, tighter and older, climbs the near pillar to a broken belfry where the
 mist thins and the frozen moon is nearest. Here an owl — one of the "small hunters,"
@@ -345,7 +345,7 @@ She simply lets it lie there, catalogued at last by being *returned.*
 
 ### EXT. THE VEIL: The Moon-Dial Courtyard — MOONLIT MIST *(Task Two: stand where the moon can't see)*
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Priestess turns her face — barely — toward the great moon-dial underfoot. Every one
 of its pale flagstones lies lit by the frozen moon, edge to edge, the whole floor a page
@@ -640,7 +640,7 @@ END CUT SCENE
 
 ### INT./EXT. THE VEIL: The Cloister Wakes — THE MIST THINS
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Beyond the pillars, the change rolls outward. The mist — permanent, total, three
 centuries thick — begins to *thin*, the near shelves resolving, then the far, then the
@@ -726,7 +726,7 @@ begin to dream, and every region gains a dreaming bark layer (`world.md`; `npc-s
 
 ### EXT. THE VEIL: The Causeway — THE MIST LIFTING
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Fool leaves the way they came, back down the pale causeway — only now the mist is
 lifting off it in long slow banners, and the two pillars behind stand clear and whole

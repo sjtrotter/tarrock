@@ -39,7 +39,7 @@ and Anselm's grief for his tidy ledgers turns a shade darker.
 
 ### EXT. THE BASTION: The Outer Gate — GONG-HOUR
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The road ends at a wall of dressed granite so precise the joints look drawn rather than
 laid, grey shot through with thin lines of exact gold. A gate the height of six men
@@ -99,7 +99,7 @@ END CUT SCENE
 
 ### INT. THE BASTION: The Registry Hall — GONG-HOUR
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 A hall the size of a cathedral, given over entirely to lines. Rope-railed queues fold
 back and forth across a granite floor worn into shallow troughs by three centuries of
@@ -195,7 +195,7 @@ not quite sliding it across.
 
 ### INT. THE BASTION: The Four Windows — GONG-HOUR
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[Gameplay: carry the blank writ between four clerk-windows — Standing, Cause, Hour,
 Seal — in the order the gongs permit. Each window stamps only in its scheduled second;
@@ -262,7 +262,7 @@ caught fire.
 
 ### INT. THE BASTION: The Registry Hall — GONG-HOUR
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Fool turns from Anselm's window with no writ, and the Querent approves in a murmur
 only the Fool can hear.
@@ -282,7 +282,7 @@ rhythm.
 
 ### EXT. THE BASTION: The Monument Stair — GONG-HOUR
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The city rises toward its centre in tiers, and to climb between them the Fool must climb
 the Bastion itself — a stair of civic monuments, each a stern granite figure ten feet
@@ -308,7 +308,7 @@ it for architecture until a pigeon lands on its knuckle and is dwarfed.
 
 ### EXT. THE BASTION: The Curfew Checkpoint — DUSK-GONG
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The last terrace before the plinth is sealed by a curfew barrier, and across it march
 blank-faced guards — cards of office at the breast, halberds shouldered — on a patrol so
@@ -344,7 +344,7 @@ without a colossus: the pattern is fixed, learnable, and beatable by timing alon
 
 ### EXT. THE BASTION: The Plinth — DUSK-GONG
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The empty square. Up close, the colossus is not a statue of the Emperor — it *is* the
 Emperor, granite gone to living stone or living stone gone to granite, no seam between
@@ -406,7 +406,7 @@ cancelled in turn.
 
 ### EXT. THE BASTION: The Colossus — DUSK-GONG (the climb-fight)
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[Gameplay — the climb-fight (arcana.md §IV, encounter tier L): the Fool climbs the
 colossus to reach the four Edicts — wrists, shoulders, crown — and breaks each one.
@@ -470,7 +470,7 @@ the Bastion was ever safe; the floor of the world has just been shown to be a li
 
 END CUT SCENE
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[Gameplay: the Fool must survive and adapt to the amended rota — the memorised count is
 now wrong, and the last stretch to the crown is climbed against a pattern the player has
@@ -548,7 +548,7 @@ END CUT SCENE
 
 ### EXT. THE BASTION: The Opened Gates — DAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Over the following in-game hours the Bastion comes unstrung, gently. The great gong is
 struck at the hour and, for the first time, nobody moves in unison to it — a shutter opens
@@ -597,7 +597,7 @@ anything, relieved to have an ordinary wrong to chase.
 
 ### INT. THE BASTION: The Registry Hall — DAY (closing)
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Registry is half-empty. Queues that stood three centuries have dissolved; rope-rails
 hang slack. At his tall window, Clerk Anselm sits before a single sheet — the last writ

@@ -34,14 +34,23 @@ time for what matters; they are not a poverty plan):
 - URP stylized toon/painterly shading — a small number of shared shaders (character,
   environment, foliage) reused across all 22 regions, which is what makes the world
   read as one illustrated deck.
-- Silhouette-first design lets one Blank rig family (per `combat.md`) carry the whole
-  *mook* roster through material and prop variation. **This sharing stops at the
-  Blanks: every Arcana is a fully bespoke character** — unique model, rig, silhouette,
-  and animation set (`arcana.md` design rule 7), and multiple characters where the card
+- Silhouette-first design lets one Blank art family (per `combat.md`) carry the whole
+  *mook* roster through palette and prop variation. **This sharing stops at the
+  Blanks: every Arcana is a fully bespoke character** — unique design, silhouette, and
+  animation set (`arcana.md` design rule 7), and multiple characters where the card
   is multiple beings (the Lovers). The 21 Arcana are the game's art budget's first
   priority, and each is iterated until it could carry a poster.
 
 ## Current build: sculpted terrain, stand-in characters (playtest phase)
+
+**2D production (2026-08-17).** The shipping game is 2D (`GDD.md` §Theme / Setting / Genre), so everything
+in this section — Unity Terrain, sculpted human-scale landforms, 3D stand-in characters —
+describes the **historical / 3D telling's** build, not what is being built now. The visual
+philosophy above is unchanged and transfers intact: silhouette first, the fill-black test,
+the shape-language table, and the materials and costume rules
+([`art-bible.md`](art-bible.md)). Working 2D sprite and animation standards live in
+`godot/art/ART-REQUESTS.md` and `godot/art/fool-walk-production-v1/ANIMATION-BIBLE.md`
+until the art lane promotes them into this doc and `art-bible.md`.
 
 **Status (blessed 2026-07-25, superseding the 2026-07-15 hex-diorama call):** the world
 is built as **continuous sculpted terrain at human scale**, authored in-engine; only

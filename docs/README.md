@@ -25,7 +25,7 @@ superseded by these markdown documents.
    | [`design/callings.md`](design/callings.md) | Callings: the repeatable mundane roles that tempt the Fool to stay |
    | [`design/art-audio.md`](design/art-audio.md) | Visual style, UI, music, sound |
    | [`design/art-bible.md`](design/art-bible.md) | Production art standards: shape language, materials, costume, animation principles |
-   | [`design/technical.md`](design/technical.md) | Unity architecture, conventions, data model |
+   | [`design/technical.md`](design/technical.md) | Architecture, conventions, data model — Godot 2D (shipping) and Unity (historical 3D telling); read its §Engine status first |
 
 4. `quests/` — quest scripts and outlines. See [`quests/README.md`](quests/README.md) for the
    ID scheme, status workflow, and the script template.

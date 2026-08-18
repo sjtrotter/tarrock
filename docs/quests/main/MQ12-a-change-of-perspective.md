@@ -36,7 +36,7 @@ kindly funny.
 
 ### EXT. THE GALLOWWOOD: The Hanging Threshold — EVENING (STALLED)
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The forest starts wrong and never stops. The first trees stand ordinary enough — grey
 boles, evening-gold light caught in a canopy that has held the same hour for three
@@ -126,7 +126,7 @@ into the wood.
 
 ### EXT. THE GALLOWWOOD: The Low Bough — EVENING (STALLED)
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The path pinches out over a shallow dell. A single low bough reaches across it, and on
 the far side the trail resumes — but there is no way over except *under*: the only footing
@@ -156,7 +156,7 @@ eleven regions, that letting go of solid handholds ends badly. It does not, here
 
 ### EXT. THE GALLOWWOOD: The Overturned Glade — EVENING (STALLED)
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The trail crests into a glade that is, wholesale, inverted. Grass hangs overhead like a
 green ceiling; a brook runs along it, upside down, without spilling a drop. A canopy
@@ -198,7 +198,7 @@ having required no instruction whatsoever and rather enjoying the Fool's difficu
 
 ### EXT. THE GALLOWWOOD: The Wrong-Way Hollow — EVENING (STALLED)
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 A deep hollow where the inversion is at its worst — the ground and the not-ground swap so
 often the eye gives up choosing. Halfway down, a TRAVELER is stuck: an ordinary Coins-suit
@@ -250,7 +250,7 @@ hop. They sit down hard, laugh once, and do not get up for a moment.
 
 ### EXT. THE GALLOWWOOD: The World-Tree — EVENING (STALLED)
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The wood opens onto the World-Tree, and the game's whole vocabulary of *up* comes apart at
 once. It is vast past sense, roots and crown indistinguishable, and it does not hang the
@@ -314,7 +314,7 @@ END CUT SCENE
 
 ### EXT. THE GALLOWWOOD: The Bough — THE ORDEAL
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[The ordeal proper. No combat, no enemies, no fail-into-death — a missed hold drops the
 Fool safely to a lower start and the circuit resumes. It is a nerve-and-trust traversal
@@ -437,7 +437,7 @@ END CUT SCENE
 
 ### EXT. THE GALLOWWOOD: The Righting — EVENING (RIGHTING)
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Over the next stretch, the whole wood turns over. It is not sudden — it is a long, visible,
 almost tidal reshuffle, glade by glade, as three centuries of held-up gravity remembers
@@ -493,7 +493,7 @@ her ceiling, expression caught precisely between grief and a bark of laughter.
 
 ### EXT. THE GALLOWWOOD: The Ordinary Forest — EVENING (RIGHTED)
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The wood, righted, is only a wood. Handsome, ordinary, gold-lit, and entirely legible to
 anyone with working eyes and no special skill at all. On the trail where the Fool first

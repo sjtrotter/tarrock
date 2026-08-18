@@ -36,7 +36,7 @@ transaction he has ever been offered.
 
 ### EXT./INT. THE UNDERVAULT: The Gate Stair — DUSK (LAST SKY)
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The way in is a long stone stair sunk into the western hills, and above it the last open
 sky the Fool will see until they climb back out. A velvet rope, absurdly, cordons the
@@ -77,7 +77,7 @@ END CUT SCENE
 
 ### INT. THE UNDERVAULT: The Welcome Tier — GASLIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The topmost tier is a receiving-floor: a queue of new arrivals and old residents alike,
 all cheerful, all chained, shuffling toward the counting-houses with the ease of people
@@ -117,7 +117,7 @@ turning back to her ledger, entirely at peace.
 
 ### INT. THE UNDERVAULT: The Antechamber Boxes — GASLIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The descent to the desk runs past a row of private boxes, each lit like a little stage,
 each holding one resident living inside a bargain already struck. The Fool passes three,
@@ -161,7 +161,7 @@ perfect ease.
 
 ### INT. THE UNDERVAULT: The Reading Room — GASLIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The last room before the desk is a small counting-office where a single standing contract
 is pinned open under a reading-lamp — a document whose real terms are set backward, in
@@ -183,7 +183,7 @@ always resolves to something true.]**
 
 ### INT. THE UNDERVAULT: The Desk — GASLIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The door opens onto the pit's lowest and grandest tier: a floor of black-and-gold marble
 ringed by the whole city looking down, and at its centre a beautiful desk. Not a throne —
@@ -504,7 +504,7 @@ END CUT SCENE
 
 ### INT. THE UNDERVAULT: The Chains Fall — GASLIGHT INTO FIRST LIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 It goes up through the pit like a change of pressure. On every tier, from every wrist and
 ankle and belt-loop, the fine gold chains simply *open* — no drama, no snapping, just a
@@ -530,7 +530,7 @@ uncertainly, unsure whether this is a thing to herd.
 
 ### INT. THE UNDERVAULT: The Stair — GASLIGHT INTO FIRST LIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Fool climbs out with the freed crowd — and partway up, against the whole current of
 people going the other way, one figure is standing still. MERROW SLATE, the sure-thing

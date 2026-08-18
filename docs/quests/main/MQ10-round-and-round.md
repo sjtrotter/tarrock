@@ -35,7 +35,7 @@ then the Wheel's presiding spirit can see exactly which way the Fool is spinning
 
 ### EXT. THE WHEELHOUSE: The Split Street — STATE-DEPENDENT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The road opens onto the strangest thoroughfare the Fool has yet walked. One side of the
 street is gold: fresh paint, unbroken glass, awnings so new they still smell of dye, a
@@ -133,7 +133,7 @@ He goes back to sweeping the line, one long stroke at a time, cursed to lucky an
 
 ### INT. THE WHEELHOUSE: The Gilded Parlour — GASLIT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The lucky side's dice-hall is a wonder and a horror at once: chandeliers dripping, tables
 green as spring, and a crowd of eternally-fortunate players who wear the specific dead-eyed
@@ -183,7 +183,7 @@ out to the gutter-line, where the gold ends and the ruin begins.
 
 ### EXT. THE WHEELHOUSE: The Cursed Streets — GASLIT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Across the line the city turns to slapstick disaster made permanent. Signboards drop the
 instant the Fool passes beneath them; loose cobbles tip underfoot; a ladder that was against
@@ -224,7 +224,7 @@ to reach it or the curse to want to.
 
 ### EXT. THE WHEELHOUSE: The Tunnel Mouth — GASLIT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 A carriage that costs more than the whole cursed street stands parked at the tunnel mouth,
 absurdly out of place. BARONESS FETTLE steps down from it — the lucky district's wealthiest
@@ -294,7 +294,7 @@ The Fool opens the iron door. Cold, still air breathes up out of the dark under 
 
 ### INT. THE WHEELHOUSE: The Access Tunnels — DARK
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Down under the city the noise finally stops. The tunnels run between the great iron
 brake-shoes that clamp the Wheel's rim from below — each one a wagon-sized wedge of black
@@ -360,7 +360,7 @@ END CUT SCENE
 
 ### THE ENCOUNTER — the Turning Ring
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[Gameplay, exactly per `arcana.md` §X:]**
 
@@ -469,7 +469,7 @@ END CUT SCENE
 
 ### EXT. THE WHEELHOUSE: The Split Street — AFTERMATH
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Up top, the whole city has felt it. The great Wheel fills the sky and it is *turning* now,
 slow and majestic, and along the split street the impossible is happening in real time: the
@@ -506,7 +506,7 @@ END CUT SCENE
 
 ### EXT. THE WHEELHOUSE: The Cursed Streets — EVENING
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Across the gutter-line, the opposite. As the districts' fortunes begin to trade on the Wheel's
 new schedule, the cursed side gets its first good turn in three hundred years — and pours into

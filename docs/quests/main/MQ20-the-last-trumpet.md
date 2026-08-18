@@ -56,7 +56,7 @@ with `CONFESSED` — those variants are written `[If ACT_II]` / `[If ACT_III]` b
 
 ### EXT. THE HOLLOWS: The Terraced Approach — LOW LIGHT / STATE-DEPENDENT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The road down from the last region gentles into terraces — long shelves of turned earth
 and worn headstones stepping down and down toward a low centre the eye keeps sliding
@@ -95,7 +95,7 @@ grass.
 
 ### EXT. THE HOLLOWS: The Waiting Terraces — LOW LIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Fool crosses a broad shelf of the terraces where the waiting are thickest — dozens of
 pale spirits standing among the open graves, each at their own stone, faces turned down
@@ -161,7 +161,7 @@ the stone he stands beside. The way on descends.
 
 ### EXT. THE HOLLOWS: The Restless Terraces — LOW LIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Lower down, the tended calm frays. On these shelves the waiting are not patient — they
 are *restless*, pacing their own open graves, flickering, catching and snagging on the
@@ -201,7 +201,7 @@ lies quiet — for now.
 
 ### EXT. THE HOLLOWS: Fennimore's Plot — LOW LIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 A quieter shelf, set a little apart, with one grave tended finer than the rest — the turf
 patted down, a posy of dried flowers three hundred years old laid square on the stone. A
@@ -267,7 +267,7 @@ aftermath: Fennimore is the last ghost in the Hollows to fade, beat 14.]**
 
 ### EXT. THE HOLLOWS: The Shrine Rim — LOW LIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The lowest terrace before the descent is ringed with small stone shrines — ancestor
 shrines, one every few paces along the amphitheater's rim, each a niche of offerings gone
@@ -318,7 +318,7 @@ centre, where a single figure stands.
 
 ### EXT. THE HOLLOWS: The Amphitheater of Open Graves — LOW LIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The terraces bank down on every side into a great round floor of pale stone, and the whole
 hillside above becomes an audience of the waiting — thousands of them now, ranked up the
@@ -527,7 +527,7 @@ END CUT SCENE
 
 ### EXT. THE HOLLOWS: The Amphitheater Floor — LOW LIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Clemency turns from the Fool, and — gently, deliberately, with three hundred years of
 withheld tenderness behind it — raises the trumpet to her lips and sounds it *true*, at
@@ -579,7 +579,7 @@ END CUT SCENE
 
 ### EXT. THE HOLLOWS: The Shrine Rim — LOW LIGHT
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 As the note fades, the ancestor shrines around the rim — inert for three hundred years —
 answer it. One by one the mossed niches warm and stir, and each gives up its final gift to
@@ -602,7 +602,7 @@ for this quest is Trump XX, already given.]**
 
 ### EXT. THE HOLLOWS: The Terraces — LOW LIGHT → BLOOM
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Hollows change while the Fool watches. The open graves, one after another all up the
 terraced hillside, close over soft — not filled in, *grown* over, turf drawing across them
@@ -624,7 +624,7 @@ of it.
 
 ### EXT. THE HOLLOWS: Fennimore's Plot — LOW LIGHT → BLOOM
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 On the quiet shelf set apart, one ghost has not yet gone. Fennimore Ashgrove still sits on
 the lip of his grave — the last waiting soul in the whole Hollows — feet swinging, the
@@ -670,7 +670,7 @@ END CUT SCENE
 
 ### EXT. THE HOLLOWS: The Amphitheater, Blooming — LOW LIGHT → BLOOM
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The Fool stands on the floor of the amphitheater with the whole hillside in flower above,
 every grave closed and green, every waiting soul let go, Clemency somewhere among the

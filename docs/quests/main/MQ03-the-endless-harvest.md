@@ -37,7 +37,7 @@ world-state changes a scene the script carries the variant, and every key scene 
 
 ### EXT. THE BOWER: The Swallowed Cart Road — ENDLESS AFTERNOON
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The road into the Bower simply drowns. What was once a proper cart track — two ruts and a
 grassy crown — runs on for a hundred yards and then goes under: wheat to either side has
@@ -72,7 +72,7 @@ the wheat, as it does near all growing things in the Bower — no mechanical eff
 
 ### EXT. THE BOWER: The Roadside Stall — ENDLESS AFTERNOON
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Where the swallowed road meets a lane, a lean-to stall stands in the shade of a granary so
 full its doors bulge — grain trickling in a thin gold thread from a split board seam, a
@@ -147,7 +147,7 @@ The billhook goes into the Bindle. The lane ahead vanishes under grain within a 
 
 ### EXT. THE BOWER: The Swallowed Lane — ENDLESS AFTERNOON
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Cuts a path through the swallowed lane with the billhook.
 
@@ -165,7 +165,7 @@ un-arrive.]**
 
 ### EXT. THE BOWER: Gaffer Nettle's Orchard — ENDLESS AFTERNOON
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The wheat gives way to orchard: rank on rank of fruit trees bowed so low with unpicked apples
 and pears and quince that the boughs graze the grass, some split clean under the weight and
@@ -225,7 +225,7 @@ The path inward runs on through the trees toward a canopy so thick it swallows t
 
 ### EXT. THE BOWER: The Attendants' Tribute-Path — ENDLESS AFTERNOON, UNDER CANOPY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Under the closed canopy the endless afternoon goes green and dim, the air so heavy with
 pollen it hangs in visible gold drifts. A trodden path winds inward, marked every few yards
@@ -260,7 +260,7 @@ The path opens, at its end, onto light of a wholly different kind.
 
 ### EXT. THE BOWER: The Briar Throne — ENDLESS AFTERNOON
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 The canopy breaks over a great sunken bower, and at its heart: the Briar Throne. It is not a
 chair. It is a swelling of the garden itself — a vast knot of root, bramble, and flowering
@@ -303,7 +303,7 @@ TRANSITION TO GAMEPLAY
 
 ### EXT. THE BOWER: The Briar Throne — THE PRUNING
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 **[Boss encounter, per `arcana.md` §III (stationary siege, tier M). The Empress never moves —
 she cannot. The *Throne* fights: lash-vines whip from the bramble on a readable rhythm,
@@ -433,7 +433,7 @@ END CUT SCENE
 
 ### EXT. THE BOWER: Gaffer Nettle's Orchard — ENDLESS AFTERNOON GIVING WAY
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Passes back out through the orchard. The change is already running ahead of the Fool through
 the trees: the stranglevines that roofed the tribute-path are receding visibly, sliding back
@@ -461,7 +461,7 @@ them. There is nothing left to prune. The briars he tended for sixty years are s
 
 ### EXT. THE BOWER: The Roadside Stall — EVENING
 
-THIRD PERSON GAMEPLAY
+GAMEPLAY
 
 Reaches the stall on the way out. The granary doors stand open — not burst, *opened* — and the
 Coins family is on its feet, because from somewhere deep in the garden and everywhere at once a
