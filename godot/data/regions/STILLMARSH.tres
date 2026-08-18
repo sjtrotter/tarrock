@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"STILLMARSH"
+card_number = 13
+name_key = &"REGION_STILLMARSH_NAME"
+unbinding_flag = &"WS_DEATH_UNBOUND"
+difficulty_band = 3
+summary = "Where the dying have gathered since the Stall, waiting. Candle-flat wetlands, ferry lanterns, the world's kindest and wariest people. Nothing here can end — and everyone knows exactly what the Fool's arrival means. (Keystone region; see narrative.md.)"
+scene_path = "res://scenes/regions/stillmarsh.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_STILLMARSH"])
+doc_ref = "docs/design/world.md §Regions"

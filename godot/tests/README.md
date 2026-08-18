@@ -80,6 +80,45 @@ func test_paused_clock_does_not_advance() -> void:
   and asserting the failure was recorded. That is how you test a red path without
   leaving a red test in the suite.
 
+## The scene tests and the persistent layer
+
+From round 10 the game's `run/main_scene` is `res://scenes/persistent_layer.tscn`, not
+a region: the Fool, Pip, the camera and the UI root live there, and `RegionService`
+instances one region scene underneath them (`docs/design/technical.md` §Regions and the
+persistent layer). A scene test that needs the Fool therefore **instances the layer**
+and lets it boot - `Services.new_game()` builds the services, travels to the Cliff and
+starts MQ00 - rather than instancing a region by hand:
+
+```gdscript
+func _initialize() -> void:
+    var packed: PackedScene = load("res://scenes/persistent_layer.tscn")
+    _layer = packed.instantiate() as PersistentLayer
+    root.add_child(_layer)
+```
+
+The region is standing under `_layer.region()` by the second physics frame: the layer
+performs a swap when the frame's message queue flushes, deferred because a swap is
+usually asked for from inside a physics callback and Godot cannot free a scene full of
+`Area2D`s mid-flush. `res://tests/regions_test.gd` walks the whole flow (new game,
+leap, rest, load); `cliff_test.gd` plays MQ00 through the Cliff under the layer.
+
+**A test that must point the saves somewhere else takes the boot over.** `_initialize()`
+runs *before* the `Services` autoload's own `_ready()` (see the legacy pattern below), so
+there is no moment there at which the composition root can be pointed at a scratch save
+directory. Set `boot_new_game_on_ready = false` on the layer before adding it, then on
+the first physics frame call `Services.set_saves_dir()` and `_layer.new_game()` - which
+is what `regions_test.gd` does, because it writes a real file to a real slot and must
+never write it into the player's `user://saves`. `cliff_test.gd` still lets the layer
+boot itself, so that path stays covered.
+
+**A `SceneTree` script must not name `SaveModel`.** Godot 4.7 leaks that class's
+`GDScript` (and `DifficultyMode` with it) at engine exit when the main-loop script
+references it - even only through inference, as in `var model := save.capture()` - and
+the engine reports it as `ERROR: 2 resources still in use at exit`, which fails the
+stage. Nothing else about the test is wrong when this happens. Go through the
+composition root instead: `Services.save_game(slot)` / `load_game(slot)` hand back a
+bool and keep the model on their side of the fence.
+
 ## The legacy scene-test pattern
 
 `tests/*_test.gd` predate the unit runner. Each `extends SceneTree`, loads a real scene,
@@ -116,7 +155,7 @@ it must fail on a scene nobody can instantiate yet — and it walks three places
 |---|---|
 | `.tscn` under `res://scenes` and `res://systems` | `text`, `tooltip_text`, `placeholder_text`, `dialog_text` or `title` on a Control- or Window-derived node holding anything but a `SHOUTING_SNAKE_CASE` key. The property's last path segment is matched, so `popup/item_0/text` (OptionButton) and `item_0/text` (ItemList) are covered. |
 | `.gd` under `res://systems` | a string literal of three words or more (two spaces) outside a comment. `&"…"` StringNames, `res://`/`user://` paths and lines calling a diagnostic sink are exempt — `DIAGNOSTIC_CALLS` lists them with a reason each (`print*`, `push_error`, `push_warning`, `assert`, `fail`, `assert_*`, and `errors.append` for `TarrockDefinition.validate()`'s problem list). `OS.alert` is deliberately *not* exempt: it puts text on screen. |
-| `.tres` under `res://data` | any property whose value is three words or more. `DOC_ONLY_PROPERTIES` is the one allowlist — `effect_summary`, `notes`, `doc_ref`, `source_ref`, `description_doc`, and a Trump's `past_summary` / `present_summary` / `future_summary` / `burden_name` / `burden_summary` — and the const carries the reason each is exempt: they cite or paraphrase the doc a definition came from, for reviewers and drift tests, and are never displayed. |
+| `.tres` under `res://data` | any property whose value is three words or more. `DOC_ONLY_PROPERTIES` is the one allowlist — `effect_summary`, `notes`, `doc_ref`, `source_ref`, `description_doc`, a region's `summary`, and a Trump's `past_summary` / `present_summary` / `future_summary` / `burden_name` / `burden_summary` — and the const carries the reason each is exempt: they cite or paraphrase the doc a definition came from, for reviewers and drift tests, and are never displayed. |
 
 `res://scripts` is legacy presentation; it joins `SCRIPT_ROOTS` a folder at a time as
 rounds migrate it under `res://systems` (PROMPT.md, standing decision 10).

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"WHEELHOUSE"
+card_number = 10
+name_key = &"REGION_WHEELHOUSE_NAME"
+unbinding_flag = &"WS_FORTUNE_UNBOUND"
+difficulty_band = 2
+summary = "A casino-city built on a titanic stopped wheel. The lucky half lives in absurd fortune, the cursed half in absurd calamity, street by street — and no one may move house. Economy hub; the game's densest side-quest den."
+scene_path = "res://scenes/regions/wheelhouse.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_WHEELHOUSE"])
+doc_ref = "docs/design/world.md §Regions"

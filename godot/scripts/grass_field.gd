@@ -51,7 +51,11 @@ const MIN_RIM_DISTANCE := 260.0
 const MIN_PATH_DISTANCE := 95.0
 const MIN_CAMP_DISTANCE := 230.0
 
-@export var body_paths: Array[NodePath] = [NodePath("../Fool"), NodePath("../Pip")]
+## Bodies to part for, as paths relative to this node. Left over from when the Fool
+## and Pip were children of the region scene; from round 10 they live in the
+## persistent layer above it, so the region's own script hands them over instead
+## (`set_bodies()`). Kept for a scene that stands its own bodies beside the field.
+@export var body_paths: Array[NodePath] = []
 
 var _tufts: Array[Sprite2D] = []
 var _rest_leans: PackedFloat32Array = PackedFloat32Array()
@@ -70,6 +74,18 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	step_displacement(delta)
+
+
+## Tell the field who walks through it. Replaces whatever it found for itself.
+##
+## The region scene calls this: the Fool and Pip are the persistent layer's, and a
+## field of grass has no business reaching up out of its own scene to find them
+## (`docs/design/technical.md` §Architecture principles (Godot), 5).
+func set_bodies(bodies: Array[Node2D]) -> void:
+	_bodies.clear()
+	for body: Node2D in bodies:
+		if body != null and is_instance_valid(body):
+			_bodies.append(body)
 
 
 # --- queryable state (used by tests) -------------------------------------------

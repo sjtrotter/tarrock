@@ -150,6 +150,78 @@ func test_shutting_down_lets_go_of_every_member() -> void:
 	)
 
 
+func test_a_rest_puts_an_ambient_fight_back_on_its_feet() -> void:
+	# `docs/design/progression.md` §Waystations: a rest "respawn[s] ambient (non-boss)
+	# enemies". `RegionService.rest_at()` asks the layer, the layer asks every
+	# encounter in the region, and this is the encounter's own half of that.
+	if not _begin():
+		return
+	assert_true(_encounter.is_engaged())
+	assert_true(_encounter.respawns_on_rest, "ambient is the default; most fights are")
+	assert_true(_encounter.reset_for_rest(), "the fight is put back")
+	assert_false(_encounter.is_engaged(), "so walking in raises it again, as the first time")
+	assert_eq(_encounter.members().size(), 0, "with every body back in the pool")
+	assert_eq(_encounter.pool().live_count(), 0)
+	assert_true(_begin(), "and the fight really can start over")
+
+
+func test_a_rest_inside_the_trigger_does_not_raise_the_fight_on_the_sleeping_fool() -> void:
+	# `progression.md` §Waystations puts a shrine in every region and `combat.md`
+	# §Encounter philosophy puts a fight wherever "a spot in the world earns one", so
+	# the two are allowed to overlap - MQ00's ambush already stands twenty paces from
+	# the Cliff's Waystation. An `Area2D` whose monitoring comes back on reports every
+	# body already inside it as having just entered, so a rest taken standing in the
+	# volume would start the fight again on a Fool who had just lain down. He has to
+	# walk out and walk back in.
+	# The trigger's own handler is called directly throughout: a unit test steps no
+	# physics frames, so the `Area2D` never reports anything, and what is under test is
+	# what the encounter DOES with an entry rather than how it hears about one.
+	var fool := _a_fool_standing_at(_encounter.global_position)
+	if not _begin():
+		return
+	assert_true(_encounter.reset_for_rest(), "the ambient fight is put back on its feet")
+	assert_false(_encounter.is_armed(), "but the trigger is waiting for him to leave")
+	_encounter._on_body_entered(fool)
+	assert_false(
+		_encounter.is_engaged(),
+		"so the physics server noticing where he already lay does not raise the fight"
+	)
+	# He walks out, and the trigger is a trigger again.
+	_encounter._on_body_exited(fool)
+	assert_true(_encounter.is_armed(), "leaving arms it")
+	_encounter._on_body_entered(fool)
+	assert_true(_encounter.is_engaged(), "and walking back in is the entry it was waiting for")
+	fool.free()
+
+
+func test_a_rest_taken_away_from_the_fight_arms_it_at_once() -> void:
+	# The ordinary case, and the one the guard above must not cost anything: a Fool who
+	# rests at a shrine outside the volume walks into a fight that is already watching.
+	var fool := _a_fool_standing_at(
+		_encounter.global_position + Vector2(_encounter.trigger_radius * 4.0, 0.0)
+	)
+	if not _begin():
+		return
+	assert_true(_encounter.reset_for_rest())
+	assert_true(_encounter.is_armed(), "nobody was standing in it, so it is armed")
+	_encounter._on_body_entered(fool)
+	assert_true(_encounter.is_engaged(), "and the first entry raises the fight")
+	fool.free()
+
+
+func test_a_rest_leaves_a_quest_gate_cleared() -> void:
+	# The other half of the same sentence, and the reason the flag exists: the MQ00
+	# ambush between the standing stones is twenty paces from the Cliff's Waystation.
+	# A player who clears it and then rests must not turn round to find three Twos
+	# standing again and a beat they have already played still owed.
+	_encounter.respawns_on_rest = false
+	if not _begin():
+		return
+	assert_false(_encounter.reset_for_rest(), "a quest gate does not answer to a rest")
+	assert_true(_encounter.is_engaged(), "and nothing about the fight changed")
+	assert_eq(_encounter.members().size(), 2, "the figures raised are still the ones standing")
+
+
 # --- Helpers -----------------------------------------------------------------------
 
 
@@ -160,6 +232,19 @@ func _begin() -> bool:
 		fail("the enemy data did not load")
 		return false
 	return assert_true(_encounter.begin(null), "the fight starts")
+
+
+## A body the encounter will accept as the Fool, standing where it is put. Freed by
+## the test that made it; nothing adds it to the tree, because the guard under test is
+## measured off positions rather than off the physics server (see
+## `Encounter._fool_is_in_the_trigger()`).
+func _a_fool_standing_at(position: Vector2) -> Node2D:
+	var fool := Node2D.new()
+	fool.name = "TestFool"
+	fool.add_to_group(Interactable.FOOL_GROUP)
+	tree().root.add_child(fool)
+	fool.global_position = position
+	return fool
 
 
 func _spawn(enemy_id: StringName, offset: Vector2) -> EncounterSpawn:

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"LONGROAD"
+card_number = 7
+name_key = &"REGION_LONGROAD_NAME"
+unbinding_flag = &"WS_CHARIOT_UNBOUND"
+difficulty_band = 2
+summary = "The great ring-causeway; a triumphal procession has circled it since the Stall — banners bleached, trumpets dented, glory long since curdled into momentum. Includes roadside inns, toll-forts, and the Waystation network."
+scene_path = "res://scenes/regions/longroad.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_LONGROAD_N", &"WAYSTATION_LONGROAD_E", &"WAYSTATION_LONGROAD_S", &"WAYSTATION_LONGROAD_W"])
+doc_ref = "docs/design/world.md §Regions"

@@ -1,10 +1,8 @@
-[gd_scene load_steps=30 format=3]
+[gd_scene load_steps=29 format=3]
 
 [ext_resource type="Script" path="res://scripts/the_cliff.gd" id="1_cliff"]
 [ext_resource type="Script" path="res://scripts/cliff_ground.gd" id="2_ground"]
 [ext_resource type="Script" path="res://scripts/grass_field.gd" id="19_grass"]
-[ext_resource type="PackedScene" path="res://scenes/fool.tscn" id="3_fool"]
-[ext_resource type="PackedScene" path="res://scenes/pip.tscn" id="4_pip"]
 [ext_resource type="Texture2D" path="res://art/game-ready-sprites-v1/frames/environment/props/dead-campfire.png" id="5_dead_campfire"]
 [ext_resource type="Texture2D" path="res://art/game-ready-sprites-v1/frames/environment/props/fool-bindle.png" id="6_bindle"]
 [ext_resource type="Texture2D" path="res://art/game-ready-sprites-v1/frames/environment/props/old-fire-ring.png" id="7_fire_ring"]
@@ -23,6 +21,7 @@
 [ext_resource type="Script" path="res://systems/enemies/nodes/encounter.gd" id="21_encounter"]
 [ext_resource type="Script" path="res://systems/enemies/encounter_spawn.gd" id="22_spawn"]
 [ext_resource type="Script" path="res://systems/pip/nodes/seekable.gd" id="23_seekable"]
+[ext_resource type="Script" path="res://systems/regions/nodes/waystation.gd" id="24_waystation"]
 
 [sub_resource type="Resource" id="Ambush_Cups"]
 script = ExtResource("22_spawn")
@@ -55,7 +54,10 @@ radius = 220.0
 radius = 110.0
 
 [node name="TheCliff" type="Node2D"]
+y_sort_enabled = true
 script = ExtResource("1_cliff")
+region_id = &"CLIFF"
+camera_limits = Rect2(200, -100, 4700, 3600)
 
 [node name="CloudSea" type="Node2D" parent="."]
 z_index = -100
@@ -192,19 +194,20 @@ offset = Vector2(0, -89)
 y_sort_enabled = true
 script = ExtResource("19_grass")
 
-[node name="Fool" parent="World" instance=ExtResource("3_fool")]
+[node name="Markers" type="Node2D" parent="."]
+
+[node name="DEFAULT" type="Marker2D" parent="Markers"]
 position = Vector2(3820, 2560)
 
-[node name="Camera2D" type="Camera2D" parent="World/Fool"]
-limit_left = 200
-limit_top = -100
-limit_right = 4900
-limit_bottom = 3500
-position_smoothing_enabled = true
-position_smoothing_speed = 6.0
+[node name="WAYSTATION_CLIFF" type="Area2D" parent="Markers"]
+position = Vector2(1430, 1000)
+script = ExtResource("24_waystation")
+event = &"MQ00_RESTED"
+one_shot = false
+waystation_id = &"WAYSTATION_CLIFF"
 
-[node name="Pip" parent="World" instance=ExtResource("4_pip")]
-position = Vector2(3930, 2520)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Markers/WAYSTATION_CLIFF"]
+shape = SubResource("CircleShape2D_trigger")
 
 [node name="LeapPoint" type="Area2D" parent="."]
 position = Vector2(1150, 650)
@@ -220,6 +223,7 @@ position = Vector2(1655, 1240)
 script = ExtResource("21_encounter")
 trigger_radius = 200.0
 quest_event_on_cleared = &"MQ00_AMBUSH_CLEARED"
+respawns_on_rest = false
 spawns = Array[ExtResource("22_spawn")]([SubResource("Ambush_Cups"), SubResource("Ambush_Swords"), SubResource("Ambush_Wands")])
 
 [node name="Seekables" type="Node2D" parent="World"]
@@ -252,15 +256,6 @@ on_approach = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/QuestTriggers/DeadTreeApproach"]
 shape = SubResource("CircleShape2D_tree")
-
-[node name="WaystationTrigger" type="Area2D" parent="World/QuestTriggers"]
-position = Vector2(1430, 1000)
-script = ExtResource("20_interactable")
-event = &"MQ00_RESTED"
-one_shot = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="World/QuestTriggers/WaystationTrigger"]
-shape = SubResource("CircleShape2D_trigger")
 
 [node name="CliffEdgeApproach" type="Area2D" parent="World/QuestTriggers"]
 position = Vector2(1280, 800)

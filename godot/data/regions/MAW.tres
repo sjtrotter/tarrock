@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"MAW"
+card_number = 8
+name_key = &"REGION_MAW_NAME"
+unbinding_flag = &"WS_STRENGTH_UNBOUND"
+difficulty_band = 1
+summary = "Savage limestone highlands of beasts and hunters, centered on the frozen tableau of a woman holding a lion's jaws. The wilds-region: monster hunts, taming, vertical crags."
+scene_path = "res://scenes/regions/maw.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_MAW"])
+doc_ref = "docs/design/world.md §Regions"

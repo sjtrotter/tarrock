@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/nodes/persistent_layer.gd" id="1_layer"]
+[ext_resource type="PackedScene" path="res://scenes/fool.tscn" id="2_fool"]
+[ext_resource type="PackedScene" path="res://scenes/pip.tscn" id="3_pip"]
+
+[node name="PersistentLayer" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("1_layer")
+
+[node name="Fool" parent="." instance=ExtResource("2_fool")]
+
+[node name="Camera2D" type="Camera2D" parent="Fool"]
+position_smoothing_enabled = true
+position_smoothing_speed = 6.0
+
+[node name="Pip" parent="." instance=ExtResource("3_pip")]
+position = Vector2(90, -40)
+
+[node name="RegionRoot" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="UIRoot" type="CanvasLayer" parent="."]

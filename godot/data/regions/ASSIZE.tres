@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"ASSIZE"
+card_number = 11
+name_key = &"REGION_ASSIZE_NAME"
+unbinding_flag = &"WS_JUSTICE_UNBOUND"
+difficulty_band = 2
+summary = "Fog-grey court complexes where every trial stands adjourned; the accused of three centuries wait in patient queues, knitting. Kafka by way of Ealing comedy."
+scene_path = "res://scenes/regions/assize.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_ASSIZE"])
+doc_ref = "docs/design/world.md §Regions"

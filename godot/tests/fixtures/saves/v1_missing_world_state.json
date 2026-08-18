@@ -2,8 +2,11 @@
 	"schema_version": 1,
 	"pocket_spread": {},
 	"inventory": {},
-	"current_region_id": "",
-	"last_waystation_id": "",
+	"regions": {
+		"current_region_id": "",
+		"last_waystation_id": "",
+		"visited_waystations": []
+	},
 	"playtime_seconds": 0.0,
 	"difficulty_mode": "JOURNEY"
 }

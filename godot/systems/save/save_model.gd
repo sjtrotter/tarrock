@@ -39,8 +39,7 @@ const FIELD_SCHEMA_VERSION := "schema_version"
 const FIELD_WORLD_STATE := "world_state"
 const FIELD_POCKET_SPREAD := "pocket_spread"
 const FIELD_INVENTORY := "inventory"
-const FIELD_CURRENT_REGION := "current_region_id"
-const FIELD_LAST_WAYSTATION := "last_waystation_id"
+const FIELD_REGIONS := "regions"
 const FIELD_PLAYTIME_SECONDS := "playtime_seconds"
 const FIELD_DIFFICULTY_MODE := "difficulty_mode"
 
@@ -50,11 +49,19 @@ const REQUIRED_FIELDS: Array[String] = [
 	FIELD_WORLD_STATE,
 	FIELD_POCKET_SPREAD,
 	FIELD_INVENTORY,
-	FIELD_CURRENT_REGION,
-	FIELD_LAST_WAYSTATION,
+	FIELD_REGIONS,
 	FIELD_PLAYTIME_SECONDS,
 	FIELD_DIFFICULTY_MODE,
 ]
+
+## The three fields of the `regions` section: where the Fool is standing, the
+## Waystation a defeat wakes them at (`docs/design/combat.md` §Defeat), and every
+## Waystation they have rested at - the set fast travel reads (`progression.md`
+## §Waystations). Spelled once here so `SaveService`, `RegionService` and the fixtures
+## cannot drift apart.
+const REGIONS_CURRENT := "current_region_id"
+const REGIONS_LAST_WAYSTATION := "last_waystation_id"
+const REGIONS_VISITED := "visited_waystations"
 
 ## The three sections of `pocket_spread`. Spelled once here so the save service, the
 ## services that fill them and the fixtures cannot drift apart.
@@ -92,13 +99,20 @@ var pocket_spread: Dictionary = {}
 ## Reserved for the progression round: item_id -> count. Empty now (see above).
 var inventory: Dictionary = {}
 
-## The region the Fool is standing in. The Regions round (round 10) owns the id
-## scheme; the save just carries whatever id that round mints.
+## The region the Fool is standing in, as a `RegionIds` token. Serialised inside the
+## `regions` section; typed here so the model stays a shape rather than a bag.
 var current_region_id: StringName = UNSET
 
 ## The Waystation the Fool last rested at - where defeat returns them
-## (`docs/design/progression.md` §Waystations). Same ownership note as the region.
+## (`docs/design/combat.md` §Defeat, `progression.md` §Waystations).
 var last_waystation_id: StringName = UNSET
+
+## Every Waystation the Fool has rested at, in the order they were first used.
+##
+## APPEND-ONLY, like every other container in a save (`technical.md` §Save system):
+## a Waystation, once found, is found. `SaveService.mark_waystation_visited()` is the
+## only thing that adds to it and nothing anywhere removes from it.
+var visited_waystations: Array[StringName] = []
 
 ## Bookkeeping only: seconds of play this file represents. Nothing reads it as game
 ## time (`GameClock` is world time and is not rewound by a load - see `SaveService`).
@@ -124,8 +138,11 @@ func to_dictionary() -> Dictionary:
 		FIELD_WORLD_STATE: world_state.duplicate(true),
 		FIELD_POCKET_SPREAD: pocket_spread.duplicate(true),
 		FIELD_INVENTORY: inventory.duplicate(true),
-		FIELD_CURRENT_REGION: String(current_region_id),
-		FIELD_LAST_WAYSTATION: String(last_waystation_id),
+		FIELD_REGIONS: {
+			REGIONS_CURRENT: String(current_region_id),
+			REGIONS_LAST_WAYSTATION: String(last_waystation_id),
+			REGIONS_VISITED: _ids_as_strings(visited_waystations),
+		},
 		FIELD_PLAYTIME_SECONDS: playtime_seconds,
 		FIELD_DIFFICULTY_MODE: String(DifficultyMode.name_key(difficulty_mode)),
 	}
@@ -143,8 +160,10 @@ static func from_dictionary(data: Dictionary) -> SaveModel:
 	model.world_state = _as_dictionary(data.get(FIELD_WORLD_STATE))
 	model.pocket_spread = _as_dictionary(data.get(FIELD_POCKET_SPREAD))
 	model.inventory = _as_dictionary(data.get(FIELD_INVENTORY))
-	model.current_region_id = _as_id(data.get(FIELD_CURRENT_REGION))
-	model.last_waystation_id = _as_id(data.get(FIELD_LAST_WAYSTATION))
+	var regions := _as_dictionary(data.get(FIELD_REGIONS))
+	model.current_region_id = _as_id(regions.get(REGIONS_CURRENT))
+	model.last_waystation_id = _as_id(regions.get(REGIONS_LAST_WAYSTATION))
+	model.visited_waystations = _as_ids(regions.get(REGIONS_VISITED))
 	model.playtime_seconds = _as_float(data.get(FIELD_PLAYTIME_SECONDS), 0.0)
 	var mode := DifficultyMode.from_name_key(_as_id(data.get(FIELD_DIFFICULTY_MODE)))
 	model.difficulty_mode = DifficultyMode.DEFAULT if mode == DifficultyMode.UNKNOWN else mode as DifficultyMode.Id
@@ -191,12 +210,10 @@ static func validate_dictionary(data: Dictionary) -> PackedStringArray:
 			errors.append("save schema_version is not a whole number: %s" % str(data.get(FIELD_SCHEMA_VERSION)))
 		elif version != CURRENT_SCHEMA_VERSION:
 			errors.append("save schema_version is %d, this build reads %d" % [version, CURRENT_SCHEMA_VERSION])
-	for field: String in [FIELD_WORLD_STATE, FIELD_POCKET_SPREAD, FIELD_INVENTORY]:
+	for field: String in [FIELD_WORLD_STATE, FIELD_POCKET_SPREAD, FIELD_INVENTORY, FIELD_REGIONS]:
 		if data.has(field) and not (data.get(field) is Dictionary):
 			errors.append("save field %s is not a dictionary" % field)
-	for field: String in [FIELD_CURRENT_REGION, FIELD_LAST_WAYSTATION]:
-		if data.has(field) and not _is_text(data.get(field)):
-			errors.append("save field %s is not an id" % field)
+	errors.append_array(_validate_regions(data))
 	if data.has(FIELD_PLAYTIME_SECONDS) and not _is_number(data.get(FIELD_PLAYTIME_SECONDS)):
 		errors.append("save field %s is not a number" % FIELD_PLAYTIME_SECONDS)
 	if data.has(FIELD_DIFFICULTY_MODE):
@@ -205,6 +222,33 @@ static func validate_dictionary(data: Dictionary) -> PackedStringArray:
 			errors.append("save field %s is not a difficulty key" % FIELD_DIFFICULTY_MODE)
 		elif DifficultyMode.from_name_key(StringName(key)) == DifficultyMode.UNKNOWN:
 			errors.append("save names a difficulty this build does not have: %s" % str(key))
+	return errors
+
+
+## Every problem with the `regions` section: the two ids and the visited list.
+##
+## Checked here rather than in `RegionService` for the same reason every other field
+## is: what arrives from disk is a Dictionary, and `from_dictionary()` would happily
+## paper over anything wrong with it.
+static func _validate_regions(data: Dictionary) -> PackedStringArray:
+	var errors := PackedStringArray()
+	if not data.has(FIELD_REGIONS) or not (data.get(FIELD_REGIONS) is Dictionary):
+		return errors
+	var regions: Dictionary = data.get(FIELD_REGIONS)
+	for field: String in [REGIONS_CURRENT, REGIONS_LAST_WAYSTATION]:
+		if regions.has(field) and not _is_text(regions.get(field)):
+			errors.append("save field %s.%s is not an id" % [FIELD_REGIONS, field])
+	if not regions.has(REGIONS_VISITED):
+		return errors
+	var visited: Variant = regions.get(REGIONS_VISITED)
+	if not (visited is Array):
+		errors.append("save field %s.%s is not a list" % [FIELD_REGIONS, REGIONS_VISITED])
+		return errors
+	for entry: Variant in visited as Array:
+		if not _is_text(entry):
+			errors.append("save field %s.%s holds something that is not an id: %s" % [
+				FIELD_REGIONS, REGIONS_VISITED, str(entry)
+			])
 	return errors
 
 
@@ -252,6 +296,26 @@ static func _as_dictionary(value: Variant) -> Dictionary:
 	if value is Dictionary:
 		return (value as Dictionary).duplicate(true)
 	return {}
+
+
+## A list of ids as plain Strings, for JSON.
+static func _ids_as_strings(ids: Array[StringName]) -> Array:
+	var found: Array = []
+	for entry: StringName in ids:
+		found.append(String(entry))
+	return found
+
+
+## A JSON list read back as ids. Anything that is not text is dropped; saying so is
+## `validate_dictionary()`'s job (see `from_dictionary()`'s totality note).
+static func _as_ids(value: Variant) -> Array[StringName]:
+	var found: Array[StringName] = []
+	if not (value is Array):
+		return found
+	for entry: Variant in value as Array:
+		if _is_text(entry):
+			found.append(StringName(entry))
+	return found
 
 
 static func _as_id(value: Variant) -> StringName:

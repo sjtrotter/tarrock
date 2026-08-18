@@ -74,14 +74,27 @@ Fixtures for the checked-in save files live in
 
 ## Owed by later rounds
 
-- **Loading from the title screen.** `apply()` deliberately cannot rescue a world that
-  has been played, so a load means building fresh services and swapping the persistent
-  layer over to them. That machinery belongs to the **Regions round (round 10)**, which
-  owns the persistent layer and scene switching.
-- **The fields this round holds by hand.** `current_region_id` and
-  `last_waystation_id` are plain settable fields on `SaveService` until the Regions
-  round owns where the Fool is; the difficulty mode is likewise until combat/settings
-  own it. `capture()` asks them then, and the setters go away.
+- ~~**Loading from the title screen.**~~ **Done (round 10).** `apply()` deliberately
+  cannot rescue a world that has been played, so a load builds fresh services and
+  swaps the persistent layer over to them: `Services.load_game(slot)` rebuilds every
+  service, reads the slot, applies it, and asks `RegionService` to place the Fool where
+  the file says. `Services.save_game(slot)` is the way back out. Nothing else may
+  assemble a playthrough - a caller with half-applied services is told to rebuild, and
+  the composition root is where rebuilding lives.
+- ~~**The fields this round holds by hand.**~~ **Done for the region ones (round 10).**
+  Where the Fool is travels as one `regions` section of the file - `current_region_id`,
+  `last_waystation_id` and the append-only `visited_waystations` set fast travel reads
+  (`docs/design/progression.md` §Waystations). They are still fields on `SaveService`,
+  written through its setters by `RegionService` and by nothing else, because the save
+  model is the one home for the fact: a playthrough and its save cannot disagree about
+  where the Fool was standing. The **difficulty mode** is still held by hand until
+  combat/settings own it.
+- **The `regions` section replaced two loose fields, inside v1.** `current_region_id`
+  and `last_waystation_id` used to sit at the top level of the file. Folding them in
+  (with the visited set) changed the v1 shape rather than bumping the schema, which is
+  only defensible because **v1 has never shipped**: there is no save on any disk but a
+  developer's, and the fixtures were rewritten with it. The next shape change after a
+  build reaches a player is a v2 and a migration, per `SaveSchema`.
 - **`inventory`** is still written empty in v1, so the round that fills it
   (progression, round 11) finds the field already there and needs no schema bump.
   `pocket_spread` was the same until the Trumps round (round 6) filled it with the

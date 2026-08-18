@@ -32,8 +32,13 @@
 	},
 	"pocket_spread": {},
 	"inventory": {},
-	"current_region_id": "THE_PRESTIGE",
-	"last_waystation_id": "THE_PRESTIGE_WAYSTATION",
+	"regions": {
+		"current_region_id": "PRESTIGE",
+		"last_waystation_id": "WAYSTATION_PRESTIGE",
+		"visited_waystations": [
+			"WAYSTATION_PRESTIGE"
+		]
+	},
 	"playtime_seconds": 4321.5,
 	"difficulty_mode": "TRIAL"
 }

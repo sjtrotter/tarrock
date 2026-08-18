@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"CONFLUENCE"
+card_number = 14
+name_key = &"REGION_CONFLUENCE_NAME"
+unbinding_flag = &"WS_TEMPERANCE_UNBOUND"
+difficulty_band = 2
+summary = "A delta city where two rivers pour eternally between two colossal cups and nothing may ever be finished — bridges half-built for 300 years, perfect tea eternally steeping. Alchemists, mixers, diplomats."
+scene_path = "res://scenes/regions/confluence.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_CONFLUENCE"])
+doc_ref = "docs/design/world.md §Regions"

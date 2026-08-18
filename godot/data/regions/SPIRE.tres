@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"SPIRE"
+card_number = 16
+name_key = &"REGION_SPIRE_NAME"
+unbinding_flag = &"WS_TOWER_UNBOUND"
+difficulty_band = 3
+summary = "A lightning-struck tower frozen mid-collapse: rubble hangs in the air, staircases end in sky. Vertical dungeon-region ascended through suspended debris — a side-view sequence (§Side-view sequences). The Stall's violence made visible."
+scene_path = "res://scenes/regions/spire.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_SPIRE"])
+doc_ref = "docs/design/world.md §Regions"

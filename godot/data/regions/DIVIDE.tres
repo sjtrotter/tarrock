@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"DIVIDE"
+card_number = 6
+name_key = &"REGION_DIVIDE_NAME"
+unbinding_flag = &"WS_LOVERS_UNBOUND"
+difficulty_band = 1
+summary = "A canyon splitting the southern east — two towns glaring across it, joined by an unfinished bridge and an unsealed engagement. Every ferryman is a gossip. Romantic, ridiculous, quietly sad."
+scene_path = "res://scenes/regions/divide.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_DIVIDE"])
+doc_ref = "docs/design/world.md §Regions"

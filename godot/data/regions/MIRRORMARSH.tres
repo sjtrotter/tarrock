@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"MIRRORMARSH"
+card_number = 18
+name_key = &"REGION_MIRRORMARSH_NAME"
+unbinding_flag = &"WS_MOON_UNBOUND"
+difficulty_band = 3
+summary = "Fog wetlands where paths, lights, and faces lie. Its \"monsters\" are lost people wearing the fog's masks. Hard-gated on true light."
+scene_path = "res://scenes/regions/mirrormarsh.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_MIRRORMARSH"])
+doc_ref = "docs/design/world.md §Regions"

@@ -113,13 +113,19 @@ func test_capture_reflects_the_live_world_state() -> void:
 func test_capture_carries_the_clock_and_the_fields_this_round_owns() -> void:
 	_clock.advance(90.0)
 	_service.loaded_playtime_seconds = 10.0
-	_service.set_current_region(&"THE_PRESTIGE")
-	_service.set_last_waystation(&"THE_PRESTIGE_WAYSTATION")
+	_service.set_current_region(RegionIds.PRESTIGE)
+	_service.set_last_waystation(RegionIds.WAYSTATION_PRESTIGE)
+	assert_true(_service.mark_waystation_visited(RegionIds.WAYSTATION_CLIFF))
+	assert_false(
+		_service.mark_waystation_visited(RegionIds.WAYSTATION_CLIFF),
+		"a Waystation is visited once, however often it is rested at"
+	)
 	_service.set_difficulty(DifficultyMode.Id.TRIAL)
 	var model := _service.capture()
+	assert_eq(model.visited_waystations, [RegionIds.WAYSTATION_CLIFF])
 	assert_almost_eq(model.playtime_seconds, 100.0, 0.001, "playtime accumulates across sessions")
-	assert_eq(model.current_region_id, &"THE_PRESTIGE")
-	assert_eq(model.last_waystation_id, &"THE_PRESTIGE_WAYSTATION")
+	assert_eq(model.current_region_id, RegionIds.PRESTIGE)
+	assert_eq(model.last_waystation_id, RegionIds.WAYSTATION_PRESTIGE)
 	assert_eq(model.difficulty_mode, DifficultyMode.Id.TRIAL)
 
 
@@ -132,7 +138,7 @@ func test_a_new_playthrough_captures_as_journey() -> void:
 
 func test_a_written_slot_reads_back_as_the_same_playthrough() -> void:
 	_play_a_while()
-	_service.set_current_region(&"THE_PRESTIGE")
+	_service.set_current_region(RegionIds.PRESTIGE)
 	_service.set_difficulty(DifficultyMode.Id.STORY)
 	var written := _service.capture()
 	assert_eq(_service.write_slot(0, written).size(), 0, "a valid model writes")
@@ -382,8 +388,10 @@ func test_the_played_fixture_reads_and_restores_a_whole_playthrough() -> void:
 	assert_eq(world.quest_state(&"MQ02"), &"in_progress")
 
 	assert_eq(loader.difficulty(), DifficultyMode.Id.TRIAL)
-	assert_eq(loader.current_region_id(), &"THE_PRESTIGE")
-	assert_eq(loader.last_waystation_id(), &"THE_PRESTIGE_WAYSTATION")
+	assert_eq(loader.current_region_id(), RegionIds.PRESTIGE)
+	assert_eq(loader.last_waystation_id(), RegionIds.WAYSTATION_PRESTIGE)
+	assert_true(loader.has_visited_waystation(RegionIds.WAYSTATION_CLIFF))
+	assert_eq(loader.visited_waystations().size(), 2, "both visited Waystations load")
 	assert_almost_eq(loader.loaded_playtime_seconds, 4321.5, 0.001)
 
 

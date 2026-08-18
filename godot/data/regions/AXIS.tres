@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"AXIS"
+card_number = 21
+name_key = &"REGION_AXIS_NAME"
+unbinding_flag = &"WS_WORLD_UNBOUND"
+difficulty_band = 4
+summary = "The still center. A wreath-shaped amphitheater of white stone; a single figure dancing, and has been, for three hundred years. Always open. The end."
+scene_path = "res://scenes/regions/axis.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_AXIS"])
+doc_ref = "docs/design/world.md §Regions"

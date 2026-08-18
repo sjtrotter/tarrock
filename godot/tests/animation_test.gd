@@ -16,7 +16,10 @@ var _frame := 0
 
 
 func _initialize() -> void:
-	var packed_scene: PackedScene = load("res://scenes/the_cliff.tscn")
+	# The persistent layer, not the Cliff: from round 10 the Fool and Pip live above
+	# the region scene, and booting the layer is what puts a region under them
+	# (`docs/design/technical.md` §Regions and the persistent layer).
+	var packed_scene: PackedScene = load("res://scenes/persistent_layer.tscn")
 	root.add_child(packed_scene.instantiate())
 
 

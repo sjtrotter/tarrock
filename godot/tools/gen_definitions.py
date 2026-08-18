@@ -30,6 +30,11 @@ What it reads, and what each source produces:
                           §Other enemy families    (52 Blanks), plus one stub per
                                                    other family, plus the enemy
                                                    catalog and the EnemyIds constants
+    docs/design/world.md  §Regions              -> one RegionDefinition per bullet
+                          §Intended difficulty      (22: the Cliff plus I-XXI), plus
+                            bands                   the region catalog, the RegionIds
+                                                    constants and the region-name
+                                                    translation table
 
 A Trump's *effects* are deliberately NOT generated, for the same reason a quest's
 state graph is not: what a Trump does is prose, hand-authored under
@@ -41,6 +46,13 @@ effects are not: `combat.md` §Enemies is two tables of ROLE and states no figur
 all, so every enemy number is hand-authored in `godot/data/enemies/enemy_rules.tres`
 and a generated `EnemyDefinition` holds identity plus the doc's own cells. The
 generator never writes `enemy_rules.tres`.
+
+A region's *adjacency* is deliberately NOT generated: `world.md` §Layout draws the
+wheel as an ASCII picture, and a parser turning a picture into a graph would be
+inventing canon. The edges are hand-authored in
+`godot/data/regions/region_graph.tres` with a `notes` line per edge saying which
+sentence of §Layout they were read from, and a human reviews them against the
+diagram. The generator never writes that file.
 
 A quest's *state graph* is deliberately NOT generated: it is hand-authored under
 `godot/data/quests/graphs/<ID>.tres`, and a generated definition merely links to it
@@ -129,6 +141,14 @@ ENEMY_CATALOG_SCRIPT = "res://systems/enemies/definitions/enemy_catalog.gd"
 ENEMY_CATALOG_PATH = f"{ENEMY_DATA_DIR}/catalog.tres"
 ENEMY_IDS_PATH = f"{ENEMY_SYSTEM_DIR}/enemy_ids.gd"
 
+REGION_DATA_DIR = "data/regions"
+REGION_SYSTEM_DIR = "systems/regions"
+REGION_DEFINITION_SCRIPT = "res://systems/regions/definitions/region_definition.gd"
+REGION_CATALOG_SCRIPT = "res://systems/regions/definitions/region_catalog.gd"
+REGION_CATALOG_PATH = f"{REGION_DATA_DIR}/catalog.tres"
+REGION_IDS_PATH = f"{REGION_SYSTEM_DIR}/region_ids.gd"
+REGION_NAMES_CSV_PATH = f"{LOCALIZATION_DIR}/regions.csv"
+
 # Hand-authored files that live inside a generated directory. They are NOT swept as
 # stale and are never written by this tool: `spread_rules.tres` is authored from
 # `docs/design/progression.md`'s prose (the numbers it fixes and the ones it leaves
@@ -139,6 +159,10 @@ HAND_AUTHORED_PATHS = {
     # `combat.md`'s prose (which fixes shapes and states no figures), which no table
     # in the docs can produce.
     f"{ENEMY_DATA_DIR}/enemy_rules.tres",
+    # `region_graph.tres` is the same shape: who touches whom, read off `world.md`
+    # §Layout's ASCII wheel by a person, because a picture is not a table and a
+    # parser reading it would be inventing canon (see `RegionGraph`'s class doc).
+    f"{REGION_DATA_DIR}/region_graph.tres",
 }
 
 # Every directory this tool writes into, and what it owns there: anything matching
@@ -166,9 +190,16 @@ GENERATED_GLOBS = {
     ENEMY_DATA_DIR: ["*.tres"],
     ENEMY_BLANK_DATA_DIR: ["*.tres"],
     ENEMY_SYSTEM_DIR: [ENEMY_IDS_PATH.rsplit("/", 1)[-1]],
+    # `data/regions/*.tres` holds the twenty-two region definitions and the catalog.
+    # `region_graph.tres` lives in the same directory and is HAND-AUTHORED - the
+    # adjacency is a reading of a diagram, not a table - so it is spared by
+    # `HAND_AUTHORED_PATHS` rather than by a narrower glob, by name, once.
+    REGION_DATA_DIR: ["*.tres"],
+    REGION_SYSTEM_DIR: [REGION_IDS_PATH.rsplit("/", 1)[-1]],
     LOCALIZATION_DIR: [
         QUEST_TITLES_CSV_PATH.rsplit("/", 1)[-1],
         TRUMP_NAMES_CSV_PATH.rsplit("/", 1)[-1],
+        REGION_NAMES_CSV_PATH.rsplit("/", 1)[-1],
     ],
 }
 
@@ -1702,6 +1733,338 @@ def enemy_ids_script(enemies: list[Enemy]) -> str:
     return "\n".join(lines)
 
 
+WORLD_DOC_REF = "docs/design/world.md"
+
+# --- Regions (docs/design/world.md) ------------------------------------------
+
+REGIONS_HEADING = "## Regions"
+DIFFICULTY_BANDS_HEADING = "## Intended difficulty bands (soft, never enforced)"
+
+WORLD_REGIONS_DOC_REF = f"{WORLD_DOC_REF} §Regions"
+DIFFICULTY_BANDS_DOC_REF = f"{WORLD_DOC_REF} §Intended difficulty bands"
+
+# `- **The Cliff (0):** A high meadow plateau ...` - the opening line of one region's
+# bullet. The parenthesis carries the card: `0` for the Cliff, a roman numeral for an
+# Arcana's region.
+REGION_BULLET_PATTERN = re.compile(r"^-\s+\*\*(The [^*(]+?)\s+\(([0IVXL]+)\):\*\*\s*(.*)$")
+
+# `- **Band 1 (entry):** Prestige, Bower, ...` - one row of the difficulty list.
+BAND_BULLET_PATTERN = re.compile(r"^-\s+\*\*(.+?):\*\*\s*(.*)$")
+
+# The label in a band bullet -> the `DifficultyBand.Id` ordinal it names. Matched on
+# the lowercased label containing the key, so "Band 1 (entry)" and "Finale" both land.
+BAND_KEYWORDS = (
+    ("entry", 1),
+    ("developing", 2),
+    ("committed", 3),
+    ("finale", 4),
+)
+
+# `DifficultyBand.Id.NONE`: the Cliff, which the doc's band list leaves out because
+# it is outside the Spread (`world.md` §The Spread).
+BAND_NONE = 0
+
+# The region whose Waystations are a NETWORK rather than one shrine
+# (`progression.md` §Waystations: "one per region and along the Longroad";
+# `world.md` §The Longroad: "Includes roadside inns, toll-forts, and the Waystation
+# network"). The compass suffixes are PLACEHOLDERS - how many there are and where
+# they stand is content design nobody has done, and the doc fixes no number.
+LONGROAD_TOKEN = "LONGROAD"
+LONGROAD_WAYSTATION_SUFFIXES = ("N", "E", "S", "W")
+
+# The Cliff keeps the scene path it has had since round 1: the art lane knows that
+# file by name (`godot/art/ART-REQUESTS.md`), and moving it to buy a tidier
+# convention would cost more than the convention is worth.
+CLIFF_TOKEN = "CLIFF"
+CLIFF_SCENE_PATH = "res://scenes/the_cliff.tscn"
+REGION_SCENE_DIR = "res://scenes/regions"
+
+
+class Region:
+    """One generated RegionDefinition."""
+
+    def __init__(
+        self,
+        token: str,
+        name: str,
+        card_number: int,
+        unbinding_flag: str,
+        band: int,
+        summary: str,
+    ) -> None:
+        self.token = token
+        self.name = name
+        self.card_number = card_number
+        self.unbinding_flag = unbinding_flag
+        self.band = band
+        self.summary = summary
+
+    @property
+    def name_key(self) -> str:
+        return f"REGION_{self.token}_NAME"
+
+    @property
+    def resource_path(self) -> str:
+        return f"{REGION_DATA_DIR}/{self.token}.tres"
+
+    @property
+    def scene_path(self) -> str:
+        if self.token == CLIFF_TOKEN:
+            return CLIFF_SCENE_PATH
+        return f"{REGION_SCENE_DIR}/{self.token.lower()}.tscn"
+
+    @property
+    def waystation_ids(self) -> list[str]:
+        if self.token == LONGROAD_TOKEN:
+            return [
+                f"WAYSTATION_{self.token}_{suffix}"
+                for suffix in LONGROAD_WAYSTATION_SUFFIXES
+            ]
+        return [f"WAYSTATION_{self.token}"]
+
+
+def parse_region_bullets(doc_path: Path) -> list[tuple[str, int, str]]:
+    """`(name, card number, whole bullet)` for every region bullet in §Regions.
+
+    A bullet wraps over several indented lines; the whole of it is the region's
+    `summary`, dewrapped to one line so the resource holds the doc's own words
+    rather than the doc's own line breaks.
+    """
+    found: list[tuple[str, int, str]] = []
+    name = ""
+    card_number = -1
+    parts: list[str] = []
+    for line in read_section(doc_path, REGIONS_HEADING):
+        match = REGION_BULLET_PATTERN.match(line)
+        if match:
+            if name:
+                found.append((name, card_number, " ".join(parts).strip()))
+            name = match.group(1).strip()
+            card_number = parse_card_number(name, match.group(2))
+            parts = [match.group(3).strip()]
+            continue
+        if not name:
+            continue
+        if line.startswith("  ") and line.strip():
+            parts.append(line.strip())
+            continue
+        if not line.strip():
+            continue
+        # An unindented, non-bullet line ends the list: the section's closing prose.
+        found.append((name, card_number, " ".join(parts).strip()))
+        name = ""
+        parts = []
+    if name:
+        found.append((name, card_number, " ".join(parts).strip()))
+    if not found:
+        raise GeneratorError(f"{doc_path} {REGIONS_HEADING} has no region bullets")
+    return found
+
+
+def parse_card_number(name: str, numeral: str) -> int:
+    """`0` or a roman numeral, as the card number the region's bullet gives it."""
+    if numeral == "0":
+        return 0
+    if numeral not in ROMAN_NUMERALS:
+        raise GeneratorError(f"{name} carries the card {numeral!r}, which is no numeral")
+    return ROMAN_NUMERALS[numeral]
+
+
+def dewrapped_bullets(lines: list[str]) -> list[str]:
+    """`lines` with each wrapped bullet joined back onto one line.
+
+    A band bullet runs past the doc's column limit and continues indented; reading it
+    line by line would drop half of Band 2 (`world.md` wraps it after "Confluence,").
+    """
+    joined: list[str] = []
+    for line in lines:
+        if joined and line.startswith("  ") and line.strip() and not line.lstrip().startswith("- "):
+            joined[-1] = "%s %s" % (joined[-1], line.strip())
+            continue
+        joined.append(line)
+    return joined
+
+
+def parse_difficulty_bands(doc_path: Path) -> dict[str, int]:
+    """`region token -> DifficultyBand.Id ordinal` from §Intended difficulty bands."""
+    bands: dict[str, int] = {}
+    for line in dewrapped_bullets(read_section(doc_path, DIFFICULTY_BANDS_HEADING)):
+        match = BAND_BULLET_PATTERN.match(line)
+        if not match:
+            continue
+        label = match.group(1).lower()
+        band = next((value for key, value in BAND_KEYWORDS if key in label), 0)
+        if not band:
+            raise GeneratorError(f"the band {match.group(1)!r} is none this build knows")
+        for entry in match.group(2).split(","):
+            bare = REGION_GLOSS_PATTERN.sub("", unwrap(entry)).strip()
+            if not bare:
+                continue
+            token = region_token(bare)
+            if token in bands:
+                raise GeneratorError(f"{token} is in two difficulty bands")
+            bands[token] = band
+    if not bands:
+        raise GeneratorError(f"{doc_path} {DIFFICULTY_BANDS_HEADING} lists no regions")
+    return bands
+
+
+def parse_world_regions(doc_path: Path, flags: list[Flag], glossary: dict[str, str]) -> list[Region]:
+    """Every region bullet in `world.md` §Regions, in card order.
+
+    Cross-checked against the glossary's own region table in the same pass: the two
+    docs list the same twenty-two places, and a region added to one and not the other
+    is a canon edit that stopped half way. `docs/GLOSSARY.md` owns the names
+    (CLAUDE.md), so a mismatch fails here rather than shipping two spellings.
+    """
+    unbinding_by_card = {
+        flag.arcana_number: flag.state_id for flag in flags if flag.is_unbinding
+    }
+    bands = parse_difficulty_bands(doc_path)
+    glossary_tokens = {
+        token for name, token in glossary.items() if name != SPREAD_REGION_NAME
+    }
+    regions: list[Region] = []
+    for name, card_number, summary in parse_region_bullets(doc_path):
+        token = region_token(name)
+        if token not in glossary_tokens:
+            raise GeneratorError(f"{name} is in world.md §Regions but not in the glossary")
+        band = bands.get(token, BAND_NONE)
+        if card_number == 0:
+            if band != BAND_NONE:
+                raise GeneratorError("the Cliff is outside the Spread and has no band")
+            unbinding = ""
+        else:
+            if band == BAND_NONE:
+                raise GeneratorError(f"{name} is in no difficulty band")
+            unbinding = unbinding_by_card.get(card_number, "")
+            if not unbinding:
+                raise GeneratorError(f"no matrix row unbinds card {card_number} ({name})")
+        regions.append(Region(token, name, card_number, unbinding, band, summary))
+    tokens = {region.token for region in regions}
+    missing = sorted(glossary_tokens - tokens)
+    if missing:
+        raise GeneratorError(
+            "the glossary has regions world.md §Regions does not: %s" % ", ".join(missing)
+        )
+    regions.sort(key=lambda region: region.card_number)
+    return regions
+
+
+def region_resource(region: Region) -> str:
+    """One `data/regions/<TOKEN>.tres`."""
+    script_id = "1_region"
+    body = resource_header("RegionDefinition", [("Script", REGION_DEFINITION_SCRIPT, script_id)])
+    body += "\n".join(
+        [
+            "[resource]",
+            'script = ExtResource("%s")' % script_id,
+            'id = &"%s"' % region.token,
+            "card_number = %d" % region.card_number,
+            'name_key = &"%s"' % region.name_key,
+            'unbinding_flag = &"%s"' % region.unbinding_flag,
+            "difficulty_band = %d" % region.band,
+            'summary = "%s"' % escape(region.summary),
+            'scene_path = "%s"' % region.scene_path,
+            "waystation_ids = %s" % string_name_array(region.waystation_ids),
+            'doc_ref = "%s"' % escape(WORLD_REGIONS_DOC_REF),
+            "",
+        ]
+    )
+    return body
+
+
+def region_catalog_resource(regions: list[Region]) -> str:
+    """`data/regions/catalog.tres`, referencing every region in card order."""
+    definition_id = "1_region"
+    catalog_id = "2_catalog"
+    ext_resources = [
+        ("Script", REGION_DEFINITION_SCRIPT, definition_id),
+        ("Script", REGION_CATALOG_SCRIPT, catalog_id),
+    ]
+    entry_ids: list[str] = []
+    for index, region in enumerate(regions, start=3):
+        entry_id = "%d_%s" % (index, region.token.lower())
+        entry_ids.append(entry_id)
+        ext_resources.append(("Resource", "res://" + region.resource_path, entry_id))
+    body = resource_header("RegionCatalog", ext_resources)
+    entries = ", ".join('ExtResource("%s")' % entry_id for entry_id in entry_ids)
+    body += "\n".join(
+        [
+            "[resource]",
+            'script = ExtResource("%s")' % catalog_id,
+            'entries = Array[ExtResource("%s")]([%s])' % (definition_id, entries),
+            "",
+        ]
+    )
+    return body
+
+
+def region_ids_script(regions: list[Region]) -> str:
+    """`region_ids.gd`: the one place a region or Waystation id is written in code."""
+    lines = [
+        "class_name RegionIds",
+        "extends RefCounted",
+        "",
+        "## Every region id and every Waystation id, as a constant.",
+        "##",
+        "## GENERATED by `godot/tools/gen_definitions.py` from `%s`" % WORLD_REGIONS_DOC_REF,
+        "## - do not edit by hand; edit the doc and regenerate. A drift test fails when",
+        "## this file and `world.md` disagree.",
+        "##",
+        "## There are %d: the Cliff (0), which sits outside the Spread, and the twenty-one" % len(regions),
+        "## Arcana's regions (I-XXI). The tokens are the ones `SQ-<REGION>-<nn>` quest ids",
+        "## already use - the `docs/GLOSSARY.md` name, uppercased, article dropped.",
+        "##",
+        "## Code never types a region or Waystation id: it names one of these constants,",
+        "## or reads an id off a `RegionDefinition` (docs/design/technical.md, no magic",
+        "## strings). Where the Fool may go from where they are is NOT here - adjacency is",
+        "## hand-authored data in `res://data/regions/region_graph.tres`.",
+        "",
+        "## The regions, in card order (the Cliff first, the Axis last).",
+    ]
+    for region in regions:
+        lines.append(
+            'const %s := &"%s"  # %s' % (region.token, region.token, region.name)
+        )
+    lines.append("")
+    lines.append("## Every region `world.md` §Regions defines, in card order.")
+    lines.append("const ALL: Array[StringName] = [")
+    for region in regions:
+        lines.append("\t%s," % region.token)
+    lines.append("]")
+    lines.append("")
+    lines.append("## The Waystations, region by region. One per region, except the")
+    lines.append("## Longroad's network (`progression.md` §Waystations).")
+    for region in regions:
+        for waystation_id in region.waystation_ids:
+            lines.append('const %s := &"%s"' % (waystation_id, waystation_id))
+    lines.append("")
+    lines.append("## Every Waystation in the Spread, in region order.")
+    lines.append("const WAYSTATIONS: Array[StringName] = [")
+    for region in regions:
+        for waystation_id in region.waystation_ids:
+            lines.append("\t%s," % waystation_id)
+    lines.append("]")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def region_names_csv(regions: list[Region]) -> str:
+    """`localization/regions.csv`: every region's name, keyed.
+
+    A region's name is player-facing text - the map screen draws it on a card - so it
+    leaves the docs as a translation key and arrives here as the English column, the
+    only place the English lives (technical.md §Localization (Godot)). The English is
+    the glossary's own name, article and all: "The Mirrormarsh", never "Mirrormarsh".
+    """
+    lines = ["keys,en"]
+    for region in regions:
+        lines.append("%s,%s" % (region.name_key, csv_field(region.name)))
+    lines.append("")
+    return "\n".join(lines)
+
+
 # --- The generation itself ---------------------------------------------------
 
 
@@ -1714,6 +2077,7 @@ def generate() -> dict[str, str]:
     quests = parse_quests(QUESTS_DIR, regions)
     trumps = parse_trumps(ARCANA_DOC, flags)
     enemies = parse_enemies(COMBAT_DOC)
+    world_regions = parse_world_regions(WORLD_DOC, flags, regions)
 
     files: dict[str, str] = {}
     for flag in flags:
@@ -1736,6 +2100,11 @@ def generate() -> dict[str, str]:
         files[enemy.resource_path] = enemy_resource(enemy)
     files[ENEMY_CATALOG_PATH] = enemy_catalog_resource(enemies)
     files[ENEMY_IDS_PATH] = enemy_ids_script(enemies)
+    for region in world_regions:
+        files[region.resource_path] = region_resource(region)
+    files[REGION_CATALOG_PATH] = region_catalog_resource(world_regions)
+    files[REGION_IDS_PATH] = region_ids_script(world_regions)
+    files[REGION_NAMES_CSV_PATH] = region_names_csv(world_regions)
     return files
 
 

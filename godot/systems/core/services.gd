@@ -14,6 +14,38 @@ extends Node
 ##
 ## Rounds add fields here, in dependency order - see
 ## docs/gauntlet-systems/PROMPT.md for the full order.
+##
+## **A playthrough is a set of services, and starting one throws the old set away.**
+## `new_game()` and `load_game()` call `rebuild()`, which constructs every service
+## again from scratch. That is not tidiness: `SaveService.apply()` refuses to load
+## into a world that has already been played (a fired flag can never be un-fired), so
+## the only honest way to load from a title screen is to build a fresh world and fill
+## it. The old services are dropped, and everything connected to them - their signals
+## included - goes with them.
+##
+## **A world nobody has played is not thrown away, though**, and that is the same rule
+## read the other way. `_ready()` builds the services once; the boot's `new_game()`
+## then finds a world where nothing has fired, nothing has been asked and no quest has
+## moved, and plays in it rather than building a second one a millisecond later and
+## dropping the first. The question asked is `WorldStateService.is_pristine()` - the
+## very question `apply()` asks - so "may this playthrough reuse these services" and
+## "may a save be loaded into them" can never drift apart. Every boot therefore loads
+## and validates the generated catalogs exactly ONCE, which is the whole cost being
+## saved; every later new game or load is a fresh world, as before.
+##
+## THE REATTACH LIST. Two things outlive a rebuild, because they live in the
+## persistent layer rather than in a region scene: the Fool and Pip. Their components
+## hold a service reference each and must be handed the new one, or a new game would
+## be played by a Fool still reporting into the previous playthrough's fight:
+##
+##   * `Fool/FoolCombat.attach_service(combat)` - and through it the Fool's
+##     `Combatant` re-registers with the new `CombatService`;
+##   * `Pip/PipCompanion.attach_service(pip)`;
+##   * anything a later round adds to the layer with an `attach_*` of its own.
+##
+## `rebuilt` is emitted for exactly that, and `PersistentLayer` is what listens: this
+## node knows the services, the layer knows the nodes, and neither reaches into the
+## other's half (`docs/design/technical.md` §Architecture principles (Godot), 5).
 
 ## The generated definitions `world_state` is built over. Generated from the docs by
 ## `godot/tools/gen_definitions.py`; a drift test fails if they and `docs/` disagree.
@@ -49,6 +81,27 @@ const ENEMY_RULES_PATH := "res://data/enemies/enemy_rules.tres"
 ## The hand-authored numbers Pip's command wheel, his three commands and his retreat
 ## run on (`docs/design/combat.md` §Pip).
 const PIP_RULES_PATH := "res://data/pip/pip_rules.tres"
+
+## The generated regions `regions` is built over - one per `docs/design/world.md`
+## §Regions bullet - and the HAND-AUTHORED adjacency, which is a reading of that
+## doc's §Layout diagram rather than a table anything could generate
+## (`RegionGraph`).
+const REGION_CATALOG_PATH := "res://data/regions/catalog.tres"
+const REGION_GRAPH_PATH := "res://data/regions/region_graph.tres"
+
+## The first quest of the game, started by `new_game()` and by nothing else, and the
+## conversation that plays over the black screen before the Cliff is drawn
+## (`docs/quests/main/MQ00-the-leap.md`).
+const FIRST_QUEST := QuestIds.MQ00
+const FIRST_DIALOGUE := DialogueIds.MQ00_WAKE
+
+## Where a new playthrough begins: the Cliff, on its own spawn marker.
+## `docs/design/world.md` §The Cliff - the tutorial plateau outside the Spread.
+const FIRST_REGION := RegionIds.CLIFF
+
+## Every service was thrown away and built again: a new game, or a load. Whoever holds
+## a service reference across it re-reads its field (see THE REATTACH LIST above).
+signal rebuilt()
 
 ## In-game elapsed time. Paused by menus; advanced here and nowhere else.
 var clock: GameClock = null
@@ -86,10 +139,25 @@ var enemies: EnemyService = null
 ## own `fool_defeated`.
 var pip: PipService = null
 
+## Where the Fool is, where they may go, what a Waystation does, and the one service
+## allowed to load or free a region scene. Built after `save`, which is where the
+## Fool's position actually lives, and after `combat`, whose `fool_defeated` closes
+## the defeat loop back onto the last Waystation rested at.
+var regions: RegionService = null
+
 ## Versioned JSON saves in `user://saves/`, with the explicit migration chain.
 ## It captures out of the services above it and applies back into them - which is why
 ## it is built last and holds them, rather than the other way round.
 var save: SaveService = null
+
+## The swapper the persistent layer registered, kept across a rebuild because the
+## layer is not rebuilt with the services under it.
+var _region_swapper: RegionSwapper = null
+
+## Where saves are read and written. A field rather than the constant so a test can
+## point a whole composition root at a scratch directory.
+var _saves_dir: String = SaveService.DEFAULT_SAVES_DIR
+
 
 ## The quest state machines - and the ONLY writer of world state. Scenes, combat and
 ## dialogue raise events here; this is what turns one into a permanent change.
@@ -103,6 +171,23 @@ var dialogue: DialogueService = null
 
 
 func _ready() -> void:
+	rebuild()
+
+	# The clock ticks on process frames, not physics: one tick per rendered frame,
+	# independent of the physics tick rate. The delta handed over is the engine's,
+	# so `Engine.time_scale` scales in-game time along with everything else it
+	# slows down - that is the contract, see `GameClock`'s class doc.
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
+
+## Build - or rebuild - every service, in dependency order.
+##
+## Called once at boot and again for every new game and every load that finds a world
+## somebody has already played in; see the class doc for why such a world cannot be
+## reused, and `rebuild_if_played()` for the question. Emits `rebuilt` at the end,
+## which is the persistent layer's cue to re-attach the Fool and Pip (THE REATTACH
+## LIST).
+func rebuild() -> void:
 	# Dependency order: each service is handed the ones above it, never looked up.
 	clock = GameClock.new()
 	world_state = _build_world_state()
@@ -113,9 +198,7 @@ func _ready() -> void:
 	combat = CombatService.new(_load_combat_rules(), fortune, spread, rose, clock)
 	enemies = _build_enemies(combat.rules())
 	pip = PipService.new(_load_pip_rules(), combat)
-	save = SaveService.new(
-		world_state, clock, SaveService.DEFAULT_SAVES_DIR, null, spread, fortune, rose
-	)
+	save = SaveService.new(world_state, clock, _saves_dir, null, spread, fortune, rose)
 	# The chosen difficulty is save data (`SaveModel.difficulty_mode`), so combat is
 	# told once the save service exists to be asked. A settings screen that changes it
 	# mid-play calls `combat.set_difficulty()` itself - that wiring is the UI round's,
@@ -123,12 +206,11 @@ func _ready() -> void:
 	combat.set_difficulty(save.difficulty())
 	quests = _build_quests()
 	dialogue = _build_dialogue()
-
-	# The clock ticks on process frames, not physics: one tick per rendered frame,
-	# independent of the physics tick rate. The delta handed over is the engine's,
-	# so `Engine.time_scale` scales in-game time along with everything else it
-	# slows down - that is the contract, see `GameClock`'s class doc.
-	process_mode = Node.PROCESS_MODE_ALWAYS
+	regions = _build_regions()
+	# The layer registered its swapper before any of this was rebuilt, and it is the
+	# same layer either way: the scene above the services outlives the services.
+	regions.set_swapper(_region_swapper)
+	rebuilt.emit()
 
 
 func _process(delta: float) -> void:
@@ -255,6 +337,146 @@ func _build_quests() -> QuestService:
 		for problem: String in catalog.validate(world_states):
 			push_error(problem)
 	return QuestService.new(world_state, catalog)
+
+
+# --- Starting and loading a playthrough --------------------------------------
+
+
+## Register the persistent layer's scene swapper. Called once, by the layer.
+##
+## Held here rather than only on `RegionService`, because the service is thrown away
+## and rebuilt for every new game and every load while the layer above it is not:
+## this is the one reference that has to survive the rebuild.
+func set_region_swapper(swapper: RegionSwapper) -> void:
+	_region_swapper = swapper
+	if regions != null:
+		regions.set_swapper(swapper)
+
+
+## Where this composition root reads and writes saves.
+func saves_dir() -> String:
+	return _saves_dir
+
+
+## Point the whole composition root at another save directory, and rebuild onto it.
+## For a test that must not write into the player's saves; never called in play.
+func set_saves_dir(directory: String) -> void:
+	_saves_dir = directory
+	rebuild()
+
+
+## Build every service again, unless the ones standing are a world nobody has played.
+##
+## The one question `new_game()` and `load_game()` ask before they start, and it is
+## `SaveService.apply()`'s own: a played world can never be un-played (a fired flag
+## cannot be un-fired), so it is thrown away and built fresh; a pristine one is exactly
+## what a rebuild would have produced, so it is kept, and the boot stops loading and
+## validating every generated catalog twice.
+##
+## True when the services were rebuilt.
+func rebuild_if_played() -> bool:
+	if world_state != null and world_state.is_pristine():
+		return false
+	rebuild()
+	return true
+
+
+## Start a new playthrough. True when the Fool is on the Cliff with MQ00 running.
+##
+## The whole opening of the game, in the order it happens:
+##
+##   1. every service is built again unless the ones standing are still untouched, so
+##      a new game is always played in a world nobody has touched (see the class doc
+##      and `rebuild_if_played()`);
+##   2. the Fool is placed on the Cliff - `RegionService` asks the layer to instance
+##      the region scene, and the layer does it as the frame ends;
+##   3. MQ00 starts. This used to be the Cliff scene's own doing, which meant the
+##      tutorial region carried the "begin the game" verb; a second region would have
+##      inherited the same wiring. It belongs here, where there is one of it.
+##   4. the Querent says the first lines. `MQ00_WAKE` plays over a black screen
+##      "before the region loads" (`docs/quests/main/MQ00-the-leap.md`), which is why
+##      the region never started it and why nothing here waits for it to end.
+func new_game() -> bool:
+	rebuild_if_played()
+	if regions == null or quests == null:
+		return false
+	if not regions.place_at(FIRST_REGION, RegionService.DEFAULT_ARRIVAL):
+		return false
+	quests.start(FIRST_QUEST)
+	if dialogue != null:
+		dialogue.start(FIRST_DIALOGUE)
+	return true
+
+
+## Write the playthrough to a save slot. True when the file is on disk.
+##
+## The counterpart of `load_game()`, and the reason both live here: capturing a
+## playthrough is a question for the composition root, which is what holds every
+## service the answer is assembled from. A caller (a save menu, a Waystation, a test)
+## names a slot and gets a yes or a no; the diagnostics go to the log, because a save
+## that failed to write is not a thing a player can be asked to fix.
+func save_game(slot: int) -> bool:
+	if save == null:
+		return false
+	var model := save.capture()
+	if model == null:
+		return false
+	var problems := save.write_slot(slot, model)
+	for problem: String in problems:
+		push_error(problem)
+	return problems.is_empty()
+
+
+## Load a playthrough from a save slot. True when the world and the Fool are back.
+##
+## Rebuild, read, apply, then travel: the fresh world `SaveService.apply()` insists on
+## is the one standing after `rebuild_if_played()` - either just built, or never played
+## in - and the region the file names is where the Fool stood. The arrival is the Waystation they last rested at when the save has
+## one - `combat.md` §Defeat's "last Waystation rested at" is also the right place to
+## put someone opening the game again - and the region's own spawn marker otherwise.
+func load_game(slot: int) -> bool:
+	rebuild_if_played()
+	if save == null or regions == null:
+		return false
+	var result := save.read_slot(slot)
+	if not result.ok:
+		return false
+	var problems := save.apply(result.model)
+	if not problems.is_empty():
+		for problem: String in problems:
+			push_error(problem)
+		return false
+	var region_id := save.current_region_id()
+	if region_id == RegionService.UNSET:
+		region_id = FIRST_REGION
+	var arrival := save.last_waystation_id()
+	var target := regions.definition(region_id)
+	if arrival == RegionService.UNSET or target == null or not target.has_waystation(arrival):
+		arrival = RegionService.DEFAULT_ARRIVAL
+	# A placement, not a journey: `apply()` has already told the save where the Fool
+	# was standing, so there is nowhere to travel FROM (see `RegionService.place_at`).
+	return regions.place_at(region_id, arrival)
+
+
+## Load the generated regions and the hand-authored adjacency, and build the service.
+##
+## Validated on the way in for the same reason the other catalogs are, and with the
+## cross-references only this call can make: the world-state catalog resolves every
+## region's unbinding flag and every gate flag on the graph (a door that waits on a
+## flag the matrix never defines is a door that never opens), and the Trump catalog
+## resolves the "true light" the Mirrormarsh asks for.
+func _build_regions() -> RegionService:
+	var catalog: RegionCatalog = load(REGION_CATALOG_PATH) as RegionCatalog
+	var graph: RegionGraph = load(REGION_GRAPH_PATH) as RegionGraph
+	var world_states: WorldStateCatalog = load(WORLD_STATE_CATALOG_PATH) as WorldStateCatalog
+	var trump_catalog: TrumpCatalog = load(TRUMP_CATALOG_PATH) as TrumpCatalog
+	if catalog != null:
+		for problem: String in catalog.validate(world_states):
+			push_error(problem)
+	if graph != null:
+		for problem: String in graph.validate(catalog, world_states, trump_catalog):
+			push_error(problem)
+	return RegionService.new(catalog, graph, world_state, save, rose, spread, combat)
 
 
 ## Load the authored dialogue graphs and build the runner over them.

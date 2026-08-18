@@ -1,14 +1,22 @@
-extends Node2D
+extends RegionScene
 
 ## The Cliff region scene: the tutorial plateau MQ00 plays on.
 ##
 ## Scenes call systems, never the other way round (docs/design/technical.md
 ## §Architecture principles (Godot), 5). This script is the whole of that call for the
-## Cliff: it starts MQ00, listens to the props' `Interactable` nodes, to the
+## Cliff: it listens to the props' `Interactable` nodes, to the Waystation, to the
 ## LeapPoint and to the Waystation ambush, and forwards each one's event to
 ## `QuestService.raise()`. It never writes world state, never decides what an event
 ## means, and never asks a quest where it is - the quest's own graph
 ## (`res://data/quests/graphs/MQ00.tres`) owns the order the beats happen in.
+##
+## **What this scene stopped owning in round 10.** It used to be `run/main_scene`, so
+## it also started MQ00, told the White Rose which region it was standing in, and
+## carried the Fool and Pip as its own children. All three moved up to the persistent
+## layer and `RegionService` (`docs/design/technical.md` §Regions and the persistent
+## layer), where they belong once there is more than one region: the Fool is not the
+## Cliff's, and "begin the game" is not a thing a place does. What is left is what
+## only this place can say.
 
 ## The Fool reached the lip. Kept for the Cliff's own integration test, which
 ## predates the quest system and asserts the scene wiring on its own terms.
@@ -25,11 +33,15 @@ const TRIGGER_ROOT := "World/QuestTriggers"
 ## (`docs/design/combat.md` §Pip).
 const SEEKABLE_ROOT := "World/Seekables"
 
-## Pip's command wheel, in the persistent layer's dog.
-const PIP_COMPANION := "World/Pip/PipCompanion"
+## Pip's command wheel, on the persistent layer's dog - who is NOT a child of this
+## scene: `RegionScene.pip()` is where he comes from.
+const PIP_COMPANION := "PipCompanion"
 
 ## The Bindle sprite, hidden once the Fool has taken it.
 const BINDLE_PROP := "World/Props/Bindle"
+
+## The field of long grass that parts for a passing body.
+const TALL_GRASS := "World/TallGrass"
 
 ## The one authored fight on the plateau: three Twos between the standing stones on
 ## the Waystation approach (`docs/quests/main/MQ00-the-leap.md` §The Waystation
@@ -41,17 +53,6 @@ const WAYSTATION_AMBUSH := "World/Encounters/WaystationAmbush"
 ## The beat the graph answers `MQ00_AMBUSH_CLEARED` from. See `_on_quest_advanced()`
 ## for why the scene has to know it.
 const AMBUSH_ANSWERED_FROM := &"DEAD_TREE_SEEN"
-
-## The Cliff's region token, as `docs/GLOSSARY.md` yields it, and the unbinding flag
-## that would mean this place is awake - which is none.
-##
-## The Cliff has no Arcana and no unbinding of its own (`docs/design/world.md` §The
-## Cliff), so it sits outside the Spread entirely and the White Rose never regrows
-## here. That is also what MQ00 wants: the Waystation rest is the first time the
-## player sees petals come back, and a plateau that quietly refilled them beforehand
-## would spend the lesson early. The Regions round (round 10) takes this over.
-const CLIFF_REGION_ID := &"CLIFF"
-const CLIFF_UNBINDING_FLAG := &""
 
 ## Which conversation belongs to which MQ00 beat: `quest state -> dialogue graph id`.
 ##
@@ -67,9 +68,14 @@ const CLIFF_UNBINDING_FLAG := &""
 ## Four of MQ00's conversations are not here either, because nothing in the scene
 ## reaches them yet: `MQ00_WAKE` plays over a black screen before the region loads
 ## (the opening cut scene, owned by the bootstrap flow), `MQ00_CAMPSITES` needs an
-## area trigger on the fire-rings, `MQ00_WAYSTATION_REST_AGAIN` waits for the
-## Waystation's rest verb (round 10), and `MQ00_LEAP_BEFORE` belongs to the cut scene
+## area trigger on the fire-rings, `MQ00_WAYSTATION_REST_AGAIN` waits for a second rest
+## to be told apart from the first, and `MQ00_LEAP_BEFORE` belongs to the cut scene
 ## that plays after Pip jumps and before the Fool steps off.
+## Where the leap lands. `docs/design/world.md` §Layout gives the Cliff exactly one
+## way off it (the graph carries the edge); this is the marker in the region it
+## arrives on, and the arrival is the crossroads outside the carnival.
+const LEAP_DESTINATION := RegionIds.PRESTIGE
+
 const DIALOGUE_FOR_STATE: Dictionary = {
 	&"BINDLE_TAKEN": DialogueIds.MQ00_MEADOW,
 	&"KEEPSAKE_FOUND": DialogueIds.MQ00_KEEPSAKE_GIVEN,
@@ -81,7 +87,6 @@ const DIALOGUE_FOR_STATE: Dictionary = {
 }
 
 @onready var _leap_point: Area2D = $LeapPoint
-@onready var _fool: CharacterBody2D = $World/Fool
 
 var _leap_fired := false
 
@@ -108,12 +113,12 @@ func _ready() -> void:
 		var seekable := node as Seekable
 		if seekable != null:
 			seekable.found.connect(_on_seekable_found.bind(seekable))
-	# The bootstrap / new-game flow owns starting the Fool's first quest once it
-	# exists (the Regions round owns the persistent layer and who loads what).
-	# Until then the region does it itself, deferred by one call so the `Services`
-	# autoload has certainly finished building when a test instances this scene by
-	# hand before the tree has stepped. The service connections are deferred with it,
-	# for exactly the same reason.
+	# The shrine raises its quest event exactly as a prop does; what a REST is belongs
+	# to `RegionService`, and the node calls it itself (see `Waystation`).
+	for waystation: Waystation in waystations():
+		waystation.triggered.connect(_on_trigger_fired.bind(waystation))
+	# Deferred by one call so the `Services` autoload has certainly finished building
+	# when a test instances this scene by hand before the tree has stepped.
 	_wire_services.call_deferred()
 
 
@@ -124,13 +129,6 @@ func _on_trigger_fired(event: StringName, trigger: Interactable) -> void:
 		var bindle := get_node_or_null(BINDLE_PROP) as Node2D
 		if bindle != null:
 			bindle.visible = false
-	if event == QuestEvents.MQ00_RESTED:
-		# Resting at a Waystation fully regrows the White Rose
-		# (`docs/design/progression.md` §Waystations). The scene calls the system;
-		# the system never reaches back into the scene.
-		var rose := _rose()
-		if rose != null:
-			rose.rest()
 	raise_quest_event(event, trigger)
 
 
@@ -346,9 +344,15 @@ func _wire_services() -> void:
 		dialogue.event_raised.connect(_on_dialogue_event_raised)
 	if dialogue != null and not dialogue.dialogue_ended.is_connected(_on_dialogue_ended):
 		dialogue.dialogue_ended.connect(_on_dialogue_ended)
-	var rose := _rose()
-	if rose != null:
-		rose.set_region(CLIFF_REGION_ID, CLIFF_UNBINDING_FLAG)
+	# The long grass parts for whoever walks through it, and who that is belongs to
+	# the layer above this scene, not to the field (`GrassField.set_bodies`).
+	var grass := get_node_or_null(TALL_GRASS) as GrassField
+	if grass != null:
+		var walkers: Array[Node2D] = []
+		for walker: Node2D in [fool(), pip()]:
+			if walker != null:
+				walkers.append(walker)
+		grass.set_bodies(walkers)
 	# The encounter is a scene node, so the scene is what hands it its services -
 	# exactly as it would hand them to the Fool. It never reaches for them itself.
 	var ambush := _ambush()
@@ -358,18 +362,9 @@ func _wire_services() -> void:
 	# and what answers when his wheel asks the region for something to run at.
 	var companion := _pip_companion()
 	if companion != null:
-		companion.attach_service(_pip())
+		companion.attach_service(_pip_service())
 		if not companion.target_requested.is_connected(_on_pip_target_requested):
 			companion.target_requested.connect(_on_pip_target_requested)
-	_begin_first_quest()
-
-
-func _begin_first_quest() -> void:
-	var quests := _quests()
-	if quests == null:
-		return
-	if not quests.is_started(QuestIds.MQ00):
-		quests.start(QuestIds.MQ00)
 
 
 ## The bare autoload identifier `Services.quests` would read cleaner, and works fine
@@ -412,17 +407,23 @@ func _enemies() -> EnemyService:
 	return services.get("enemies") as EnemyService
 
 
-## Pip's command wheel, looked up the same way and for the same reason.
-func _pip() -> PipService:
+## Pip's command wheel service, looked up the same way and for the same reason.
+## Named for the service rather than for the dog, because `RegionScene` already holds
+## the dog himself as `_pip`.
+func _pip_service() -> PipService:
 	var services := get_node_or_null("/root/Services")
 	if services == null:
 		return null
 	return services.get("pip") as PipService
 
 
-## Pip's wheel component, or `null` in a stripped-down copy of this scene.
+## Pip's wheel component, or `null` when this scene was instanced without a layer
+## above it. He belongs to the persistent layer, not to the Cliff.
 func _pip_companion() -> PipCompanion:
-	return get_node_or_null(PIP_COMPANION) as PipCompanion
+	var dog := pip()
+	if dog == null:
+		return null
+	return dog.get_node_or_null(PIP_COMPANION) as PipCompanion
 
 
 ## The hidden things authored on the plateau. Empty in a scene without the subtree.
@@ -438,22 +439,41 @@ func _ambush() -> Encounter:
 	return get_node_or_null(WAYSTATION_AMBUSH) as Encounter
 
 
-## The White Rose, looked up the same way and for the same reason.
-func _rose() -> WhiteRoseService:
-	var services := get_node_or_null("/root/Services")
-	if services == null:
-		return null
-	return services.get("rose") as WhiteRoseService
-
-
 func _on_leap_point_body_entered(body: Node2D) -> void:
-	if body != _fool and not body.is_in_group(Interactable.FOOL_GROUP):
+	if body != fool() and not body.is_in_group(Interactable.FOOL_GROUP):
 		return
 	# The scene reports where the Fool is; the quest decides whether that means
 	# anything yet. MQ00 only listens for the leap from EDGE_REACHED, so a Fool who
 	# wanders onto the lip early is simply a Fool standing on a lip.
 	raise_quest_event(QuestEvents.MQ00_LEAP, _leap_point)
-	if _leap_fired:
+	if not _leap_fired:
+		_leap_fired = true
+		leap_point_reached.emit()
+	_take_the_leap()
+
+
+## Step off the edge, if MQ00 says the Fool is ready to.
+##
+## `docs/design/world.md` §The Cliff: the plateau is "sealed from the Spread by sheer
+## drop on every side... the sanctioned exit is the leap of faith", and `RegionGraph`
+## carries that as the Cliff's one and only edge. The scene reports the body on the
+## lip; the QUEST decides what standing there means, and only a COMPLETE MQ00 means
+## the leap was taken - a Fool who wandered onto the lip at the start of the game has
+## simply wandered onto a lip.
+##
+## The side-view sequence the leap deserves (§Side-view sequences, 1) is presentation
+## nobody has built: this is the travel underneath it, and the sequence will play over
+## it rather than replace it.
+##
+## The guard is asserted by name in `res://tests/cliff_test.gd` phase 2, which walks the
+## Fool onto the lip while MQ00 is still at WAKING and checks he is still on the Cliff.
+## Without that assertion the guard failing would swap the region out from under the
+## suite and surface as a null or a hang three phases later.
+func _take_the_leap() -> void:
+	var quests := _quests()
+	if quests == null or not quests.is_complete(QuestIds.MQ00):
 		return
-	_leap_fired = true
-	leap_point_reached.emit()
+	var regions := region_service()
+	if regions == null:
+		return
+	regions.travel_to(LEAP_DESTINATION, RegionService.LEAP_ARRIVAL)

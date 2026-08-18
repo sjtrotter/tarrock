@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"DIM"
+card_number = 9
+name_key = &"REGION_DIM_NAME"
+unbinding_flag = &"WS_HERMIT_UNBOUND"
+difficulty_band = 2
+summary = "A mountain of permanent dusk; one lantern-light moves on its far slopes and has never been caught. Lost travelers, hermit shacks, star-blind valleys."
+scene_path = "res://scenes/regions/dim.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_DIM"])
+doc_ref = "docs/design/world.md §Regions"

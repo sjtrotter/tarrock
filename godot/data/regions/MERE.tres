@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"MERE"
+card_number = 17
+name_key = &"REGION_MERE_NAME"
+unbinding_flag = &"WS_STAR_UNBOUND"
+difficulty_band = 3
+summary = "Night-locked lakeland under one impossible star. Wish-wells, pilgrim jetties, water like held breath. The game's quiet, beautiful sanctuary region."
+scene_path = "res://scenes/regions/mere.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_MERE"])
+doc_ref = "docs/design/world.md §Regions"

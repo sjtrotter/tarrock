@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"CHANTRY"
+card_number = 5
+name_key = &"REGION_CHANTRY_NAME"
+unbinding_flag = &"WS_HIEROPHANT_UNBOUND"
+difficulty_band = 1
+summary = "A cathedral-town where the bells have rung the same hour, the same hymn, since the Stall. Doctrine as weather. Choir acoustics everywhere."
+scene_path = "res://scenes/regions/chantry.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_CHANTRY"])
+doc_ref = "docs/design/world.md §Regions"

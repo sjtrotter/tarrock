@@ -28,9 +28,15 @@ extends SceneTree
 ##
 ## That same latch lands the beat the awkward way round: the ambush is reported while
 ## the dead-tree conversation is still on screen, which is what the scene's pending
-## slot is for. The line waits its turn instead of interrupting or vanishing. Phases
-## 13 and 14 push that slot past its one place: two beats behind one conversation,
-## where the newer must win.
+## slot is for. The line waits its turn instead of interrupting or vanishing. Two late
+## phases push that slot past its one place: two beats behind one conversation, where
+## the newer must win.
+##
+## From round 10 the scene under test is the PERSISTENT LAYER, not the Cliff: the Fool
+## and Pip live there, `Services.new_game()` is what starts MQ00, and the Cliff is
+## instanced underneath by `RegionService`. Everything the Cliff itself owns is
+## unchanged and asserted here exactly as before; what moved is who owns the boot. The
+## last phase is the leap, because the leap now takes the Cliff off the screen.
 
 const ISLAND: PackedVector2Array = preload("res://scripts/cliff_ground.gd").ISLAND
 
@@ -80,6 +86,7 @@ var _all_passed := true
 var _frame := 0
 var _phase := 0
 var _phase_frame := 0
+var _layer: PersistentLayer
 var _scene: Node2D
 var _fool: CharacterBody2D
 var _pip: Node2D
@@ -107,15 +114,28 @@ var _pip_walk_start := Vector2.ZERO
 
 
 func _initialize() -> void:
-	var packed_scene: PackedScene = load("res://scenes/the_cliff.tscn")
-	_scene = packed_scene.instantiate() as Node2D
-	root.add_child(_scene)
-	_fool = _scene.get_node_or_null("World/Fool") as CharacterBody2D
-	_pip = _scene.get_node_or_null("World/Pip") as Node2D
+	# The layer boots itself: `Services.new_game()` builds the services, travels to
+	# the Cliff and starts MQ00 (see `PersistentLayer`). Nothing here instances the
+	# region by hand any more - that is the ownership this round moved.
+	var packed_scene: PackedScene = load("res://scenes/persistent_layer.tscn")
+	_layer = packed_scene.instantiate() as PersistentLayer
+	root.add_child(_layer)
+
+
+## Take hold of the region the layer loaded, once it has. Answers false until it has.
+func _find_the_cliff() -> bool:
+	if _scene != null:
+		return true
+	if _layer == null or _layer.region() == null:
+		return false
+	_scene = _layer.region()
+	_fool = _layer.fool() as CharacterBody2D
+	_pip = _layer.pip()
 	_scene.leap_point_reached.connect(_on_leap_point_reached)
 	var earth := _disturbed_earth()
 	if earth != null:
 		earth.found.connect(_on_keepsake_dug)
+	return true
 
 
 func _physics_process(_delta: float) -> bool:
@@ -125,6 +145,10 @@ func _physics_process(_delta: float) -> bool:
 	if _phase == 0:
 		if _frame < 3:
 			return false
+		if not check(_find_the_cliff(), "the persistent layer loaded the Cliff under it"):
+			_all_passed = false
+			_finish()
+			return true
 		_run_initial_checks()
 		if _fool != null:
 			_fool.global_position = Vector2(4200, 1900)
@@ -151,6 +175,21 @@ func _physics_process(_delta: float) -> bool:
 		_all_passed = check(overlapping, "LeapPoint reports the Fool overlapping it") and _all_passed
 		# The emitted signal is the deliverable, not just the overlap - assert it on its own.
 		_all_passed = check(_leap_received, "leap_point_reached signal emitted when the Fool reaches the leap point") and _all_passed
+		# THE GUARD, asserted by name rather than left to a timeout further down.
+		# `the_cliff.gd` `_take_the_leap()`: "only a COMPLETE MQ00 means the leap was
+		# taken - a Fool who wandered onto the lip at the start of the game has simply
+		# wandered onto a lip". MQ00 has not even reached WAKING's first beat here, so
+		# the Fool must still be standing on the Cliff. Were the guard to go, the region
+		# would be swapped out from under this suite and every later phase would fail as
+		# a null or a hang, which is a mystery rather than a diagnosis.
+		_all_passed = check(
+			_regions() != null and _regions().current_region_id() == RegionIds.CLIFF,
+			"and standing on the lip early does not take the leap: MQ00 is the gate"
+		) and _all_passed
+		_all_passed = check(
+			_layer != null and _layer.region() == _scene,
+			"so the Cliff is still the region under the layer"
+		) and _all_passed
 		if _fool != null and _pip != null:
 			_fool.global_position = Vector2(1150, 650)
 			_pip.global_position = Vector2(2150, 650)
@@ -181,7 +220,7 @@ func _physics_process(_delta: float) -> bool:
 			_finish()
 			return true
 		_all_passed = check(
-			_quests.is_started(QuestIds.MQ00), "the Cliff started MQ00 when it loaded"
+			_quests.is_started(QuestIds.MQ00), "the new game started MQ00 as it opened"
 		) and _all_passed
 		_all_passed = _check_state(&"WAKING", "MQ00 begins at WAKING, beside the dead campfire")
 		_dialogue = _dialogue_service()
@@ -189,9 +228,16 @@ func _physics_process(_delta: float) -> bool:
 		if _dialogue == null:
 			_finish()
 			return true
+		# MQ00_WAKE plays over a black screen "before the region loads", so it is the
+		# BOOT's line and not the Cliff's - the region never starts it, and from round
+		# 10 there is a boot to own it (`Services.new_game()`).
+		_all_passed = _check_dialogue(
+			DialogueIds.MQ00_WAKE, "the new game opens on the Querent waking the Fool"
+		)
+		_drain_dialogue()
 		_all_passed = check(
-			not _dialogue.is_active(),
-			"nothing is being said yet - MQ00_WAKE plays over a black screen the region never sees"
+			_regions() != null and _regions().current_region_id() == RegionIds.CLIFF,
+			"and the Fool is standing in the Cliff"
 		) and _all_passed
 		_place(KEEPSAKE_POSITION)
 		_advance_phase()
@@ -346,12 +392,43 @@ func _physics_process(_delta: float) -> bool:
 	if _phase == 12:
 		if _phase_frame < SETTLE_FRAMES:
 			return false
+		var rose := _rose_service()
+		var spent := 0
+		if rose != null:
+			rose.use_petal()
+			spent = rose.petals()
 		_fool.try_interact()
 		_all_passed = _check_state(&"RESTED", "resting at the first Waystation advances MQ00")
 		_all_passed = _check_dialogue(
 			DialogueIds.MQ00_WAYSTATION_REST, "and starts the Querent on what a Waystation is"
 		)
 		_drain_dialogue()
+		# The rest is the Waystation node's, through `RegionService`: the White Rose
+		# comes back whole and the shrine is remembered (`progression.md`
+		# §Waystations, `combat.md` §Defeat).
+		_all_passed = check(
+			rose != null and rose.petals() == rose.max_petals() and spent < rose.max_petals(),
+			"and the White Rose is whole again (%d -> %d)" % [
+				spent, 0 if rose == null else rose.petals()
+			]
+		) and _all_passed
+		var regions := _regions()
+		_all_passed = check(
+			regions != null and regions.last_waystation_id() == RegionIds.WAYSTATION_CLIFF,
+			"the first Waystation is where a defeat would wake the Fool"
+		) and _all_passed
+		_all_passed = check(
+			regions != null and regions.has_visited(RegionIds.WAYSTATION_CLIFF),
+			"and it is marked visited, which is what fast travel later reads"
+		) and _all_passed
+		# The respawn half of the same rest (`progression.md` §Waystations) does not
+		# reach a quest gate: the ambush the player just cleared, twenty paces down the
+		# path, stays cleared (`Encounter.respawns_on_rest`).
+		var ambush := _ambush()
+		_all_passed = check(
+			ambush != null and not ambush.respawns_on_rest and ambush.is_cleared(),
+			"and the ambush the Fool cleared on the way up stays cleared"
+		) and _all_passed
 		_place(CLIFF_EDGE_POSITION)
 		_advance_phase()
 		return false
@@ -369,11 +446,47 @@ func _physics_process(_delta: float) -> bool:
 			"offering the script's four questions"
 		) and _all_passed
 		_drain_dialogue()
+		_advance_phase()
+		return false
+
+	# --- The pending slot holds ONE beat, and the newest wins ----------------
+	#
+	# Staged rather than played: the quest runner's own signal is emitted for two
+	# beats that both land while a conversation is on screen. Replaying the older line
+	# after the newer one would narrate the wrong moment, so the older is dropped -
+	# loudly, in the log, which is why the engine's warnings are muted around the
+	# provocation. Before the leap, because the leap frees this scene and its pending
+	# slot with it.
+	if _phase == 14:
+		_dialogue.start(DialogueIds.MQ00_MEADOW)
+		_all_passed = _check_dialogue(
+			DialogueIds.MQ00_MEADOW, "a conversation is on screen again"
+		)
+		var was_printing := Engine.print_error_messages
+		Engine.print_error_messages = false
+		_quests.quest_advanced.emit(QuestIds.MQ00, &"", &"DEAD_TREE_SEEN")
+		_quests.quest_advanced.emit(QuestIds.MQ00, &"", &"RESTED")
+		Engine.print_error_messages = was_printing
+		_drain_dialogue()
+		_advance_phase()
+		return false
+
+	if _phase == 15:
+		if _phase_frame < SETTLE_FRAMES:
+			return false
+		_all_passed = _check_dialogue(
+			DialogueIds.MQ00_WAYSTATION_REST,
+			"two beats behind one conversation leaves the newer one, not the older"
+		)
+		_drain_dialogue()
 		_place(LEAP_POSITION)
 		_advance_phase()
 		return false
 
-	if _phase == 14:
+	# The leap, and the end of the Cliff: stepping off completes MQ00 and hands the
+	# Fool to the Prestige, which is the one edge `world.md` §The Cliff gives this
+	# place. Nothing may follow this phase - the scene under test is freed by it.
+	if _phase == 16:
 		if _phase_frame < SETTLE_FRAMES:
 			return false
 		_all_passed = _check_state(&"COMPLETE", "stepping off the Cliff completes MQ00")
@@ -389,38 +502,28 @@ func _physics_process(_delta: float) -> bool:
 			DialogueIds.MQ00_LANDING, "and the skydive over the Spread plays after it"
 		)
 		_drain_dialogue()
+		var regions := _regions()
+		_all_passed = check(
+			regions != null and regions.current_region_id() == RegionIds.PRESTIGE,
+			"and the leap of faith carries the Fool off the Cliff to the Prestige"
+		) and _all_passed
 		_advance_phase()
 		return false
 
-	# --- The pending slot holds ONE beat, and the newest wins ----------------
-	#
-	# MQ00 has run out of real transitions by now, so the last two are staged: the
-	# quest runner's own signal is emitted for two beats that both land while a
-	# conversation is on screen. Replaying the older line after the newer one would
-	# narrate the wrong moment, so the older is dropped - loudly, in the log, which
-	# is why the engine's warnings are muted around the provocation.
-	if _phase == 15:
-		_dialogue.start(DialogueIds.MQ00_MEADOW)
-		_all_passed = _check_dialogue(
-			DialogueIds.MQ00_MEADOW, "a conversation is on screen again"
-		)
-		var was_printing := Engine.print_error_messages
-		Engine.print_error_messages = false
-		_quests.quest_advanced.emit(QuestIds.MQ00, &"", &"DEAD_TREE_SEEN")
-		_quests.quest_advanced.emit(QuestIds.MQ00, &"", &"RESTED")
-		Engine.print_error_messages = was_printing
-		_drain_dialogue()
-		_advance_phase()
-		return false
-
-	if _phase == 16:
+	if _phase == 17:
+		# One more frame: the layer performs the swap as the frame ends, so this is
+		# where the new region is actually standing under the persistent layer.
 		if _phase_frame < SETTLE_FRAMES:
 			return false
-		_all_passed = _check_dialogue(
-			DialogueIds.MQ00_WAYSTATION_REST,
-			"two beats behind one conversation leaves the newer one, not the older"
-		)
-		_drain_dialogue()
+		var arrived := _layer.region()
+		_all_passed = check(
+			arrived != null and arrived.region_id == RegionIds.PRESTIGE,
+			"the Prestige is instanced under the layer, and the Cliff is gone"
+		) and _all_passed
+		_all_passed = check(
+			_layer.fool() != null and is_instance_valid(_layer.fool()),
+			"and the Fool survived the region that was freed under him"
+		) and _all_passed
 		_finish()
 		return true
 
@@ -529,11 +632,12 @@ func _seek_reach() -> float:
 	return service.command_radius(PipCommand.Id.SEEK)
 
 
-## Pip's command wheel, or `null` if the scene lost him.
+## Pip's command wheel, or `null` if the layer lost him. He hangs off the persistent
+## layer now, not off the region.
 func _pip_companion() -> PipCompanion:
-	if _scene == null:
+	if _pip == null:
 		return null
-	return _scene.get_node_or_null("World/Pip/PipCompanion") as PipCompanion
+	return _pip.get_node_or_null("PipCompanion") as PipCompanion
 
 
 ## The disturbed earth Pip digs the wooden dog out of, or `null`.
@@ -600,6 +704,22 @@ func _quest_service() -> QuestService:
 	if services == null:
 		return null
 	return services.get("quests") as QuestService
+
+
+## Where the Fool is, looked up the same way `_quest_service()` is.
+func _regions() -> RegionService:
+	var services := root.get_node_or_null("Services")
+	if services == null:
+		return null
+	return services.get("regions") as RegionService
+
+
+## The White Rose, looked up the same way `_quest_service()` is.
+func _rose_service() -> WhiteRoseService:
+	var services := root.get_node_or_null("Services")
+	if services == null:
+		return null
+	return services.get("rose") as WhiteRoseService
 
 
 ## The conversation runner, looked up the same way `_quest_service()` is.

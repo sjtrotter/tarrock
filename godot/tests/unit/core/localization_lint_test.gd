@@ -87,6 +87,10 @@ const DOC_ONLY_PROPERTIES: Array[String] = [
 	# drift checks. NOTHING draws it: an enemy has no player-facing name or blurb in
 	# any doc yet, and the day one exists it is a `name_key` resolved through the CSV.
 	"rank_role_summary",  # the same for the rank cell of the same table
+	"summary",  # a region's whole bullet from world.md §Regions, verbatim, for the
+	# drift test and for the reviewer. NOTHING draws it: a region's player-facing name
+	# is its `name_key`, resolved through localization/regions.csv, and the day the map
+	# screen wants a blurb that blurb is a key too.
 	"family_summary",  # a Beast's or a Fog-mask's whole bullet from combat.md §Other
 	# enemy families, verbatim. Same job, same rule: doc text for reviewers and for the
 	# drift test, never displayed.

@@ -42,10 +42,15 @@ extends RefCounted
 ## already-played service. The composition root has no "restart the world" call yet;
 ## the round that owns the persistent layer and scene switching writes it.
 ##
-## OWED TO LATER ROUNDS: `current_region_id`, `last_waystation_id` and the difficulty
-## mode live here as plain settable fields for now. The Regions round owns where the
-## Fool actually is, and the combat/settings rounds own the difficulty; when they
-## exist, `capture()` asks them instead and the setters go away.
+## WHERE THE FOOL IS: `current_region_id`, `last_waystation_id` and the Waystations
+## visited are held here as fields and written through the setters below, by
+## `RegionService` and by nothing else. They are not duplicated in that service: the
+## save model is the one home for the fact, so a playthrough and its save cannot
+## disagree about where the Fool was standing. They travel as one `regions` section of
+## the file (`SaveModel.FIELD_REGIONS`).
+##
+## OWED TO A LATER ROUND: the difficulty mode is still a plain settable field here;
+## the settings round owns it, and when it exists `capture()` asks it instead.
 
 ## A slot was written to disk.
 signal slot_written(slot: int)
@@ -81,6 +86,7 @@ var _migrations: SaveMigrations = null
 
 var _current_region_id: StringName = SaveModel.UNSET
 var _last_waystation_id: StringName = SaveModel.UNSET
+var _visited_waystations: Array[StringName] = []
 var _difficulty_mode: DifficultyMode.Id = DifficultyMode.DEFAULT
 
 ## Seconds of play carried in from the loaded save. `GameClock` is world time and is
@@ -162,6 +168,7 @@ func capture() -> SaveModel:
 	model.pocket_spread = _capture_progression()
 	model.current_region_id = _current_region_id
 	model.last_waystation_id = _last_waystation_id
+	model.visited_waystations = _visited_waystations.duplicate()
 	model.difficulty_mode = _difficulty_mode
 	model.playtime_seconds = loaded_playtime_seconds + _session_seconds()
 	return model
@@ -223,6 +230,7 @@ func apply(model: SaveModel) -> PackedStringArray:
 		return errors
 	_current_region_id = model.current_region_id
 	_last_waystation_id = model.last_waystation_id
+	_visited_waystations = model.visited_waystations.duplicate()
 	_difficulty_mode = model.difficulty_mode
 	loaded_playtime_seconds = model.playtime_seconds
 	_playtime_baseline = 0.0 if _clock == null else _clock.elapsed_seconds
@@ -304,15 +312,17 @@ func _section(progression: Dictionary, key: String, errors: PackedStringArray) -
 	return {}
 
 
-# --- The fields the later rounds will take over ------------------------------
+# --- Where the Fool is (the `regions` section) --------------------------------
 
 
-## The region the Fool is in, as `capture()` will record it.
+## The region the Fool is, as `capture()` will record it.
 func current_region_id() -> StringName:
 	return _current_region_id
 
 
-## Record which region the Fool is in. The Regions round takes this over.
+## Record which region the Fool is in. Called by `RegionService` and by nothing else:
+## the Fool's position is one fact, it lives in the save model, and the region service
+## drives it (see that service's class doc).
 func set_current_region(region_id: StringName) -> void:
 	_current_region_id = region_id
 
@@ -322,9 +332,34 @@ func last_waystation_id() -> StringName:
 	return _last_waystation_id
 
 
-## Record which Waystation the Fool last rested at. The Regions round takes this over.
+## Record which Waystation the Fool last rested at - where a defeat wakes them
+## (`docs/design/combat.md` §Defeat). Called by `RegionService.rest_at()`.
 func set_last_waystation(waystation_id: StringName) -> void:
 	_last_waystation_id = waystation_id
+
+
+## Every Waystation the Fool has rested at, in the order they were first used.
+func visited_waystations() -> Array[StringName]:
+	return _visited_waystations.duplicate()
+
+
+## True when the Fool has rested at this Waystation at least once - the condition fast
+## travel reads (`docs/design/progression.md` §Waystations).
+func has_visited_waystation(waystation_id: StringName) -> bool:
+	return _visited_waystations.has(waystation_id)
+
+
+## Remember that the Fool rested here. True only when **this call** added it.
+##
+## APPEND-ONLY, exactly like the fired-flag set and the Reading
+## (`docs/design/technical.md` §Save system): there is `mark_waystation_visited` and
+## there is no call anywhere that takes a Waystation back out. A shrine the Fool has
+## slept at is a place they know, and knowing it is not a thing the world can undo.
+func mark_waystation_visited(waystation_id: StringName) -> bool:
+	if waystation_id == SaveModel.UNSET or _visited_waystations.has(waystation_id):
+		return false
+	_visited_waystations.append(waystation_id)
+	return true
 
 
 ## The difficulty this playthrough is being played at.

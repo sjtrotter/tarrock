@@ -25,8 +25,18 @@ not in the file — it is derived from the world-state flags above it.
 **Ids in the played fixture.** The world-state flag ids and their firing quests are
 real (`res://data/world_states/`, generated from `docs/design/world.md`). The rest are
 placeholders for id schemes later rounds own and no shipped doc has minted yet - the
-region and Waystation ids (Regions round), the quest *state* names (Quests round), the
+quest *state* names (Quests round), the
 `HERMIT_ANSWER` value (its four answers are canon in `MQ09` as wording, not as ids),
 and the NPC memory flags (NPC round). Nothing validates them today; the save carries
 them opaquely, which is the property these fixtures are proving. When those rounds mint
-their ids, this fixture is re-authored with the real ones.
+their ids, this fixture is re-authored with the real ones - as the **region and
+Waystation ids already were** (round 10): `regions.current_region_id` and
+`regions.last_waystation_id` are `RegionIds` tokens now, and
+`regions.visited_waystations` is the append-only set fast travel reads.
+
+**The `regions` section arrived inside v1, not as a v2.** These files used to carry
+`current_region_id` and `last_waystation_id` as loose top-level fields. Rewriting a
+fixture is normally forbidden - a fixture is the old build's format, frozen - and the
+exception here is that v1 has never shipped: no save exists outside a developer's
+`user://`, so there was nothing in the world to migrate. The next shape change after a
+build reaches a player is a v2 with a migration and a *new* fixture beside these.

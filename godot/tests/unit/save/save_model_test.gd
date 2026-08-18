@@ -60,8 +60,9 @@ func _played_world() -> WorldStateService:
 func _played_model() -> SaveModel:
 	var model := SaveModel.blank()
 	model.world_state = _played_world().to_snapshot()
-	model.current_region_id = &"THE_PRESTIGE"
-	model.last_waystation_id = &"THE_PRESTIGE_WAYSTATION"
+	model.current_region_id = RegionIds.PRESTIGE
+	model.last_waystation_id = RegionIds.WAYSTATION_PRESTIGE
+	model.visited_waystations = [RegionIds.WAYSTATION_CLIFF, RegionIds.WAYSTATION_PRESTIGE]
 	model.playtime_seconds = 4321.5
 	model.difficulty_mode = DifficultyMode.Id.TRIAL
 	return model
@@ -88,6 +89,26 @@ func test_blank_is_the_current_version_at_journey() -> void:
 	assert_eq(model.current_region_id, SaveModel.UNSET)
 	assert_almost_eq(model.playtime_seconds, 0.0)
 	assert_eq(model.validate().size(), 0, "a blank model is writable")
+
+
+func test_the_regions_section_is_one_object_in_the_file() -> void:
+	# Where the Fool is travels as one section, not as loose fields beside the world
+	# state: `RegionService` owns all three and reads them back together.
+	var written := SaveModel.blank().to_dictionary()
+	var regions: Dictionary = written[SaveModel.FIELD_REGIONS]
+	assert_eq(regions[SaveModel.REGIONS_CURRENT], "")
+	assert_eq(regions[SaveModel.REGIONS_LAST_WAYSTATION], "")
+	assert_eq(regions[SaveModel.REGIONS_VISITED], [], "nowhere has been rested at yet")
+
+
+func test_a_regions_section_of_the_wrong_shape_is_reported() -> void:
+	var data := SaveModel.blank().to_dictionary()
+	data[SaveModel.FIELD_REGIONS] = {
+		SaveModel.REGIONS_CURRENT: 7,
+		SaveModel.REGIONS_VISITED: "WAYSTATION_CLIFF",
+	}
+	var errors := SaveModel.validate_dictionary(data)
+	assert_eq(errors.size(), 2, "both the id and the list are wrong: %s" % str(errors))
 
 
 func test_the_reserved_containers_are_empty_but_present() -> void:
@@ -118,8 +139,13 @@ func test_a_played_model_round_trips_through_json() -> void:
 		_json_equal(reloaded.world_state, model.world_state),
 		"the world-state snapshot travels verbatim: %s" % str(reloaded.world_state)
 	)
-	assert_eq(reloaded.current_region_id, &"THE_PRESTIGE")
-	assert_eq(reloaded.last_waystation_id, &"THE_PRESTIGE_WAYSTATION")
+	assert_eq(reloaded.current_region_id, RegionIds.PRESTIGE)
+	assert_eq(reloaded.last_waystation_id, RegionIds.WAYSTATION_PRESTIGE)
+	assert_eq(
+		reloaded.visited_waystations,
+		[RegionIds.WAYSTATION_CLIFF, RegionIds.WAYSTATION_PRESTIGE],
+		"the visited Waystations survive the trip, in order"
+	)
 	assert_almost_eq(reloaded.playtime_seconds, 4321.5)
 	assert_eq(reloaded.difficulty_mode, DifficultyMode.Id.TRIAL)
 
@@ -207,7 +233,10 @@ func test_validate_reports_a_version_that_is_not_a_whole_number() -> void:
 
 func test_validate_reports_containers_of_the_wrong_shape() -> void:
 	for field: String in [
-		SaveModel.FIELD_WORLD_STATE, SaveModel.FIELD_POCKET_SPREAD, SaveModel.FIELD_INVENTORY
+		SaveModel.FIELD_WORLD_STATE,
+		SaveModel.FIELD_POCKET_SPREAD,
+		SaveModel.FIELD_INVENTORY,
+		SaveModel.FIELD_REGIONS,
 	]:
 		var data := SaveModel.blank().to_dictionary()
 		data[field] = [1, 2, 3]
@@ -216,8 +245,10 @@ func test_validate_reports_containers_of_the_wrong_shape() -> void:
 
 func test_validate_reports_ids_and_numbers_of_the_wrong_type() -> void:
 	var data := SaveModel.blank().to_dictionary()
-	data[SaveModel.FIELD_CURRENT_REGION] = 7
-	data[SaveModel.FIELD_LAST_WAYSTATION] = {}
+	data[SaveModel.FIELD_REGIONS] = {
+		SaveModel.REGIONS_CURRENT: 7,
+		SaveModel.REGIONS_LAST_WAYSTATION: {},
+	}
 	data[SaveModel.FIELD_PLAYTIME_SECONDS] = "ages"
 	assert_eq(SaveModel.validate_dictionary(data).size(), 3, "three fields, three problems")
 

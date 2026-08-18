@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"BOWER"
+card_number = 3
+name_key = &"REGION_BOWER_NAME"
+unbinding_flag = &"WS_EMPRESS_UNBOUND"
+difficulty_band = 1
+summary = "A garden gone glorious and wrong — orchards so heavy the boughs weep, wheat to the horizon that may never be cut. Overripe abundance as horror-lite."
+scene_path = "res://scenes/regions/bower.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_BOWER"])
+doc_ref = "docs/design/world.md §Regions"

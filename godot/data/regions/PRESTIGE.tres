@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"PRESTIGE"
+card_number = 1
+name_key = &"REGION_PRESTIGE_NAME"
+unbinding_flag = &"WS_MAGICIAN_UNBOUND"
+difficulty_band = 1
+summary = "A carnival that has been mid-performance for 300 years. Tents like cathedral naves, an audience that cannot leave its seats, popcorn older than nations. Warm, gaslit, uncanny. Intended first region."
+scene_path = "res://scenes/regions/prestige.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_PRESTIGE"])
+doc_ref = "docs/design/world.md §Regions"

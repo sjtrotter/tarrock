@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"HOLLOWS"
+card_number = 20
+name_key = &"REGION_HOLLOWS_NAME"
+unbinding_flag = &"WS_JUDGEMENT_UNBOUND"
+difficulty_band = 4
+summary = "Terraced graveyards ringing the Axis approach, tended and waiting. Gated behind Death. After MQ13 it fills with the newly-able-to-die and the long-overdue; after MQ20 it empties, blooming."
+scene_path = "res://scenes/regions/hollows.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_HOLLOWS"])
+doc_ref = "docs/design/world.md §Regions"

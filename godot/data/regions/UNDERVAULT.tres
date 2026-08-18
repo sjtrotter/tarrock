@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"UNDERVAULT"
+card_number = 15
+name_key = &"REGION_UNDERVAULT_NAME"
+unbinding_flag = &"WS_DEVIL_UNBOUND"
+difficulty_band = 3
+summary = "A gilded underground pit-city where every resident signed for their chains — comfort, appetite, debt — and will tell you they're very happy, thanks. Opulent, claustrophobic, the game's darkest comedy."
+scene_path = "res://scenes/regions/undervault.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_UNDERVAULT"])
+doc_ref = "docs/design/world.md §Regions"

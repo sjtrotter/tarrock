@@ -56,6 +56,19 @@ const SERVICE_LOOKUP_FRAMES := 180
 ## How many bodies the pool preallocates. 0 means "as many as `EnemyRules` says".
 @export var pool_size: int = 0
 
+## True when a rest at a Waystation puts this fight back on its feet.
+##
+## `docs/design/progression.md` §Waystations: a rest "respawn[s] ambient (non-boss)
+## enemies", and the word ambient is the whole rule. AMBIENT fights - the ones
+## `combat.md` §Encounter philosophy says "exist because a spot in the world earns
+## one" - come back, so the world does not empty out behind the player. A fight a
+## QUEST hangs on does not: the MQ00 ambush between the standing stones is cleared
+## once and stays cleared, or a player who rests at the Waystation twenty paces on
+## would turn round to find the three Twos standing again and the beat they just
+## played still owed. Authored per node, defaulting to ambient, because most fights
+## are.
+@export var respawns_on_rest: bool = true
+
 var _pool: EnemyPool = null
 var _trigger: Area2D = null
 
@@ -79,6 +92,11 @@ var _cleared: bool = false
 
 ## How many members are still standing.
 var _standing: int = 0
+
+## True while an entry into the trigger means "the Fool walked in". False only after a
+## rest re-armed the volume around a Fool who was already inside it, until he leaves
+## (see `reset_for_rest()`).
+var _armed: bool = true
 
 
 func _ready() -> void:
@@ -165,6 +183,47 @@ func begin(target: Node2D) -> bool:
 	return true
 
 
+## Put this fight back on its feet after a rest. True when **this call** reset it.
+##
+## `progression.md` §Waystations' respawn, and the one place the ambient/quest
+## distinction is enforced: a node with `respawns_on_rest` false answers false and
+## changes nothing, latch and all. Everything else goes back to how it was found -
+## the bodies to the pool, the latch open, the trigger watching again - so walking in
+## raises the fight exactly as it did the first time.
+##
+## The trigger is re-armed deferred for the same reason `begin()` disarms it that way:
+## a rest can be called from inside a physics callback (an `Interactable`'s), and an
+## `Area2D` cannot change its monitoring while the physics server is flushing queries.
+##
+## **A rest inside the trigger does not raise the fight on the sleeping Fool.**
+## `progression.md` §Waystations puts a shrine in every region and `combat.md`
+## §Encounter philosophy puts a fight wherever "a spot in the world earns one", so the
+## two are allowed to overlap - MQ00's ambush stands twenty paces from the Cliff's
+## shrine already. But an `Area2D` whose monitoring comes back on reports every body
+## already inside it as having just entered, so a re-arm under the Fool's feet would
+## start the fight again on someone who had just lain down to sleep - the exact loop
+## the ambient respawn is supposed to make restful. So a re-arm that finds the Fool
+## standing in the volume comes back UNARMED: the fight waits for him to walk out and
+## walk back in, which is the entry `begin()` was always waiting for.
+func reset_for_rest() -> bool:
+	if not respawns_on_rest:
+		return false
+	shut_down()
+	_cleared = false
+	_engaged = false
+	_target = null
+	_armed = not _fool_is_in_the_trigger()
+	if _trigger != null:
+		_trigger.set_deferred("monitoring", true)
+	return true
+
+
+## True when the trigger is watching for an entry rather than waiting for the Fool who
+## is already standing in it to leave (see `reset_for_rest()`).
+func is_armed() -> bool:
+	return _armed
+
+
 ## Put the whole fight away: every member back to the pool, every engagement dropped.
 ## What a scene unload calls. Does NOT clear the latch - a fight that was won stays
 ## won.
@@ -183,11 +242,22 @@ func shut_down() -> void:
 
 ## The Fool walked in.
 func _on_body_entered(body: Node2D) -> void:
-	if _engaged or _cleared:
-		return
 	if not body.is_in_group(FOOL_GROUP):
 		return
+	if not _armed:
+		# Re-armed under his feet by a rest: this is not an entry, it is the physics
+		# server noticing where he was already lying. He has to leave first.
+		return
+	if _engaged or _cleared:
+		return
 	begin(body)
+
+
+## The Fool walked out - which is the only thing an unarmed trigger is waiting for.
+func _on_body_exited(body: Node2D) -> void:
+	if not body.is_in_group(FOOL_GROUP):
+		return
+	_armed = true
 
 
 ## One member went down. The card is still in the air: the body goes back to the pool
@@ -345,6 +415,28 @@ func _build_trigger() -> void:
 	_trigger.add_child(collision)
 	add_child(_trigger)
 	_trigger.body_entered.connect(_on_body_entered)
+	# Exits matter for one reason only: an unarmed trigger is waiting for one
+	# (`reset_for_rest()`).
+	_trigger.body_exited.connect(_on_body_exited)
+
+
+## True when the Fool is standing inside the trigger volume right now.
+##
+## Measured rather than asked of the `Area2D`, because the moment this is needed is the
+## moment the area is NOT monitoring - a fight that has been cleared disarmed it - and
+## an area that is not monitoring has no overlaps to report. The trigger is a circle of
+## `trigger_radius` centred on this node, so the distance is the whole question.
+func _fool_is_in_the_trigger() -> bool:
+	if not is_inside_tree():
+		return false
+	var radius := maxf(trigger_radius, 1.0)
+	for body: Node in get_tree().get_nodes_in_group(FOOL_GROUP):
+		var walker := body as Node2D
+		if walker == null or not is_instance_valid(walker):
+			continue
+		if walker.global_position.distance_to(global_position) <= radius:
+			return true
+	return false
 
 
 ## Look for the composition root, for a scene that injected nothing. The fallback, not

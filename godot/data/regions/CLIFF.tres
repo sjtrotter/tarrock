@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"CLIFF"
+card_number = 0
+name_key = &"REGION_CLIFF_NAME"
+unbinding_flag = &""
+difficulty_band = 0
+summary = "A high meadow plateau at the world's broken edge, scattered with the campsites of Fools long gone. Tutorial space: an **island in a sea of cloud** — sealed from the Spread by sheer drop on every side, the drop lost in a bright, motionless cloud deck below the lip; the sanctioned exit is the leap of faith. An unscripted fall from any other edge is just a defeat (`combat.md` §Defeat — Pip, lick, Waystation); no other landing exists. Contains the first Waystation and the game's thesis in miniature — one tree here is the only thing on the plateau that visibly *dies*. (Deferred idea, not current canon: a late-game callback vantage where the Spread is finally visible from this height — revisit at MQ19+.)"
+scene_path = "res://scenes/the_cliff.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_CLIFF"])
+doc_ref = "docs/design/world.md §Regions"

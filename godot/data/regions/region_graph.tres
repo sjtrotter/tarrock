@@ -1,0 +1,300 @@
+[gd_resource type="Resource" script_class="RegionGraph" load_steps=42 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_edge.gd" id="1_edge"]
+[ext_resource type="Script" path="res://systems/regions/definitions/region_graph.gd" id="2_graph"]
+
+[sub_resource type="Resource" id="edge_00"]
+script = ExtResource("1_edge")
+a = &"BASTION"
+b = &"ASSIZE"
+kind = 0
+notes = "§Layout: the Bastion (N) and the Assize (NNE) are neighbours on the wheel's rim, read clockwise from the north off the diagram."
+
+[sub_resource type="Resource" id="edge_01"]
+script = ExtResource("1_edge")
+a = &"ASSIZE"
+b = &"NOONLANDS"
+kind = 0
+notes = "§Layout: the Assize (NNE) and the Noonlands (ENE) are neighbours on the wheel's rim, read clockwise from the north off the diagram."
+
+[sub_resource type="Resource" id="edge_02"]
+script = ExtResource("1_edge")
+a = &"NOONLANDS"
+b = &"PRESTIGE"
+kind = 0
+notes = "§Layout: the Noonlands (ENE) and the Prestige (E) are neighbours on the wheel's rim, read clockwise from the north off the diagram."
+
+[sub_resource type="Resource" id="edge_03"]
+script = ExtResource("1_edge")
+a = &"PRESTIGE"
+b = &"BOWER"
+kind = 0
+notes = "§Layout: the Prestige (E) and the Bower (ESE) are neighbours on the wheel's rim, read clockwise from the north off the diagram."
+
+[sub_resource type="Resource" id="edge_04"]
+script = ExtResource("1_edge")
+a = &"BOWER"
+b = &"DIVIDE"
+kind = 0
+notes = "§Layout: the Bower (ESE) and the Divide (SE) are neighbours on the wheel's rim, read clockwise from the north off the diagram."
+
+[sub_resource type="Resource" id="edge_05"]
+script = ExtResource("1_edge")
+a = &"DIVIDE"
+b = &"CHANTRY"
+kind = 0
+notes = "§Layout: the Divide (SE) and the Chantry (SSE) are neighbours on the wheel's rim, read clockwise from the north off the diagram."
+
+[sub_resource type="Resource" id="edge_06"]
+script = ExtResource("1_edge")
+a = &"CHANTRY"
+b = &"MAW"
+kind = 0
+notes = "§Layout: the Chantry (SSE) and the Maw (S-SE) are neighbours on the wheel's rim, read clockwise from the north off the diagram."
+
+[sub_resource type="Resource" id="edge_07"]
+script = ExtResource("1_edge")
+a = &"MAW"
+b = &"CONFLUENCE"
+kind = 0
+notes = "§Layout: the Maw (S-SE) and the Confluence (S) are neighbours on the wheel's rim, read clockwise from the north off the diagram."
+
+[sub_resource type="Resource" id="edge_08"]
+script = ExtResource("1_edge")
+a = &"CONFLUENCE"
+b = &"STILLMARSH"
+kind = 0
+notes = "§Layout: the Confluence (S) and the Stillmarsh (SSW) are neighbours on the wheel's rim, read clockwise from the north off the diagram."
+
+[sub_resource type="Resource" id="edge_09"]
+script = ExtResource("1_edge")
+a = &"STILLMARSH"
+b = &"MERE"
+kind = 0
+notes = "§Layout: the Stillmarsh (SSW) and the Mere (WSW) are neighbours on the wheel's rim, read clockwise from the north off the diagram."
+
+[sub_resource type="Resource" id="edge_10"]
+script = ExtResource("1_edge")
+a = &"MERE"
+b = &"MIRRORMARSH"
+kind = 0
+requires_any_fired = Array[StringName]([&"WS_SUN_UNBOUND"])
+requires_any_trump_held = Array[StringName]([&"TRUMP_09", &"TRUMP_17"])
+gates_entry_to = &"MIRRORMARSH"
+notes = "§Layout: the Mere (WSW) and the Mirrormarsh (W) are neighbours on the wheel's rim, read clockwise from the north off the diagram. §Hard and soft gates: the Mirrormarsh's interior needs \"any true light: Hermit's Lantern, Star's Wish, or the Sun unbound\", and without one \"the region loops the player back out\". Modelled here as a refusal to enter - at region granularity the loop and the locked door are the same event. The gate guards ENTRY only: getting lost back out of the fog is what the fog does."
+
+[sub_resource type="Resource" id="edge_11"]
+script = ExtResource("1_edge")
+a = &"MIRRORMARSH"
+b = &"GALLOWWOOD"
+kind = 0
+requires_any_fired = Array[StringName]([&"WS_SUN_UNBOUND"])
+requires_any_trump_held = Array[StringName]([&"TRUMP_09", &"TRUMP_17"])
+gates_entry_to = &"MIRRORMARSH"
+notes = "§Layout: the Mirrormarsh (W) and the Gallowwood (WNW) are neighbours on the wheel's rim, read clockwise from the north off the diagram. §Hard and soft gates: the Mirrormarsh's interior needs \"any true light: Hermit's Lantern, Star's Wish, or the Sun unbound\", and without one \"the region loops the player back out\". Modelled here as a refusal to enter - at region granularity the loop and the locked door are the same event. The gate guards ENTRY only: getting lost back out of the fog is what the fog does."
+
+[sub_resource type="Resource" id="edge_12"]
+script = ExtResource("1_edge")
+a = &"GALLOWWOOD"
+b = &"DIM"
+kind = 0
+notes = "§Layout: the Gallowwood (WNW) and the Dim (NW) are neighbours on the wheel's rim, read clockwise from the north off the diagram."
+
+[sub_resource type="Resource" id="edge_13"]
+script = ExtResource("1_edge")
+a = &"DIM"
+b = &"SPIRE"
+kind = 0
+notes = "§Layout: the Dim (NW) and the Spire (NNW) are neighbours on the wheel's rim, read clockwise from the north off the diagram."
+
+[sub_resource type="Resource" id="edge_14"]
+script = ExtResource("1_edge")
+a = &"SPIRE"
+b = &"BASTION"
+kind = 0
+notes = "§Layout: the Spire (NNW) and the Bastion (N) are neighbours on the wheel's rim, read clockwise from the north off the diagram."
+
+[sub_resource type="Resource" id="edge_15"]
+script = ExtResource("1_edge")
+a = &"BASTION"
+b = &"LONGROAD"
+kind = 0
+notes = "§The Longroad: \"Every region's main road eventually meets it, which makes it the game's traffic spine\" - the Bastion's road onto the ring."
+
+[sub_resource type="Resource" id="edge_16"]
+script = ExtResource("1_edge")
+a = &"ASSIZE"
+b = &"LONGROAD"
+kind = 0
+notes = "§The Longroad: \"Every region's main road eventually meets it, which makes it the game's traffic spine\" - the Assize's road onto the ring."
+
+[sub_resource type="Resource" id="edge_17"]
+script = ExtResource("1_edge")
+a = &"NOONLANDS"
+b = &"LONGROAD"
+kind = 0
+notes = "§The Longroad: \"Every region's main road eventually meets it, which makes it the game's traffic spine\" - the Noonlands's road onto the ring."
+
+[sub_resource type="Resource" id="edge_18"]
+script = ExtResource("1_edge")
+a = &"PRESTIGE"
+b = &"LONGROAD"
+kind = 0
+notes = "§The Longroad: \"Every region's main road eventually meets it, which makes it the game's traffic spine\" - the Prestige's road onto the ring."
+
+[sub_resource type="Resource" id="edge_19"]
+script = ExtResource("1_edge")
+a = &"BOWER"
+b = &"LONGROAD"
+kind = 0
+notes = "§The Longroad: \"Every region's main road eventually meets it, which makes it the game's traffic spine\" - the Bower's road onto the ring."
+
+[sub_resource type="Resource" id="edge_20"]
+script = ExtResource("1_edge")
+a = &"DIVIDE"
+b = &"LONGROAD"
+kind = 0
+notes = "§The Longroad: \"Every region's main road eventually meets it, which makes it the game's traffic spine\" - the Divide's road onto the ring."
+
+[sub_resource type="Resource" id="edge_21"]
+script = ExtResource("1_edge")
+a = &"CHANTRY"
+b = &"LONGROAD"
+kind = 0
+notes = "§The Longroad: \"Every region's main road eventually meets it, which makes it the game's traffic spine\" - the Chantry's road onto the ring."
+
+[sub_resource type="Resource" id="edge_22"]
+script = ExtResource("1_edge")
+a = &"MAW"
+b = &"LONGROAD"
+kind = 0
+notes = "§The Longroad: \"Every region's main road eventually meets it, which makes it the game's traffic spine\" - the Maw's road onto the ring."
+
+[sub_resource type="Resource" id="edge_23"]
+script = ExtResource("1_edge")
+a = &"CONFLUENCE"
+b = &"LONGROAD"
+kind = 0
+notes = "§The Longroad: \"Every region's main road eventually meets it, which makes it the game's traffic spine\" - the Confluence's road onto the ring."
+
+[sub_resource type="Resource" id="edge_24"]
+script = ExtResource("1_edge")
+a = &"STILLMARSH"
+b = &"LONGROAD"
+kind = 0
+notes = "§The Longroad: \"Every region's main road eventually meets it, which makes it the game's traffic spine\" - the Stillmarsh's road onto the ring."
+
+[sub_resource type="Resource" id="edge_25"]
+script = ExtResource("1_edge")
+a = &"MERE"
+b = &"LONGROAD"
+kind = 0
+notes = "§The Longroad: \"Every region's main road eventually meets it, which makes it the game's traffic spine\" - the Mere's road onto the ring."
+
+[sub_resource type="Resource" id="edge_26"]
+script = ExtResource("1_edge")
+a = &"MIRRORMARSH"
+b = &"LONGROAD"
+kind = 0
+requires_any_fired = Array[StringName]([&"WS_SUN_UNBOUND"])
+requires_any_trump_held = Array[StringName]([&"TRUMP_09", &"TRUMP_17"])
+gates_entry_to = &"MIRRORMARSH"
+notes = "§The Longroad: \"Every region's main road eventually meets it, which makes it the game's traffic spine\" - the Mirrormarsh's road onto the ring. §Hard and soft gates: the Mirrormarsh's interior needs \"any true light: Hermit's Lantern, Star's Wish, or the Sun unbound\", and without one \"the region loops the player back out\". Modelled here as a refusal to enter - at region granularity the loop and the locked door are the same event. The gate guards ENTRY only: getting lost back out of the fog is what the fog does."
+
+[sub_resource type="Resource" id="edge_27"]
+script = ExtResource("1_edge")
+a = &"GALLOWWOOD"
+b = &"LONGROAD"
+kind = 0
+notes = "§The Longroad: \"Every region's main road eventually meets it, which makes it the game's traffic spine\" - the Gallowwood's road onto the ring."
+
+[sub_resource type="Resource" id="edge_28"]
+script = ExtResource("1_edge")
+a = &"DIM"
+b = &"LONGROAD"
+kind = 0
+notes = "§The Longroad: \"Every region's main road eventually meets it, which makes it the game's traffic spine\" - the Dim's road onto the ring."
+
+[sub_resource type="Resource" id="edge_29"]
+script = ExtResource("1_edge")
+a = &"SPIRE"
+b = &"LONGROAD"
+kind = 0
+notes = "§The Longroad: \"Every region's main road eventually meets it, which makes it the game's traffic spine\" - the Spire's road onto the ring."
+
+[sub_resource type="Resource" id="edge_30"]
+script = ExtResource("1_edge")
+a = &"LONGROAD"
+b = &"WHEELHOUSE"
+kind = 1
+notes = "§Layout: \"Wheelhouse and Veil sit ON the Longroad ring, NE and SW respectively\" - the casino-city is built on the causeway at the north-east, so the road there IS the Longroad."
+
+[sub_resource type="Resource" id="edge_31"]
+script = ExtResource("1_edge")
+a = &"LONGROAD"
+b = &"VEIL"
+kind = 1
+notes = "§Layout: \"Wheelhouse and Veil sit ON the Longroad ring, NE and SW respectively\" - the cloister stands on the causeway at the south-west, between its two colossal pillars."
+
+[sub_resource type="Resource" id="edge_32"]
+script = ExtResource("1_edge")
+a = &"UNDERVAULT"
+b = &"MIRRORMARSH"
+kind = 2
+requires_any_fired = Array[StringName]([&"WS_SUN_UNBOUND"])
+requires_any_trump_held = Array[StringName]([&"TRUMP_09", &"TRUMP_17"])
+gates_entry_to = &"MIRRORMARSH"
+notes = "§Layout: the Undervault \"is underground, entered from the western regions; the only region with no sky\" - one descent from the Mirrormarsh. The three western regions are the doc's own compass reading: \"west is evening (Moon, Hermit, Hanged Man, Devil)\", the Devil being the Undervault itself. §Hard and soft gates: the Mirrormarsh's interior needs \"any true light: Hermit's Lantern, Star's Wish, or the Sun unbound\", and without one \"the region loops the player back out\". Modelled here as a refusal to enter - at region granularity the loop and the locked door are the same event. The gate guards ENTRY only: getting lost back out of the fog is what the fog does."
+
+[sub_resource type="Resource" id="edge_33"]
+script = ExtResource("1_edge")
+a = &"UNDERVAULT"
+b = &"GALLOWWOOD"
+kind = 2
+notes = "§Layout: the Undervault \"is underground, entered from the western regions; the only region with no sky\" - one descent from the Gallowwood. The three western regions are the doc's own compass reading: \"west is evening (Moon, Hermit, Hanged Man, Devil)\", the Devil being the Undervault itself."
+
+[sub_resource type="Resource" id="edge_34"]
+script = ExtResource("1_edge")
+a = &"UNDERVAULT"
+b = &"DIM"
+kind = 2
+notes = "§Layout: the Undervault \"is underground, entered from the western regions; the only region with no sky\" - one descent from the Dim. The three western regions are the doc's own compass reading: \"west is evening (Moon, Hermit, Hanged Man, Devil)\", the Devil being the Undervault itself."
+
+[sub_resource type="Resource" id="edge_35"]
+script = ExtResource("1_edge")
+a = &"LONGROAD"
+b = &"HOLLOWS"
+kind = 0
+requires_fired = Array[StringName]([&"WS_DEATH_UNBOUND"])
+gates_entry_to = &"HOLLOWS"
+notes = "§Layout: \"Hollows lies between the Longroad and the Axis\" - the way in is off the ring. §Hard and soft gates: \"The Hollows (MQ20) | Death unbound (MQ13) | Judgement cannot call souls that cannot leave.\" The gate guards ENTRY: a Fool already in the terraces is never sealed in."
+
+[sub_resource type="Resource" id="edge_36"]
+script = ExtResource("1_edge")
+a = &"HOLLOWS"
+b = &"AXIS"
+kind = 0
+notes = "§Regions: the Hollows are \"Terraced graveyards ringing the Axis approach\" - through them is the approach the story walks (MQ20 into MQ21)."
+
+[sub_resource type="Resource" id="edge_37"]
+script = ExtResource("1_edge")
+a = &"LONGROAD"
+b = &"AXIS"
+kind = 0
+notes = "§Hard and soft gates: \"The Axis inner sanctum | None - always open | BotW rule: the finale is a right, not a reward.\" So the Axis cannot be reachable ONLY through the Death-gated Hollows, or the finale would inherit that gate. §Layout puts the Axis inside the ring and \"visible from everywhere\"; the ring road in is the ungated approach that keeps the doc's own promise."
+
+[sub_resource type="Resource" id="edge_38"]
+script = ExtResource("1_edge")
+a = &"CLIFF"
+b = &"PRESTIGE"
+kind = 3
+notes = "§The Cliff: the plateau is \"sealed from the Spread by sheer drop on every side... the sanctioned exit is the leap of faith\", and §Side-view sequences makes the leap MQ00's own set piece. One-way, and the Cliff's only edge. The Prestige is where it lands: §Regions calls it the \"Intended first region\" and MQ01 is the first Arcana."
+
+[resource]
+script = ExtResource("2_graph")
+doc_ref = "docs/design/world.md §Layout (adjacency), §Hard and soft gates"
+notes = "HAND-AUTHORED from world.md §Layout's ASCII wheel; every edge carries the sentence it was read from. THE READINGS THE DIAGRAM DOES NOT SPELL OUT, for the reviewer: (1) RIM - the diagram places sixteen regions around the ring but draws no roads between them; neighbours on the wheel are joined, clockwise from the north, because \"a wheel of 21 regions\" that could only be crossed through the middle would not be a wheel. (2) SPOKES - every rim region also meets the Longroad, which §The Longroad states outright. (3) WHEELHOUSE and VEIL sit ON the ring, so their only edges are the causeway itself; a traveller reaches them along the Longroad, which is exactly the traffic-spine role §The Longroad gives it. (4) UNDERVAULT is not on the rim: it is underground with no sky, so it hangs off the three western regions as descents rather than roads, and the surface rim closes Mere-Mirrormarsh past it. (5) AXIS takes an ungated road off the ring as well as the Hollows approach, because §Hard and soft gates says the finale is always open and the Hollows are not. (6) The Confluence delta caves' Temperance gate is NOT here: §Hard and soft gates gates a sub-area of a region, and this graph's nodes are whole regions - it belongs to the Confluence scene when that scene exists. (7) THE CLIFF IS OUTSIDE THE WAYSTATION NETWORK - not a reading but a sentence: \"it is outside the Waystation network - no fast travel returns there\" (§Layout), which progression.md §Waystations repeats from the other end. Carried as `fast_travel_network_excludes` rather than as a missing edge, because the shrine is real and is rested at; it is only the network that leaves it out, which is what makes the leap final. TBD for the lead: whether the Wheelhouse and the Veil also touch their nearest rim neighbours, and how the Longroad splits when its four Waystations become real places."
+ring_region_id = &"LONGROAD"
+cliff_region_id = &"CLIFF"
+fast_travel_network_excludes = Array[StringName]([&"WAYSTATION_CLIFF"])
+edges = Array[ExtResource("1_edge")]([SubResource("edge_00"), SubResource("edge_01"), SubResource("edge_02"), SubResource("edge_03"), SubResource("edge_04"), SubResource("edge_05"), SubResource("edge_06"), SubResource("edge_07"), SubResource("edge_08"), SubResource("edge_09"), SubResource("edge_10"), SubResource("edge_11"), SubResource("edge_12"), SubResource("edge_13"), SubResource("edge_14"), SubResource("edge_15"), SubResource("edge_16"), SubResource("edge_17"), SubResource("edge_18"), SubResource("edge_19"), SubResource("edge_20"), SubResource("edge_21"), SubResource("edge_22"), SubResource("edge_23"), SubResource("edge_24"), SubResource("edge_25"), SubResource("edge_26"), SubResource("edge_27"), SubResource("edge_28"), SubResource("edge_29"), SubResource("edge_30"), SubResource("edge_31"), SubResource("edge_32"), SubResource("edge_33"), SubResource("edge_34"), SubResource("edge_35"), SubResource("edge_36"), SubResource("edge_37"), SubResource("edge_38")])

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/regions/definitions/region_definition.gd" id="1_region"]
+
+[resource]
+script = ExtResource("1_region")
+id = &"BASTION"
+card_number = 4
+name_key = &"REGION_BASTION_NAME"
+unbinding_flag = &"WS_EMPEROR_UNBOUND"
+difficulty_band = 2
+summary = "A granite city of perfect grids where the law has not amended in three centuries. Citizens live to the minute; the schedule is sacred. Vertical, monumental, grey with precise gold."
+scene_path = "res://scenes/regions/bastion.tscn"
+waystation_ids = Array[StringName]([&"WAYSTATION_BASTION"])
+doc_ref = "docs/design/world.md §Regions"
