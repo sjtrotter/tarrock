@@ -51,7 +51,7 @@ func _initialize() -> void:
 ## ~2.2 s, that is a whole number of cycles for EVERY panel.
 func _frames_for(layout: String) -> int:
 	var periods: Array[float] = []
-	for panel in _stage.call("panels"):
+	for panel: Dictionary in _stage.call("panels"):
 		periods.append(float(panel["cycle"]))
 	var longest := 0.6
 	for period in periods:

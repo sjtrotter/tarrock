@@ -39,7 +39,7 @@ func _physics_process(_delta: float) -> bool:
 	# Every direction resolves to something, and the measured pivots are applied.
 	var pivots_ok := true
 	var facings_ok := true
-	for direction in PlayerScript.DIRECTIONS:
+	for direction: String in PlayerScript.DIRECTIONS:
 		animator.set_state(direction, "walk")
 		if animator.current_action() != "walk":
 			if animator.current_action() != "static":

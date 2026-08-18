@@ -92,8 +92,8 @@ func _on_viewport_resized() -> void:
 
 func configure(layout_name: String) -> void:
 	assert(LAYOUTS.has(layout_name), "unknown stepped-walk layout: " + layout_name)
-	for panel in _panels:
-		for node in [panel["root"], panel["label"]]:
+	for panel: Dictionary in _panels:
+		for node: Variant in [panel["root"], panel["label"]]:
 			remove_child(node as Node)
 			(node as Node).queue_free()
 	_panels.clear()
@@ -189,7 +189,7 @@ func capture_rect() -> Rect2i:
 	var right := -INF
 	var top := INF
 	var bottom := -INF
-	for panel in _panels:
+	for panel: Dictionary in _panels:
 		left = minf(left, float(panel["x"]))
 		right = maxf(right, float(panel["x"]) + float(panel["width"]))
 		top = minf(top, float(panel["ground_y"]) - float(panel["figure_height"]) - 58.0)
@@ -205,7 +205,7 @@ func capture_rect() -> Rect2i:
 ## Pose (and place) every panel at absolute time `t`.
 func scrub(t: float) -> void:
 	_time = t
-	for panel in _panels:
+	for panel: Dictionary in _panels:
 		var cycle: float = panel["cycle"]
 		var duration := cycle * float(panel["cycles"])
 		var local_t := fposmod(t, duration)
@@ -252,7 +252,7 @@ func _draw() -> void:
 	var viewport := get_viewport_rect().size
 	draw_rect(Rect2(Vector2.ZERO, viewport), BG_BOTTOM)
 	draw_rect(Rect2(Vector2.ZERO, Vector2(viewport.x, viewport.y * 0.55)), BG_TOP)
-	for panel in _panels:
+	for panel: Dictionary in _panels:
 		_draw_panel(panel)
 
 

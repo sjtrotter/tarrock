@@ -82,7 +82,7 @@ func _check_parts() -> void:
 		"knee_cap_near", "knee_cap_far",
 	]
 	var missing := []
-	for key in expected:
+	for key: String in expected:
 		if not parts.has(key):
 			missing.append(key)
 		elif not ResourceLoader.exists("res://art/spike/fool-cutout/" + str(parts[key]["file"])):
@@ -103,12 +103,12 @@ func _check_rig_structure(rig: FoolCutoutRig) -> void:
 	)
 	var chain := ["Hips", "Spine", "Chest", "Head", "Stick", "BindleBag"]
 	var present := true
-	for bone_name in chain:
+	for bone_name: String in chain:
 		present = present and rig.bone(bone_name) != null
 	_ok(present, "the spine chain hips -> spine -> chest -> head exists")
 	var legs := true
-	for side in ["Near", "Far"]:
-		for segment in ["Thigh", "Shin"]:
+	for side: String in ["Near", "Far"]:
+		for segment: String in ["Thigh", "Shin"]:
 			legs = legs and rig.bone("Leg%s%s" % [side, segment]) != null
 		legs = legs and rig.bone("KneeCap%s" % side) != null
 	_ok(legs, "both legs have thigh and shin bones plus a knee-cap overlay")
@@ -323,7 +323,7 @@ func _rest_silhouette(rig: Node2D, draw_order: Array, manifest: Dictionary) -> I
 	var canvas := Image.create(
 		int(crop[2]) - int(crop[0]), int(crop[3]) - int(crop[1]), false, Image.FORMAT_RGBA8
 	)
-	for bone_name in draw_order:
+	for bone_name: String in draw_order:
 		var bone: Bone2D = rig.call("bone", bone_name)
 		if bone == null:
 			continue
@@ -422,7 +422,7 @@ func _check_south() -> void:
 		"ArmLeftUpper", "ArmLeftLower", "ArmRightUpper", "ArmRightLower",
 	]
 	var present := true
-	for bone_name in bones:
+	for bone_name: String in bones:
 		present = present and rig.bone(bone_name) != null
 	_ok(present, "the south rig builds its own skeleton (thigh+boot legs, upper/lower arms, knee caps)")
 	_ok(
@@ -537,7 +537,7 @@ func _check_stage() -> void:
 	_ok(stage != null, "the spike scene boots")
 	if stage == null:
 		return
-	for layout in StageScript.LAYOUTS.keys():
+	for layout: String in StageScript.LAYOUTS.keys():
 		stage.call("configure", layout)
 	_ok(true, "all %d comparison layouts configure" % StageScript.LAYOUTS.size())
 	stage.call("configure", "compare")

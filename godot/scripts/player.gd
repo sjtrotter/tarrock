@@ -61,7 +61,15 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	move(Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down"), delta)
+	move(
+		Input.get_vector(
+			InputActions.MOVE_LEFT,
+			InputActions.MOVE_RIGHT,
+			InputActions.MOVE_UP,
+			InputActions.MOVE_DOWN
+		),
+		delta
+	)
 
 
 func move(input_dir: Vector2, delta: float) -> void:
@@ -104,7 +112,7 @@ func _ensure_animator() -> void:
 ## (direction, action) -> clip. Add a direction's cycle here when its art lands.
 static func build_animation_table() -> Dictionary:
 	var static_action := {}
-	for direction in DIRECTIONS:
+	for direction: String in DIRECTIONS:
 		static_action[direction] = CharacterAnimator.make_clip(
 			[DIRECTION_TEXTURES[direction]], [DIRECTION_OFFSETS[direction]], DIRECTION_SCALE, 1.0, false
 		)

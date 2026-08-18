@@ -245,7 +245,7 @@ func tile_coverage_at(point: Vector2) -> bool:
 			var key := Vector2i(cell.x + offset_x, cell.y + offset_y)
 			if not _tile_buckets.has(key):
 				continue
-			for index in _tile_buckets[key]:
+			for index: int in _tile_buckets[key]:
 				if point.distance_to(_tile_centres[index]) <= TILE_SAFE_RADIUS:
 					return true
 	return false

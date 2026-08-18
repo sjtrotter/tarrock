@@ -275,7 +275,7 @@ func build() -> void:
 	_skeleton.name = "Skeleton"
 	add_child(_skeleton)
 
-	for entry in BONE_TREE:
+	for entry: Array in BONE_TREE:
 		var bone_name: String = entry[0]
 		var parent_name: String = entry[1]
 		var part_key: String = entry[2]
@@ -297,7 +297,7 @@ func build() -> void:
 	# Bone2D length/angle only feed the editor gizmo and Polygon2D skinning,
 	# neither of which a sprite cutout uses - but leaf bones warn every frame
 	# unless they are told explicitly.
-	for entry in BONE_TREE:
+	for entry: Array in BONE_TREE:
 		var bone: Bone2D = _bones[entry[0]]
 		bone.set_autocalculate_length_and_angle(false)
 		var child_bone: Bone2D = null
@@ -360,7 +360,7 @@ static func lag(keys: Array, amount: float) -> Array:
 	if body.size() > 1 and is_equal_approx(float(body[body.size() - 1][0]), 1.0):
 		body.remove_at(body.size() - 1)
 	var shifted: Array = []
-	for key in body:
+	for key: Array in body:
 		var phase := fposmod(float(key[0]) + amount, 1.0)
 		if phase > 0.0001 and phase < 0.9999:
 			shifted.append([phase, float(key[1])])
@@ -369,13 +369,13 @@ static func lag(keys: Array, amount: float) -> Array:
 	var seam := sample_curve(keys, fposmod(-amount, 1.0))
 	shifted.append([0.0, seam])
 	shifted.append([1.0, seam])
-	shifted.sort_custom(func(a, b): return float(a[0]) < float(b[0]))
+	shifted.sort_custom(func(a: Variant, b: Variant) -> bool: return float(a[0]) < float(b[0]))
 	return shifted
 
 
 static func scaled(keys: Array, factor: float) -> Array:
 	var out: Array = []
-	for key in keys:
+	for key: Array in keys:
 		out.append([float(key[0]), float(key[1]) * factor])
 	return out
 
@@ -385,7 +385,7 @@ func _add_rotation_track(anim: Animation, bone_name: String, keys: Array, cycle:
 	anim.track_set_path(track, "Skeleton/%s:rotation_degrees" % _bone_path(bone_name))
 	anim.track_set_interpolation_type(track, Animation.INTERPOLATION_CUBIC)
 	anim.value_track_set_update_mode(track, Animation.UPDATE_CONTINUOUS)
-	for key in keys:
+	for key: Array in keys:
 		anim.track_insert_key(track, float(key[0]) * cycle, FORWARD * float(key[1]))
 
 
@@ -472,7 +472,7 @@ func _add_solved_track(anim: Animation, bone_name: String, keys: Array) -> void:
 	anim.track_set_path(track, "Skeleton/%s:rotation" % _bone_path(bone_name))
 	anim.track_set_interpolation_type(track, Animation.INTERPOLATION_LINEAR)
 	anim.value_track_set_update_mode(track, Animation.UPDATE_CONTINUOUS)
-	for key in keys:
+	for key: Array in keys:
 		anim.track_insert_key(track, float(key[0]) * WALK_CYCLE, float(key[1]))
 
 
@@ -485,13 +485,13 @@ func _add_position_track(
 	anim.track_set_interpolation_type(track, Animation.INTERPOLATION_CUBIC)
 	anim.value_track_set_update_mode(track, Animation.UPDATE_CONTINUOUS)
 	var phases: Array = []
-	for key in x_keys:
+	for key: Array in x_keys:
 		phases.append(float(key[0]))
-	for key in y_keys:
+	for key: Array in y_keys:
 		if not phases.has(float(key[0])):
 			phases.append(float(key[0]))
 	phases.sort()
-	for phase in phases:
+	for phase: float in phases:
 		# y is negated: the tables say "positive is up", Godot says y grows down.
 		var value := rest + Vector2(sample_curve(x_keys, phase), -sample_curve(y_keys, phase))
 		anim.track_insert_key(track, phase * cycle, value)
@@ -518,7 +518,7 @@ static func sample_curve(keys: Array, phase: float) -> float:
 func _bone_path(bone_name: String) -> String:
 	var chain: Array = [bone_name]
 	var lookup: Dictionary = {}
-	for entry in BONE_TREE:
+	for entry: Array in BONE_TREE:
 		lookup[entry[0]] = entry[1]
 	var current: String = lookup[bone_name]
 	while current != "":
@@ -610,7 +610,7 @@ func scrub(clip_name: String, time: float) -> void:
 func pose_rest() -> void:
 	build()
 	_player.stop()
-	for entry in BONE_TREE:
+	for entry: Array in BONE_TREE:
 		var bone: Bone2D = _bones[entry[0]]
 		bone.transform = bone.rest
 		bone.scale = Vector2.ONE
@@ -630,7 +630,7 @@ func play_live(clip_name: String) -> void:
 ## the pose itself steps to the next one.
 func apply_jitter(key: int, amount_px: float = 1.0) -> void:
 	build()
-	for bone_name in _bones.keys():
+	for bone_name: String in _bones.keys():
 		var sprite := (_bones[bone_name] as Bone2D).get_node_or_null("Art") as Sprite2D
 		if sprite == null:
 			continue
@@ -646,7 +646,7 @@ func apply_jitter(key: int, amount_px: float = 1.0) -> void:
 ## the obvious next question when reading apply_jitter.
 func clear_jitter() -> void:
 	build()
-	for bone_name in _bones.keys():
+	for bone_name: String in _bones.keys():
 		var sprite := (_bones[bone_name] as Bone2D).get_node_or_null("Art") as Sprite2D
 		if sprite != null:
 			sprite.position = Vector2.ZERO

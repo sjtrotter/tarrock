@@ -190,7 +190,7 @@ func build() -> void:
 	_skeleton.name = "Skeleton"
 	add_child(_skeleton)
 
-	for entry in BONE_TREE:
+	for entry: Array in BONE_TREE:
 		var bone_name: String = entry[0]
 		var parent_name: String = entry[1]
 		var part_key: String = entry[2]
@@ -246,7 +246,7 @@ func _make_sprite(part_key: String) -> Sprite2D:
 
 func _bone_path(bone_name: String) -> String:
 	var lookup := {}
-	for entry in BONE_TREE:
+	for entry: Array in BONE_TREE:
 		lookup[entry[0]] = entry[1]
 	var chain := [bone_name]
 	var current: String = lookup[bone_name]
@@ -272,7 +272,7 @@ func _add_curve(
 	anim: Animation, path: String, keys: Array, cycle: float, build: Callable
 ) -> void:
 	var track := _track(anim, path)
-	for key in keys:
+	for key: Array in keys:
 		anim.track_insert_key(track, float(key[0]) * cycle, build.call(float(key[1])))
 
 
@@ -313,7 +313,7 @@ func _add_leg(anim: Animation, side: String, offset: float, cycle: float) -> voi
 	var texture_track := _track(anim, _bone_path(foot) + "/Art:texture", true)
 	var offset_track := _track(anim, _bone_path(foot) + "/Art:offset", true)
 	var base := "foot_" + side.to_lower()
-	for key in FOOT_POSE_KEYS:
+	for key: Array in FOOT_POSE_KEYS:
 		var phase := fposmod(float(key[0]) - offset, 1.0)
 		var pose: String = str(key[1])
 		var part_key: String = base if pose == "" else base + "_" + pose
@@ -334,13 +334,13 @@ func _build_walk() -> Animation:
 	var hips_rest: Vector2 = _bones["Hips"].position
 	var hips := _track(anim, _bone_path("Hips") + ":position")
 	var phases: Array = []
-	for key in FoolCutoutRig.HIPS_BOB_KEYS:
+	for key: Array in FoolCutoutRig.HIPS_BOB_KEYS:
 		phases.append(float(key[0]))
-	for key in HIPS_SWAY_KEYS:
+	for key: Array in HIPS_SWAY_KEYS:
 		if not phases.has(float(key[0])):
 			phases.append(float(key[0]))
 	phases.sort()
-	for phase in phases:
+	for phase: float in phases:
 		anim.track_insert_key(hips, phase * cycle, hips_rest + Vector2(
 			FoolCutoutRig.sample_curve(HIPS_SWAY_KEYS, phase),
 			-FoolCutoutRig.sample_curve(FoolCutoutRig.HIPS_BOB_KEYS, phase)
@@ -348,16 +348,16 @@ func _build_walk() -> Animation:
 
 	_add_curve(
 		anim, _bone_path("Chest") + ":scale", TORSO_STRETCH_KEYS, cycle,
-		func(v): return Vector2(1.0 - v * 0.5, 1.0 + v)
+		func(v: float) -> Variant: return Vector2(1.0 - v * 0.5, 1.0 + v)
 	)
 	_add_curve(
 		anim, _bone_path("Chest") + ":rotation_degrees", TORSO_TILT_KEYS, cycle,
-		func(v): return FORWARD * v
+		func(v: float) -> Variant: return FORWARD * v
 	)
 	_add_curve(
 		anim, _bone_path("Head") + ":rotation_degrees",
 		FoolCutoutRig.lag(HEAD_TILT_KEYS, HEAD_LAG), cycle,
-		func(v): return FORWARD * v
+		func(v: float) -> Variant: return FORWARD * v
 	)
 
 	_add_leg(anim, "Left", 0.0, cycle)
@@ -368,26 +368,26 @@ func _build_walk() -> Animation:
 	var arm_rest: Vector2 = _bones["ArmRightUpper"].position
 	_add_curve(
 		anim, _bone_path("ArmRightUpper") + ":position", ARM_DEPTH_KEYS, cycle,
-		func(v): return arm_rest + Vector2(0.0, v)
+		func(v: float) -> Variant: return arm_rest + Vector2(0.0, v)
 	)
 	_add_curve(
 		anim, _bone_path("ArmRightUpper") + ":scale", ARM_SCALE_KEYS, cycle,
-		func(v): return Vector2(1.0, v)
+		func(v: float) -> Variant: return Vector2(1.0, v)
 	)
 	_add_curve(
 		anim, _bone_path("ArmRightUpper") + ":rotation_degrees", ARM_SWING_KEYS, cycle,
-		func(v): return v
+		func(v: float) -> Variant: return v
 	)
 	# The bindle arm is pinned to the stick, so it only counter-swings a little.
 	_add_curve(
 		anim, _bone_path("ArmLeftUpper") + ":rotation_degrees",
 		FoolCutoutRig.scaled(ARM_SWING_KEYS, -0.35), cycle,
-		func(v): return v
+		func(v: float) -> Variant: return v
 	)
 	_add_curve(
 		anim, _bone_path("BindleBag") + ":rotation_degrees",
 		FoolCutoutRig.lag(BAG_KEYS, BAG_LAG), cycle,
-		func(v): return v
+		func(v: float) -> Variant: return v
 	)
 	return anim
 
@@ -399,62 +399,62 @@ func _build_idle() -> Animation:
 	var chest_rest: Vector2 = _bones["Chest"].position
 	_add_curve(
 		anim, _bone_path("Chest") + ":position", FoolCutoutRig.IDLE_CHEST_LIFT, IDLE_CYCLE,
-		func(v): return chest_rest + Vector2(0.0, -v)
+		func(v: float) -> Variant: return chest_rest + Vector2(0.0, -v)
 	)
 	_add_curve(
 		anim, _bone_path("Chest") + ":scale", FoolCutoutRig.IDLE_CHEST_LIFT, IDLE_CYCLE,
-		func(v): return Vector2(1.0 - v * 0.0015, 1.0 + v * 0.003)
+		func(v: float) -> Variant: return Vector2(1.0 - v * 0.0015, 1.0 + v * 0.003)
 	)
 	var hips_rest: Vector2 = _bones["Hips"].position
 	_add_curve(
 		anim, _bone_path("Hips") + ":position", FoolCutoutRig.IDLE_HIPS_X, IDLE_CYCLE,
-		func(v): return hips_rest + Vector2(v, 0.0)
+		func(v: float) -> Variant: return hips_rest + Vector2(v, 0.0)
 	)
 	_add_curve(
 		anim, _bone_path("Head") + ":rotation_degrees", FoolCutoutRig.IDLE_HEAD, IDLE_CYCLE,
-		func(v): return FORWARD * v
+		func(v: float) -> Variant: return FORWARD * v
 	)
 	_add_curve(
 		anim, _bone_path("Chest") + ":rotation_degrees", [[0.0, 0.0], [1.0, 0.0]],
-		IDLE_CYCLE, func(v): return v
+		IDLE_CYCLE, func(v: float) -> Variant: return v
 	)
 	_add_curve(
 		anim, _bone_path("ArmRightUpper") + ":rotation_degrees", [[0.0, 0.0], [1.0, 0.0]],
-		IDLE_CYCLE, func(v): return v
+		IDLE_CYCLE, func(v: float) -> Variant: return v
 	)
 	var arm_rest: Vector2 = _bones["ArmRightUpper"].position
 	_add_curve(
 		anim, _bone_path("ArmRightUpper") + ":position", [[0.0, 0.0], [1.0, 0.0]],
-		IDLE_CYCLE, func(v): return arm_rest + Vector2(0.0, v)
+		IDLE_CYCLE, func(v: float) -> Variant: return arm_rest + Vector2(0.0, v)
 	)
 	_add_curve(
 		anim, _bone_path("ArmRightUpper") + ":scale", [[0.0, 1.0], [1.0, 1.0]],
-		IDLE_CYCLE, func(v): return Vector2(1.0, v)
+		IDLE_CYCLE, func(v: float) -> Variant: return Vector2(1.0, v)
 	)
 	_add_curve(
 		anim, _bone_path("BindleBag") + ":rotation_degrees",
 		FoolCutoutRig.lag(FoolCutoutRig.IDLE_BAG, 0.09), IDLE_CYCLE,
-		func(v): return v
+		func(v: float) -> Variant: return v
 	)
 	# Legs and feet back to rest, or the idle inherits a mid-stride pose.
-	for side in ["Left", "Right"]:
+	for side: String in ["Left", "Right"]:
 		var rest_position: Vector2 = _bones["Leg" + side + "Thigh"].position
 		_add_curve(
 			anim, _bone_path("Leg" + side + "Thigh") + ":position", [[0.0, 0.0], [1.0, 0.0]],
-			IDLE_CYCLE, func(v): return rest_position + Vector2(0.0, v)
+			IDLE_CYCLE, func(v: float) -> Variant: return rest_position + Vector2(0.0, v)
 		)
 		_add_curve(
 			anim, _bone_path("Leg" + side + "Thigh") + ":scale", [[0.0, 1.0], [1.0, 1.0]],
-			IDLE_CYCLE, func(v): return Vector2(1.0, v)
+			IDLE_CYCLE, func(v: float) -> Variant: return Vector2(1.0, v)
 		)
 		_add_curve(
 			anim, _bone_path("Foot" + side) + ":scale", [[0.0, 1.0], [1.0, 1.0]],
-			IDLE_CYCLE, func(v): return Vector2(1.0, v)
+			IDLE_CYCLE, func(v: float) -> Variant: return Vector2(1.0, v)
 		)
-		for joint in ["Leg" + side + "Thigh", "Foot" + side]:
+		for joint: String in ["Leg" + side + "Thigh", "Foot" + side]:
 			_add_curve(
 				anim, _bone_path(joint) + ":rotation_degrees", [[0.0, 0.0], [1.0, 0.0]],
-				IDLE_CYCLE, func(v): return v
+				IDLE_CYCLE, func(v: float) -> Variant: return v
 			)
 		var part: Dictionary = _parts["foot_" + side.to_lower()]
 		var texture_track := _track(anim, _bone_path("Foot" + side) + "/Art:texture", true)
@@ -476,11 +476,11 @@ func clip_length(clip_name: String) -> float:
 func pose_rest() -> void:
 	build()
 	_player.stop()
-	for entry in BONE_TREE:
+	for entry: Array in BONE_TREE:
 		var bone: Bone2D = _bones[entry[0]]
 		bone.transform = bone.rest
 		bone.scale = Vector2.ONE
-	for side in ["Left", "Right"]:
+	for side: String in ["Left", "Right"]:
 		var sprite := (_bones["Foot" + side] as Bone2D).get_node_or_null("Art") as Sprite2D
 		var part: Dictionary = _parts["foot_" + side.to_lower()]
 		sprite.texture = load(ART_DIR + str(part["file"]))

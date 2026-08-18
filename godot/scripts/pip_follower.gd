@@ -118,7 +118,7 @@ func _ensure_animator() -> void:
 ## (direction, action) -> clip. Add a direction's cycle here when its art lands.
 static func build_animation_table() -> Dictionary:
 	var static_action := {}
-	for direction in DIRECTIONS:
+	for direction: String in DIRECTIONS:
 		static_action[direction] = CharacterAnimator.make_clip(
 			[DIRECTION_TEXTURES[direction]], [PIP_OFFSETS[direction]], DIRECTION_SCALE, 1.0, false
 		)

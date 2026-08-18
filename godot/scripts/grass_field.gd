@@ -142,7 +142,7 @@ func step_displacement(delta: float) -> void:
 func _build_field() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 74077
-	for swatch in SWATCHES:
+	for swatch: Dictionary in SWATCHES:
 		var placed := 0
 		var attempts := 0
 		while placed < int(swatch["count"]) and attempts < 400:

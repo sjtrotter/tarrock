@@ -110,11 +110,11 @@ func _on_viewport_resized() -> void:
 
 func configure(layout_name: String) -> void:
 	assert(LAYOUTS.has(layout_name), "unknown spike layout: " + layout_name)
-	for panel in _panels:
+	for panel: Dictionary in _panels:
 		# The caption is a sibling of the panel root, not a child of it: free
 		# both, or every layout after the first captures with ghost labels
 		# stacked on top of it.
-		for node in [panel["root"], panel["label"]]:
+		for node: Variant in [panel["root"], panel["label"]]:
 			remove_child(node as Node)
 			(node as Node).queue_free()
 	_panels.clear()
@@ -126,7 +126,7 @@ func configure(layout_name: String) -> void:
 	# every capture crops tight with no dead space.
 	var widths: Array[float] = []
 	var total := 0.0
-	for spec in specs:
+	for spec: Variant in specs:
 		var w: float = clampf(float(spec[2]) * 3.4, 170.0, viewport.x / float(specs.size()))
 		widths.append(w)
 		total += w
@@ -217,7 +217,7 @@ func capture_rect() -> Rect2i:
 	var right := -INF
 	var top := INF
 	var bottom := -INF
-	for panel in _panels:
+	for panel: Dictionary in _panels:
 		left = minf(left, float(panel["x"]))
 		right = maxf(right, float(panel["x"]) + float(panel["width"]))
 		top = minf(top, float(panel["ground_y"]) - float(panel["figure_height"]) - 58.0)
@@ -236,7 +236,7 @@ func capture_rect() -> Rect2i:
 ## Pose every panel at absolute time `t`.
 func scrub(t: float) -> void:
 	_time = t
-	for panel in _panels:
+	for panel: Dictionary in _panels:
 		if panel["kind"] == "painted":
 			(panel["walker"] as PaintedWalk).scrub(t)
 		else:
@@ -266,7 +266,7 @@ func _draw() -> void:
 	var viewport := get_viewport_rect().size
 	draw_rect(Rect2(Vector2.ZERO, viewport), BG_BOTTOM)
 	draw_rect(Rect2(Vector2.ZERO, Vector2(viewport.x, viewport.y * 0.55)), BG_TOP)
-	for panel in _panels:
+	for panel: Dictionary in _panels:
 		_draw_panel(panel)
 
 
