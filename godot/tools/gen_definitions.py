@@ -38,6 +38,9 @@ What it reads, and what each source produces:
                             bands                   the region catalog, the RegionIds
                                                     constants and the region-name
                                                     translation table
+    docs/design/world.md  §The Fool's Reading   -> one ReadingMotif per starter-motif
+                                                   row, plus the motif catalog and the
+                                                   MotifIds constants
 
 A Trump's *effects* are deliberately NOT generated, for the same reason a quest's
 state graph is not: what a Trump does is prose, hand-authored under
@@ -161,6 +164,14 @@ REGION_CATALOG_PATH = f"{REGION_DATA_DIR}/catalog.tres"
 REGION_IDS_PATH = f"{REGION_SYSTEM_DIR}/region_ids.gd"
 REGION_NAMES_CSV_PATH = f"{LOCALIZATION_DIR}/regions.csv"
 
+NPC_DATA_DIR = "data/npc"
+NPC_MOTIF_DATA_DIR = f"{NPC_DATA_DIR}/motifs"
+NPC_SYSTEM_DIR = "systems/npc"
+READING_MOTIF_SCRIPT = "res://systems/npc/definitions/reading_motif.gd"
+MOTIF_CATALOG_SCRIPT = "res://systems/npc/definitions/motif_catalog.gd"
+MOTIF_CATALOG_PATH = f"{NPC_MOTIF_DATA_DIR}/catalog.tres"
+MOTIF_IDS_PATH = f"{NPC_SYSTEM_DIR}/motif_ids.gd"
+
 # Hand-authored files that live inside a generated directory. They are NOT swept as
 # stale and are never written by this tool: `spread_rules.tres` is authored from
 # `docs/design/progression.md`'s prose (the numbers it fixes and the ones it leaves
@@ -219,6 +230,14 @@ GENERATED_GLOBS = {
     # are hand-authored content and this tool does not write, sweep or know them.
     PROGRESSION_DEED_DATA_DIR: ["*.tres"],
     PROGRESSION_SYSTEM_DIR: [DEED_IDS_PATH.rsplit("/", 1)[-1]],
+    # `data/npc/motifs/*.tres` is the five starter motifs of §The Fool's Reading plus
+    # their catalog, generated whole. The sibling `data/npc/barks/` and
+    # `data/npc/profiles/` directories are hand-authored content lifted from quest
+    # docs' BARKS sections and `characters.md`, and `data/npc/npc_rules.tres` is the
+    # NPC system's tuning table; this tool does not write, sweep or know any of them,
+    # which is why the glob names the `motifs/` subdirectory and not `data/npc`.
+    NPC_MOTIF_DATA_DIR: ["*.tres"],
+    NPC_SYSTEM_DIR: [MOTIF_IDS_PATH.rsplit("/", 1)[-1]],
     LOCALIZATION_DIR: [
         QUEST_TITLES_CSV_PATH.rsplit("/", 1)[-1],
         TRUMP_NAMES_CSV_PATH.rsplit("/", 1)[-1],
@@ -269,6 +288,79 @@ REACTION_ORDINALS = {
 DEED_ROW_CELLS = 1 + len(DEED_SUITS)
 
 ARCANA_DOC_REF = "docs/design/arcana.md"
+
+READING_HEADING = "## The Fool's Reading (sequence reactivity)"
+READING_DOC_REF = "docs/design/world.md §The Fool's Reading (sequence reactivity)"
+
+# The five starter motifs of §The Fool's Reading, mapped BY HAND to an id and a rule.
+#
+# Same shape and same reason as `DEED_IDS_BY_DEED`: the Motif cell is an English
+# sentence about an ordered list ("Sun unbound before Star"), and the rule it means is
+# a reading, not a parse. Deriving `MOTIF_SUN_BEFORE_STAR` and `BEFORE(Sun, Star)` from
+# those four words by rule would be a parser that quietly invents a rule the day
+# somebody rewords the cell - a doc edit, not a content change. So every row is named
+# here by a person, and a row this table does not name is a HARD FAILURE: §The Fool's
+# Reading says "quests and the NPC system may add more, locally", and adding one is a
+# deliberate act with an id and a rule chosen deliberately.
+#
+# Each value is `(motif id, rule ordinal, flag_a, flag_b, count, why)`. The rule
+# ordinals are `ReadingMotif.Rule` in
+# `godot/systems/npc/definitions/reading_motif.gd` - BEFORE 0, IN_FIRST_N 1, LAST_OF 2,
+# NOT_FIRST 3 - so the two files have to agree, and
+# `godot/tests/unit/npc/reading_motif_test.gd` re-reads the doc through them.
+MOTIF_BEFORE = 0
+MOTIF_IN_FIRST_N = 1
+MOTIF_LAST_OF = 2
+MOTIF_NOT_FIRST = 3
+
+MOTIFS_BY_ROW = {
+    "Sun unbound before Star": (
+        "MOTIF_SUN_BEFORE_STAR",
+        MOTIF_BEFORE,
+        "WS_SUN_UNBOUND",
+        "WS_STAR_UNBOUND",
+        0,
+        "the cell names both cards and an order between them, which is BEFORE(a, b)",
+    ),
+    "Star unbound before Sun": (
+        "MOTIF_STAR_BEFORE_SUN",
+        MOTIF_BEFORE,
+        "WS_STAR_UNBOUND",
+        "WS_SUN_UNBOUND",
+        0,
+        "the same rule with the two cards the other way round; the doc lists both "
+        "orders as separate motifs because they read as different skies",
+    ),
+    "Death unbound in Act I (first 7)": (
+        "MOTIF_DEATH_IN_ACT_I",
+        MOTIF_IN_FIRST_N,
+        "WS_DEATH_UNBOUND",
+        "",
+        7,
+        "the cell states the count itself, and 7 is world.md §Global states' own "
+        "ACT_I ceiling ('0-6 Arcana unbound'), so 'in the first 7' and 'while the "
+        "world is still in Act I' are the same sentence",
+    ),
+    "Death unbound last of the 20": (
+        "MOTIF_DEATH_LAST",
+        MOTIF_LAST_OF,
+        "WS_DEATH_UNBOUND",
+        "",
+        20,
+        "the cell states the count itself. TWENTY, not twenty-one: the World is the "
+        "journey's end rather than an unbinding the Fool walks away from (GDD.md), so "
+        "twenty is what a playthrough can have unbound with Death still to go",
+    ),
+    "Magician not first": (
+        "MOTIF_MAGICIAN_NOT_FIRST",
+        MOTIF_NOT_FIRST,
+        "WS_MAGICIAN_UNBOUND",
+        "",
+        0,
+        "'not first' is a statement about position alone and needs no second card: it "
+        "holds the moment the Magician is unbound with anything already ahead of him",
+    ),
+}
 
 ACT_THRESHOLDS_ID = "ACT_THRESHOLDS"
 RENOWN_LADDER_ID = "RENOWN_LADDER"
@@ -2272,6 +2364,160 @@ def deed_ids_script(deeds: list[Deed]) -> str:
     return "\n".join(lines)
 
 
+# --- Reading motifs (docs/design/world.md §The Fool's Reading) ----------------
+
+
+class Motif:
+    """One row of §The Fool's Reading's starter-motif table."""
+
+    def __init__(
+        self,
+        motif_id: str,
+        rule: int,
+        flag_a: str,
+        flag_b: str,
+        count: int,
+        summary: str,
+        flavor: str,
+        why: str,
+    ) -> None:
+        self.motif_id = motif_id
+        self.rule = rule
+        self.flag_a = flag_a
+        self.flag_b = flag_b
+        self.count = count
+        self.summary = summary
+        self.flavor = flavor
+        self.why = why
+
+    @property
+    def resource_path(self) -> str:
+        return f"{NPC_MOTIF_DATA_DIR}/{self.motif_id}.tres"
+
+
+def parse_motifs(doc_path: Path, flags: list[Flag]) -> list[Motif]:
+    """Every starter motif of §The Fool's Reading, in the table's own row order.
+
+    The two cells are carried verbatim; the rule comes from `MOTIFS_BY_ROW`, which is
+    hand-mapped for the reason written there. A row the table does not name fails the
+    whole run rather than being skipped: a motif nobody mapped would be a bark
+    condition the game silently never evaluates.
+    """
+    rows = table_rows(read_section(doc_path, READING_HEADING))
+    if not rows:
+        raise GeneratorError(f"{doc_path} {READING_HEADING} has no motif table")
+    known = {flag.state_id for flag in flags}
+    motifs: list[Motif] = []
+    for row in rows:
+        if len(row) < 2:
+            raise GeneratorError(
+                "a %s row has %d cells, expected 2: %r" % (READING_HEADING, len(row), row)
+            )
+        summary = unwrap(row[0])
+        mapping = MOTIFS_BY_ROW.get(summary)
+        if mapping is None:
+            raise GeneratorError(
+                "%s names the motif %r, which MOTIFS_BY_ROW does not map to a rule"
+                % (READING_HEADING, summary)
+            )
+        motif_id, rule, flag_a, flag_b, count, why = mapping
+        for flag_id in (flag_a, flag_b):
+            if flag_id and flag_id not in known:
+                raise GeneratorError(
+                    "the motif %s names %s, which the world-state matrix does not define"
+                    % (motif_id, flag_id)
+                )
+        motifs.append(
+            Motif(motif_id, rule, flag_a, flag_b, count, summary, row[1].strip(), why)
+        )
+    return motifs
+
+
+def motif_resource(motif: Motif) -> str:
+    """One `data/npc/motifs/<MOTIF_ID>.tres`."""
+    script_id = "1_motif"
+    body = resource_header("ReadingMotif", [("Script", READING_MOTIF_SCRIPT, script_id)])
+    lines = [
+        "[resource]",
+        'script = ExtResource("%s")' % script_id,
+        'id = &"%s"' % motif.motif_id,
+        'flag_a = &"%s"' % motif.flag_a,
+        'flag_b = &"%s"' % motif.flag_b,
+        "rule = %d" % motif.rule,
+        "count = %d" % motif.count,
+        'motif_summary = "%s"' % escape(motif.summary),
+        'bark_flavor = "%s"' % escape(motif.flavor),
+        'doc_ref = "%s"' % escape(READING_DOC_REF),
+        'notes = "%s"' % escape(motif.why),
+        "",
+    ]
+    return body + "\n".join(lines)
+
+
+def motif_catalog_resource(motifs: list[Motif]) -> str:
+    """`data/npc/motifs/catalog.tres`, in the doc's row order."""
+    definition_id = "1_motif"
+    catalog_id = "2_catalog"
+    ext_resources = [
+        ("Script", READING_MOTIF_SCRIPT, definition_id),
+        ("Script", MOTIF_CATALOG_SCRIPT, catalog_id),
+    ]
+    entry_ids: list[str] = []
+    for index, motif in enumerate(motifs, start=3):
+        entry_id = "%d_%s" % (index, motif.motif_id.lower())
+        entry_ids.append(entry_id)
+        ext_resources.append(("Resource", "res://" + motif.resource_path, entry_id))
+    body = resource_header("MotifCatalog", ext_resources)
+    entries = ", ".join('ExtResource("%s")' % entry_id for entry_id in entry_ids)
+    body += "\n".join(
+        [
+            "[resource]",
+            'script = ExtResource("%s")' % catalog_id,
+            'entries = Array[ExtResource("%s")]([%s])' % (definition_id, entries),
+            "",
+        ]
+    )
+    return body
+
+
+def motif_ids_script(motifs: list[Motif]) -> str:
+    """`motif_ids.gd`: the one place a motif id is written in code."""
+    lines = [
+        "class_name MotifIds",
+        "extends RefCounted",
+        "",
+        "## Every motif of the Fool's Reading, as a constant.",
+        "##",
+        "## GENERATED by `godot/tools/gen_definitions.py` from",
+        "## `%s`'s" % READING_DOC_REF,
+        "## starter-motif table - do not edit by hand; edit the doc and regenerate. A",
+        "## drift test fails when this file and the table disagree.",
+        "##",
+        "## A motif is a SHAPE the Reading can have - Sun before Star, Death early,",
+        "## the Magician not first - and `npc-system.md` §Bark layers puts the barks",
+        "## that wait on one at layer 2. The rule each motif evaluates is hand-mapped",
+        "## in the generator (`MOTIFS_BY_ROW`) and carried in the `.tres`; this file",
+        "## is only the ids.",
+        "##",
+        "## Code never types a motif id: it names one of these constants, or reads an",
+        "## id off a `ReadingMotif` (docs/design/technical.md, no magic strings).",
+        "",
+        "## The motifs, in the doc's own row order.",
+    ]
+    for motif in motifs:
+        lines.append(
+            'const %s := &"%s"  # %s' % (motif.motif_id, motif.motif_id, motif.summary)
+        )
+    lines.append("")
+    lines.append("## Every motif the table defines, in row order.")
+    lines.append("const ALL: Array[StringName] = [")
+    for motif in motifs:
+        lines.append("\t%s," % motif.motif_id)
+    lines.append("]")
+    lines.append("")
+    return "\n".join(lines)
+
+
 # --- The generation itself ---------------------------------------------------
 
 
@@ -2286,6 +2532,7 @@ def generate() -> dict[str, str]:
     enemies = parse_enemies(COMBAT_DOC)
     world_regions = parse_world_regions(WORLD_DOC, flags, regions)
     deeds = parse_deeds(PROGRESSION_DOC)
+    motifs = parse_motifs(WORLD_DOC, flags)
 
     files: dict[str, str] = {}
     for flag in flags:
@@ -2317,6 +2564,10 @@ def generate() -> dict[str, str]:
         files[deed.resource_path] = deed_resource(deed)
     files[DEED_CATALOG_PATH] = deed_catalog_resource(deeds)
     files[DEED_IDS_PATH] = deed_ids_script(deeds)
+    for motif in motifs:
+        files[motif.resource_path] = motif_resource(motif)
+    files[MOTIF_CATALOG_PATH] = motif_catalog_resource(motifs)
+    files[MOTIF_IDS_PATH] = motif_ids_script(motifs)
     return files
 
 

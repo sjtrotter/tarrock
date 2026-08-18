@@ -32,6 +32,7 @@
 	},
 	"pocket_spread": {},
 	"inventory": {},
+	"npc": {},
 	"regions": {
 		"current_region_id": "PRESTIGE",
 		"last_waystation_id": "WAYSTATION_PRESTIGE",

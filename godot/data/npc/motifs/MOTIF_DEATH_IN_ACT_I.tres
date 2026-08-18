@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ReadingMotif" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/npc/definitions/reading_motif.gd" id="1_motif"]
+
+[resource]
+script = ExtResource("1_motif")
+id = &"MOTIF_DEATH_IN_ACT_I"
+flag_a = &"WS_DEATH_UNBOUND"
+flag_b = &""
+rule = 1
+count = 7
+motif_summary = "Death unbound in Act I (first 7)"
+bark_flavor = "The world learns what the Fool is *early*; wonder-tinged dread colors Act II barks everywhere."
+doc_ref = "docs/design/world.md §The Fool's Reading (sequence reactivity)"
+notes = "the cell states the count itself, and 7 is world.md §Global states' own ACT_I ceiling ('0-6 Arcana unbound'), so 'in the first 7' and 'while the world is still in Act I' are the same sentence"

@@ -3,6 +3,7 @@
 	"world_state": {},
 	"pocket_spread": {},
 	"inventory": {},
+	"npc": {},
 	"regions": {
 		"current_region_id": "",
 		"last_waystation_id": "",

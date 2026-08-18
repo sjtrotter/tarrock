@@ -97,6 +97,18 @@ const ECONOMY_RULES_PATH := "res://data/progression/economy_rules.tres"
 const REGION_CATALOG_PATH := "res://data/regions/catalog.tres"
 const REGION_GRAPH_PATH := "res://data/regions/region_graph.tres"
 
+## The GENERATED reading motifs `npc` is built over - one per `docs/design/world.md`
+## §The Fool's Reading starter-motif row - and the HAND-AUTHORED bark pools, named-NPC
+## profiles and tuning table (`docs/design/npc-system.md`). Bark content is lifted out
+## of quest/region docs' BARKS sections a pool at a time; today that is only the
+## Cliff's four Querent idle lines (`data/npc/barks/catalog.tres` is `is_complete =
+## false`), and the profiles are the nine recurring named NPCs of `characters.md`
+## §Recurring named NPCs.
+const NPC_BARK_CATALOG_PATH := "res://data/npc/barks/catalog.tres"
+const NPC_MOTIF_CATALOG_PATH := "res://data/npc/motifs/catalog.tres"
+const NPC_PROFILE_CATALOG_PATH := "res://data/npc/profiles/catalog.tres"
+const NPC_RULES_PATH := "res://data/npc/npc_rules.tres"
+
 ## The first quest of the game, started by `new_game()` and by nothing else, and the
 ## conversation that plays over the black screen before the Cliff is drawn
 ## (`docs/quests/main/MQ00-the-leap.md`).
@@ -184,6 +196,15 @@ var quests: QuestService = null
 ## reference to it.
 var dialogue: DialogueService = null
 
+## The seven-layer bark selector, named-NPC memory gating, rumour propagation and
+## anchor schedules (`docs/design/npc-system.md`). Built BEFORE `save`, which holds it
+## for the `npc` snapshot section, and before `quests` exists - `attach_quests()` is
+## called once `quests` is built, exactly as `economy.attach_regions()` is called once
+## `regions` is (see `rebuild()`). It reads `world_state`, the quest and region
+## CATALOGS (not the services) and `clock`, never a service that could close a cycle
+## back onto the save that captures this one (`RumorService`'s class doc).
+var npc: BarkService = null
+
 
 func _ready() -> void:
 	rebuild()
@@ -214,13 +235,21 @@ func rebuild() -> void:
 	combat = CombatService.new(_load_combat_rules(), fortune, spread, rose, clock)
 	enemies = _build_enemies(combat.rules())
 	pip = PipService.new(_load_pip_rules(), combat)
-	save = SaveService.new(world_state, clock, _saves_dir, null, spread, fortune, rose, economy)
+	npc = _build_npc()
+	save = SaveService.new(
+		world_state, clock, _saves_dir, null, spread, fortune, rose, economy, npc
+	)
 	# The chosen difficulty is save data (`SaveModel.difficulty_mode`), so combat is
 	# told once the save service exists to be asked. A settings screen that changes it
 	# mid-play calls `combat.set_difficulty()` itself - that wiring is the UI round's,
 	# and `SaveService` has no signal to hang it on today.
 	combat.set_difficulty(save.difficulty())
 	quests = _build_quests()
+	# A main quest's completion is what starts its news travelling
+	# (`docs/design/npc-system.md` §"The world talks about you"). Introduced here, at
+	# the one point both `npc` and `quests` exist, exactly as `economy` and `regions`
+	# are below - the subscription itself lives in `BarkService.attach_quests()`.
+	npc.attach_quests(quests)
 	dialogue = _build_dialogue()
 	regions = _build_regions()
 	# A rest at a Waystation is what puts a shop's shelves back
@@ -378,6 +407,49 @@ func _build_economy() -> EconomyService:
 		for problem: String in deeds.validate():
 			push_error(problem)
 	return EconomyService.new(rules, items, shops, deeds, world_state, spread, rose)
+
+
+## Load the bark pools, the reading motifs, the named-NPC profiles and the tuning
+## table, and build the bark selector over them.
+##
+## Validated on the way in for the same reason the other catalogs are, with the
+## cross-references only this call can make: a bark waiting on a `WS_*` flag, a
+## region, a quest, a motif or a named speaker nothing else defines is a line that
+## could never be said. `attach_quests()` is NOT called here - `quests` does not exist
+## yet at this point in `rebuild()` - the composition root calls it once `quests` is
+## built, exactly as `economy.attach_regions()` is called once `regions` is.
+##
+## The quest and region CATALOGS are passed, never `QuestService` or `RegionService`:
+## `RumorService`'s class doc is explicit about why - the save captures `npc`, and a
+## service reference back to something the save also captures would close a
+## `RefCounted` cycle nothing collects.
+func _build_npc() -> BarkService:
+	var barks: BarkCatalog = load(NPC_BARK_CATALOG_PATH) as BarkCatalog
+	var motifs: MotifCatalog = load(NPC_MOTIF_CATALOG_PATH) as MotifCatalog
+	var profiles: NpcCatalog = load(NPC_PROFILE_CATALOG_PATH) as NpcCatalog
+	var rules: NpcRules = load(NPC_RULES_PATH) as NpcRules
+	var world_states: WorldStateCatalog = load(WORLD_STATE_CATALOG_PATH) as WorldStateCatalog
+	var region_catalog: RegionCatalog = load(REGION_CATALOG_PATH) as RegionCatalog
+	var region_graph: RegionGraph = load(REGION_GRAPH_PATH) as RegionGraph
+	var quest_catalog: QuestCatalog = load(QUEST_CATALOG_PATH) as QuestCatalog
+	if barks != null:
+		for problem: String in barks.validate(world_states, region_catalog, quest_catalog, motifs, profiles):
+			push_error(problem)
+	if motifs != null:
+		for problem: String in motifs.validate(world_states):
+			push_error(problem)
+	if profiles != null:
+		for problem: String in profiles.validate(region_catalog):
+			push_error(problem)
+	if rules != null:
+		for problem: String in rules.validate():
+			push_error(problem)
+		for problem: String in rules.validate_against(world_states):
+			push_error(problem)
+	return BarkService.new(
+		barks, motifs, profiles, rules, world_state, quest_catalog, region_graph,
+		region_catalog, clock
+	)
 
 
 ## Load the generated quest definitions and build the runner over them.

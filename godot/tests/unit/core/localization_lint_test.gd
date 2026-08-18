@@ -104,6 +104,15 @@ const DOC_ONLY_PROPERTIES: Array[String] = [
 	"family_summary",  # a Beast's or a Fog-mask's whole bullet from combat.md §Other
 	# enemy families, verbatim. Same job, same rule: doc text for reviewers and for the
 	# drift test, never displayed.
+	"motif_summary",  # a `ReadingMotif`'s Motif cell from world.md §The Fool's Reading,
+	# verbatim, for the drift test and the reviewer. NOTHING draws it: the Reading's
+	# motifs are bark CONDITIONS, not lines, and the day the Almanack narrates one that
+	# narration is a key resolved through the CSV.
+	"bark_flavor",  # a `ReadingMotif`'s "Example bark flavor" cell, verbatim.
+	# EXPLICITLY NOT A LINE: `ReadingMotif`'s class doc and world.md §The Fool's Reading
+	# both call it a sketch, and `BarkDefinition.motif` merely names the motif a bark
+	# waits on - the bark's own `text_key` carries whatever a writer authors, never this
+	# cell. Doc text for the drift test and the reviewer; nothing draws it.
 ]
 # NOTE on the two burden entries: they are doc text for reviewers and for the drift
 # tests, and NOTHING may draw them. The day a screen shows the player which burden a

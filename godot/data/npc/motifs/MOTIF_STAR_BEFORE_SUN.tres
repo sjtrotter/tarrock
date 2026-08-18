@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ReadingMotif" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/npc/definitions/reading_motif.gd" id="1_motif"]
+
+[resource]
+script = ExtResource("1_motif")
+id = &"MOTIF_STAR_BEFORE_SUN"
+flag_a = &"WS_STAR_UNBOUND"
+flag_b = &"WS_SUN_UNBOUND"
+rule = 0
+count = 0
+motif_summary = "Star unbound before Sun"
+bark_flavor = "\"When the sun finally set, the stars were already waiting. Like they knew.\""
+doc_ref = "docs/design/world.md §The Fool's Reading (sequence reactivity)"
+notes = "the same rule with the two cards the other way round; the doc lists both orders as separate motifs because they read as different skies"

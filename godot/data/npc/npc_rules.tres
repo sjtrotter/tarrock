@@ -1,0 +1,53 @@
+[gd_resource type="Resource" script_class="NpcRules" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://systems/npc/definitions/schedule_variant.gd" id="1_variant"]
+[ext_resource type="Script" path="res://systems/npc/definitions/npc_rules.gd" id="2_npc_rules"]
+
+[sub_resource type="Resource" id="variant_wedding"]
+script = ExtResource("1_variant")
+kind = 1
+when_fired = &"WS_HIEROPHANT_UNBOUND"
+doc_ref = "docs/design/npc-system.md §Daily life: light schedules, not a sim, third bullet"
+notes = "the bullet's 'festivals (WS_HIEROPHANT_UNBOUND weddings, Act III last days content per narrative.md)'. The Act III half is NOT a second condition here: 'last days' content is narrative.md's and world.md §Global states' (ACT_III is 15-21 unbound), and a bark or a schedule entry that wants it says so with its own act condition. This row carries only what the bullet gives it - the unbinding that makes a wedding possible at all."
+
+[sub_resource type="Resource" id="variant_funeral"]
+script = ExtResource("1_variant")
+kind = 2
+when_fired = &"WS_DEATH_UNBOUND"
+doc_ref = "docs/design/npc-system.md §Daily life: light schedules, not a sim, third bullet"
+notes = "the bullet's 'funerals (WS_DEATH_UNBOUND onward)'. 'Onward' is what a fired flag already means - a WS_* flag can never be un-fired (world.md §World-state matrix) - so there is nothing further to encode."
+
+[sub_resource type="Resource" id="variant_market"]
+script = ExtResource("1_variant")
+kind = 3
+when_fired = &"WS_CHARIOT_UNBOUND"
+doc_ref = "docs/design/npc-system.md §Daily life: light schedules, not a sim, third bullet"
+notes = "the bullet's 'markets and caravans (WS_CHARIOT_UNBOUND trade traffic)'. TWO KINDS, ONE FLAG: the bullet names markets and caravans together and gives them one unbinding, so they are two rows sharing a condition rather than one row with a slash - a market is a place NPCs go and a caravan is a thing that arrives, and an anchor schedule tells them apart."
+
+[sub_resource type="Resource" id="variant_caravan"]
+script = ExtResource("1_variant")
+kind = 4
+when_fired = &"WS_CHARIOT_UNBOUND"
+doc_ref = "docs/design/npc-system.md §Daily life: light schedules, not a sim, third bullet"
+notes = "the other half of the bullet's 'markets and caravans (WS_CHARIOT_UNBOUND trade traffic)' - see the MARKET row for why they are two."
+
+[sub_resource type="Resource" id="variant_petty_crime"]
+script = ExtResource("1_variant")
+kind = 5
+when_fired = &"WS_EMPEROR_UNBOUND"
+doc_ref = "docs/design/npc-system.md §Daily life: light schedules, not a sim, third bullet"
+notes = "the bullet's 'petty-crime events (WS_EMPEROR_UNBOUND)'. The bullet gives no gloss beyond the flag, and none is invented."
+
+[resource]
+script = ExtResource("2_npc_rules")
+id = &"NPC_RULES"
+recent_pick_memory = 3
+rumor_adjacent_delay_hours = 6.0
+rumor_world_delay_hours = 48.0
+seconds_per_in_game_hour = 60.0
+time_band_start_hours = PackedFloat32Array(0, 5, 8, 18, 21)
+hours_per_day = 24.0
+schedule_variants = Array[ExtResource("1_variant")]([SubResource("variant_wedding"), SubResource("variant_funeral"), SubResource("variant_market"), SubResource("variant_caravan"), SubResource("variant_petty_crime")])
+pool_size_targets = PackedInt32Array(0, 0, 3, 4, 6, 3, 4, 10)
+doc_ref = "docs/design/npc-system.md §Bark layers (repeats decay), §\"The world talks about you\" (rumour delays), §Daily life: light schedules, not a sim (schedule variants, time bands), §Dialogue volume and pool-size targets, §Open questions"
+notes = "EVERY NUMBER IN THIS FILE IS A PLACEHOLDER, and npc-system.md says so twice: its §Open questions call the rumour delays 'a pacing number to tune once a real playthrough timeline exists, not a docs-phase decision', and §Dialogue volume calls its whole pool-size table 'tuning targets, not locked numbers - set for real once a region is greyboxed and its NPC density is known'. recent_pick_memory = 3 is the doc's 'the next few picks' made a number, and three is chosen so that a four-line pool (the Cliff's, the only real one shipped) is exhausted before it repeats - a pool one deeper than the memory is the smallest one the no-repeat rule can be seen working on. rumor_adjacent_delay_hours = 6 and rumor_world_delay_hours = 48 keep the only two constraints the doc states: hours rather than seconds ('long enough that a player who fast-travels immediately still beats the news'), and world-wide strictly longer than adjacent. seconds_per_in_game_hour = 60 is the figure NOTHING in docs/ speaks to at all - no doc gives the world a day length - so an in-game hour is one real minute and an in-game day is twenty-four, which is the shape most games of this kind use and is the first number a pacing pass should move. THE FOUR TIME BANDS ARE THIS SYSTEM'S READING, not canon: npc-system.md says 'day/night' and nothing finer, and §Daily life asks only for 'a simple time-of-day loop', so DAWN 5, DAY 8, DUSK 18, NIGHT 21 is a storybook-British day and every boundary is TBD. NONE starts at hour 0 as padding so the array indexes by TimeBand.Id; nothing reads it. pool_size_targets is §Dialogue volume's table, indexed by layer, and is INERT: nothing reads it and no check enforces it, because the doc refuses to lock the numbers. Index 0 is padding; layer 1 is 0 because the doc says quest-scripted lines are 'as needed by the quest ... not sized here'; layers 2-7 are the LOW end of each range (3, 4, 6, 3, 4, 10) so a writer reads a floor rather than a quota. THE SCHEDULE VARIANTS ARE NOT TUNING: they are §Daily life's third bullet read into rows, hand-authored rather than generated because that bullet is prose with its flags in parentheses and two of its kinds sharing one flag - see ScheduleVariant's class doc."

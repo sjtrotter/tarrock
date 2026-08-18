@@ -40,6 +40,7 @@ const FIELD_WORLD_STATE := "world_state"
 const FIELD_POCKET_SPREAD := "pocket_spread"
 const FIELD_INVENTORY := "inventory"
 const FIELD_REGIONS := "regions"
+const FIELD_NPC := "npc"
 const FIELD_PLAYTIME_SECONDS := "playtime_seconds"
 const FIELD_DIFFICULTY_MODE := "difficulty_mode"
 
@@ -50,6 +51,7 @@ const REQUIRED_FIELDS: Array[String] = [
 	FIELD_POCKET_SPREAD,
 	FIELD_INVENTORY,
 	FIELD_REGIONS,
+	FIELD_NPC,
 	FIELD_PLAYTIME_SECONDS,
 	FIELD_DIFFICULTY_MODE,
 ]
@@ -111,6 +113,24 @@ var pocket_spread: Dictionary = {}
 ## same.
 var inventory: Dictionary = {}
 
+## Which main quests' news is travelling, and when each one was heard of
+## (`BarkService.to_snapshot()`, which is `RumorService.to_snapshot()` verbatim - see
+## `RumorService.SNAPSHOT_*` for the keys).
+##
+## Carried verbatim and opaque, exactly as `inventory` is: `BarkService` owns the
+## contract on the way back in, and restating its keys here would give the game two
+## places to disagree with itself. Only the rumour SEEDS are here - which main quests
+## have completed and at what clock reading - because everything else the NPC round
+## can do (which barks are said, which anchor an NPC stands at, which lines were
+## recently spent) is either derived from world state already in the file or is
+## transient by design (`npc-system.md` §Bark layers' repeat-decay memory is a fact
+## about the last few picks, not about the playthrough).
+##
+## Still a plain empty Dictionary for a playthrough with no completed main quest, and
+## for a build wired without that service, so a v1 file written either way reads back
+## the same.
+var npc: Dictionary = {}
+
 ## The region the Fool is standing in, as a `RegionIds` token. Serialised inside the
 ## `regions` section; typed here so the model stays a shape rather than a bag.
 var current_region_id: StringName = UNSET
@@ -150,6 +170,7 @@ func to_dictionary() -> Dictionary:
 		FIELD_WORLD_STATE: world_state.duplicate(true),
 		FIELD_POCKET_SPREAD: pocket_spread.duplicate(true),
 		FIELD_INVENTORY: inventory.duplicate(true),
+		FIELD_NPC: npc.duplicate(true),
 		FIELD_REGIONS: {
 			REGIONS_CURRENT: String(current_region_id),
 			REGIONS_LAST_WAYSTATION: String(last_waystation_id),
@@ -172,6 +193,7 @@ static func from_dictionary(data: Dictionary) -> SaveModel:
 	model.world_state = _as_dictionary(data.get(FIELD_WORLD_STATE))
 	model.pocket_spread = _as_dictionary(data.get(FIELD_POCKET_SPREAD))
 	model.inventory = _as_dictionary(data.get(FIELD_INVENTORY))
+	model.npc = _as_dictionary(data.get(FIELD_NPC))
 	var regions := _as_dictionary(data.get(FIELD_REGIONS))
 	model.current_region_id = _as_id(regions.get(REGIONS_CURRENT))
 	model.last_waystation_id = _as_id(regions.get(REGIONS_LAST_WAYSTATION))
@@ -222,7 +244,9 @@ static func validate_dictionary(data: Dictionary) -> PackedStringArray:
 			errors.append("save schema_version is not a whole number: %s" % str(data.get(FIELD_SCHEMA_VERSION)))
 		elif version != CURRENT_SCHEMA_VERSION:
 			errors.append("save schema_version is %d, this build reads %d" % [version, CURRENT_SCHEMA_VERSION])
-	for field: String in [FIELD_WORLD_STATE, FIELD_POCKET_SPREAD, FIELD_INVENTORY, FIELD_REGIONS]:
+	for field: String in [
+		FIELD_WORLD_STATE, FIELD_POCKET_SPREAD, FIELD_INVENTORY, FIELD_NPC, FIELD_REGIONS
+	]:
 		if data.has(field) and not (data.get(field) is Dictionary):
 			errors.append("save field %s is not a dictionary" % field)
 	errors.append_array(_validate_regions(data))

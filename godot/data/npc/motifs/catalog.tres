@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="MotifCatalog" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://systems/npc/definitions/reading_motif.gd" id="1_motif"]
+[ext_resource type="Script" path="res://systems/npc/definitions/motif_catalog.gd" id="2_catalog"]
+[ext_resource type="Resource" path="res://data/npc/motifs/MOTIF_SUN_BEFORE_STAR.tres" id="3_motif_sun_before_star"]
+[ext_resource type="Resource" path="res://data/npc/motifs/MOTIF_STAR_BEFORE_SUN.tres" id="4_motif_star_before_sun"]
+[ext_resource type="Resource" path="res://data/npc/motifs/MOTIF_DEATH_IN_ACT_I.tres" id="5_motif_death_in_act_i"]
+[ext_resource type="Resource" path="res://data/npc/motifs/MOTIF_DEATH_LAST.tres" id="6_motif_death_last"]
+[ext_resource type="Resource" path="res://data/npc/motifs/MOTIF_MAGICIAN_NOT_FIRST.tres" id="7_motif_magician_not_first"]
+
+[resource]
+script = ExtResource("2_catalog")
+entries = Array[ExtResource("1_motif")]([ExtResource("3_motif_sun_before_star"), ExtResource("4_motif_star_before_sun"), ExtResource("5_motif_death_in_act_i"), ExtResource("6_motif_death_last"), ExtResource("7_motif_magician_not_first")])

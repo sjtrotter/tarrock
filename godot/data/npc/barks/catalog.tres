@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BarkCatalog" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://systems/npc/definitions/bark_definition.gd" id="1_bark"]
+[ext_resource type="Script" path="res://systems/npc/definitions/bark_catalog.gd" id="2_catalog"]
+[ext_resource type="Resource" path="res://data/npc/barks/BARK_CLIFF_QUERENT_IDLE_01.tres" id="3_bark_cliff_querent_idle_01"]
+[ext_resource type="Resource" path="res://data/npc/barks/BARK_CLIFF_QUERENT_IDLE_02.tres" id="4_bark_cliff_querent_idle_02"]
+[ext_resource type="Resource" path="res://data/npc/barks/BARK_CLIFF_QUERENT_IDLE_03.tres" id="5_bark_cliff_querent_idle_03"]
+[ext_resource type="Resource" path="res://data/npc/barks/BARK_CLIFF_QUERENT_IDLE_04.tres" id="6_bark_cliff_querent_idle_04"]
+
+[resource]
+script = ExtResource("2_catalog")
+entries = Array[ExtResource("1_bark")]([ExtResource("3_bark_cliff_querent_idle_01"), ExtResource("4_bark_cliff_querent_idle_02"), ExtResource("5_bark_cliff_querent_idle_03"), ExtResource("6_bark_cliff_querent_idle_04")])
+is_complete = false
+doc_ref = "docs/design/npc-system.md §Consistency note (the system doc owns no line and no pool; bark content is authored per region in that region's quest docs' BARKS sections). Today: docs/quests/main/MQ00-the-leap.md §BARKS - The Cliff."

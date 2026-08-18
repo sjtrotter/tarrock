@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="NpcProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/npc/definitions/npc_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+id = &"FLICK"
+name_key = &"NPC_FLICK_NAME"
+is_named = true
+suit = 2
+npc_rank = 1
+home_region = &"PRESTIGE"
+home_anchor = &""
+work_anchor = &""
+gathering_anchor = &""
+memory_flags_known = Array[StringName]([&"MET_THE_FOOL", &"HELPED", &"WRONGED", &"SAW_THE_SHOW_END"])
+bows_to_pip = false
+doc_ref = "docs/design/characters.md §Recurring named NPCs: 'Flick - a Page of Wands, carnival barker at the Prestige, and the first friendly face the Fool meets after the tutorial.'"
+notes = "The ONE profile whose suit and rank are canon rather than a reading: the bullet says 'a Page of Wands' outright. Home region is the bullet's own ('carnival barker at the Prestige'). Anchors are TBD - the Prestige is not greyboxed, and npc-system.md §Daily life says schedules are 'authored per region alongside that region's bark pools', so an anchor invented here would be a marker no scene has. SAW_THE_SHOW_END is MQ01's outcome and is already in the checked-in save fixture; MET_THE_FOOL is the bullet's 'first friendly face'."

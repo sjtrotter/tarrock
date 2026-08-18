@@ -21,7 +21,9 @@ extends RefCounted
 ##     back in that order *after* the world state, because which Trumps are held is
 ##     derived from the flags rather than stored beside them. The purse, what the
 ##     Fool carries, the staff head on the Bindle and the grafting sources already
-##     taken are the file's `inventory` section and land after all of those. A
+##     taken are the file's `inventory` section and land after all of those. Which
+##     main quests' news is travelling, and when each was heard of, is the file's
+##     `npc` section (`BarkService`/`RumorService`) and lands last of all. A
 ##     section this build cannot read stops the apply where it stands, leaving the
 ##     services partly loaded - `apply()` spells out what a caller owes then.
 ##   * **A load is not a reset.** `apply()` refuses any world that has already been
@@ -84,6 +86,7 @@ var _spread: PocketSpreadService = null
 var _fortune: FortuneService = null
 var _rose: WhiteRoseService = null
 var _economy: EconomyService = null
+var _npc: BarkService = null
 var _saves_dir: String = DEFAULT_SAVES_DIR
 var _migrations: SaveMigrations = null
 
@@ -112,10 +115,10 @@ var _playtime_baseline: float = 0.0
 ## falls back to them too: a service with no chain at all could not read any save, and
 ## silently reading nothing is worse than ignoring a caller's null.
 ##
-## The four progression services are optional in the same spirit: a test that only
-## cares about the world state builds a save service without them, and the
-## `pocket_spread` and `inventory` fields then stay the empty Dictionaries a v1 file
-## has always carried. The composition root always passes all four.
+## The four progression services and `npc` are optional in the same spirit: a test
+## that only cares about the world state builds a save service without them, and the
+## `pocket_spread`, `inventory` and `npc` fields then stay the empty Dictionaries a v1
+## file has always carried. The composition root always passes all five.
 func _init(
 	world_state: WorldStateService,
 	clock: GameClock,
@@ -124,7 +127,8 @@ func _init(
 	spread: PocketSpreadService = null,
 	fortune: FortuneService = null,
 	rose: WhiteRoseService = null,
-	economy: EconomyService = null
+	economy: EconomyService = null,
+	npc: BarkService = null
 ) -> void:
 	_world_state = world_state
 	_clock = clock
@@ -134,6 +138,7 @@ func _init(
 	_fortune = fortune
 	_rose = rose
 	_economy = economy
+	_npc = npc
 
 
 ## The directory this service reads and writes.
@@ -172,6 +177,7 @@ func capture() -> SaveModel:
 	model.world_state = _world_state.to_snapshot()
 	model.pocket_spread = _capture_progression()
 	model.inventory = {} if _economy == null else _economy.to_snapshot()
+	model.npc = {} if _npc == null else _npc.to_snapshot()
 	model.current_region_id = _current_region_id
 	model.last_waystation_id = _last_waystation_id
 	model.visited_waystations = _visited_waystations.duplicate()
@@ -237,6 +243,9 @@ func apply(model: SaveModel) -> PackedStringArray:
 	errors.append_array(_apply_inventory(model.inventory))
 	if not errors.is_empty():
 		return errors
+	errors.append_array(_apply_npc(model.npc))
+	if not errors.is_empty():
+		return errors
 	_current_region_id = model.current_region_id
 	_last_waystation_id = model.last_waystation_id
 	_visited_waystations = model.visited_waystations.duplicate()
@@ -277,6 +286,8 @@ func _progression_not_pristine() -> PackedStringArray:
 		errors.append("a save loads into a fresh White Rose; this one is already in play")
 	if _economy != null and not _economy.is_pristine():
 		errors.append("a save loads into a fresh purse; this one has already been spent from")
+	if _npc != null and not _npc.is_pristine():
+		errors.append("a save loads into a world where no rumour has travelled yet; this one has some")
 	return errors
 
 
@@ -297,6 +308,22 @@ func _apply_inventory(inventory: Dictionary) -> PackedStringArray:
 	if _economy == null or inventory.is_empty():
 		return errors
 	errors.append_array(_economy.restore_snapshot(inventory))
+	return errors
+
+
+## Restore the `npc` section: which main quests' news is travelling, and when each
+## was heard of (`BarkService.restore_snapshot()`, which is `RumorService`'s).
+##
+## Lands after `inventory` for the same reason every progression-adjacent section
+## does: nothing here reads anything the sections above it capture, but a fixed
+## order is what makes "stops at the first section that failed" a meaningful
+## sentence rather than a race. Stops the apply exactly as `_apply_inventory()` does,
+## and owes the caller the same thing: rebuild, do not retry (see `apply()`).
+func _apply_npc(npc: Dictionary) -> PackedStringArray:
+	var errors := PackedStringArray()
+	if _npc == null or npc.is_empty():
+		return errors
+	errors.append_array(_npc.restore_snapshot(npc))
 	return errors
 
 

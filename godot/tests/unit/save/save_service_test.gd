@@ -890,3 +890,195 @@ func test_the_played_fixture_carries_a_purse_too() -> void:
 	assert_eq(economy.count(ItemIds.ITEM_POPCORN), 2)
 	assert_eq(economy.equipped_staff_head(), ItemIds.STAFF_REACHING)
 	assert_eq(economy.graftings_found().size(), 1)
+
+
+# --- The `npc` section (round 12) ---------------------------------------------
+#
+# `SaveModel.npc` carries the rumour seeds and nothing else: `{quest_id,
+# completed_at_seconds}` per completed MAIN quest, straight off `RumorService` through
+# `BarkService`. It lands LAST, after the world, the Spread and the purse. The
+# properties worth pinning are that a seed survives the round trip with its clock
+# reading intact (which regions have heard is derived from that reading, so a lost or
+# rounded one is news that arrives at the wrong time), that the section keeps the same
+# "a load is not a reset" refusal every other service does, and that a malformed one
+# stops the apply exactly where the Spread's and the purse's do.
+
+
+## The content the rumour half reads: what is a MAIN quest, and which regions border
+## which. Both are CATALOGS, never services - see `RumorService`'s class doc.
+const NPC_BARK_CATALOG_PATH := "res://data/npc/barks/catalog.tres"
+const NPC_RULES_PATH := "res://data/npc/npc_rules.tres"
+const QUEST_CATALOG_PATH := "res://data/quests/catalog.tres"
+const REGION_GRAPH_PATH := "res://data/regions/region_graph.tres"
+
+
+## A save service over a fresh world and a live `BarkService`, plus the clock its
+## rumour seeds are stamped against.
+##
+## Returns `[SaveService, WorldStateService, BarkService, GameClock]`. The clock is
+## handed back because a seed IS a clock reading: a test that cannot move time cannot
+## tell a seed that survived from one that was written as zero.
+func _npc_service(directory: String) -> Array:
+	var world := _fresh_world()
+	var clock := GameClock.new()
+	var npc := BarkService.new(
+		load(NPC_BARK_CATALOG_PATH) as BarkCatalog,
+		null,
+		null,
+		load(NPC_RULES_PATH) as NpcRules,
+		world,
+		load(QUEST_CATALOG_PATH) as QuestCatalog,
+		load(REGION_GRAPH_PATH) as RegionGraph,
+		null,
+		clock
+	)
+	var service := SaveService.new(
+		world, clock, directory, null, null, null, null, null, npc
+	)
+	return [service, world, npc, clock]
+
+
+func test_capture_gathers_the_news_that_is_travelling() -> void:
+	var built := _npc_service(_saves_dir)
+	var service: SaveService = built[0]
+	var npc: BarkService = built[2]
+	var clock: GameClock = built[3]
+	clock.advance(120.0)
+	assert_true(npc.rumors().seed_rumor(QuestIds.MQ01), "MQ01 is a main quest")
+	var model := service.capture()
+	if not assert_not_null(model, "a wired service captures"):
+		return
+	var stored: Array = model.npc[RumorService.SNAPSHOT_RUMORS]
+	assert_eq(stored.size(), 1, "one quest's news is out")
+	var row: Dictionary = stored[0]
+	assert_eq(row[RumorService.SNAPSHOT_RUMOR_QUEST], String(QuestIds.MQ01))
+	assert_almost_eq(float(row[RumorService.SNAPSHOT_RUMOR_AT]), 120.0, 0.001)
+
+
+func test_the_rumour_seeds_make_the_round_trip() -> void:
+	var written := _npc_service(_saves_dir)
+	var writer: SaveService = written[0]
+	var writing_npc: BarkService = written[2]
+	var writing_clock: GameClock = written[3]
+	writing_clock.advance(100.0)
+	assert_true(writing_npc.rumors().seed_rumor(QuestIds.MQ01))
+	writing_clock.advance(150.0)
+	assert_true(writing_npc.rumors().seed_rumor(QuestIds.MQ02))
+	assert_eq(writer.write_slot(0, writer.capture()), PackedStringArray())
+
+	var loaded := _npc_service(_saves_dir)
+	var reader: SaveService = loaded[0]
+	var read_npc: BarkService = loaded[2]
+	var result := reader.read_slot(0)
+	if not assert_true(result.ok, "the save reads back: %s" % str(result.errors)):
+		return
+	assert_eq(reader.apply(result.model), PackedStringArray(), "and applies")
+	assert_eq(
+		read_npc.rumors().seeded_quests(),
+		[QuestIds.MQ01, QuestIds.MQ02] as Array[StringName],
+		"both quests' news came back"
+	)
+	# The READING, not just the fact: which regions have heard is derived from it.
+	assert_almost_eq(read_npc.rumors().seeded_at(QuestIds.MQ01), 100.0, 0.001)
+	assert_almost_eq(read_npc.rumors().seeded_at(QuestIds.MQ02), 250.0, 0.001)
+	assert_false(read_npc.is_pristine(), "a service that has been loaded into is in play")
+
+
+func test_a_world_where_news_has_already_travelled_refuses_the_load() -> void:
+	# "A load is not a reset" holds for the `npc` section too, and is checked BEFORE
+	# anything is applied: a world loaded into a set of rumours that refused would be
+	# half a playthrough.
+	var written := _npc_service(_saves_dir)
+	var writer: SaveService = written[0]
+	var writing_npc: BarkService = written[2]
+	assert_true(writing_npc.rumors().seed_rumor(QuestIds.MQ01))
+	var model := writer.capture()
+	if not assert_not_null(model):
+		return
+
+	var loaded := _npc_service(_saves_dir)
+	var reader: SaveService = loaded[0]
+	var read_world: WorldStateService = loaded[1]
+	var read_npc: BarkService = loaded[2]
+	assert_true(read_npc.rumors().seed_rumor(QuestIds.MQ02), "this world is already talking")
+	var problems := reader.apply(model)
+	assert_eq(problems.size(), 1, "the load is refused: %s" % str(problems))
+	assert_true(read_world.is_pristine(), "and nothing at all was applied")
+	assert_false(read_npc.rumors().is_seeded(QuestIds.MQ01), "the file's news never arrived")
+
+
+func test_a_bad_npc_section_stops_the_apply_where_it_stands() -> void:
+	# The same contract the Spread's and the purse's sections keep, and the `npc`
+	# section is last, so what proves the apply stopped is the fields that land AFTER
+	# it: where the Fool was standing, and how long they had played.
+	var written := _npc_service(_saves_dir)
+	var writer: SaveService = written[0]
+	var world: WorldStateService = written[1]
+	world.fire(WorldStateIds.WS_MAGICIAN_UNBOUND, QuestIds.MQ01)
+	writer.set_current_region(RegionIds.PRESTIGE)
+	var model := writer.capture()
+	if not assert_not_null(model):
+		return
+	model.npc = {RumorService.SNAPSHOT_RUMORS: "every last one of them"}
+
+	var loaded := _npc_service(_saves_dir)
+	var reader: SaveService = loaded[0]
+	var read_world: WorldStateService = loaded[1]
+	var read_npc: BarkService = loaded[2]
+	var problems := reader.apply(model)
+	assert_true(problems.size() > 0, "a bad section is a problem, not a crash")
+	assert_true(read_world.is_fired(WorldStateIds.WS_MAGICIAN_UNBOUND), "the world landed first")
+	assert_true(read_npc.is_pristine(), "the news did not")
+	assert_eq(reader.current_region_id(), SaveModel.UNSET, "and the apply stopped there")
+
+
+func test_a_snapshot_naming_a_quest_this_build_has_never_heard_of_is_refused() -> void:
+	var loaded := _npc_service(_saves_dir)
+	var reader: SaveService = loaded[0]
+	var read_npc: BarkService = loaded[2]
+	var model := SaveModel.blank()
+	model.npc = {
+		RumorService.SNAPSHOT_RUMORS: [
+			{
+				RumorService.SNAPSHOT_RUMOR_QUEST: "MQ_NOT_A_QUEST",
+				RumorService.SNAPSHOT_RUMOR_AT: 12.0,
+			}
+		]
+	}
+	var problems := reader.apply(model)
+	assert_true(problems.size() > 0, "news of a quest nobody wrote is data, not a crash")
+	assert_true(read_npc.is_pristine(), "and none of it was kept")
+
+
+func test_the_played_fixture_carries_the_news_of_mq01() -> void:
+	# The checked-in fixture's `npc` section, loaded through the real service - which
+	# is what proves the key names in the file are the ones `RumorService` writes.
+	_install_fixture(FIXTURE_PLAYED, 4)
+	var loaded := _npc_service(_saves_dir)
+	var reader: SaveService = loaded[0]
+	var npc: BarkService = loaded[2]
+	var result := reader.read_slot(4)
+	if not assert_true(result.ok, "the fixture reads: %s" % str(result.errors)):
+		return
+	var problems := reader.apply(result.model)
+	if not assert_eq(problems, PackedStringArray(), "the fixture applies: %s" % str(problems)):
+		return
+	assert_true(npc.rumors().is_seeded(QuestIds.MQ01), "MQ01's news is travelling")
+	assert_almost_eq(npc.rumors().seeded_at(QuestIds.MQ01), 100.0, 0.001)
+	assert_eq(npc.rumors().seeded_quests().size(), 1, "and only MQ01's")
+
+
+func test_a_save_from_before_this_round_carries_no_news_and_is_not_a_problem() -> void:
+	# Every v1 file written before the `npc` section existed has `npc: {}`. That is a
+	# playthrough where nothing has been completed yet, not a file this build cannot
+	# read.
+	_install_fixture(FIXTURE_BLANK, 5)
+	var loaded := _npc_service(_saves_dir)
+	var reader: SaveService = loaded[0]
+	var npc: BarkService = loaded[2]
+	var result := reader.read_slot(5)
+	if not assert_true(result.ok, "%s" % str(result.errors)):
+		return
+	assert_eq(reader.apply(result.model), PackedStringArray(), "an empty section applies")
+	assert_true(npc.is_pristine(), "and left the service untouched")
+	assert_eq(npc.rumors().seeded_quests().size(), 0)

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="NpcCatalog" load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://systems/npc/definitions/npc_profile.gd" id="1_profile"]
+[ext_resource type="Script" path="res://systems/npc/definitions/npc_catalog.gd" id="2_catalog"]
+[ext_resource type="Resource" path="res://data/npc/profiles/FLICK.tres" id="3_flick"]
+[ext_resource type="Resource" path="res://data/npc/profiles/OLD_TOMKIN.tres" id="4_old_tomkin"]
+[ext_resource type="Resource" path="res://data/npc/profiles/MARIGOLD_FEN.tres" id="5_marigold_fen"]
+[ext_resource type="Resource" path="res://data/npc/profiles/PERRIN_LOOM.tres" id="6_perrin_loom"]
+[ext_resource type="Resource" path="res://data/npc/profiles/TANSY_QUILL.tres" id="7_tansy_quill"]
+[ext_resource type="Resource" path="res://data/npc/profiles/GORRISTER_VALE.tres" id="8_gorrister_vale"]
+[ext_resource type="Resource" path="res://data/npc/profiles/WIDOW_CULPEPPER.tres" id="9_widow_culpepper"]
+[ext_resource type="Resource" path="res://data/npc/profiles/CORVIN_ROOK.tres" id="10_corvin_rook"]
+[ext_resource type="Resource" path="res://data/npc/profiles/OLD_SALLOW.tres" id="11_old_sallow"]
+
+[resource]
+script = ExtResource("2_catalog")
+entries = Array[ExtResource("1_profile")]([ExtResource("3_flick"), ExtResource("4_old_tomkin"), ExtResource("5_marigold_fen"), ExtResource("6_perrin_loom"), ExtResource("7_tansy_quill"), ExtResource("8_gorrister_vale"), ExtResource("9_widow_culpepper"), ExtResource("10_corvin_rook"), ExtResource("11_old_sallow")])

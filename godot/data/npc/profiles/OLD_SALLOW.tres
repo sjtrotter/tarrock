@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="NpcProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/npc/definitions/npc_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+id = &"OLD_SALLOW"
+name_key = &"NPC_OLD_SALLOW_NAME"
+is_named = true
+suit = -1
+npc_rank = 0
+home_region = &"STILLMARSH"
+home_anchor = &""
+work_anchor = &""
+gathering_anchor = &""
+memory_flags_known = Array[StringName]([&"MET_THE_FOOL", &"HELPED", &"WRONGED"])
+bows_to_pip = true
+doc_ref = "docs/design/characters.md §Recurring named NPCs: 'Old Sallow - the Stillmarsh's ferry-keeper, who has been nearly done dying for 300 years and knows it better than anyone.'"
+notes = "Home region is the bullet's own ('the Stillmarsh's ferry-keeper'). BOWS TO PIP because he is a Stillmarsh NPC and characters.md §Pip makes that canon for the region as a whole: 'NPCs of the Stillmarsh in particular bow to Pip on sight; write this as instinctive reverence, never spelled out in dialogue.' It is a flag on the person and not a bark, per npc-system.md §Aware-of-Pip ('this is canon and scripted, not a bark'). Suit, rank and anchors TBD."

@@ -60,6 +60,14 @@
 			"GRAFTING_PRESTIGE_BIG_TOP"
 		]
 	},
+	"npc": {
+		"rumors": [
+			{
+				"quest_id": "MQ01",
+				"completed_at_seconds": 100.0
+			}
+		]
+	},
 	"regions": {
 		"current_region_id": "PRESTIGE",
 		"last_waystation_id": "WAYSTATION_PRESTIGE",

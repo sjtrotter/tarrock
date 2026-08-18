@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ReadingMotif" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/npc/definitions/reading_motif.gd" id="1_motif"]
+
+[resource]
+script = ExtResource("1_motif")
+id = &"MOTIF_SUN_BEFORE_STAR"
+flag_a = &"WS_SUN_UNBOUND"
+flag_b = &"WS_STAR_UNBOUND"
+rule = 0
+count = 0
+motif_summary = "Sun unbound before Star"
+bark_flavor = "\"First true night we ever had, and not one star in it. Got them later, mind.\""
+doc_ref = "docs/design/world.md §The Fool's Reading (sequence reactivity)"
+notes = "the cell names both cards and an order between them, which is BEFORE(a, b)"

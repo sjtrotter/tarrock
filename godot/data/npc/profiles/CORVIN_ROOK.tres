@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="NpcProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/npc/definitions/npc_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+id = &"CORVIN_ROOK"
+name_key = &"NPC_CORVIN_ROOK_NAME"
+is_named = true
+suit = -1
+npc_rank = 0
+home_region = &""
+home_anchor = &""
+work_anchor = &""
+gathering_anchor = &""
+memory_flags_known = Array[StringName]([&"MET_THE_FOOL", &"HELPED", &"WRONGED"])
+bows_to_pip = false
+doc_ref = "docs/design/characters.md §Recurring named NPCs: 'Corvin \\"Ninefingers\\" Rook, a smuggler and people-fence who moved stolen goods - and people - across the suit-cultures against their will.'"
+notes = "Home region, suit, rank and anchors TBD, as Gorrister Vale's are."

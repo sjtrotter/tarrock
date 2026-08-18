@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="NpcProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/npc/definitions/npc_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+id = &"GORRISTER_VALE"
+name_key = &"NPC_GORRISTER_VALE_NAME"
+is_named = true
+suit = -1
+npc_rank = 0
+home_region = &""
+home_anchor = &""
+work_anchor = &""
+gathering_anchor = &""
+memory_flags_known = Array[StringName]([&"MET_THE_FOOL", &"HELPED", &"WRONGED"])
+bows_to_pip = false
+doc_ref = "docs/design/characters.md §Recurring named NPCs: 'Gorrister Vale, a highwayman who preyed on pilgrims bound for the Stillmarsh - robbing the dying on their way to die. Seeds a Longroad banditry side quest.'"
+notes = "HOME REGION IS TBD AND DELIBERATELY EMPTY. The bullet places this person's STORY (a Longroad side quest) and their release (WS_JUSTICE_UNBOUND, which is the Assize's own unbinding) in two different regions, and says where neither of them lives. Filling either in would be inventing canon, and world.md owns where people are; the side quest that uses him sets it. Suit, rank and anchors TBD for the same reason the Troupe's are."

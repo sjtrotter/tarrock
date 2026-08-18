@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ReadingMotif" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/npc/definitions/reading_motif.gd" id="1_motif"]
+
+[resource]
+script = ExtResource("1_motif")
+id = &"MOTIF_MAGICIAN_NOT_FIRST"
+flag_a = &"WS_MAGICIAN_UNBOUND"
+flag_b = &""
+rule = 3
+count = 0
+motif_summary = "Magician not first"
+bark_flavor = "Flick, later: \"You went and did all *that* before you ever saw a show? Backwards sort of Fool.\""
+doc_ref = "docs/design/world.md §The Fool's Reading (sequence reactivity)"
+notes = "'not first' is a statement about position alone and needs no second card: it holds the moment the Magician is unbound with anything already ahead of him"

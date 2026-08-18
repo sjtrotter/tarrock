@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="BarkDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/npc/definitions/bark_definition.gd" id="1_bark"]
+
+[resource]
+script = ExtResource("1_bark")
+id = &"BARK_CLIFF_QUERENT_IDLE_03"
+layer = 7
+text_key = &"BARK_CLIFF_QUERENT_IDLE_03"
+speaker_kind = 2
+speaker_id = &""
+region_id = &"CLIFF"
+suit = -1
+npc_rank = -1
+requires_fired = Array[StringName]([])
+requires_not_fired = Array[StringName]([])
+requires_confessed = -1
+act = -1
+renown_tier_min = 0
+renown_tier_max = 0
+motif = &""
+quest_id = &""
+quest_state = &""
+npc_memory_flag = &""
+time_band = -1
+weather = -1
+rumor_of_quest = &""
+about_pip = false
+source_ref = "docs/quests/main/MQ00-the-leap.md §BARKS - The Cliff (idle exploration), THE QUERENT Random Lines, line 3 of 4"
+notes = "The Cliff's four idle lines, and the only bark content any shipped doc holds. Filed at layer 7 because they are the Cliff's evergreen floor: MQ00's block calls them Random Lines for idle exploration and gates them on nothing, and the Cliff has no world state, no act variation and no Renown to key anything finer to. SPEAKER IS THE QUERENT, WHICH IS NOT A MINOR: characters.md §The Querent makes the Querent 'the unseen narrator-guide voice', so this pool trades layer 7's suit key for a region key - see BarkDefinition._validate_generic(). The Querent is also not an NPC, so nothing here has a profile, a schedule or a memory."

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="NpcProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/npc/definitions/npc_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+id = &"TANSY_QUILL"
+name_key = &"NPC_TANSY_QUILL_NAME"
+is_named = true
+suit = -1
+npc_rank = 0
+home_region = &"PRESTIGE"
+home_anchor = &""
+work_anchor = &""
+gathering_anchor = &""
+memory_flags_known = Array[StringName]([&"MET_THE_FOOL", &"HELPED", &"WRONGED"])
+bows_to_pip = false
+doc_ref = "docs/design/characters.md §Recurring named NPCs: 'Tansy Quill, the illusionist, whose tricks are the only real magic in the show - everyone knows it, nobody says it, it is better that way.'"
+notes = "Suit, rank and anchors TBD, as Old Tomkin's are. Home region is the Troupe's."

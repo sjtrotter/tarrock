@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ReadingMotif" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/npc/definitions/reading_motif.gd" id="1_motif"]
+
+[resource]
+script = ExtResource("1_motif")
+id = &"MOTIF_DEATH_LAST"
+flag_a = &"WS_DEATH_UNBOUND"
+flag_b = &""
+rule = 2
+count = 20
+motif_summary = "Death unbound last of the 20"
+bark_flavor = "The Stillmarsh watched every other region wake first; Old Sallow has opinions."
+doc_ref = "docs/design/world.md §The Fool's Reading (sequence reactivity)"
+notes = "the cell states the count itself. TWENTY, not twenty-one: the World is the journey's end rather than an unbinding the Fool walks away from (GDD.md), so twenty is what a playthrough can have unbound with Death still to go"
