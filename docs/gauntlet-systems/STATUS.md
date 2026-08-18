@@ -172,11 +172,46 @@ state→dialogue table (no `QuestStates` const class yet).
 **Director asks:** none new (issue #11 — health vs petals — still open, needed by
 round 7).
 
-## Round 6 — Trumps, the Pocket Spread, Fortune, the White Rose (open 2026-08-18)
+## Round 6 — Trumps, the Pocket Spread, Fortune, the White Rose (CLOSED 2026-08-18)
 
-**Goal:** 20 `TrumpDefinition`s generated from arcana.md's Trump tables (+ hand-authored
-effects, Magician first), `PocketSpreadService` (held derived from flags; slots unlock at
-1/3/7 held; one copy; swap out of combat; loadouts at Waystations), `FortuneService`
-(meter, earn table × difficulty, Fortune's Favor overfill, free cast after Fool's Chance),
-`WhiteRoseService` (3→8 petals, graftings, regrowth only in unbound regions), all in the
-save. _In progress._
+**Shipped (`12fd51c`, plus `cfdab91` docs):** **20 Trump definitions generated straight
+from arcana.md's Trump tables** (name, card number, granting flag, the four doc texts
+verbatim — an independent critic parser found zero mismatches) + hand-authored effects
+linked when present (the Magician authored first, TBD numbers marked; a data test
+enforces that reversed differs from upright beyond cost — the six-expression rule made
+structural). `SpreadRules` with canon numbers pinned by a doc-regex drift test (1/3/7,
+100, 3/8) and every placeholder named TBD. `PocketSpreadService` (held **derived from
+flags** — no stored list, no un-held path; slots unlock from data; one copy; no swapping
+in combat; loadouts at Waystations only, revalidated on apply; `cast_present` spends
+Fortune or the armed free cast; snapshot fresh-only). `FortuneService` (earn table ×
+difficulty; Fortune's Favor overfill with decay; free cast after Fool's Chance).
+`WhiteRoseService` (3→8, graftings, one petal one heal, rest, regrowth only in unbound
+regions — never the Cliff — and it notices a loaded world). Save carries all three; apply
+lands the world first and stops at the first failing section (contract documented).
+
+**Proof:** 530 unit tests (128 new); `RUN_ALL: 8 suites passed`; `--check: 146 files`.
+Critic mutations all caught: held ignoring flags (14 tests), Past unlock at 2, same
+Trump in two slots, unbounded Favor overfill, Rose regrowing on the Cliff, reversed cost
+= upright, apply skipping the spread section, a hand-edited generated Trump. **Blocking
+catches fixed:** save `apply()` continued past a failed section (now stops; the
+partial-load contract is written down); the Rose could miss its region waking after a
+load (restore emits nothing by design — now recomputed).
+
+**Debt / owed / TBD:** per-Trump Present costs (arcana.md sets none — placeholders 30/20);
+reversed strengthening numbers for most cards; Trump XVII's "max Fortune −20 while
+slotted" needs a modifier stack on Fortune (combat/effects round); Overturn's Present
+stays unauthored outside side-view space (canon TBD); "a grafting arrives grown" is a
+recorded round-6 decision the director may reverse; `progression.md` now states the
+revive-class Future rule that `arcana.md` §XX assigned to it (`cfdab91`).
+
+**Director asks:** issue #11 (health vs petals) still open — round 7 builds to option 1
+(health pool + petals as manual heals) as the working assumption, flagged in code.
+
+## Round 7 — Combat (open 2026-08-18)
+
+**Goal:** the Bindle moveset in 2D (light string, heavy arc, charged heavy = stagger
+launcher, running attack), Focus lock + 8-way strafe with directional dodges (roll / side
+hop / the grand backflip), block-step, i-frames and **Fool's Chance** (perfect dodge → slow
+world, Fool at normal speed, next Present free), hit/hurt boxes, damage with difficulty,
+the defeat loop, accessibility window slider; proven headlessly against a training dummy.
+_In progress._
