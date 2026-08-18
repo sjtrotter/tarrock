@@ -65,8 +65,15 @@ const COURT_COUNT := 4
 ## Base health, before the rank curve. TBD.
 @export var suit_health: PackedInt32Array = PackedInt32Array([26, 24, 30, 44])
 
-## Base damage per hit, before the rank curve. TBD.
-@export var suit_damage: PackedInt32Array = PackedInt32Array([8, 9, 11, 14])
+## Base damage per hit, in QUARTER PETALS, before the rank curve.
+##
+## The unit is the ruling on issue #11: the White Rose's petals ARE the Fool's health,
+## counted four-to-a-petal (`WhiteRoseService.QUARTERS_PER_PETAL`), so everything that
+## hits the Fool is priced against a starting pool of TWELVE quarters rather than a
+## three-figure bar. These are the numbers at the top of the pip curve; a Two lands at
+## roughly a third of them. Swords is the lowest because Swords alone throw a string
+## and land twice per commitment. TBD, like every figure here.
+@export var suit_damage: PackedInt32Array = PackedInt32Array([3, 2, 3, 4])
 
 ## Movement speed in pixels per second. The Fool walks at 200 (`scripts/player.gd`),
 ## so every suit is slower than a walking Fool and Coins is much slower. TBD in size;
@@ -184,12 +191,21 @@ const COURT_COUNT := 4
 @export var rank_health_per_pip: float = 0.1
 
 ## Damage multiplier at printed number `n` is `rank_damage_base + rank_damage_per_pip
-## * n`. Flatter than the health curve on purpose: the printed number reads as
-## TOUGHNESS in the doc, not as threat. TBD.
-@export var rank_damage_base: float = 0.8
+## * n`: a Two multiplies by 0.34 and a Ten by 1.30.
+##
+## RETUNED with the quarter-petal unit (issue #11), and the retune is worth its
+## paragraph. The old curve was deliberately FLATTER than the health curve, because
+## `combat.md` reads the printed number as toughness rather than threat - but at
+## quarter-petal resolution "flatter" meant "gone": a Two and a Ten both rounded to the
+## same integer number of quarters, and the number on the Blank's back stopped meaning
+## anything at all on the damage side. This curve is steep enough to survive the
+## rounding (a Two costs about one quarter, a Ten about four) and no steeper. The
+## health curve still carries the bulk of "a Two folds fast, a Ten is a real fight";
+## this one only has to stay visible. TBD in size.
+@export var rank_damage_base: float = 0.10
 
 ## The damage the printed number adds per pip. TBD.
-@export var rank_damage_per_pip: float = 0.04
+@export var rank_damage_per_pip: float = 0.12
 
 ## Health multipliers for the court, indexed PAGE, KNIGHT, QUEEN, KING. The Page is
 ## the frailest thing on the field because it is a scout; the King is a mini-boss.
@@ -205,9 +221,11 @@ const COURT_COUNT := 4
 	[0.7, 2.0, 1.8, 3.5]
 )
 
-## Damage multipliers for the court, same order. TBD.
+## Damage multipliers for the court, same order. In quarter petals a King's hit is
+## already most of a petal at 1.8, which is why the King's figure came DOWN with the
+## unit change rather than staying where a hundred-point pool could afford it. TBD.
 @export var court_damage_multipliers: PackedFloat32Array = PackedFloat32Array(
-	[0.7, 1.6, 1.2, 2.2]
+	[0.7, 1.5, 1.2, 1.8]
 )
 
 ## Telegraph multipliers for the court, same order. The Knight tells fastest ("the
@@ -253,8 +271,14 @@ const COURT_COUNT := 4
 @export var queen_aura_radius: float = 260.0
 
 ## What an allied Blank inside the aura multiplies its damage by. `combat.md`:
-## "buffs, not summons". TBD.
-@export var queen_aura_damage_multiplier: float = 1.20
+## "buffs, not summons".
+##
+## RAISED with the quarter-petal unit (issue #11). At 1.20 the buff was invisible: a
+## Blank hitting for one or two quarters multiplied to 1.2 or 2.4 and rounded straight
+## back to the number it started at, so the Queen's whole reason to be on the field did
+## nothing a player could feel. 1.5 is the smallest multiplier that moves EVERY integer
+## in the roster up by at least one quarter. TBD in size, CANON in existing.
+@export var queen_aura_damage_multiplier: float = 1.50
 
 ## What an allied Blank inside the aura multiplies its telegraph by - below 1, so the
 ## buff makes allies quicker off the mark. Never below `MIN_TELEGRAPH_SECONDS` in the
@@ -295,7 +319,7 @@ func health_for_suit(suit: Suit.Id) -> int:
 	return _int_at(suit_health, int(suit))
 
 
-## Base damage for a suit.
+## Base damage for a suit, in quarter petals.
 func damage_for_suit(suit: Suit.Id) -> int:
 	return _int_at(suit_damage, int(suit))
 

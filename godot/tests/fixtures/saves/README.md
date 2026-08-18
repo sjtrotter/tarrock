@@ -9,7 +9,7 @@ these (see `SaveSchema`'s class doc) - do not update the old ones.
 | File | What it is |
 |---|---|
 | `v1_blank.json` | `SaveModel.blank()` - a playthrough that has not started. |
-| `v1_played.json` | Three Arcana unbound plus a branch flag, a Reading, Renown in two suits, the Hermit's answer, one NPC's memory, two quest states, Trial difficulty — and the progression this bought: Trump I slotted upright in the Present, 40 Fortune, one Rose grafting taken and 2 of its 4 petals — and the `inventory` that bought it: 42 Coins, two bags of popcorn, the Reaching Head carried and fitted, and the grafting source already spent — and the `npc` section: MQ01's news already travelling, seeded at 100 in-game seconds. |
+| `v1_played.json` | Three Arcana unbound plus a branch flag, a Reading, Renown in two suits, the Hermit's answer, one NPC's memory, two quest states, Trial difficulty — and the progression this bought: Trump I slotted upright in the Present, 40 Fortune, one Rose grafting taken and 8 quarter petals of the 16 its 4-petal Rose holds — and the `inventory` that bought it: 42 Coins, two bags of popcorn, the Reaching Head carried and fitted, and the grafting source already spent — and the `npc` section: MQ01's news already travelling, seeded at 100 in-game seconds. |
 | `v99_future.json` | A save from a build that does not exist. Must never load. |
 | `corrupt.json` | Not JSON. Must fail as data, not as a crash. |
 | `v1_missing_world_state.json` | Structurally a v1 save with a required field gone. |
@@ -53,6 +53,14 @@ re-authored with the real ones - as the **region and Waystation ids already were
 (round 10): `regions.current_region_id` and `regions.last_waystation_id` are
 `RegionIds` tokens now, and `regions.visited_waystations` is the append-only set fast
 travel reads.
+
+**The Rose's section counts quarter petals, and that also arrived inside v1.** The
+White Rose's petals are the Fool's health (director ruling, issue #11) and are counted
+four to a petal, so `WhiteRoseService`'s snapshot key is `quarters` where it used to be
+`petals`. Rewriting a fixture is normally forbidden — see the paragraph below, which
+makes the same argument for the same reason: v1 has never shipped, so there was no save
+in the world to migrate and no v2 to write. The next shape change after a build reaches a
+player is a v2 with a migration and a new fixture beside these.
 
 **The `regions` section arrived inside v1, not as a v2.** These files used to carry
 `current_region_id` and `last_waystation_id` as loose top-level fields. Rewriting a

@@ -209,8 +209,8 @@ func test_resting_regrows_the_rose_and_remembers_the_shrine() -> void:
 	# `progression.md` §Waystations: "Rest - fully regrow the White Rose and respawn
 	# ambient (non-boss) enemies."
 	_service.travel_to(RegionIds.CLIFF)
-	_rose.use_petal()
-	_rose.use_petal()
+	_rose.take_damage(WhiteRoseService.QUARTERS_PER_PETAL)
+	_rose.take_damage(WhiteRoseService.QUARTERS_PER_PETAL)
 	assert_true(_rose.petals() < _rose.max_petals())
 	watch_signal(_service, &"rested")
 	assert_true(_service.rest_at(RegionIds.WAYSTATION_CLIFF))
@@ -366,7 +366,7 @@ func test_the_cliffs_shrine_is_still_a_shrine() -> void:
 	_service.travel_to(RegionIds.CLIFF)
 	assert_true(_service.rest_at(RegionIds.WAYSTATION_CLIFF), "resting there is untouched")
 	assert_eq(_service.last_waystation_id(), RegionIds.WAYSTATION_CLIFF)
-	_rose.use_petal()
+	_rose.take_damage(WhiteRoseService.QUARTERS_PER_PETAL)
 	_combat.fool_defeated.emit(1, 0)
 	assert_eq(_service.current_region_id(), RegionIds.CLIFF, "and a defeat wakes them there")
 
@@ -393,7 +393,7 @@ func test_a_defeat_wakes_the_fool_at_the_last_waystation_rested_at() -> void:
 	_service.travel_to(RegionIds.CLIFF)
 	_service.rest_at(RegionIds.WAYSTATION_CLIFF)
 	_service.travel_to(RegionIds.PRESTIGE)
-	_rose.use_petal()
+	_rose.take_damage(WhiteRoseService.QUARTERS_PER_PETAL)
 	_combat.fool_defeated.emit(1, 0)
 	assert_eq(_service.current_region_id(), RegionIds.CLIFF, "back at the shrine they slept at")
 	assert_eq(_swaps.back(), [CLIFF_SCENE, RegionIds.WAYSTATION_CLIFF])
@@ -433,7 +433,7 @@ func test_a_defeat_never_strands_the_fool_when_the_walk_back_cannot_happen() -> 
 	# The layer now answers every swap with "I cannot load that scene", which is what
 	# `PersistentLayer.swap()` says about a region file that is not there.
 	_service.set_swapper(RegionSwapper.new(_refuse_swap, _record_anchor, _record_respawn))
-	_rose.use_petal()
+	_rose.take_damage(WhiteRoseService.QUARTERS_PER_PETAL)
 	_combat.fool_defeated.emit(1, 0)
 	assert_eq(
 		_service.current_region_id(),

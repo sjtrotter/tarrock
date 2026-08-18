@@ -21,10 +21,19 @@ extends Node2D
 ## because it is a property of the body, not of the swing: a staggered Combatant is
 ## helpless, and the next hit into it pays `HitSpec.bonus_vs_staggered`.
 ##
-## PER GAUNTLET RULING PENDING ISSUE #11: the Fool's health pool is a Combatant like
-## any other, and White Rose petals heal it (`CombatService.use_rose()`). There is one
-## health model in the game, not a petal model for the Fool and a health model for
-## everybody else.
+## **The Fool's pool is not here.** Per the director's ruling on issue #11 the White
+## Rose's petals ARE the Fool's health, so the Fool's Combatant is handed a
+## `Vitality` (a `RoseVitality`, built by `CombatService.register_fool()`) and every
+## health question it is asked is forwarded to the Rose. Everything above still holds
+## exactly as written - the hit rule, the defence, `died` at zero - because the only
+## thing that changed is WHERE the number is kept. Enemies keep their own field and
+## are unaffected.
+##
+## One consequence is worth stating: with `vitality` set, health is counted in QUARTER
+## PETALS (`WhiteRoseService.QUARTERS_PER_PETAL`), so an enemy's `HitSpec.damage`
+## against the Fool is in quarter petals and `data/enemies/enemy_rules.tres` is
+## authored in them. The Fool's own swings are still in enemy-pool points; the two
+## sides of a fight have never shared a scale and do not start now.
 
 ## Health was lost. `amount` is what was actually taken off, after multipliers.
 signal damaged(amount: int, remaining: int)
@@ -41,6 +50,10 @@ signal staggered(seconds: float)
 ## The stagger ran out.
 signal recovered()
 
+## The smallest a landed hit may be worth once every multiplier has had its say. See
+## `_resolve()` for why a hit that meant to cost something may not round to nothing.
+const MIN_LANDED_DAMAGE := 1
+
 ## The side this Combatant fights for.
 @export var faction: Faction.Id = Faction.Id.BLANK
 
@@ -51,6 +64,12 @@ signal recovered()
 ## Asked before every hit. Never null - the base class is the "just stands there"
 ## answer (see the class doc).
 var defense: CombatDefense = CombatDefense.new()
+
+## Where this body's health actually lives, when it does not live here. Null for
+## everything but the Fool; see the class doc. `max_health` is ignored while it is
+## set, so a scene that authored one and a service that handed one over cannot
+## disagree.
+var vitality: Vitality = null
 
 var _health: int = 0
 
@@ -77,6 +96,8 @@ func _physics_process(delta: float) -> void:
 
 ## Health left.
 func health() -> int:
+	if vitality != null:
+		return vitality.quarters()
 	if not _initialised:
 		_health = max_health
 		_initialised = true
@@ -85,14 +106,17 @@ func health() -> int:
 
 ## The pool's size.
 func health_capacity() -> int:
+	if vitality != null:
+		return vitality.max_quarters()
 	return max_health
 
 
 ## Health left as a fraction of the pool, for a bar to draw.
 func health_fraction() -> float:
-	if max_health <= 0:
+	var capacity := health_capacity()
+	if capacity <= 0:
 		return 0.0
-	return float(health()) / float(max_health)
+	return float(health()) / float(capacity)
 
 
 ## True while there is health left.
@@ -137,11 +161,20 @@ func take_hit(event: HitEvent) -> HitResult.Id:
 
 
 ## Restore health, capped at the pool. Returns how much was actually restored, which
-## is 0 at full health - the caller decides whether that is a refusal (it is, for the
-## White Rose: see `CombatService.use_rose()`).
+## is 0 at full health.
+##
+## Nothing in the shipped kit calls this on the Fool: the Rose regrows on its own
+## clock and at a Waystation, and there is no heal button (issue #11). It stays
+## because a Trump effect that gives petals back is written in `arcana.md` and this
+## is the door it will come through.
 func heal(amount: int) -> int:
 	if amount <= 0 or not is_alive():
 		return 0
+	if vitality != null:
+		var given := vitality.give(amount)
+		if given > 0:
+			healed.emit(given, health())
+		return given
 	var target := mini(health() + amount, max_health)
 	var restored := target - _health
 	if restored <= 0:
@@ -151,9 +184,12 @@ func heal(amount: int) -> int:
 	return restored
 
 
-## Resize the pool. `refill` tops it back up, which is what building the Fool from
-## `CombatRules` wants and what a permanent upgrade would want.
+## Resize the pool. `refill` tops it back up, which is what a permanent upgrade would
+## want. Ignored while a `Vitality` is set: the Fool's capacity is the Rose's, raised
+## by graftings and by nothing else.
 func set_max_health(value: int, refill: bool = true) -> void:
+	if vitality != null:
+		return
 	max_health = maxi(1, value)
 	_initialised = true
 	if refill:
@@ -166,9 +202,15 @@ func set_max_health(value: int, refill: bool = true) -> void:
 ## (`combat.md` §Defeat: the Fool wakes "White Rose regrown", no penalty).
 func restore_full_health() -> void:
 	_initialised = true
+	_stagger_left = 0.0
+	if vitality != null:
+		var missing := vitality.max_quarters() - vitality.quarters()
+		vitality.fill()
+		if missing > 0:
+			healed.emit(missing, health())
+		return
 	var restored := max_health - _health
 	_health = max_health
-	_stagger_left = 0.0
 	if restored > 0:
 		healed.emit(restored, _health)
 
@@ -215,13 +257,23 @@ func _resolve(event: HitEvent) -> HitResult.Id:
 		amount *= spec.bonus_vs_staggered
 	amount *= defense.damage_multiplier()
 	var taken := maxi(0, int(roundf(amount)))
+	# A swing that was AIMED to cost something always costs something. At quarter-petal
+	# resolution the Fool's pool is small enough that Story's halved damage, a Coins
+	# Blank's armour or a low rank curve can multiply a real hit down to zero, and an
+	# enemy whose attacks are free is not a difficulty setting - it is an enemy the
+	# player can stand still in front of. A spec that deals no damage on purpose (a
+	# shove, a training dummy's) still lands for nothing, which is the case the zero
+	# below is for.
+	if taken <= 0 and spec.damage > 0:
+		taken = MIN_LANDED_DAMAGE
 	if taken > 0:
-		_health = maxi(0, health() - taken)
-		damaged.emit(taken, _health)
+		taken = _apply_damage(taken)
+		damaged.emit(taken, health())
 	# `health()` rather than `_health`: a Combatant built in code and never `_ready`
-	# holds an unfilled pool until something asks, and a hit that took nothing off
-	# (a zero-damage spec, a multiplier that rounded to nothing) never asks. Reading
-	# the field directly would report that body dead on the first harmless hit.
+	# holds an unfilled pool until something asks, and a hit that took nothing off (a
+	# zero-damage spec) never asks. Reading the field directly would report that body
+	# dead on the first harmless hit - and would read the wrong pool entirely for the
+	# Fool, whose health lives in the Rose.
 	if health() <= 0:
 		_stagger_left = 0.0
 		died.emit()
@@ -229,3 +281,13 @@ func _resolve(event: HitEvent) -> HitResult.Id:
 	if spec.applies_stagger:
 		apply_stagger(spec.stagger_seconds)
 	return HitResult.Id.STAGGERED_HIT if landed_on_staggered else HitResult.Id.DAMAGED
+
+
+## Take `taken` off whichever pool this body's health lives in, and answer what was
+## actually taken - which is less than asked for when the pool ran out first.
+func _apply_damage(taken: int) -> int:
+	if vitality != null:
+		return vitality.take(taken)
+	var before := health()
+	_health = maxi(0, before - taken)
+	return before - _health

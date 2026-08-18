@@ -25,13 +25,11 @@ extends TarrockDefinition
 ## place: this resource owns what difficulty does to *damage taken* and to *timing
 ## windows*, and nothing else about difficulty.
 ##
-## PER GAUNTLET RULING PENDING ISSUE #11: `fool_max_health` and `petal_heal` encode
-## the lead's working assumption that the Fool has a health pool, that a White Rose
-## petal is a manual heal spending one petal for `petal_heal` health, and that defeat
-## is health reaching zero whatever petals remain. `combat.md` §Defeat says "the Fool
-## at zero petals", which reads as petals being the health pool itself; the director
-## call is open. If it lands the other way, these two fields go and `CombatService`
-## reads the Rose's petal count instead - no other number here moves.
+## **The Fool's health is not a number here.** Per the director's ruling on issue #11
+## the White Rose's petals ARE the Fool's health, so the capacity lives in
+## `SpreadRules` (3 petals, 8 with graftings) and the pool lives in
+## `WhiteRoseService`. There is no `fool_max_health` and no `petal_heal`: there is no
+## second pool to size and no heal button to price.
 
 ## How many hits the light string has. CANON: "Three-hit staff combo" (`combat.md`
 ## §The Bindle). The per-hit arrays below must all be this long.
@@ -240,15 +238,7 @@ const MIN_PERFECT_WINDOW_SECONDS := 0.05
 ## off to the side. 0 = nearest wins outright. TBD.
 @export var focus_cone_weight: float = 1.0
 
-# --- Health, healing, defeat -------------------------------------------------
-
-## The Fool's health pool. PER GAUNTLET RULING PENDING ISSUE #11 - see the class
-## doc. TBD.
-@export var fool_max_health: int = 100
-
-## Health restored by one White Rose petal. `progression.md` §The White Rose fixes
-## that one petal is "one fast heal on a dedicated button" and no number. TBD.
-@export var petal_heal: int = 40
+# --- Defeat ------------------------------------------------------------------
 
 ## How long the defeat fade takes before the Fool wakes at the last Waystation
 ## (`combat.md` §Defeat step 3, "a brief fade over the lick"). The scene plays it;
@@ -409,10 +399,6 @@ func validate() -> PackedStringArray:
 		])
 	if slowmo_duration_real_seconds <= 0.0:
 		errors.append("%s runs Fool's Chance for no time at all" % _describe())
-	if fool_max_health <= 0:
-		errors.append("%s gives the Fool no health to lose" % _describe())
-	if petal_heal <= 0:
-		errors.append("%s makes a White Rose petal heal nothing" % _describe())
 	if body_width <= 0.0:
 		errors.append("%s measures the backflip against a body of no width" % _describe())
 	if running_attack_min_speed_fraction <= 0.0 or running_attack_min_speed_fraction > 1.0:

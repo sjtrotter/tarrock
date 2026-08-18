@@ -89,6 +89,18 @@ multiplier is above a Two's as well as one where it is above the Knight's; the K
 telegraphs fastest of the court; the Queen's aura is a buff; the King is tougher than any
 pip rank.
 
+**Damage is in quarter petals; health is not.** The director's ruling on issue #11 makes
+the White Rose's petals the Fool's health, counted four to a petal
+(`WhiteRoseService.QUARTERS_PER_PETAL`), so everything an enemy does to the Fool —
+`suit_damage`, the rank and court damage multipliers, the Queen's aura — is priced
+against a starting pool of **twelve quarters**. `suit_health` is untouched and stays in
+the enemy's own points, because the Fool's swings are priced against *that*: the two
+sides of a fight have never shared a scale. Three consequences of the unit are recorded
+in `enemy_rules.tres`'s `notes` rather than here, because they are number decisions: the
+rank damage curve had to be steepened (a flat curve rounds a Two and a Ten to the same
+integer), the King's multiplier came down, and the Queen's aura went up (a 20% buff on a
+one-quarter hit rounds away to nothing).
+
 ## Art requests
 
 Handed over as items **(g)–(n)** of

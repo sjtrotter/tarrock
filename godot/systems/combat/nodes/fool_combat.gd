@@ -195,8 +195,6 @@ func _gather_input() -> void:
 	_input.focus_held = _focus_mode.update(Input.is_action_pressed(InputActions.FOCUS))
 	_input.focus_cycle_pressed = Input.is_action_just_pressed(InputActions.FOCUS_CYCLE)
 	_input.run_speed_fraction = _speed_fraction()
-	if _service != null and Input.is_action_just_pressed(InputActions.ROSE):
-		_service.use_rose()
 
 
 ## What this frame's delta is multiplied by for everything that is the Fool's own.
@@ -386,8 +384,11 @@ func _wire_body() -> void:
 		return
 	_combatant.faction = Faction.Id.FOOL
 	_combatant.defense = _defense
-	if _rules != null:
-		_combatant.set_max_health(_rules.fool_max_health)
+	# Nothing sizes a pool here: the Fool's health is the White Rose's petals (issue
+	# #11), and `CombatService.register_fool()` is what points the body at them. Until
+	# the service is found, the `max_health` authored on `scenes/fool.tscn` stands in -
+	# three petals' worth of quarters, so a fixture scene with no services in it is a
+	# Fool of the right size rather than an invincible one.
 	for child: Node in _combatant.get_children():
 		var hitbox := child as Hitbox
 		if hitbox != null:

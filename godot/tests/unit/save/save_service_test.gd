@@ -606,7 +606,7 @@ func test_capture_gathers_the_spread_the_fortune_and_the_rose() -> void:
 	world.fire(WorldStateIds.WS_MAGICIAN_UNBOUND, QuestIds.MQ01)
 	spread.assign(SpreadSlot.Id.PRESENT, TrumpIds.TRUMP_01, CardOrientation.Id.REVERSED)
 	fortune.earn(FortuneService.EarnSource.DISCOVERY, 40)
-	rose.use_petal()
+	rose.take_damage(WhiteRoseService.QUARTERS_PER_PETAL)
 	var model := service.capture()
 	if not assert_not_null(model, "a wired service captures"):
 		return
@@ -614,7 +614,9 @@ func test_capture_gathers_the_spread_the_fortune_and_the_rose() -> void:
 	assert_has(model.pocket_spread, SaveModel.POCKET_SPREAD_FORTUNE)
 	assert_has(model.pocket_spread, SaveModel.POCKET_SPREAD_ROSE)
 	var stored_rose: Dictionary = model.pocket_spread[SaveModel.POCKET_SPREAD_ROSE]
-	assert_eq(stored_rose[WhiteRoseService.SNAPSHOT_PETALS], 2, "the petal spent is remembered")
+	assert_eq(
+		stored_rose[WhiteRoseService.SNAPSHOT_QUARTERS], 8, "the petal the fight cost is remembered"
+	)
 
 
 func test_a_service_without_the_progression_services_writes_the_v1_shape() -> void:
@@ -645,7 +647,7 @@ func test_the_whole_playthrough_makes_the_round_trip() -> void:
 	spread.save_loadout("the honest build")
 	fortune.earn(FortuneService.EarnSource.DISCOVERY, 40)
 	rose.add_grafting()
-	rose.use_petal()
+	rose.take_damage(WhiteRoseService.QUARTERS_PER_PETAL)
 	assert_eq(writer.write_slot(0, writer.capture()), PackedStringArray())
 
 	var loaded := _progression_service(_saves_dir)
@@ -745,7 +747,7 @@ func test_a_failing_section_stops_the_apply_where_it_stands() -> void:
 	world.fire(WorldStateIds.WS_MAGICIAN_UNBOUND, QuestIds.MQ01)
 	spread.assign(SpreadSlot.Id.PRESENT, TrumpIds.TRUMP_01, CardOrientation.Id.UPRIGHT)
 	fortune.earn(FortuneService.EarnSource.DISCOVERY, 40)
-	rose.use_petal()
+	rose.take_damage(WhiteRoseService.QUARTERS_PER_PETAL)
 	var model := writer.capture()
 	if not assert_not_null(model):
 		return

@@ -19,6 +19,8 @@ hit_result.gd / faction.gd       what became of a hit; who fights whom
 focus_targeting.gd               lock-on: candidates supplied, choice deterministic
 combat_defense.gd                what a Combatant asks before it takes a hit
 fool_defense.gd                  the Fool's answer: i-frames, guard, Fool's Chance
+vitality.gd                      a pool of life that lives outside the Combatant
+rose_vitality.gd                 the Fool's: the White Rose, seen from inside a fight
 combat_layers.gd                 the physics layers, so no .tscn carries a bit index
 combat_service.gd               what a fight IS: slow-mo, Fortune, the Rose, defeat
 nodes/combatant.gd               a health pool and the hit rule
@@ -26,6 +28,32 @@ nodes/hurtbox.gd                 the space a body can be hit in
 nodes/hitbox.gd                  the space one swing covers while its window is open
 nodes/fool_combat.gd             the seam: buttons -> moveset -> body -> services
 ```
+
+## The Fool's health is the White Rose
+
+The director's ruling on issue #11: **the petals ARE the health.** There is no second
+pool, no `fool_max_health`, and no heal button — a hit tears quarter petals off
+`WhiteRoseService` and the only healing in the game is the Rose growing back (slowly in
+an unbound region, whole at a Waystation, never in a bound one).
+
+Mechanically that is one seam, in three files. `Vitality` is a pool of life that lives
+outside a `Combatant`; `RoseVitality` is the adapter over the Rose;
+`CombatService.register_fool()` is the single place one is fitted. A `Combatant` with a
+`vitality` forwards every health question to it and is otherwise unchanged — the hit
+rule, the defence, the stagger and `died` at zero all read exactly as they did. Enemies
+have no `vitality` and keep their own field.
+
+Two consequences a reader should have in front of them:
+
+- **The Fool's health is counted in quarter petals** (`WhiteRoseService.QUARTERS_PER_PETAL`),
+  because three petals is far too coarse a bar for Story's halved damage or a Blank rank
+  curve to survive. Enemy damage is therefore authored in quarter petals
+  (`data/enemies/enemy_rules.tres`); the Fool's own swings are still priced against enemy
+  pools, which are still in their own points.
+- **A landed hit always costs at least one quarter** (`Combatant.MIN_LANDED_DAMAGE`).
+  With a twelve-quarter pool a multiplier can round a real swing down to nothing, and an
+  enemy the player can stand still in front of is not a difficulty setting. A spec that
+  deals zero damage on purpose still lands for nothing.
 
 `systems/core/hold_or_toggle.gd` belongs to this round too: it is the accessibility
 layer under every held input, and it sits in `core/` because sprint (which is
@@ -69,7 +97,6 @@ the oblique top-down grammar.
 | — (hit reaction) | `Hit_React` | 8 | no | Played on `Combatant.damaged`; short, never a stagger. |
 | — (defeat) | `Defeat_Collapse` | 1–8 | no | Already named in `combat.md` §Defeat: "stumbles, goes to one knee, and folds down". No ragdoll, no death sting. |
 | — (waking) | `Defeat_Rise` | 1–8 | no | The wake-up rise at the Waystation, also named in §Defeat. |
-| — (healing) | `Rose_Petal_Heal` | 8 | no | One petal, one fast heal, on a dedicated button (`progression.md`). |
 | — (Fool's Chance) | `Fools_Chance_Flourish` | — | no | OPTIONAL: a one-off flourish or VFX on the trigger. The screen-flash/shake toggles for it are the UI round's. |
 
 Enemy-side states (`Stagger_Loop`, `Stagger_Recover`, the telegraph poses) belong to

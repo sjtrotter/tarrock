@@ -172,7 +172,7 @@ func _physics_process(_delta: float) -> bool:
 	# --- A rest at the Prestige's Waystation --------------------------------
 	if _phase == 4:
 		var rose := _rose()
-		rose.use_petal()
+		rose.take_damage(WhiteRoseService.QUARTERS_PER_PETAL)
 		_spent_petals = rose.petals()
 		var waystation := _waystation_of(_layer.region())
 		if not check(waystation != null, "the Prestige has a Waystation node"):

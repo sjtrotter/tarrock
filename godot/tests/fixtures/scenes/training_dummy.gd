@@ -49,7 +49,11 @@ signal attack_finished()
 @export var recovery_seconds: float = 0.40
 
 ## What the swing deals, before the Fool's difficulty multiplier.
-@export var attack_damage: int = 20
+## What one of its swings costs, in the QUARTER PETALS the Fool's White Rose is
+## counted in (issue #11 - the petals ARE the health). Small on purpose: the arena's
+## defensive phases are about whether a hit lands at all, and a dummy that could
+## one-shot a twelve-quarter Fool would turn a timing slip into a defeat loop.
+@export var attack_damage: int = 3
 
 ## How far the swing reaches.
 @export var attack_radius: float = 160.0

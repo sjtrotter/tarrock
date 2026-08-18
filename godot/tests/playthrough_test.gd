@@ -8,12 +8,12 @@ extends SceneTree
 ## length of a real playthrough: the boot starts a quest, a conversation, a region and
 ## a Fool; a prop answers the interact key; a dog answers the command wheel; three
 ## Blanks answer the Bindle; a shrine answers the same interact key and regrows the
-## White Rose; the lip of the world answers a Fool who has finished the tutorial; and a
+## White Rose the fight tore petals off; the lip of the world answers a Fool who has finished the tutorial; and a
 ## stall in the next region takes Coins for popcorn. Then the whole of it is written to
 ## a slot, thrown away, read back, and asserted equal.
 ##
 ## **What "the real input path" means here, exactly.** Walking, attacking, dodging,
-## interacting, healing and Pip's wheel are all driven by pressing the InputMap actions
+## interacting and Pip's wheel are all driven by pressing the InputMap actions
 ## `docs/design/technical.md` §Input actions lists - never by calling the controller,
 ## the companion or the prop. Presses go through `Input.parse_input_event()` with an
 ## `InputEventAction` and are flushed by hand, because that reaches BOTH halves of the
@@ -159,13 +159,6 @@ const SLIDER_SECONDS := 0.10
 ## How long before a Blank's hit lands the dodge is pressed.
 const PERFECT_DODGE_LEAD := 0.14
 
-## At or below this the Fool spends a petal, through the `rose` action. Sized against
-## the two facts either side of it: a petal restores `CombatRules.petal_heal` (40) of a
-## 100-point pool, so healing much above this throws most of one away, and the three
-## Twos land 7-10 a hit, so this is reached after two or three of them - which they
-## always manage in a fight this long.
-const ROSE_AT_HEALTH := 80
-
 ## The fight's own budget: three Twos at roughly one light string each, plus the dodge
 ## attempts, one Fool's Chance window and the walk after the Cups Blank, which keeps its
 ## distance and has to be run down.
@@ -230,7 +223,10 @@ var _cliff: RegionScene = null
 ## What the fight and the Rose announced, so a signal is what is asserted rather than a
 ## poll that happened to be looking at the right moment.
 var _fools_chance_count := 0
-var _petals_spent := 0
+
+## Quarter petals the fight cost the Fool, counted off `petals_changed` rather than
+## polled. The petals ARE the health (issue #11), so this is the fight's damage taken.
+var _quarters_lost := 0
 var _flutters := 0
 var _defeats := 0
 
@@ -375,7 +371,7 @@ func _phase_wake() -> bool:
 			# Wire the two signals the fight and the Rose are asserted through, and the
 			# dig site, before anything can emit one.
 			_combat().fools_chance_started.connect(_on_fools_chance)
-			_combat().rose_used.connect(_on_rose_used)
+			_rose().petals_changed.connect(_on_petals_changed)
 			_combat().fool_defeated.connect(_on_fool_defeated)
 			_enemies().card_fluttered.connect(_on_card_fluttered)
 			var earth := _earth()
@@ -738,7 +734,11 @@ func _phase_the_fight() -> bool:
 			"and every one of their cards flutters free (%d) - nobody was killed" % _flutters
 		)
 		_check(_fools_chance_count >= 1, "a dodge timed against a real telegraph was a Fool's Chance")
-		_check(_petals_spent >= 1, "and the Fool spent a White Rose petal on the `rose` action")
+		_check(
+			_quarters_lost >= 1,
+			"and the three Twos tore petals off the White Rose, which IS the Fool's health"
+				+ " (%d quarter petals of %d)" % [_quarters_lost, _rose().max_quarters()]
+		)
 		_check(_defeats == 0, "without going down (combat.md §Defeat never played)")
 		_check(
 			_quest_state() == &"AMBUSH_CLEARED",
@@ -748,14 +748,10 @@ func _phase_the_fight() -> bool:
 		_advance()
 		return false
 
-	# The White Rose, on its own action, whenever a petal would not be wasted. Three
-	# Twos at the placeholder numbers really do put the Fool in trouble, and healing is
-	# the answer the kit gives them (`combat.md` §Defense: a petal is a manual heal).
-	var combatant := _fool_combatant()
-	if combatant != null and combatant.health() <= ROSE_AT_HEALTH:
-		if _rose().petals() > 0 and _is_fool_idle():
-			_press(InputActions.ROSE)
-			return false
+	# There is deliberately nothing here that heals. Issue #11 makes the White Rose's
+	# petals the Fool's health, so the only answers to a Two are the dodge and the
+	# Bindle - and the Rose comes back at the shrine two phases from now, which is what
+	# makes the Waystation beat land.
 
 	# One perfect dodge. While the Fool has not had one, a melee Blank winding up is
 	# worth more than a swing: the Fool STANDS STILL and answers the tell, which is the
@@ -804,9 +800,9 @@ func _phase_waystation() -> bool:
 				"so the Pocket Spread's loadouts are not offered out here"
 			)
 			_check(
-				_rose().petals() < _rose().max_petals(),
-				"and the Rose is short the petal the fight spent (%d of %d)"
-					% [_rose().petals(), _rose().max_petals()]
+				_rose().quarters() < _rose().max_quarters(),
+				"and the Rose is short the petals the fight tore off (%d of %d quarters)"
+					% [_rose().quarters(), _rose().max_quarters()]
 			)
 			_start_walk(WAYSTATION_POSITION)
 			_step = 1
@@ -832,9 +828,9 @@ func _phase_waystation() -> bool:
 					% _quest_state()
 			)
 			_check(
-				_rose().petals() == _rose().max_petals(),
-				"the White Rose is whole again (%d of %d)"
-					% [_rose().petals(), _rose().max_petals()]
+				_rose().quarters() == _rose().max_quarters(),
+				"the White Rose is whole again (%d of %d quarters)"
+					% [_rose().quarters(), _rose().max_quarters()]
 			)
 			_check(
 				_regions().last_waystation_id() == RegionIds.WAYSTATION_CLIFF,
@@ -1077,7 +1073,7 @@ func _snapshot_of_the_playthrough() -> Dictionary:
 		"MQ00 complete": _quests().is_complete(QuestIds.MQ00),
 		"spread loadouts": _spread().loadout_count(),
 		"Trumps held": _spread().held_count(),
-		"rose petals": _rose().petals(),
+		"rose quarter petals": _rose().quarters(),
 		"rose capacity": _rose().max_petals(),
 		"coins": _economy().coins(),
 		"popcorn carried": _economy().count(ItemIds.ITEM_POPCORN),
@@ -1309,8 +1305,9 @@ func _on_fools_chance(_real_seconds: float) -> void:
 	_fools_chance_count += 1
 
 
-func _on_rose_used(_restored: int, _petals_left: int) -> void:
-	_petals_spent += 1
+func _on_petals_changed(old_quarters: int, new_quarters: int) -> void:
+	if new_quarters < old_quarters:
+		_quarters_lost += old_quarters - new_quarters
 
 
 func _on_fool_defeated(_defeat_count: int, _at_seconds: int) -> void:
@@ -1563,8 +1560,8 @@ func _finish() -> bool:
 	for line: String in _timeline:
 		print("    " + line)
 	print(
-		"--- the fight: %d cards fluttered, %d Fool's Chance, %d petals spent, %d defeats"
-			% [_flutters, _fools_chance_count, _petals_spent, _defeats]
+		"--- the fight: %d cards fluttered, %d Fool's Chance, %d quarter petals lost, %d defeats"
+			% [_flutters, _fools_chance_count, _quarters_lost, _defeats]
 	)
 	if _all_passed:
 		print("PLAYTHROUGH TEST: PASS")

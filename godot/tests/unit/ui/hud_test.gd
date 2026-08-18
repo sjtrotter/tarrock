@@ -69,8 +69,6 @@ func test_a_hud_with_no_playthrough_draws_an_empty_frame_rather_than_erroring() 
 	assert_almost_eq(_hud.fortune_meter().fill_ratio(), 0.0)
 	assert_false(_hud.prompt_chip().is_showing())
 	assert_false(_hud.vignette().is_washing())
-	assert_almost_eq(_hud.health_meter().fullness(), 1.0, 0.0001,
-		"an unattached HUD must not read as a Fool at death's door")
 
 
 func test_the_hud_carries_no_progress_counter() -> void:
@@ -127,26 +125,47 @@ func test_a_notched_display_pushes_the_margins_in_further_than_the_design_margin
 	container.free()
 
 
-# --- The White Rose ----------------------------------------------------------------
+# --- The White Rose, which is the health -------------------------------------------
 
 
-func test_the_petal_row_is_the_roses_capacity_and_the_lit_ones_are_its_charges() -> void:
+func test_the_petal_row_is_the_roses_capacity_and_the_petals_left_are_lit() -> void:
 	_hud.attach(_rose, _fortune, _combat)
 	assert_eq(_hud.rose_meter().icon_count(), _rose.max_petals())
 	assert_eq(_hud.rose_meter().lit_count(), _rose.petals())
 	assert_eq(_hud.rose_meter().icon_count(), 3, "progression.md: starting capacity 3")
 
 
-func test_a_spent_petal_goes_faint_rather_than_away() -> void:
+func test_the_hud_draws_the_fools_health_once_and_only_as_petals() -> void:
+	# Issue #11: the petals ARE the health, so there is no second readout beside them.
+	# `art-audio.md` §UI/UX pillars asks for restraint; two health bars would be the
+	# wrong answer to a ruling that says there is one pool.
+	assert_false(_hud.has_method("health_meter"), "no bloom, no bar, no numerals")
+
+
+func test_a_petal_torn_by_quarters_fades_a_step_at_a_time() -> void:
 	_hud.attach(_rose, _fortune, _combat)
-	var before := _hud.rose_meter().icon_count()
-	assert_true(_rose.use_petal())
-	assert_eq(_hud.rose_meter().icon_count(), before, "the row is the capacity, not the charge")
-	assert_eq(_hud.rose_meter().lit_count(), _rose.petals())
-	assert_true(
-		_hud.rose_meter().icon(before - 1).modulate.a <= UiFrames.SPENT_ALPHA,
-		"the spent petal is drawn faint - it comes back"
+	var meter := _hud.rose_meter()
+	var before := meter.icon_count()
+	var whole := meter.icon(before - 1).modulate.a
+
+	_rose.take_damage(1)
+	assert_eq(meter.icon_count(), before, "the row is the capacity, not the health")
+	assert_eq(meter.quarter_fill(before - 1), 3, "the last petal is three quarters on")
+	assert_eq(meter.lit_count(), _rose.petals(), "and it is still a petal on the flower")
+	var nicked := meter.icon(before - 1).modulate.a
+	assert_true(nicked < whole, "a torn petal is drawn dimmer than a whole one")
+	assert_true(nicked > UiFrames.SPENT_ALPHA, "and brighter than a spent one")
+
+	_rose.take_damage(3)
+	assert_eq(meter.quarter_fill(before - 1), 0)
+	assert_eq(meter.icon_count(), before, "a spent petal goes faint rather than away")
+	assert_almost_eq(
+		meter.icon(before - 1).modulate.a,
+		UiFrames.SPENT_ALPHA,
+		0.0001,
+		"it comes back - progression.md regrows it"
 	)
+	assert_eq(meter.lit_count(), 2)
 
 
 func test_a_grafting_adds_a_petal_to_the_row() -> void:

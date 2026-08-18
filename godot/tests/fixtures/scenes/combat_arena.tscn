@@ -23,7 +23,7 @@ max_health = 200
 telegraph_seconds = 0.5
 active_seconds = 0.1
 recovery_seconds = 0.4
-attack_damage = 20
+attack_damage = 3
 attack_radius = 400.0
 attack_arc_degrees = 360.0
 

@@ -27,7 +27,7 @@ shape = SubResource("CircleShape2D_fool")
 [node name="Combatant" type="Node2D" parent="."]
 script = ExtResource("3_combatant")
 faction = 0
-max_health = 100
+max_health = 12
 
 [node name="Hurtbox" type="Area2D" parent="Combatant"]
 script = ExtResource("4_hurtbox")

@@ -1,7 +1,7 @@
 extends TarrockTest
 
 ## What a fight is: Fool's Chance, the difficulty modes, the accessibility slider,
-## the White Rose's heals and the defeat loop.
+## the White Rose the Fool bleeds, and the defeat loop.
 ##
 ## `docs/design/combat.md` §Defense, §Difficulty modes, §Accessibility and §Defeat are
 ## the canon; `docs/design/progression.md` §Fortune and §The White Rose own the
@@ -262,49 +262,61 @@ func test_clearing_the_engagements_ends_any_slow_motion() -> void:
 	enemy.free()
 
 
-# --- The White Rose ------------------------------------------------------------
+# --- The White Rose IS the health ----------------------------------------------
 
 
-func test_a_petal_is_one_fast_heal() -> void:
-	watch_signal(_service, &"rose_used")
-	_hurt_fool(50)
-	var petals := _rose.petals()
-	assert_true(_service.use_rose())
-	assert_eq(_rose.petals(), petals - 1, "one petal, one heal")
-	assert_eq(_fool.health(), _rules.fool_max_health - 50 + _rules.petal_heal)
-	assert_eq(signal_arguments(_service, &"rose_used", 0), [_rules.petal_heal, _rose.petals()])
+func test_registering_the_fool_points_their_body_at_the_rose() -> void:
+	# The whole of the ruling on issue #11, in one wire: nothing sizes a pool for the
+	# Fool, because the Rose is the pool.
+	assert_not_null(_fool.vitality, "the Fool fights on their White Rose")
+	assert_eq(_fool.health_capacity(), _rose.max_quarters(), "capacity is the Rose's")
+	assert_eq(_fool.health(), _rose.quarters())
+	assert_eq(_rose.quarters(), 12, "three petals, four quarters each")
 
 
-func test_a_petal_is_refused_at_full_health() -> void:
-	watch_signal(_service, &"rose_refused")
-	var petals := _rose.petals()
-	assert_false(_service.use_rose())
-	assert_eq(_rose.petals(), petals, "a scarce resource is not thrown away by a mistimed button")
-	assert_eq(signal_arguments(_service, &"rose_refused", 0), [CombatService.REASON_AT_FULL_HEALTH])
+func test_a_landed_hit_costs_the_fool_petals_and_nothing_else() -> void:
+	watch_signal(_rose, &"petals_changed")
+	_hurt_fool(3)
+	assert_eq(_rose.quarters(), 9, "the hit came off the Rose")
+	assert_eq(_fool.health(), 9, "and the body reads it there")
+	assert_eq(_rose.petals(), 3, "three petals, one of them torn")
+	assert_signal_emitted(_rose, &"petals_changed", 1)
 
 
-func test_a_rose_with_no_petals_refuses() -> void:
-	watch_signal(_service, &"rose_refused")
-	while _rose.petals() > 0:
-		_rose.use_petal()
-	_hurt_fool(50)
-	assert_false(_service.use_rose())
-	assert_eq(signal_arguments(_service, &"rose_refused", 0), [CombatService.REASON_NO_PETALS])
+func test_story_takes_fewer_quarter_petals_off_the_rose() -> void:
+	# The difficulty multiplier applies to quarters like any other damage. It arrives
+	# through `FoolDefense`, which is the only thing that asks the service for it - a
+	# bare `Combatant` with the base defence takes hits at face value however the mode
+	# is set, which is correct and is why the Fool's own defence is fitted here.
+	_fool.defense = FoolDefense.new(MovesetController.new(_rules), _service)
+	_service.set_difficulty(DifficultyMode.Id.STORY)
+	_hurt_fool(4)
+	assert_eq(_rose.quarters(), 10, "combat.md: Story takes reduced damage")
+	_rose.rest()
+	_hurt_fool(1)
+	assert_eq(
+		_rose.quarters(), 11, "and a hit small enough to round away still costs a quarter"
+	)
 
 
-func test_healing_never_overfills_the_pool() -> void:
-	_hurt_fool(10)
-	_service.use_rose()
-	assert_eq(_fool.health(), _rules.fool_max_health, "capped, not overfilled")
+func test_there_is_no_button_that_spends_a_petal() -> void:
+	# Issue #11 decided against a manual heal, so the verb is gone from both sides.
+	# A round that brings it back fails here rather than quietly restoring the old
+	# two-pool model.
+	assert_false(_service.has_method("use_rose"), "no heal button on the service")
+	assert_false(_rose.has_method("use_petal"), "and none on the Rose")
 
 
 # --- The defeat loop -----------------------------------------------------------
 
 
-func test_the_fool_at_zero_falls_and_the_scene_is_told() -> void:
+func test_the_fool_at_zero_petals_falls_and_the_scene_is_told() -> void:
 	watch_signal(_service, &"fool_defeated")
+	watch_signal(_rose, &"bared")
 	_clock.advance(42.0)
-	_hurt_fool(_rules.fool_max_health)
+	_hurt_fool(_rose.max_quarters())
+	assert_true(_rose.is_bare(), "combat.md §Defeat: the Fool at zero petals")
+	assert_signal_emitted(_rose, &"bared", 1)
 	assert_true(_service.is_defeated())
 	assert_signal_emitted(_service, &"fool_defeated", 1)
 	assert_eq(
@@ -316,32 +328,24 @@ func test_the_fool_at_zero_falls_and_the_scene_is_told() -> void:
 
 func test_a_defeat_ends_any_slow_motion() -> void:
 	_service.trigger_fools_chance()
-	_hurt_fool(_rules.fool_max_health)
+	_hurt_fool(_rose.max_quarters())
 	assert_almost_eq(Engine.time_scale, 1.0, 0.0001, "the world does not stay slow over a body")
 
 
-func test_the_return_leg_restores_health_and_the_rose() -> void:
+func test_the_return_leg_regrows_the_rose() -> void:
 	watch_signal(_service, &"fool_revived")
-	_rose.use_petal()
-	_hurt_fool(_rules.fool_max_health)
+	_hurt_fool(_rose.max_quarters())
 	_service.revive_at_waystation()
-	assert_eq(_fool.health(), _rules.fool_max_health, "combat.md: no penalty beyond the walk back")
-	assert_eq(_rose.petals(), _rose.max_petals(), "and the White Rose regrown")
+	assert_eq(_rose.quarters(), _rose.max_quarters(), "the White Rose regrown")
+	assert_eq(_fool.health(), _rose.max_quarters(), "combat.md: no penalty beyond the walk back")
 	assert_false(_service.is_defeated())
 	assert_signal_emitted(_service, &"fool_revived", 1)
 
 
-func test_a_petal_cannot_be_spent_on_a_fallen_fool() -> void:
-	watch_signal(_service, &"rose_refused")
-	_hurt_fool(_rules.fool_max_health)
-	assert_false(_service.use_rose())
-	assert_eq(signal_arguments(_service, &"rose_refused", 0), [CombatService.REASON_DEFEATED])
-
-
 func test_defeats_are_counted() -> void:
-	_hurt_fool(_rules.fool_max_health)
+	_hurt_fool(_rose.max_quarters())
 	_service.revive_at_waystation()
-	_hurt_fool(_rules.fool_max_health)
+	_hurt_fool(_rose.max_quarters())
 	assert_eq(_service.defeat_count(), 2)
 
 

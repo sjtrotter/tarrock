@@ -64,8 +64,9 @@ is spelled in code.
    `card_face.svg`, and draws a reversed card turned about — which is what the finished
    art replaces, not something it contradicts. The map's face-down cards want the same
    deck's back.
-4. **A White Rose petal that is the White Rose's petal**, and a bloom to sit above the row
-   (the health presentation is TBD, see `HealthMeter`).
+4. **A White Rose petal that is the White Rose's petal**, in five states — whole, three
+   quarters, half, one quarter, spent — because the petals ARE the Fool's health
+   (issue #11) and `RoseMeter` fakes the four partial states with alpha today.
 5. **The suit marks, in the deck's own hand.** The four here are honest woodcut-ish
    shapes and colourblind-safe by construction (shape only, no colour), but they are not
    drawn by whoever draws the Blanks' tabards, and they should match those.

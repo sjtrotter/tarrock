@@ -34,7 +34,7 @@ var _bindings_before: Array[InputEvent] = []
 
 func before_each() -> void:
 	TranslationServer.set_locale("en")
-	_bindings_before = InputMap.action_get_events(InputActions.ROSE)
+	_bindings_before = InputMap.action_get_events(InputActions.PIP_WHEEL)
 	_settings = UiSettings.new(SCRATCH)
 	_combat = _build_combat()
 	_fool = (load(FOOL_SCENE_PATH) as PackedScene).instantiate()
@@ -52,9 +52,9 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	InputMap.action_erase_events(InputActions.ROSE)
+	InputMap.action_erase_events(InputActions.PIP_WHEEL)
 	for event: InputEvent in _bindings_before:
-		InputMap.action_add_event(InputActions.ROSE, event)
+		InputMap.action_add_event(InputActions.PIP_WHEEL, event)
 	for node: Node in [_pause, _screen, _fool]:
 		if node != null and is_instance_valid(node):
 			node.get_parent().remove_child(node)
@@ -173,15 +173,15 @@ func test_the_quest_marker_is_off_until_the_player_asks_for_it() -> void:
 
 
 func test_rebinding_writes_the_input_map_and_the_file() -> void:
-	_screen.begin_rebind(InputActions.ROSE)
-	assert_eq(_screen.rebinding_action(), InputActions.ROSE)
+	_screen.begin_rebind(InputActions.PIP_WHEEL)
+	assert_eq(_screen.rebinding_action(), InputActions.PIP_WHEEL)
 	var event := InputEventKey.new()
 	event.physical_keycode = SPARE_KEYCODE
 	event.pressed = true
 	assert_true(_screen.rebind_with(event))
 	assert_eq(_screen.rebinding_action(), &"", "the screen stopped waiting")
-	assert_true(InputMap.action_has_event(InputActions.ROSE, event))
-	assert_eq(_screen.rebind_button(InputActions.ROSE).text, OS.get_keycode_string(SPARE_KEYCODE))
+	assert_true(InputMap.action_has_event(InputActions.PIP_WHEEL, event))
+	assert_eq(_screen.rebind_button(InputActions.PIP_WHEEL).text, OS.get_keycode_string(SPARE_KEYCODE))
 
 	var reopened := UiSettings.new(SCRATCH)
 	assert_true(reopened.load_file())
@@ -204,15 +204,15 @@ func test_a_slot_row_is_the_csvs_own_format_with_the_number_put_into_it() -> voi
 
 
 func test_going_back_to_defaults_puts_the_authored_bindings_back() -> void:
-	_screen.begin_rebind(InputActions.ROSE)
+	_screen.begin_rebind(InputActions.PIP_WHEEL)
 	var event := InputEventKey.new()
 	event.physical_keycode = SPARE_KEYCODE
 	event.pressed = true
 	_screen.rebind_with(event)
-	assert_true(InputMap.action_has_event(InputActions.ROSE, event))
+	assert_true(InputMap.action_has_event(InputActions.PIP_WHEEL, event))
 	_screen.reset_to_defaults()
 	assert_false(
-		InputMap.action_has_event(InputActions.ROSE, event),
+		InputMap.action_has_event(InputActions.PIP_WHEEL, event),
 		"defaults means the game's own bindings, not the last thing typed"
 	)
 	assert_eq(_screen.settings().bindings.size(), 0)
@@ -249,20 +249,20 @@ func test_going_back_to_defaults_resets_the_settings_object_everyone_else_holds(
 func test_a_rebind_on_the_keyboard_leaves_the_pad_button_alone() -> void:
 	# `rose` is bound to R and to a pad button by `project.godot`. Moving the keyboard
 	# half must not silently unbind the controller.
-	var pad := _pad_events(InputActions.ROSE)
+	var pad := _pad_events(InputActions.PIP_WHEEL)
 	assert_true(pad.size() > 0, "the action ships with a pad binding to protect")
-	_screen.begin_rebind(InputActions.ROSE)
+	_screen.begin_rebind(InputActions.PIP_WHEEL)
 	var event := InputEventKey.new()
 	event.physical_keycode = SPARE_KEYCODE
 	event.pressed = true
 	assert_true(_screen.rebind_with(event))
-	assert_true(InputMap.action_has_event(InputActions.ROSE, event), "the new key is bound")
+	assert_true(InputMap.action_has_event(InputActions.PIP_WHEEL, event), "the new key is bound")
 	for button: InputEvent in pad:
 		assert_true(
-			InputMap.action_has_event(InputActions.ROSE, button),
+			InputMap.action_has_event(InputActions.PIP_WHEEL, button),
 			"the pad button is still bound"
 		)
-	assert_eq(_key_events(InputActions.ROSE).size(), 1, "and only one key answers now")
+	assert_eq(_key_events(InputActions.PIP_WHEEL).size(), 1, "and only one key answers now")
 
 
 func _pad_events(action_name: StringName) -> Array[InputEvent]:

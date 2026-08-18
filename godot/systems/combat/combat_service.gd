@@ -2,17 +2,17 @@ class_name CombatService
 extends RefCounted
 
 ## Everything about a fight that outlives one swing: Fool's Chance, the Fortune a
-## fight earns, the White Rose's heals, the difficulty, the accessibility slider, and
-## the defeat loop.
+## fight earns, the difficulty, the accessibility slider, and the defeat loop.
 ##
 ## The division of labour across the combat round is worth stating once:
 ##
 ##   * `MovesetController` knows what the Fool is doing this frame, and nothing else.
 ##   * `Combatant` knows how to lose health, and nothing else.
 ##   * **This** knows what a fight is. It is the only thing that touches
-##     `Engine.time_scale`, the only thing that spends a White Rose petal, and the
-##     only thing that says a fight has started, so `PocketSpreadService` can lock the
-##     Spread ("Swapping is free anywhere, out of combat", `progression.md`).
+##     `Engine.time_scale`, the only thing that hands the Fool their White Rose to
+##     bleed, and the only thing that says a fight has started, so
+##     `PocketSpreadService` can lock the Spread ("Swapping is free anywhere, out of
+##     combat", `progression.md`).
 ##
 ## `docs/design/combat.md` is canon for all of it:
 ##
@@ -37,12 +37,13 @@ extends RefCounted
 ##     the Fool wakes at is the Regions round's fact, and the scene that plays the
 ##     beat is what teleports.
 ##
-## PER GAUNTLET RULING PENDING ISSUE #11: the Fool has a health pool, a petal is a
-## manual heal spending one petal for `CombatRules.petal_heal` health, and defeat is
-## that pool reaching zero whatever petals are left. `combat.md` §Defeat titles itself
-## "the Fool at zero petals", which can also be read as petals BEING the pool; the
-## director's call is open. If it lands the other way, `use_rose()` and `_on_fool_died`
-## are the two functions that change.
+## **Petals are the health** (director ruling, issue #11). There is no second pool and
+## no heal button: `register_fool()` hands the Fool's `Combatant` a `RoseVitality`, so
+## every hit that gets past the defence tears quarter petals off `WhiteRoseService`,
+## and `combat.md` §Defeat's "the Fool at zero petals" is literally the Rose going
+## bare. The only healing in the game is the Rose growing back - slowly in an unbound
+## region, whole at a Waystation - which is `progression.md` §The White Rose's rule
+## and this service never touches it.
 
 ## Fool's Chance began. `real_seconds` is how long it will run in real time, which is
 ## deliberately not in-game seconds: the world is what slows down.
@@ -54,33 +55,13 @@ signal fools_chance_ended()
 ## A fight started or ended, by the engaged-enemy count crossing zero.
 signal in_combat_changed(fighting: bool)
 
-## The Fool's pool reached zero. The scene plays `combat.md` §Defeat's four beats;
+## The Fool's last petal is gone. The scene plays `combat.md` §Defeat's four beats;
 ## `defeat_count` and `at_seconds` are what a Querent line pool needs to remark
 ## "occasionally" rather than every time.
 signal fool_defeated(defeat_count: int, at_seconds: int)
 
-## The Fool is back on their feet at a Waystation, at full health, Rose regrown.
+## The Fool is back on their feet at a Waystation, White Rose regrown.
 signal fool_revived()
-
-## A petal was spent. `restored` is the health it actually gave back.
-signal rose_used(restored: int, petals_left: int)
-
-## A petal was NOT spent. `reason` is one of the `REASON_*` constants.
-signal rose_refused(reason: StringName)
-
-## Nobody registered a Fool, so there is nothing to heal or to defeat.
-const REASON_NO_FOOL := &"NO_FOOL"
-
-## The Fool is already at full health; the petal would be thrown away. Refused rather
-## than wasted - a resource this scarce (3 to start, 8 at most) is not spent on
-## nothing by a mistimed button.
-const REASON_AT_FULL_HEALTH := &"AT_FULL_HEALTH"
-
-## The Rose has no petals left.
-const REASON_NO_PETALS := &"NO_PETALS"
-
-## The Fool is down. The defeat loop is what brings them back, not a petal.
-const REASON_DEFEATED := &"DEFEATED"
 
 ## The smallest time scale `tick()` will divide by, so a paused game (`time_scale` 0)
 ## cannot turn one frame into an infinite number of real seconds.
@@ -186,19 +167,26 @@ func rules() -> CombatRules:
 # --- The Fool ----------------------------------------------------------------
 
 
-## Register the Fool's `Combatant`. Its pool is sized from the rules, and its `died`
-## is what the defeat loop hangs on.
+## Register the Fool's `Combatant`. Its health is pointed at the White Rose, and its
+## `died` is what the defeat loop hangs on.
+##
+## This is the ONE place the ruling on issue #11 is wired: nothing sizes a pool for
+## the Fool, because there is no pool to size. The Rose is the pool, and a
+## `RoseVitality` is the seam that lets a `Combatant` spend it without knowing what a
+## Trump or a Waystation is (see `Vitality`).
 func register_fool(combatant: Combatant) -> void:
 	if _fool == combatant:
 		return
-	if _fool != null and is_instance_valid(_fool) and _fool.died.is_connected(_on_fool_died):
-		_fool.died.disconnect(_on_fool_died)
+	if _fool != null and is_instance_valid(_fool):
+		if _fool.died.is_connected(_on_fool_died):
+			_fool.died.disconnect(_on_fool_died)
+		_fool.vitality = null
 	_fool = combatant
 	_defeated = false
 	if combatant == null:
 		return
-	if _rules != null:
-		combatant.set_max_health(_rules.fool_max_health)
+	if _rose != null:
+		combatant.vitality = RoseVitality.new(_rose)
 	if not combatant.died.is_connected(_on_fool_died):
 		combatant.died.connect(_on_fool_died)
 
@@ -219,43 +207,30 @@ func defeat_count() -> int:
 	return _defeat_count
 
 
-## Spend a White Rose petal on a fast heal. False when it was refused, with a reason.
-##
-## `progression.md` §The White Rose: "one petal is one fast heal, on a dedicated
-## button". Refusing at full health is this round's call, not the doc's - see
-## `REASON_AT_FULL_HEALTH` for the reasoning.
-func use_rose() -> bool:
-	if _fool == null or not is_instance_valid(_fool):
-		rose_refused.emit(REASON_NO_FOOL)
-		return false
-	if _defeated or not _fool.is_alive():
-		rose_refused.emit(REASON_DEFEATED)
-		return false
-	if _fool.health() >= _fool.health_capacity():
-		rose_refused.emit(REASON_AT_FULL_HEALTH)
-		return false
-	if _rose == null or not _rose.use_petal():
-		rose_refused.emit(REASON_NO_PETALS)
-		return false
-	var restored := _fool.heal(0 if _rules == null else _rules.petal_heal)
-	rose_used.emit(restored, _rose.petals())
-	return true
+## The White Rose the Fool is fighting on, or null before one is handed over.
+func rose() -> WhiteRoseService:
+	return _rose
 
 
-## The return leg of the defeat loop: full health, Rose regrown, back on their feet.
+## The return leg of the defeat loop: the Rose regrown, back on their feet.
 ##
 ## `combat.md` §Defeat: the Fool "wakes at the last Waystation rested at, White Rose
 ## regrown... No currency loss, no corpse run, no penalty beyond the walk back". WHICH
 ## Waystation is a fact the Regions round owns, and the scene that plays the fall, the
 ## lick and the fade is what actually moves the Fool there; this restores the state
 ## that has to be true when they open their eyes, and says so.
+##
+## The Rose is rested directly as well as through the body, because the two are not
+## the same call when there is no Fool registered yet - and because a rest is what a
+## reader of this function should see, rather than having to follow a `Vitality` to
+## find it. Resting a whole Rose changes nothing, so doing it twice costs nothing.
 func revive_at_waystation() -> void:
 	if _fool == null or not is_instance_valid(_fool):
 		return
 	end_fools_chance()
-	_fool.restore_full_health()
 	if _rose != null:
 		_rose.rest()
+	_fool.restore_full_health()
 	_defeated = false
 	fool_revived.emit()
 
@@ -438,7 +413,8 @@ func _set_in_combat(fighting: bool) -> void:
 	in_combat_changed.emit(fighting)
 
 
-## The Fool fell. Beat 1 of `combat.md` §Defeat; the scene plays beats 2 to 4.
+## The Rose went bare and the Fool fell. Beat 1 of `combat.md` §Defeat; the scene
+## plays beats 2 to 4.
 func _on_fool_died() -> void:
 	if _defeated:
 		return

@@ -12,14 +12,10 @@ extends TarrockTest
 ## every question this suite asks, which is what keeps the hit rule testable without
 ## a physics frame anywhere near it.
 
-const RULES_PATH := "res://data/combat/combat_rules.tres"
-
-var _rules: CombatRules = null
 var _combatant: Combatant = null
 
 
 func before_each() -> void:
-	_rules = load(RULES_PATH) as CombatRules
 	_combatant = Combatant.new()
 	_combatant.faction = Faction.Id.BLANK
 	_combatant.set_max_health(100)
@@ -208,12 +204,53 @@ func test_restoring_full_health_clears_the_stagger_too() -> void:
 	assert_false(_combatant.is_staggered(), "the Fool wakes at the Waystation whole")
 
 
-func test_the_rules_size_the_fools_pool() -> void:
-	if not assert_not_null(_rules):
-		return
-	_combatant.set_max_health(_rules.fool_max_health)
-	assert_eq(_combatant.health(), _rules.fool_max_health)
+func test_a_vitality_takes_the_pool_over_entirely() -> void:
+	# The Fool's case (issue #11): health lives in the White Rose, so a Combatant
+	# handed a `Vitality` reads, spends and refills THAT and ignores its own field -
+	# including the `max_health` a scene authored on it, which is exactly the number
+	# that would otherwise disagree with the Rose's capacity.
+	var pool := _StubVitality.new(12)
+	_combatant.vitality = pool
+	assert_eq(_combatant.health(), 12, "the pool answers, not the 100 above")
+	assert_eq(_combatant.health_capacity(), 12)
 	assert_almost_eq(_combatant.health_fraction(), 1.0)
+
+	watch_signal(_combatant, &"damaged")
+	assert_eq(_combatant.take_hit(_event(3)), HitResult.Id.DAMAGED)
+	assert_eq(pool.left, 9, "the hit was spent out of the external pool")
+	assert_eq(_combatant.health(), 9)
+	assert_eq(signal_arguments(_combatant, &"damaged", 0), [3, 9])
+
+	_combatant.set_max_health(999)
+	assert_eq(_combatant.health_capacity(), 12, "nothing resizes a pool it does not own")
+
+	assert_eq(_combatant.heal(2), 2)
+	assert_eq(pool.left, 11)
+	_combatant.restore_full_health()
+	assert_eq(pool.left, 12, "and the defeat loop's return leg fills it")
+	assert_eq(pool.fills, 1)
+
+
+func test_a_vitality_that_runs_out_is_a_death_like_any_other() -> void:
+	watch_signal(_combatant, &"died")
+	var pool := _StubVitality.new(4)
+	_combatant.vitality = pool
+	assert_eq(_combatant.take_hit(_event(10)), HitResult.Id.KILLED)
+	assert_eq(pool.left, 0)
+	assert_false(_combatant.is_alive())
+	assert_signal_emitted(_combatant, &"died", 1)
+
+
+func test_a_hit_meant_to_cost_something_never_rounds_away_to_nothing() -> void:
+	# At quarter-petal resolution the Fool's pool is small enough that Story's halved
+	# damage, a Coins Blank's armour or a low rank can multiply a real swing down to
+	# zero. An enemy the player can stand still in front of is not a difficulty
+	# setting, so a landed hit always costs at least one.
+	_combatant.defense = _StubDefense.new(false, false, false, 0.1)
+	assert_eq(_combatant.take_hit(_event(1)), HitResult.Id.DAMAGED)
+	assert_eq(_combatant.health(), 99, "0.1 of one point is one point, not none")
+	assert_eq(_combatant.take_hit(_event(0)), HitResult.Id.DAMAGED)
+	assert_eq(_combatant.health(), 99, "but a spec that means to cost nothing still does")
 
 
 # --- Helpers -----------------------------------------------------------------
@@ -228,6 +265,45 @@ func _event(damage: int) -> HitEvent:
 		Vector2.RIGHT,
 		0.0
 	)
+
+
+## A pool of life outside the body, so the seam the Fool's Rose comes through can be
+## driven without a Rose, a world state or a rules table.
+class _StubVitality:
+	extends Vitality
+
+	var left: int = 0
+	var capacity: int = 0
+
+	## How many times the pool was filled outright - the defeat loop's return leg.
+	var fills: int = 0
+
+	func _init(size: int) -> void:
+		capacity = size
+		left = size
+
+	func quarters() -> int:
+		return left
+
+	func max_quarters() -> int:
+		return capacity
+
+	func take(amount: int) -> int:
+		var taken := mini(amount, left)
+		left -= taken
+		return taken
+
+	func give(amount: int) -> int:
+		var given := mini(amount, capacity - left)
+		left += given
+		return given
+
+	func fill() -> void:
+		left = capacity
+		fills += 1
+
+	func is_bare() -> bool:
+		return left <= 0
 
 
 ## A defence with fixed answers, so the hit rule can be driven through every branch

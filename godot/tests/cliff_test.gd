@@ -395,7 +395,7 @@ func _physics_process(_delta: float) -> bool:
 		var rose := _rose_service()
 		var spent := 0
 		if rose != null:
-			rose.use_petal()
+			rose.take_damage(WhiteRoseService.QUARTERS_PER_PETAL)
 			spent = rose.petals()
 		_fool.try_interact()
 		_all_passed = _check_state(&"RESTED", "resting at the first Waystation advances MQ00")

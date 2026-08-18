@@ -113,47 +113,47 @@ func test_a_keyboard_rebind_keeps_the_pad_binding_and_the_file_keeps_both() -> v
 	# Every action in `project.godot` is bound twice - a key and a pad button - and a
 	# player rebinding on the keyboard has said nothing about the controller. The old
 	# `rebind()` erased every event, which unbound the pad silently.
-	var pad_before := _events_of_class(InputActions.ROSE, false)
-	assert_true(pad_before.size() > 0, "`rose` ships with a pad binding")
+	var pad_before := _events_of_class(InputActions.PIP_WHEEL, false)
+	assert_true(pad_before.size() > 0, "`pip_wheel` ships with a pad binding")
 	var event := InputEventKey.new()
 	event.physical_keycode = REBIND_KEYCODE
-	assert_true(_settings.rebind(InputActions.ROSE, event))
-	assert_true(InputMap.action_has_event(InputActions.ROSE, event))
+	assert_true(_settings.rebind(InputActions.PIP_WHEEL, event))
+	assert_true(InputMap.action_has_event(InputActions.PIP_WHEEL, event))
 	for button: InputEvent in pad_before:
 		assert_true(
-			InputMap.action_has_event(InputActions.ROSE, button),
+			InputMap.action_has_event(InputActions.PIP_WHEEL, button),
 			"the pad button survived a keyboard rebind"
 		)
-	assert_eq(_events_of_class(InputActions.ROSE, true).size(), 1, "one key, the new one")
+	assert_eq(_events_of_class(InputActions.PIP_WHEEL, true).size(), 1, "one key, the new one")
 
 	# Both halves are remembered, so a reload puts both back.
-	assert_eq(_settings.bindings[InputActions.ROSE].size(), 1 + pad_before.size())
+	assert_eq(_settings.bindings[InputActions.PIP_WHEEL].size(), 1 + pad_before.size())
 	assert_true(_settings.save_file())
 	InputMap.load_from_project_settings()
-	assert_false(InputMap.action_has_event(InputActions.ROSE, event))
+	assert_false(InputMap.action_has_event(InputActions.PIP_WHEEL, event))
 
 	var reopened := UiSettings.new(SCRATCH)
 	assert_true(reopened.load_file())
 	assert_eq(reopened.apply_bindings(), 1)
-	assert_true(InputMap.action_has_event(InputActions.ROSE, event), "the key came back")
+	assert_true(InputMap.action_has_event(InputActions.PIP_WHEEL, event), "the key came back")
 	for button: InputEvent in pad_before:
 		assert_true(
-			InputMap.action_has_event(InputActions.ROSE, button), "and so did the pad button"
+			InputMap.action_has_event(InputActions.PIP_WHEEL, button), "and so did the pad button"
 		)
 
 
 func test_a_pad_rebind_replaces_the_pad_binding_and_not_the_key() -> void:
-	var key_before := _events_of_class(InputActions.ROSE, true)
-	assert_true(key_before.size() > 0, "`rose` ships with a key")
+	var key_before := _events_of_class(InputActions.PIP_WHEEL, true)
+	assert_true(key_before.size() > 0, "`pip_wheel` ships with a key")
 	var button := InputEventJoypadButton.new()
 	button.button_index = JOY_BUTTON_RIGHT_SHOULDER
-	assert_true(_settings.rebind(InputActions.ROSE, button))
-	assert_true(InputMap.action_has_event(InputActions.ROSE, button))
+	assert_true(_settings.rebind(InputActions.PIP_WHEEL, button))
+	assert_true(InputMap.action_has_event(InputActions.PIP_WHEEL, button))
 	for key: InputEvent in key_before:
 		assert_true(
-			InputMap.action_has_event(InputActions.ROSE, key), "the keyboard was not touched"
+			InputMap.action_has_event(InputActions.PIP_WHEEL, key), "the keyboard was not touched"
 		)
-	assert_eq(_events_of_class(InputActions.ROSE, false).size(), 1, "one pad event, the new one")
+	assert_eq(_events_of_class(InputActions.PIP_WHEEL, false).size(), 1, "one pad event, the new one")
 
 
 func test_something_changed_is_announced_so_the_shell_can_push_it_again() -> void:

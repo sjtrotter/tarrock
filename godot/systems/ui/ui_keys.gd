@@ -25,7 +25,6 @@ const GLYPH_UNBOUND := &"UI_GLYPH_UNBOUND"
 
 const FORTUNE := &"UI_FORTUNE"
 const ROSE := &"UI_ROSE"
-const HEALTH := &"UI_HEALTH"
 
 # --- Dialogue ----------------------------------------------------------------------
 

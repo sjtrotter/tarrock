@@ -93,6 +93,22 @@ func test_the_focus_stance_has_both_of_its_inputs() -> void:
 		)
 
 
+func test_there_is_no_button_for_the_white_rose() -> void:
+	# The director's ruling on issue #11: the petals ARE the Fool's health, so there is
+	# nothing to press - a hit costs petals and the Rose grows back on its own and at a
+	# Waystation. The action, its bindings and R itself are all free, and a round that
+	# quietly reintroduces a heal button fails here first.
+	assert_false(InputMap.has_action(&"rose"), "project.godot still binds a `rose` action")
+	assert_false(InputActions.ALL.has(&"rose"), "InputActions still names one")
+	for action: StringName in InputActions.ALL:
+		for event: InputEvent in InputMap.action_get_events(action):
+			var key := event as InputEventKey
+			assert_true(
+				key == null or key.physical_keycode != KEY_R,
+				"action '%s' took R, which the Rose's removal was meant to leave free" % action
+			)
+
+
 func test_movement_resolves_as_a_vector() -> void:
 	# The four movement actions are exactly what `Input.get_vector` needs; if any
 	# of them is missing this call is the thing that breaks in the player.

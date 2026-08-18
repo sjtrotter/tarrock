@@ -1,14 +1,24 @@
 class_name RoseMeter
 extends HBoxContainer
 
-## The White Rose, drawn as petals: one icon per charge, spent ones faded.
+## The White Rose, drawn as petals: one icon per petal of capacity, filled by quarters.
 ##
-## `docs/design/art-audio.md` §UI/UX pillars, HUD restraint: "health (White Rose
-## petals) and Fortune are always visible; everything else ... fades to unobtrusive
-## when not in use." `docs/design/progression.md` §The White Rose: "Starting capacity:
-## 3 petals. Maximum: 8, raised by finding or earning Rose graftings" - so the number
-## of icons is the CAP and how many are lit is the charge. **No numerals**: a petal is
-## a petal, which is also what keeps this readable at any text size.
+## **This is the Fool's health bar** - the director's ruling on issue #11 is that the
+## petals ARE the health, so there is no second readout beside it and `Hud` draws
+## nothing else about the Fool's body. `docs/design/art-audio.md` §UI/UX pillars, HUD
+## restraint: "health (White Rose petals) and Fortune are always visible; everything
+## else ... fades to unobtrusive when not in use." `docs/design/progression.md` §The
+## White Rose: "Starting capacity: 3 petals. Maximum: 8, raised by finding or earning
+## Rose graftings" - so the number of icons is the CAP and how full they are is the
+## health. **No numerals**: a petal is a petal, which is also what keeps this readable
+## at any text size.
+##
+## **Quarters are drawn, not counted out.** The pool underneath is in quarter petals
+## (`WhiteRoseService.QUARTERS_PER_PETAL`), because three petals is far too coarse a
+## bar for a difficulty multiplier or a rank curve to survive - so the last petal
+## carrying damage is drawn part-faded rather than snapping out, and the row reads as a
+## Rose losing petals rather than as a counter. The fade is one step per quarter, which
+## is a shape a player can read at a glance and without colour.
 ##
 ## A spent petal is drawn faint rather than removed, because it comes back
 ## (`progression.md`: fully at a Waystation, slowly in an unbound region, never in a
@@ -49,13 +59,26 @@ func icon_count() -> int:
 	return _icons.size()
 
 
-## How many of them are drawn lit - the charges actually held.
+## How many of them have any petal left in them at all. The same number as
+## `WhiteRoseService.petals()`, which rounds up for the same reason: a petal a quarter
+## torn is still a petal on the flower.
 func lit_count() -> int:
 	var lit := 0
-	for icon: TextureRect in _icons:
-		if icon.modulate.a > UiFrames.SPENT_ALPHA:
+	for icon_node: TextureRect in _icons:
+		if icon_node.modulate.a > UiFrames.SPENT_ALPHA:
 			lit += 1
 	return lit
+
+
+## How many quarters of petal `index` are left, 0..4. What the fill of one icon means.
+func quarter_fill(index: int) -> int:
+	if _rose == null or index < 0 or index >= _icons.size():
+		return 0
+	return clampi(
+		_rose.quarters() - index * WhiteRoseService.QUARTERS_PER_PETAL,
+		0,
+		WhiteRoseService.QUARTERS_PER_PETAL
+	)
 
 
 ## One petal icon, or null for an index nothing draws.
@@ -84,7 +107,7 @@ func _disconnect() -> void:
 		_rose.regrown.disconnect(_refresh)
 
 
-func _on_petals_changed(_old_petals: int, _new_petals: int) -> void:
+func _on_petals_changed(_old_quarters: int, _new_quarters: int) -> void:
 	_refresh()
 
 
@@ -93,7 +116,7 @@ func _on_max_changed(_old_max: int, _new_max: int) -> void:
 
 
 ## Build one icon per point of capacity. Called only when the capacity itself moves
-## (a grafting), never per petal spent.
+## (a grafting), never per quarter lost.
 func _rebuild() -> void:
 	for icon_node: TextureRect in _icons:
 		remove_child(icon_node)
@@ -113,7 +136,21 @@ func _rebuild() -> void:
 	_refresh()
 
 
+## The alpha one petal is drawn at, given how many of its quarters are left.
+##
+## `UiFrames.SPENT_ALPHA` at empty and 1.0 at whole, with the three quarters in
+## between spaced evenly across that band - so a part-torn petal is always visibly
+## brighter than a spent one and visibly dimmer than a whole one, which is what makes
+## the four steps legible rather than merely different.
+static func alpha_for_quarters(quarters_left: int) -> float:
+	var filled := clampi(quarters_left, 0, WhiteRoseService.QUARTERS_PER_PETAL)
+	if filled <= 0:
+		return UiFrames.SPENT_ALPHA
+	var fraction := float(filled) / float(WhiteRoseService.QUARTERS_PER_PETAL)
+	return UiFrames.SPENT_ALPHA + (1.0 - UiFrames.SPENT_ALPHA) * fraction
+
+
 func _refresh() -> void:
-	var held := 0 if _rose == null else _rose.petals()
 	for index: int in range(_icons.size()):
-		_icons[index].modulate = Color(1.0, 1.0, 1.0, 1.0 if index < held else UiFrames.SPENT_ALPHA)
+		var alpha := alpha_for_quarters(quarter_fill(index))
+		_icons[index].modulate = Color(1.0, 1.0, 1.0, alpha)

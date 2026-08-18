@@ -10,7 +10,7 @@ re-decides them.
 |---|---|
 | `pocket_spread_service.gd` | `PocketSpreadService` — held Trumps (derived), slots, one-copy rule, loadouts, casting the Present |
 | `fortune_service.gd` | `FortuneService` — the meter, the earn table, Fortune's Favor, the free cast |
-| `white_rose_service.gd` | `WhiteRoseService` — petals, graftings, rest, regrowth by region |
+| `white_rose_service.gd` | `WhiteRoseService` — **the Fool's health**: quarter petals, graftings, rest, regrowth by region |
 | `spread_slot.gd` | `SpreadSlot` — Past / Present / Future, and their stable save keys |
 | `card_orientation.gd` | `CardOrientation` — upright / reversed, and their stable save keys |
 | `slot_assignment.gd` | `SlotAssignment` — one slot's contents, handed out as a copy |
@@ -57,6 +57,28 @@ directory, so the generator names it in `HAND_AUTHORED_PATHS` and never sweeps i
   meter, the 20–50 cost band, and 3-to-8 petals; it fixes no earn amount, no overfill, no
   regrowth rate, and `arcana.md` fixes no per-Trump cost. `SpreadRules.notes` lists every
   placeholder by name.
+
+## The White Rose is the Fool's health
+
+Issue #11 is decided: **the petals ARE the health** (`art-audio.md` §UI/UX pillars'
+"health (White Rose petals)", `combat.md` §Defeat's "the Fool at zero petals", and every
+`arcana.md` Trump effect written in petals). There is no separate pool and no heal
+button; `CombatService` fits the Fool's `Combatant` with a `RoseVitality` so a hit spends
+this service directly, and healing is the Rose growing back.
+
+The pool is counted in **quarter petals** — `QUARTERS_PER_PETAL`, the Zelda
+quarter-heart — because three petals cannot carry a difficulty multiplier or a rank
+curve without rounding both away. Everything public that a doc talks in is still petals:
+`petals()`, `max_petals()`, and the two threshold signals below. The regrowth rate is
+`SpreadRules.rose_regrow_seconds_per_petal` divided by four rather than a second authored
+number, so the doc's rate stays the only one.
+
+Two signals exist for `arcana.md`'s Trump effects and **nothing consumes them yet**:
+`last_petal_reached` (the "survive at 1 petal" / "at one petal remaining" hooks) and
+`bared` (the "when your last petal is spent" / "at zero petals the Rose reblossoms"
+hooks). The effect runner is a later round's; the hooks are here so that round wires
+rather than writes. Death's burden cutting the maximum has no hook of its own — it is
+`max_petals()` moving, which `max_petals_changed` already announces.
 
 ## Owed to later rounds
 

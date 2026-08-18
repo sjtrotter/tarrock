@@ -10,6 +10,10 @@ extends RefCounted
 ##
 ## `ui_*` actions are Godot's own (menu focus, list navigation) and are NOT
 ## listed here: gameplay must not read them.
+##
+## **There is no `rose` action.** The White Rose's petals ARE the Fool's health
+## (director ruling, issue #11), so there is nothing to press: a hit costs petals and
+## the Rose grows back on its own and at a Waystation. R is deliberately left free.
 
 ## Movement, resolved as one vector by `Input.get_vector`.
 const MOVE_LEFT := &"move_left"
@@ -37,9 +41,6 @@ const FOCUS := &"focus"
 ## Step the Focus lock to the next enemy, without leaving the stance.
 const FOCUS_CYCLE := &"focus_cycle"
 
-## The White Rose.
-const ROSE := &"rose"
-
 ## Pip's command wheel.
 const PIP_WHEEL := &"pip_wheel"
 
@@ -66,7 +67,6 @@ const ALL: Array[StringName] = [
 	BLOCK_STEP,
 	FOCUS,
 	FOCUS_CYCLE,
-	ROSE,
 	PIP_WHEEL,
 	SPREAD,
 	ALMANACK,

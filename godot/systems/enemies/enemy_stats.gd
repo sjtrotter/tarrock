@@ -20,6 +20,10 @@ extends RefCounted
 var max_health: int = 1
 
 ## What one of its hits costs, before the target's own defence.
+##
+## In QUARTER PETALS when the target is the Fool, which is the only target enemies
+## ever have: the White Rose's petals are the Fool's health (issue #11) and are
+## counted four to a petal. See `EnemyRules.suit_damage`.
 var damage: int = 0
 
 ## Travel speed in pixels per second.

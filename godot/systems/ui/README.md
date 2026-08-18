@@ -34,8 +34,7 @@ input_glyphs.gd       an InputMap action -> the key or pad button to draw on a c
 definitions/map_layout.gd, map_placement.gd    where each of the 22 cards lies
 nodes/ui_shell.gd     the one node under UIRoot: builds the pages, wires the services
 nodes/hud.gd          petals + Fortune, always; a prompt chip that fades; nothing else
-nodes/rose_meter.gd   one petal icon per charge, spent ones faint
-nodes/health_meter.gd the health POOL, drawn as the bloom's fullness - TBD, issue #11
+nodes/rose_meter.gd   THE health bar: one icon per petal of capacity, filled by quarters
 nodes/fortune_meter.gd the band, with the Favor overfilling past the cap
 nodes/prompt_chip.gd  U1's marginal slip: a key, and the live glyph for an action
 nodes/fools_chance_vignette.gd  the gold wash, obeying the screen-flash toggle
@@ -156,9 +155,6 @@ instead of writes. That is owed work, listed again below so it is counted with t
 - **Nothing raises the MQ00 tutorial prompts.** The eleven rows exist and `PromptChip`
   draws whatever it is handed; the Cliff's beats are the round that calls it (see the table
   above).
-- **Issue #11 (health vs petals) decides `HealthMeter`.** Its class doc carries both
-  readings and what happens to the control under either. Nothing else in the shell
-  depends on the answer.
 - **A `map` InputMap action**, if the page-turn above is not the wanted answer. One row in
   `technical.md` §Input actions, one constant in `InputActions`, three lines in `UiShell`.
 - **`TRUMP_NN_{PAST,PRESENT,FUTURE}_TEXT` and `TRUMP_NN_BURDEN_NAME_KEY`** — writing

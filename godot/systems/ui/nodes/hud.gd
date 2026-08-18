@@ -3,6 +3,10 @@ extends Control
 
 ## The heads-up display: petals, Fortune, a prompt when there is one, and nothing else.
 ##
+## The petals ARE the health (director ruling, issue #11), so `RoseMeter` is the whole
+## of the health readout and there is no second bar beside it. `art-audio.md`'s pillar
+## reads literally now: "health (White Rose petals) and Fortune are always visible".
+##
 ## `docs/design/art-audio.md` §UI/UX pillars: "**HUD restraint:** health (White Rose
 ## petals) and Fortune are always visible; everything else (minimap, prompts) fades to
 ## unobtrusive when not in use." And §Map: the map screen "is the game's primary
@@ -25,7 +29,6 @@ const EDGE_MARGIN := 24
 const SAFE_AREA_NAME := &"SafeArea"
 
 var _rose_meter: RoseMeter = null
-var _health_meter: HealthMeter = null
 var _fortune_meter: FortuneMeter = null
 var _prompt_chip: PromptChip = null
 var _vignette: FoolsChanceVignette = null
@@ -58,8 +61,6 @@ func _ready() -> void:
 	_corner.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	corner_anchor.add_child(_corner)
 
-	_health_meter = HealthMeter.new()
-	_corner.add_child(_health_meter)
 	_rose_meter = RoseMeter.new()
 	_corner.add_child(_rose_meter)
 	_fortune_meter = FortuneMeter.new()
@@ -109,7 +110,8 @@ static func apply_safe_area(container: MarginContainer) -> void:
 
 ## Hand the HUD the playthrough it is drawing. Every argument may be null - a HUD with
 ## no services draws an empty frame rather than erroring, which is what it does for the
-## instant between a rebuild and the re-attach.
+## instant between a rebuild and the re-attach. `combat` is here for the Fool's Chance
+## wash only; the Fool's health arrives with the Rose.
 func attach(rose: WhiteRoseService, fortune: FortuneService, combat: CombatService) -> void:
 	if _rose_meter != null:
 		_rose_meter.attach(rose)
@@ -117,18 +119,11 @@ func attach(rose: WhiteRoseService, fortune: FortuneService, combat: CombatServi
 		_fortune_meter.attach(fortune)
 	if _vignette != null:
 		_vignette.attach(combat)
-	if _health_meter != null:
-		_health_meter.attach(null if combat == null else combat.fool())
 
 
-## The petals.
+## The petals - which are the Fool's health, and the only readout of it.
 func rose_meter() -> RoseMeter:
 	return _rose_meter
-
-
-## The bloom above them (TBD, issue #11 - see `HealthMeter`).
-func health_meter() -> HealthMeter:
-	return _health_meter
 
 
 ## The Fortune band.

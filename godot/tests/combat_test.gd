@@ -34,7 +34,9 @@ extends SceneTree
 ##      next Present cast is free;
 ##   7. Story halves the damage the Fool takes;
 ##   8. the Fool WALKS at normal speed through the slowed world, not only dodges;
-##   9. the Fool at zero is defeated and comes back whole at a Waystation.
+##   9. the Fool at zero PETALS is defeated and comes back whole at a Waystation -
+##      the White Rose is the Fool's health (issue #11), counted in quarter petals,
+##      so every number this suite hits the Fool with is a quarter petal.
 
 const ARENA_PATH := "res://tests/fixtures/scenes/combat_arena.tscn"
 
@@ -200,8 +202,11 @@ func _phase_setup() -> bool:
 		_combat.fool() == _fool_combatant, "and the Fool registered themselves with it"
 	) and _all_passed
 	_all_passed = check(
-		_fool_combatant.health() == _rules.fool_max_health,
-		"the Fool's pool is sized from CombatRules, not from the scene"
+		_fool_combatant.vitality != null and _fool_combatant.health() == _rose.max_quarters(),
+		"the Fool fights on the White Rose's petals, not on a pool of their own (issue #11)"
+	) and _all_passed
+	_all_passed = check(
+		_rose.quarters() == 12, "twelve quarter petals: three petals, four quarters each"
 	) and _all_passed
 	_all_passed = check(
 		_fool_combatant.faction == Faction.Id.FOOL, "and the Fool fights for the Fool"
@@ -405,7 +410,7 @@ func _phase_block_step() -> bool:
 				"the block-step absorbs the hit (combat.md §Defense)"
 			) and _all_passed
 			_all_passed = check(
-				_fool_combatant.health() == _rules.fool_max_health,
+				_fool_combatant.health() == _rose.max_quarters(),
 				"and absorbing it costs the Fool nothing"
 			) and _all_passed
 			_advance_phase()
@@ -502,15 +507,16 @@ func _phase_story_damage() -> bool:
 	if _phase_frame < 2 or not _is_fool_idle():
 		return false
 	_reset_positions()
-	var damage := 20
+	# In quarter petals now: the Fool's whole pool is twelve, so a hit is small.
+	var damage := 4
 	_combat.set_difficulty(DifficultyMode.Id.JOURNEY)
 	_fool_combatant.restore_full_health()
 	_fool_combatant.take_hit(_enemy_hit(damage))
-	var journey_lost := _rules.fool_max_health - _fool_combatant.health()
+	var journey_lost := _rose.max_quarters() - _fool_combatant.health()
 	_combat.set_difficulty(DifficultyMode.Id.STORY)
 	_fool_combatant.restore_full_health()
 	_fool_combatant.take_hit(_enemy_hit(damage))
-	var story_lost := _rules.fool_max_health - _fool_combatant.health()
+	var story_lost := _rose.max_quarters() - _fool_combatant.health()
 	_all_passed = check(journey_lost == damage, "Journey is the baseline: the hit costs its damage") and _all_passed
 	_all_passed = check(
 		story_lost == int(roundf(damage * _rules.damage_taken_multiplier_story)),
@@ -603,23 +609,24 @@ func _phase_defeat_loop() -> bool:
 	if _phase_frame < 2 or not _is_fool_idle():
 		return false
 	_fool_combatant.restore_full_health()
-	_rose.use_petal()
-	var petals_before := _rose.petals()
-	_fool_combatant.take_hit(_enemy_hit(_rules.fool_max_health))
-	_all_passed = check(_fool_combatant.health() == 0, "the Fool's pool empties") and _all_passed
+	_rose.take_damage(WhiteRoseService.QUARTERS_PER_PETAL)
+	var quarters_before := _rose.quarters()
+	_fool_combatant.take_hit(_enemy_hit(_rose.max_quarters()))
+	_all_passed = check(_rose.is_bare(), "the White Rose is stripped bare") and _all_passed
+	_all_passed = check(_fool_combatant.health() == 0, "which is the Fool at zero") and _all_passed
 	_all_passed = check(_defeated, "and the scene is told the Fool fell (combat.md §Defeat)") and _all_passed
 	_all_passed = check(_combat.is_defeated(), "the service knows it too") and _all_passed
 	_all_passed = check(
-		petals_before < _rose.max_petals(), "the Rose really was short a petal before the fall"
+		quarters_before < _rose.max_quarters(), "the Rose really was short a petal before the fall"
 	) and _all_passed
 	_combat.revive_at_waystation()
 	_all_passed = check(_revived, "the return leg announces itself") and _all_passed
 	_all_passed = check(
-		_fool_combatant.health() == _rules.fool_max_health,
+		_fool_combatant.health() == _rose.max_quarters(),
 		"the Fool wakes whole - no penalty beyond the walk back"
 	) and _all_passed
 	_all_passed = check(
-		_rose.petals() == _rose.max_petals(), "with the White Rose regrown"
+		_rose.quarters() == _rose.max_quarters(), "with the White Rose regrown"
 	) and _all_passed
 	_all_passed = check(not _combat.is_defeated(), "and back on their feet") and _all_passed
 	_combat.enemy_disengaged(_dummy)

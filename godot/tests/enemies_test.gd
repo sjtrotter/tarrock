@@ -344,7 +344,8 @@ func _phase_a_blank_lands_a_hit() -> bool:
 				"a Blank's swing lands on a Fool who does not answer it"
 			) and _all_passed
 			_all_passed = check(
-				_fool_combatant.health() < _rules.fool_max_health, "and costs the Fool health"
+				_fool_combatant.health() < _fool_combatant.health_capacity(),
+				"and costs the Fool petals off the White Rose"
 			) and _all_passed
 			_all_passed = check(
 				_lone_blank.brain().stats().damage > 0, "for the damage its stat block says"
@@ -397,7 +398,7 @@ func _phase_a_dodge_answers_the_telegraph() -> bool:
 				_combat.is_fools_chance_active(), "which slows the world"
 			) and _all_passed
 			_all_passed = check(
-				_fool_combatant.health() == _rules.fool_max_health,
+				_fool_combatant.health() == _fool_combatant.health_capacity(),
 				"and costs the Fool nothing"
 			) and _all_passed
 			_combat.end_fools_chance()
@@ -436,7 +437,8 @@ func _phase_cups_lobs_from_its_range() -> bool:
 				_incoming[0] == HitResult.Id.DAMAGED, "its lob reaches the Fool and lands"
 			) and _all_passed
 			_all_passed = check(
-				_fool_combatant.health() < _rules.fool_max_health, "and costs them health"
+				_fool_combatant.health() < _fool_combatant.health_capacity(),
+				"and costs them petals"
 			) and _all_passed
 			_all_passed = check(
 				_lone_blank.global_position.distance_to(_fool.global_position)
@@ -525,7 +527,8 @@ func _raise_a_lone_blank(enemy_id: StringName = EnemyIds.BLANK_SWORDS_TWO, at_di
 	if pool == null or definition == null:
 		_all_passed = check(false, "a Blank could be raised for the defensive phases")
 		return
-	_fool_combatant.set_max_health(_rules.fool_max_health)
+	# `restore_full_health()` rests the White Rose, which IS the Fool's health
+	# (issue #11) - nothing sizes a pool here because there is no pool to size.
 	_fool_combatant.restore_full_health()
 	_fool.global_position = FOOL_HOME
 	_lone_blank = pool.acquire(definition, _enemies.rules())

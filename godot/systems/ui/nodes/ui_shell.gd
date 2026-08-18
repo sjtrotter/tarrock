@@ -526,6 +526,11 @@ func _pip_companion() -> PipCompanion:
 
 ## Hand the views the nodes that live on the persistent layer beside this one: the
 ## camera the conversation frames, Pip's wheel, and the Fool's own body.
+##
+## The HUD is deliberately not in this list. It draws the Fool's health as the White
+## Rose's petals (issue #11), and the Rose is a service rather than a node on the
+## layer - so `attach_services()` is the only place the health readout is wired, and a
+## region swap that rebuilds the layer cannot leave it pointing at a body that is gone.
 func _attach_layer_nodes(combat: CombatService) -> void:
 	var found := layer()
 	if _framing != null:
@@ -534,8 +539,6 @@ func _attach_layer_nodes(combat: CombatService) -> void:
 		_pip_wheel.attach(_pip_companion())
 	if _defeat != null:
 		_defeat.attach(combat, _pip_companion())
-	if _hud != null and combat != null:
-		_hud.health_meter().attach(combat.fool())
 	# Last, because it is a state and not a wire: whatever is on screen right now
 	# decides it, and a Fool found for the first time here has heard nothing yet.
 	_update_world_interaction()

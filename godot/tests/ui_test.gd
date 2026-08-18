@@ -97,7 +97,10 @@ func _physics_process(_delta: float) -> bool:
 			_shell.hud().rose_meter().icon_count() == rose.max_petals(),
 			"the petal row is the Rose's capacity (%d)" % rose.max_petals()
 		)
-		_check(_shell.hud().rose_meter().lit_count() == rose.petals(), "and its charges are lit")
+		_check(
+			_shell.hud().rose_meter().lit_count() == rose.petals(),
+			"and the petals the Fool still has are the lit ones - they ARE the health"
+		)
 		_check(
 			_shell.map_screen().card_count() == 22,
 			"the map dealt all 22 regions"
