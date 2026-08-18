@@ -36,18 +36,18 @@ func _ready() -> void:
 	custom_minimum_size = CARD_SIZE
 	_highlight = ColorRect.new()
 	_highlight.color = UiFrames.PALE_GOLD
-	_highlight.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_highlight.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_highlight.visible = false
 	add_child(_highlight)
 	_face = TextureRect.new()
 	_face.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_face.stretch_mode = TextureRect.STRETCH_SCALE
-	_face.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_face.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_face.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_face)
 	var column := VBoxContainer.new()
-	column.set_anchors_preset(Control.PRESET_FULL_RECT)
+	column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(column)

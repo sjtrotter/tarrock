@@ -39,7 +39,7 @@ var _tween: Tween = null
 
 func _ready() -> void:
 	color = Color(UiFrames.GROUND.r, UiFrames.GROUND.g, UiFrames.GROUND.b, 0.0)
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false

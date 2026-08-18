@@ -26,7 +26,7 @@ var _labels: Array[Label] = []
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_build()
 	visible = false
@@ -91,7 +91,7 @@ func refresh() -> void:
 func _build() -> void:
 	var hub := Label.new()
 	hub.text = String(UiKeys.PIP_WHEEL_TITLE)
-	hub.set_anchors_preset(Control.PRESET_CENTER)
+	hub.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	hub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hub.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(hub)
@@ -112,7 +112,7 @@ func _build() -> void:
 		sector.add_child(UiFrames.chip_frame())
 		var label := Label.new()
 		label.text = String(PipCommand.NAME_KEYS[command])
-		label.set_anchors_preset(Control.PRESET_FULL_RECT)
+		label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE

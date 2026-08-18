@@ -33,7 +33,7 @@ func _ready() -> void:
 	custom_minimum_size = Vector2(260.0, 64.0)
 	add_child(UiFrames.chip_frame())
 	_label = Label.new()
-	_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

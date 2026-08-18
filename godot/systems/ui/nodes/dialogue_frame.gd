@@ -22,6 +22,8 @@ extends Control
 ## part of what they know they have asked.
 
 ## Where the frame sits and how tall it is, as a fraction of the safe area.
+## The frame's own height above the bottom edge (the U1 concept's aspect at 1280 wide).
+const FRAME_HEIGHT := 240.0
 const FRAME_HEIGHT_RATIO := 0.34
 
 ## The node id the speaker-node provider is asked for when the voice on the plate has
@@ -59,7 +61,13 @@ var _engaged: bool = false
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	# Anchored to the bottom edge and grown UPWARD by its own height: a bottom-wide
+	# preset alone is a zero-height strip sitting on the edge, and everything inside it
+	# hangs below the screen (the first playtest saw the frame squashed and the HUD gone).
+	set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	grow_vertical = Control.GROW_DIRECTION_BEGIN
+	custom_minimum_size = Vector2(0.0, FRAME_HEIGHT)
+	offset_top = -FRAME_HEIGHT
 	_build()
 	visible = false
 
@@ -191,7 +199,7 @@ func _build() -> void:
 	add_child(frame)
 
 	var margin := MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override(&"margin_left", 120)
 	margin.add_theme_constant_override(&"margin_right", 120)
 	margin.add_theme_constant_override(&"margin_top", 46)

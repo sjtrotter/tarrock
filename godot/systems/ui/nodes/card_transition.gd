@@ -26,13 +26,13 @@ var _flipping: bool = false
 
 func _ready() -> void:
 	color = Color(UiFrames.GROUND.r, UiFrames.GROUND.g, UiFrames.GROUND.b, 0.0)
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_card = TextureRect.new()
 	_card.texture = load(UiFrames.CARD_BACK_TEXTURE) as Texture2D
 	_card.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_card.stretch_mode = TextureRect.STRETCH_SCALE
-	_card.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_card.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_card.pivot_offset = Vector2.ZERO
 	_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_card)

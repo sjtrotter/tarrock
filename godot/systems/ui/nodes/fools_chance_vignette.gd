@@ -26,7 +26,7 @@ var _tween: Tween = null
 func _ready() -> void:
 	color = Color(TINT.r, TINT.g, TINT.b, 0.0)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	visible = false
 
 

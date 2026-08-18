@@ -33,7 +33,7 @@ func _ready() -> void:
 	_bloom.texture = load(UiFrames.PETAL_TEXTURE) as Texture2D
 	_bloom.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_bloom.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_bloom.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_bloom.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_bloom.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_bloom.modulate = Color(1.0, 1.0, 1.0, UiFrames.SPENT_ALPHA)
 	add_child(_bloom)

@@ -348,3 +348,58 @@ func _build_combat() -> CombatService:
 		WhiteRoseService.new(world_state, rules),
 		GameClock.new()
 	)
+
+
+# --- On screen, not merely in the tree ---------------------------------------------
+# The first playtest saw NO HUD: the shell's root Control had a zero-size rect (anchors
+# set without offsets), so its children hung at (0,0) or below the window, and the
+# safe-area insets were read in global screen coordinates on a two-monitor desk. A view
+# that is `visible` but outside the viewport is invisible to a player, so these assert
+# where things are, in the runner's real 1280x720 viewport.
+
+func test_the_shell_and_the_hud_fill_the_viewport() -> void:
+	var shell := _spawn_shell_over_a_fool()
+	await tree().process_frame
+	await tree().process_frame
+	var viewport := tree().root.get_visible_rect()
+	assert_eq(shell.get_global_rect(), viewport, "the shell root is the whole viewport, not a zero-size strip")
+	var hud := shell.find_child("Hud", true, false) as Control
+	if not assert_not_null(hud, "the HUD exists"):
+		return
+	assert_eq(hud.get_global_rect(), viewport, "the HUD fills the viewport")
+	var meters := hud.find_child("Meters", true, false) as Control
+	if not assert_not_null(meters, "the meters row exists"):
+		return
+	var rect := meters.get_global_rect()
+	assert_true(viewport.encloses(rect), "the petals and Fortune are inside the window (%s)" % str(rect))
+	assert_true(rect.position.y < viewport.size.y * 0.5, "the meters sit in the top band, clear of the dialogue frame")
+
+
+func test_the_dialogue_frame_sits_inside_the_bottom_of_the_viewport() -> void:
+	var shell := _spawn_shell_over_a_fool()
+	await tree().process_frame
+	var frame := shell.find_child("DialogueFrame", true, false) as Control
+	if not assert_not_null(frame, "the dialogue frame exists"):
+		return
+	var viewport := tree().root.get_visible_rect()
+	var rect := frame.get_global_rect()
+	assert_true(rect.size.y > 100.0, "the frame has a height of its own (%s)" % str(rect))
+	assert_true(viewport.encloses(rect), "the frame is inside the window, grown upward from the bottom edge (%s)" % str(rect))
+	assert_almost_eq(rect.end.y, viewport.size.y, 0.5, "and it rests on the bottom edge")
+
+
+func test_safe_area_insets_are_never_read_as_global_screen_coordinates() -> void:
+	var container := MarginContainer.new()
+	tree().root.add_child(container)
+	_spawned.append(container)
+	Hud.apply_safe_area(container)
+	var screen := DisplayServer.screen_get_size()
+	for side: StringName in [&"margin_left", &"margin_top", &"margin_right", &"margin_bottom"]:
+		var margin := container.get_theme_constant(side)
+		assert_true(margin >= Hud.EDGE_MARGIN, "%s keeps the edge margin" % side)
+		var axis := screen.x if side == &"margin_left" or side == &"margin_right" else screen.y
+		if axis > 0:
+			assert_true(
+				margin <= maxi(Hud.EDGE_MARGIN, int(axis * Hud.MAX_SAFE_AREA_FRACTION)),
+				"%s is a sliver of the screen, never a monitor offset (%d)" % [side, margin]
+			)

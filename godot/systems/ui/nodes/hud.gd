@@ -15,6 +15,9 @@ extends Control
 ## correctly on a notched phone and a 4K monitor without a pixel being typed.
 
 ## How far in from the safe area the corners sit, in the base 1280x720 viewport.
+## A safe-area inset can never eat more than this much of a screen edge; a notch is
+## a sliver, and a bad reading (global coordinates, a stale monitor) must not hide the HUD.
+const MAX_SAFE_AREA_FRACTION := 0.12
 const EDGE_MARGIN := 24
 
 ## The name of the container every HUD element hangs inside, so a test can ask for it
@@ -31,7 +34,7 @@ var _safe: MarginContainer = null
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_vignette = FoolsChanceVignette.new()
 	add_child(_vignette)
@@ -39,14 +42,14 @@ func _ready() -> void:
 	_safe = MarginContainer.new()
 	var safe := _safe
 	safe.name = SAFE_AREA_NAME
-	safe.set_anchors_preset(Control.PRESET_FULL_RECT)
+	safe.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	safe.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(safe)
 	apply_safe_area(safe)
 
 	var corner_anchor := VBoxContainer.new()
 	corner_anchor.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	corner_anchor.alignment = BoxContainer.ALIGNMENT_END
+	corner_anchor.alignment = BoxContainer.ALIGNMENT_BEGIN
 	safe.add_child(corner_anchor)
 
 	_corner = HBoxContainer.new()
@@ -75,17 +78,29 @@ func _ready() -> void:
 ## Give a container the display's safe-area insets, floored at the design margin.
 ## A desktop reports the whole window, so the margin is what is actually seen there.
 static func apply_safe_area(container: MarginContainer) -> void:
+	# `get_display_safe_area()` answers in GLOBAL screen coordinates, so on a two-monitor
+	# desk whose primary screen sits at y = 1082 the safe area starts at y = 1146 - read
+	# as an inset, that pushed the whole HUD off the bottom of a 720 px window (found on
+	# the first playtest). Insets are the safe area relative to ITS screen's origin, and
+	# only ever a small fraction of the window: a desktop screen has no notch.
 	var safe := DisplayServer.get_display_safe_area()
 	var screen := DisplayServer.screen_get_size()
+	var origin := DisplayServer.screen_get_position()
 	var left := EDGE_MARGIN
 	var top := EDGE_MARGIN
 	var right := EDGE_MARGIN
 	var bottom := EDGE_MARGIN
 	if screen.x > 0 and screen.y > 0 and safe.size.x > 0 and safe.size.y > 0:
-		left = maxi(left, safe.position.x)
-		top = maxi(top, safe.position.y)
-		right = maxi(right, screen.x - (safe.position.x + safe.size.x))
-		bottom = maxi(bottom, screen.y - (safe.position.y + safe.size.y))
+		var inset_left := safe.position.x - origin.x
+		var inset_top := safe.position.y - origin.y
+		var inset_right := screen.x - (inset_left + safe.size.x)
+		var inset_bottom := screen.y - (inset_top + safe.size.y)
+		var cap_x := int(screen.x * MAX_SAFE_AREA_FRACTION)
+		var cap_y := int(screen.y * MAX_SAFE_AREA_FRACTION)
+		left = maxi(left, clampi(inset_left, 0, cap_x))
+		top = maxi(top, clampi(inset_top, 0, cap_y))
+		right = maxi(right, clampi(inset_right, 0, cap_x))
+		bottom = maxi(bottom, clampi(inset_bottom, 0, cap_y))
 	container.add_theme_constant_override(&"margin_left", left)
 	container.add_theme_constant_override(&"margin_top", top)
 	container.add_theme_constant_override(&"margin_right", right)

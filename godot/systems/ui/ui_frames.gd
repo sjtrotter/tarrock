@@ -68,7 +68,7 @@ static func nine_patch(texture_path: String, margins: Vector4) -> NinePatchRect:
 	frame.patch_margin_top = int(margins.y)
 	frame.patch_margin_right = int(margins.z)
 	frame.patch_margin_bottom = int(margins.w)
-	frame.set_anchors_preset(Control.PRESET_FULL_RECT)
+	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return frame
 

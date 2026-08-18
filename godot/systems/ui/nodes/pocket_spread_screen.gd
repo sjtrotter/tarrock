@@ -43,7 +43,7 @@ var _selected: StringName = &""
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_build()
 	visible = false
 
@@ -154,7 +154,7 @@ func refresh() -> void:
 func _build() -> void:
 	add_child(UiFrames.panel_frame())
 	var margin := MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override(&"margin_left", 64)
 	margin.add_theme_constant_override(&"margin_right", 64)
 	margin.add_theme_constant_override(&"margin_top", 52)
