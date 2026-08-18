@@ -104,13 +104,19 @@ Fortune is the single resource spent by Present-slot Trumps.
 
 ## The White Rose
 
-The Fool's healing item is **the White Rose**, worn at the belt. Its petals are healing
-charges:
+**The White Rose is the Fool's vitality**, worn at the belt. Its petals **are** the Fool's
+health — the measure every hit, every Trump, and the HUD reads (`art-audio.md` §UI: "health
+(White Rose petals)"; `combat.md` §Defeat: the Fool falls at zero petals; `arcana.md`'s
+Trumps speak of "your last petal", "at 1 petal", "at zero petals"). There is no separate
+health bar and no heal button; healing *is* the Rose regrowing.
 
 - **Starting capacity: 3 petals. Maximum: 8**, raised by finding or earning **Rose
-  graftings** in the world or as side-quest rewards.
-- **One petal = one fast heal**, triggered on a dedicated button — no menu, no channel
-  time, keeping healing compatible with the combat pacing in [`combat.md`](combat.md).
+  graftings** in the world or as side-quest rewards (a grafting is a new petal's worth of
+  life — the Fool's Zelda heart container).
+- **A hit costs petals.** Enemies deal damage in fractions of a petal (the build tracks
+  quarters, so a Two of Swords and a King differ, and difficulty modes scale what a hit
+  costs — `combat.md`); when the last petal is spent, the Fool falls (`combat.md`
+  §Defeat) — no penalty, the walk back from the last Waystation, Rose regrown.
 - **Regrowth** is where the Rose becomes a piece of world-state storytelling rather than
   a plain resource:
   - **Fully regrows at Waystations**, instantly, on rest.
@@ -191,7 +197,7 @@ Each suit uses the same **five-tier ladder**:
 Because there is no level number to point to, growth has to be felt through the Pocket
 Spread, the Rose, and Renown together:
 
-- **Hour 1:** the Fool has the Bindle, an empty Rose beyond its 3 starting petals, no
+- **Hour 1:** the Fool has the Bindle, a Rose of 3 petals — three petals of life — no
   Trump yet, and no reputation anywhere. Every fight is decided by the moveset alone —
   light string, heavy, dodge. This is deliberately the "purest" the combat ever feels.
 - **Hour 10:** the Fool likely holds 3–4 Trumps (Past slot just unlocked or about to),

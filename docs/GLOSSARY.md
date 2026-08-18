@@ -33,7 +33,7 @@ code identifiers use these exact spellings. Add new terms here **before** using 
 |---|---|
 | **Pocket Spread** | The Fool's personal three-card spread: **Past** (passive), **Present** (active power), **Future** (triggered/fate effect). Each Trump has a distinct expression per slot, upright or reversed. |
 | **Fortune** | The resource spent by Present-slot powers. Earned through combat, discovery, and daring. |
-| **The White Rose** | The Fool's healing item. Petals are healing charges; the rose regrows at Waystations. |
+| **The White Rose** | The Fool's vitality, worn at the belt: its petals **are** the Fool's health (3 to start, 8 at most). A hit costs petals; at zero the Fool falls; the rose regrows at Waystations and slowly in unbound regions. See `design/progression.md`. |
 | **The Bindle** | The Fool's weapon and inventory: a traveler's bundle on a quarterstaff. |
 | **Fool's Chance** | Perfectly-timed dodge: brief slow-motion window and a free Trump cast. |
 | **Stagger launcher** | The Bindle's charged heavy in the 2D grammar: lifts the target into a brief helpless stagger that opens bonus follow-ups — the opener a launcher gives, with no aerial moveset. See `design/combat.md` §The Bindle. |

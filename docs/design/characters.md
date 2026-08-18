@@ -31,7 +31,7 @@ reason the Fool alone can walk the whole Spread (see `GLOSSARY.md`).
   wonder, not mystery: the Fool asks questions because they are new to everything, not
   because they are missing something.
 - **Kit:** carries the **Bindle** (weapon and inventory, a traveler's bundle on a
-  quarterstaff) and the **White Rose** (healing item, petals as charges). Full mechanical
+  quarterstaff) and the **White Rose** (the Fool's vitality — its petals are the health). Full mechanical
   detail for both belongs to `progression.md` and `combat.md`; here they are just the
   Fool's two constant possessions — the visual shorthand for "this is the Fool" in any
   piece of promotional or concept art.
