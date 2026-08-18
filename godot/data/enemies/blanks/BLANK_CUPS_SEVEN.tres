@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/enemies/definitions/enemy_definition.gd" id="1_enemy"]
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"BLANK_CUPS_SEVEN"
+family = 0
+suit = 0
+rank = 5
+sprite_family = &"blank"
+suit_role_summary = "Fluid skirmishers and ranged lobbers — arcing, evasive, harass at range and reposition."
+rank_role_summary = "Mooks; the printed number on the Blank's back is a simple visual tell of toughness — a Two folds fast, a Ten is a real fight."
+family_summary = ""
+calming_flag = &""
+reveal_flag = &""
+doc_ref = "docs/design/combat.md §Enemies: the Blanks"

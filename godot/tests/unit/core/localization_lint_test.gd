@@ -83,6 +83,13 @@ const DOC_ONLY_PROPERTIES: Array[String] = [
 	"future_summary",  # the same for its Future cell
 	"burden_name",  # the italicised name of a Trump's reversed burden, from the doc
 	"burden_summary",  # the doc's whole "Reversed burden" paragraph, verbatim
+	"suit_role_summary",  # a Blank's suit cell in combat.md §Enemies, verbatim, for
+	# drift checks. NOTHING draws it: an enemy has no player-facing name or blurb in
+	# any doc yet, and the day one exists it is a `name_key` resolved through the CSV.
+	"rank_role_summary",  # the same for the rank cell of the same table
+	"family_summary",  # a Beast's or a Fog-mask's whole bullet from combat.md §Other
+	# enemy families, verbatim. Same job, same rule: doc text for reviewers and for the
+	# drift test, never displayed.
 ]
 # NOTE on the two burden entries: they are doc text for reviewers and for the drift
 # tests, and NOTHING may draw them. The day a screen shows the player which burden a

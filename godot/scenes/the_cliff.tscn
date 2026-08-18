@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=29 format=3]
 
 [ext_resource type="Script" path="res://scripts/the_cliff.gd" id="1_cliff"]
 [ext_resource type="Script" path="res://scripts/cliff_ground.gd" id="2_ground"]
@@ -20,6 +20,26 @@
 [ext_resource type="Texture2D" path="res://art/game-ready-sprites-v1/frames/environment/props/offering-bowl.png" id="17_bowl"]
 [ext_resource type="Texture2D" path="res://art/game-ready-sprites-v1/frames/environment/props/cliff-lip.png" id="18_cliff_lip"]
 [ext_resource type="Script" path="res://systems/core/interactable.gd" id="20_interactable"]
+[ext_resource type="Script" path="res://systems/enemies/nodes/encounter.gd" id="21_encounter"]
+[ext_resource type="Script" path="res://systems/enemies/encounter_spawn.gd" id="22_spawn"]
+
+[sub_resource type="Resource" id="Ambush_Cups"]
+script = ExtResource("22_spawn")
+enemy_id = &"BLANK_CUPS_TWO"
+offset = Vector2(10, -130)
+facing = Vector2(0.96, 0.29)
+
+[sub_resource type="Resource" id="Ambush_Swords"]
+script = ExtResource("22_spawn")
+enemy_id = &"BLANK_SWORDS_TWO"
+offset = Vector2(95, 25)
+facing = Vector2(0.96, 0.29)
+
+[sub_resource type="Resource" id="Ambush_Wands"]
+script = ExtResource("22_spawn")
+enemy_id = &"BLANK_WANDS_TWO"
+offset = Vector2(-70, 115)
+facing = Vector2(0.96, 0.29)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_leap"]
 radius = 150.0
@@ -191,6 +211,15 @@ monitoring = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="LeapPoint"]
 shape = SubResource("CircleShape2D_leap")
+
+[node name="Encounters" type="Node2D" parent="World"]
+
+[node name="WaystationAmbush" type="Node2D" parent="World/Encounters"]
+position = Vector2(1655, 1240)
+script = ExtResource("21_encounter")
+trigger_radius = 200.0
+quest_event_on_cleared = &"MQ00_AMBUSH_CLEARED"
+spawns = Array[ExtResource("22_spawn")]([SubResource("Ambush_Cups"), SubResource("Ambush_Swords"), SubResource("Ambush_Wands")])
 
 [node name="QuestTriggers" type="Node2D" parent="World"]
 

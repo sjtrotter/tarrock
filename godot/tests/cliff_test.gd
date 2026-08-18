@@ -8,9 +8,14 @@ extends SceneTree
 ## nothing here tells the quest what state to be in - the scene raises events and
 ## `res://data/quests/graphs/MQ00.tres` decides what they mean.
 ##
-## The one beat that cannot be played yet is the ambush: combat is a later round and
-## no Blanks stand in the scene, so `MQ00_AMBUSH_CLEARED` is raised directly, exactly
-## as the graph's own note says. Everything else is the Fool walking about.
+## From round 8 the ambush is real: three Twos stand between the standing stones, and
+## the test walks the Fool into them and puts them down through their own `Combatant`s
+## before MQ00 hears anything about it. It does that DELIBERATELY EARLY - before the
+## dead tree - because MQ00's graph is linear canon order and only answers
+## `MQ00_AMBUSH_CLEARED` from `DEAD_TREE_SEEN`. A player can reach the stones first
+## (the encounter is a volume in the world, not a locked door), and the event would be
+## dropped by a quest that was not listening yet; the scene's latch is what carries it
+## across, and phases 8 and 9 are what prove it.
 ##
 ## From round 5 the Querent talks over it. Each beat asserts that the conversation
 ## the scene's `DIALOGUE_FOR_STATE` table promises really started, then walks it to
@@ -18,11 +23,11 @@ extends SceneTree
 ## happen here because `DialogueService.start()` refuses while another conversation
 ## is running. The quest never waits for any of it: the leap still completes MQ00.
 ##
-## One beat is deliberately played the awkward way round (phases 8 and 9): the
-## ambush is cleared while the dead-tree conversation is still on screen, which is
-## what the scene's pending slot is for. The line waits its turn instead of
-## interrupting or vanishing. Phases 13 and 14 push that slot past its one place:
-## two beats behind one conversation, where the newer must win.
+## That same latch lands the beat the awkward way round: the ambush is reported while
+## the dead-tree conversation is still on screen, which is what the scene's pending
+## slot is for. The line waits its turn instead of interrupting or vanishing. Phases
+## 13 and 14 push that slot past its one place: two beats behind one conversation,
+## where the newer must win.
 
 const ISLAND: PackedVector2Array = preload("res://scripts/cliff_ground.gd").ISLAND
 
@@ -31,6 +36,10 @@ const ISLAND: PackedVector2Array = preload("res://scripts/cliff_ground.gd").ISLA
 const BINDLE_POSITION := Vector2(3660, 2470)
 const KEEPSAKE_POSITION := Vector2(3090, 2230)
 const DEAD_TREE_POSITION := Vector2(2250, 1250)
+
+## Between the standing stones, inside the ambush's trigger. The scene puts the
+## encounter at (1655, 1240) with a 200 px volume.
+const AMBUSH_POSITION := Vector2(1655, 1240)
 const WAYSTATION_POSITION := Vector2(1430, 1000)
 const CLIFF_EDGE_POSITION := Vector2(1280, 800)
 const LEAP_POSITION := Vector2(1150, 650)
@@ -199,23 +208,73 @@ func _physics_process(_delta: float) -> bool:
 			"offering the script's three questions"
 		) and _all_passed
 		_drain_dialogue()
+		_place(AMBUSH_POSITION)
+		_advance_phase()
+		return false
+
+	# The real fight, and deliberately in the wrong order: the Fool reaches the
+	# standing stones before the dead tree, which a player can. Three Twos rise, the
+	# Querent says her mid-fight line, and the quest does NOT move - MQ00's graph only
+	# answers the ambush from DEAD_TREE_SEEN.
+	if _phase == 8:
+		if _phase_frame < SETTLE_FRAMES * 2:
+			return false
+		var ambush := _ambush()
+		if not check(ambush != null, "the Cliff holds the Waystation ambush"):
+			_all_passed = false
+			_finish()
+			return true
+		_all_passed = check(
+			ambush.is_engaged(), "walking between the standing stones raises the ambush"
+		) and _all_passed
+		_all_passed = check(
+			ambush.standing_count() == 3,
+			"three figures rise from the long grass - one Cups, one Swords, one Wands"
+		) and _all_passed
+		_all_passed = check(
+			not ambush.is_cleared(), "and walking in has cleared nothing"
+		) and _all_passed
+		_all_passed = _check_dialogue(
+			DialogueIds.MQ00_WAYSTATION_AMBUSH, "the Querent's mid-fight line plays"
+		)
+		_drain_dialogue()
+		_all_passed = _check_state(&"KEEPSAKE_FOUND", "and the quest has not moved for it")
+		_advance_phase()
+		return false
+
+	# They fall in turn. Driven through each Blank's own `Combatant` rather than
+	# through the Fool's swings, because what is under test here is the ENCOUNTER's
+	# gate and MQ00's wiring - `tests/enemies_test.gd` is where the light string
+	# really takes three Blanks down.
+	if _phase == 9:
+		var ambush := _ambush()
+		var standing := _first_standing(ambush)
+		if standing != null:
+			# Asserted BEFORE the blow lands: with anybody still on their feet the gate
+			# is shut, and it is checked once per member rather than once per fight.
+			_all_passed = check(
+				not ambush.is_cleared(),
+				"the gate stays shut while %d are still standing" % ambush.standing_count()
+			) and _all_passed
+			standing.combatant().take_hit(_lethal_hit(standing))
+			return false
+		_all_passed = check(ambush.is_cleared(), "the three Twos fall and the ambush is cleared") and _all_passed
+		# Cleared, but MQ00 is still at KEEPSAKE_FOUND, so the event has nowhere to
+		# land: this is the case the scene's latch exists for.
+		_all_passed = _check_state(
+			&"KEEPSAKE_FOUND", "and an early clear does not skip the quest forward"
+		)
 		_place(DEAD_TREE_POSITION)
 		_advance_phase()
 		return false
 
-	# The ambush is cleared deliberately *while* the dead-tree conversation is still
-	# on screen - the case the scene's pending slot exists for. The beat must not
-	# interrupt what is being said, and must not be lost either: the Querent's line
-	# about where the cleared cards went is the only place the script explains it.
-	if _phase == 8:
+	# The dead tree, and with it the latched ambush: the scene re-raises the event the
+	# moment the quest can answer it, and the Querent's line about where the cleared
+	# cards went waits behind the dead-tree line rather than cutting it short.
+	if _phase == 10:
 		if _phase_frame < SETTLE_FRAMES:
 			return false
-		_all_passed = _check_state(&"DEAD_TREE_SEEN", "approaching the dead tree needs no key press")
-		_all_passed = _check_dialogue(DialogueIds.MQ00_DEAD_TREE, "and starts the dead-tree beat")
-		# Combat is a later round: no Blanks stand on the Waystation path yet, so the
-		# ambush is raised the way the graph's note says it will be until they do.
-		_scene.raise_quest_event(QuestEvents.MQ00_AMBUSH_CLEARED, _scene)
-		_all_passed = _check_state(&"AMBUSH_CLEARED", "clearing the three Twos advances MQ00")
+		_all_passed = _check_state(&"AMBUSH_CLEARED", "reaching the dead tree lands the latched clear")
 		_all_passed = _check_dialogue(
 			DialogueIds.MQ00_DEAD_TREE, "and does not cut the dead-tree line short"
 		)
@@ -223,7 +282,7 @@ func _physics_process(_delta: float) -> bool:
 		_advance_phase()
 		return false
 
-	if _phase == 9:
+	if _phase == 11:
 		if _phase_frame < SETTLE_FRAMES:
 			return false
 		_all_passed = _check_dialogue(
@@ -235,7 +294,7 @@ func _physics_process(_delta: float) -> bool:
 		_advance_phase()
 		return false
 
-	if _phase == 10:
+	if _phase == 12:
 		if _phase_frame < SETTLE_FRAMES:
 			return false
 		_fool.try_interact()
@@ -248,7 +307,7 @@ func _physics_process(_delta: float) -> bool:
 		_advance_phase()
 		return false
 
-	if _phase == 11:
+	if _phase == 13:
 		if _phase_frame < SETTLE_FRAMES:
 			return false
 		_all_passed = _check_state(&"EDGE_REACHED", "reaching the cliff's edge advances MQ00")
@@ -265,7 +324,7 @@ func _physics_process(_delta: float) -> bool:
 		_advance_phase()
 		return false
 
-	if _phase == 12:
+	if _phase == 14:
 		if _phase_frame < SETTLE_FRAMES:
 			return false
 		_all_passed = _check_state(&"COMPLETE", "stepping off the Cliff completes MQ00")
@@ -291,7 +350,7 @@ func _physics_process(_delta: float) -> bool:
 	# conversation is on screen. Replaying the older line after the newer one would
 	# narrate the wrong moment, so the older is dropped - loudly, in the log, which
 	# is why the engine's warnings are muted around the provocation.
-	if _phase == 13:
+	if _phase == 15:
 		_dialogue.start(DialogueIds.MQ00_MEADOW)
 		_all_passed = _check_dialogue(
 			DialogueIds.MQ00_MEADOW, "a conversation is on screen again"
@@ -305,7 +364,7 @@ func _physics_process(_delta: float) -> bool:
 		_advance_phase()
 		return false
 
-	if _phase == 14:
+	if _phase == 16:
 		if _phase_frame < SETTLE_FRAMES:
 			return false
 		_all_passed = _check_dialogue(
@@ -323,6 +382,42 @@ func _physics_process(_delta: float) -> bool:
 func _place(position: Vector2) -> void:
 	if _fool != null:
 		_fool.global_position = position
+
+
+## The Waystation ambush node, or `null` if the scene lost it.
+func _ambush() -> Encounter:
+	if _scene == null:
+		return null
+	return _scene.get_node_or_null("World/Encounters/WaystationAmbush") as Encounter
+
+
+## The first member of the ambush still on its feet, or `null` when they are all down.
+func _first_standing(ambush: Encounter) -> Blank:
+	if ambush == null:
+		return null
+	for member: Blank in ambush.members():
+		if member != null and is_instance_valid(member) and member.is_awake() and member.is_alive():
+			return member
+	return null
+
+
+## A swing from the Fool that empties one Blank's pool, thrown through the real
+## `Combatant` path so the encounter's own bookkeeping is what notices - not a flag
+## this test set. `tests/enemies_test.gd` is where the light string does it for real.
+func _lethal_hit(blank: Blank) -> HitEvent:
+	return HitEvent.new(
+		Faction.Id.FOOL,
+		HitSpec.new(
+			HitSpec.Kind.LIGHT,
+			blank.combatant().health_capacity(),
+			HitSpec.Shape.ARC,
+			360.0,
+			400.0
+		),
+		blank.global_position,
+		Vector2.RIGHT,
+		0.0
+	)
 
 
 ## Assert MQ00 is where the last beat should have left it.

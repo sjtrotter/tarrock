@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/enemies/definitions/enemy_definition.gd" id="1_enemy"]
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"BLANK_CUPS_KING"
+family = 0
+suit = 0
+rank = 12
+sprite_family = &"blank"
+suit_role_summary = "Fluid skirmishers and ranged lobbers — arcing, evasive, harass at range and reposition."
+rank_role_summary = "Roaming mini-boss; a small set piece in its own right, not just a bigger mook."
+family_summary = ""
+calming_flag = &""
+reveal_flag = &""
+doc_ref = "docs/design/combat.md §Enemies: the Blanks"

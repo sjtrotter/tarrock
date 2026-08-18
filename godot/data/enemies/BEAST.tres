@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/enemies/definitions/enemy_definition.gd" id="1_enemy"]
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"BEAST"
+family = 1
+suit = -1
+rank = -1
+sprite_family = &"beast"
+suit_role_summary = ""
+rank_role_summary = ""
+family_summary = "Beasts — the wildlife of the Maw and other wild spaces. Hostile by default; calmed to neutral-until-provoked world-wide once WS_STRENGTH_UNBOUND fires."
+calming_flag = &"WS_STRENGTH_UNBOUND"
+reveal_flag = &""
+doc_ref = "docs/design/combat.md §Other enemy families"

@@ -28,7 +28,13 @@ const MQ00_KEEPSAKE_FOUND := &"MQ00_KEEPSAKE_FOUND"
 const MQ00_DEAD_TREE_SEEN := &"MQ00_DEAD_TREE_SEEN"
 
 ## The three Blanks on the Waystation path are down (§The Waystation Approach).
-## Combat is a later round; nothing in the Cliff scene raises this yet.
+##
+## Raised by `scripts/the_cliff.gd` when the `Encounter` between the standing stones
+## reports itself cleared - which is when every one of the three Twos has gone down,
+## never when the Fool walks in. MQ00's graph is linear canon order and only answers
+## it from `DEAD_TREE_SEEN`, so a player who clears the ambush first has the event
+## LATCHED by the scene and re-raised the moment the quest can hear it; see
+## `the_cliff.gd`'s `_report_ambush_if_cleared()`.
 const MQ00_AMBUSH_CLEARED := &"MQ00_AMBUSH_CLEARED"
 
 ## The Fool rested at the Cliff's Waystation (§The First Waystation).

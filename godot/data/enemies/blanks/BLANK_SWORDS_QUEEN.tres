@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/enemies/definitions/enemy_definition.gd" id="1_enemy"]
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"BLANK_SWORDS_QUEEN"
+family = 0
+suit = 1
+rank = 11
+sprite_family = &"blank"
+suit_role_summary = "Fast, precise duelists — tight strings, quick punishes, the suit that tests the light string and dodge timing hardest."
+rank_role_summary = "Commander; grants support auras to nearby Blanks (buffs, not summons)."
+family_summary = ""
+calming_flag = &""
+reveal_flag = &""
+doc_ref = "docs/design/combat.md §Enemies: the Blanks"

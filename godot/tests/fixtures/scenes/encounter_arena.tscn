@@ -1,0 +1,37 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/fool.tscn" id="1_fool"]
+[ext_resource type="Script" path="res://systems/enemies/nodes/encounter.gd" id="2_encounter"]
+[ext_resource type="Script" path="res://systems/enemies/encounter_spawn.gd" id="3_spawn"]
+
+[sub_resource type="Resource" id="Spawn_Cups"]
+script = ExtResource("3_spawn")
+enemy_id = &"BLANK_CUPS_TWO"
+offset = Vector2(-40, -90)
+facing = Vector2(-1, 0)
+
+[sub_resource type="Resource" id="Spawn_Swords"]
+script = ExtResource("3_spawn")
+enemy_id = &"BLANK_SWORDS_TWO"
+offset = Vector2(60, 0)
+facing = Vector2(-1, 0)
+
+[sub_resource type="Resource" id="Spawn_Wands"]
+script = ExtResource("3_spawn")
+enemy_id = &"BLANK_WANDS_TWO"
+offset = Vector2(-40, 90)
+facing = Vector2(-1, 0)
+
+[node name="EncounterArena" type="Node2D"]
+
+[node name="Ground" type="Node2D" parent="."]
+
+[node name="Fool" parent="." instance=ExtResource("1_fool")]
+position = Vector2(0, 0)
+
+[node name="Ambush" type="Node2D" parent="."]
+position = Vector2(400, 0)
+script = ExtResource("2_encounter")
+trigger_radius = 220.0
+pool_size = 6
+spawns = Array[ExtResource("3_spawn")]([SubResource("Spawn_Cups"), SubResource("Spawn_Swords"), SubResource("Spawn_Wands")])

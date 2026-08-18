@@ -1,0 +1,41 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://systems/enemies/nodes/blank.gd" id="1_blank"]
+[ext_resource type="Texture2D" path="res://art/game-ready-sprites-v1/frames/blank_sword_two/directions/south.png" id="2_south"]
+[ext_resource type="Script" path="res://systems/combat/nodes/combatant.gd" id="3_combatant"]
+[ext_resource type="Script" path="res://systems/combat/nodes/hurtbox.gd" id="4_hurtbox"]
+[ext_resource type="Script" path="res://systems/combat/nodes/hitbox.gd" id="5_hitbox"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 18.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hurtbox"]
+radius = 26.0
+
+[node name="Blank" type="CharacterBody2D" groups=["blank"]]
+script = ExtResource("1_blank")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_south")
+offset = Vector2(-4.2, -227)
+scale = Vector2(0.2668, 0.2668)
+
+[node name="Collision" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="Combatant" type="Node2D" parent="."]
+script = ExtResource("3_combatant")
+faction = 1
+max_health = 1
+
+[node name="Hurtbox" type="Area2D" parent="Combatant"]
+script = ExtResource("4_hurtbox")
+faction = 1
+
+[node name="HurtShape" type="CollisionShape2D" parent="Combatant/Hurtbox"]
+shape = SubResource("CircleShape2D_hurtbox")
+
+[node name="Hitbox" type="Area2D" parent="Combatant"]
+script = ExtResource("5_hitbox")
+faction = 1
+detection_radius = 140.0

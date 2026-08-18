@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/enemies/definitions/enemy_definition.gd" id="1_enemy"]
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"FOG_MASK"
+family = 2
+suit = -1
+rank = -1
+sprite_family = &"fog_mask"
+suit_role_summary = ""
+rank_role_summary = ""
+family_summary = "Fog-masks — the \"monsters\" of the Mirrormarsh. Revealed as lost people wearing the fog's illusions once WS_MOON_UNBOUND fires, at which point they lose their ambush advantage world-wide. Before that state, they read and fight as their masks, not as the people beneath — the reveal is a world-state event, not a combat-time twist."
+calming_flag = &""
+reveal_flag = &"WS_MOON_UNBOUND"
+doc_ref = "docs/design/combat.md §Other enemy families"

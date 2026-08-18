@@ -26,11 +26,21 @@ What it reads, and what each source produces:
                                                    plus the Trump catalog, the
                                                    TrumpIds constants, and the
                                                    Trump-name translation table
+    docs/design/combat.md §Enemies: the Blanks -> one EnemyDefinition per suit x rank
+                          §Other enemy families    (52 Blanks), plus one stub per
+                                                   other family, plus the enemy
+                                                   catalog and the EnemyIds constants
 
 A Trump's *effects* are deliberately NOT generated, for the same reason a quest's
 state graph is not: what a Trump does is prose, hand-authored under
 `godot/data/trumps/effects/TRUMP_NN.tres`, and a generated definition merely links
 to it when that file exists. The generator never writes into `effects/`.
+
+An enemy's *numbers* are deliberately NOT generated, for the same reason a Trump's
+effects are not: `combat.md` §Enemies is two tables of ROLE and states no figure at
+all, so every enemy number is hand-authored in `godot/data/enemies/enemy_rules.tres`
+and a generated `EnemyDefinition` holds identity plus the doc's own cells. The
+generator never writes `enemy_rules.tres`.
 
 A quest's *state graph* is deliberately NOT generated: it is hand-authored under
 `godot/data/quests/graphs/<ID>.tres`, and a generated definition merely links to it
@@ -107,12 +117,28 @@ TRUMP_CATALOG_PATH = f"{TRUMP_DATA_DIR}/catalog.tres"
 TRUMP_IDS_PATH = f"{TRUMP_SYSTEM_DIR}/trump_ids.gd"
 TRUMP_NAMES_CSV_PATH = f"{LOCALIZATION_DIR}/trumps.csv"
 
+COMBAT_DOC = DOCS_DIR / "design" / "combat.md"
+
+ENEMY_DATA_DIR = "data/enemies"
+ENEMY_BLANK_DATA_DIR = f"{ENEMY_DATA_DIR}/blanks"
+ENEMY_SYSTEM_DIR = "systems/enemies"
+
+ENEMY_DEFINITION_SCRIPT = "res://systems/enemies/definitions/enemy_definition.gd"
+ENEMY_CATALOG_SCRIPT = "res://systems/enemies/definitions/enemy_catalog.gd"
+
+ENEMY_CATALOG_PATH = f"{ENEMY_DATA_DIR}/catalog.tres"
+ENEMY_IDS_PATH = f"{ENEMY_SYSTEM_DIR}/enemy_ids.gd"
+
 # Hand-authored files that live inside a generated directory. They are NOT swept as
 # stale and are never written by this tool: `spread_rules.tres` is authored from
 # `docs/design/progression.md`'s prose (the numbers it fixes and the ones it leaves
 # TBD), which no table in the docs can produce.
 HAND_AUTHORED_PATHS = {
     f"{PROGRESSION_DATA_DIR}/spread_rules.tres",
+    # `enemy_rules.tres` is the same shape: every enemy number, authored from
+    # `combat.md`'s prose (which fixes shapes and states no figures), which no table
+    # in the docs can produce.
+    f"{ENEMY_DATA_DIR}/enemy_rules.tres",
 }
 
 # Every directory this tool writes into, and what it owns there: anything matching
@@ -134,6 +160,12 @@ GENERATED_GLOBS = {
     WORLD_STATE_SYSTEM_DIR: [WORLD_STATE_IDS_PATH.rsplit("/", 1)[-1]],
     QUEST_SYSTEM_DIR: [QUEST_IDS_PATH.rsplit("/", 1)[-1]],
     TRUMP_SYSTEM_DIR: [TRUMP_IDS_PATH.rsplit("/", 1)[-1]],
+    # `data/enemies/*.tres` holds the two family stubs and the catalog and is
+    # generated whole except for the hand-authored `enemy_rules.tres` above;
+    # `data/enemies/blanks/*.tres` is the fifty-two suit x rank definitions.
+    ENEMY_DATA_DIR: ["*.tres"],
+    ENEMY_BLANK_DATA_DIR: ["*.tres"],
+    ENEMY_SYSTEM_DIR: [ENEMY_IDS_PATH.rsplit("/", 1)[-1]],
     LOCALIZATION_DIR: [
         QUEST_TITLES_CSV_PATH.rsplit("/", 1)[-1],
         TRUMP_NAMES_CSV_PATH.rsplit("/", 1)[-1],
@@ -1346,6 +1378,330 @@ def trump_names_csv(trumps: list[Trump]) -> str:
     return "\n".join(lines)
 
 
+# --- Enemies (docs/design/combat.md) -----------------------------------------
+
+ENEMIES_HEADING = "## Enemies: the Blanks"
+OTHER_FAMILIES_HEADING = "## Other enemy families"
+
+COMBAT_DOC_REF = "docs/design/combat.md"
+ENEMIES_DOC_REF = f"{COMBAT_DOC_REF} \u00a7Enemies: the Blanks"
+OTHER_FAMILIES_DOC_REF = f"{COMBAT_DOC_REF} \u00a7Other enemy families"
+
+# The four suits, in the order `godot/systems/world_state/suit.gd` spells them, which
+# is `docs/GLOSSARY.md`'s. The doc's Combat role table is read by name, so the order
+# here only has to match the `Suit.Id` enum - and it must, because a definition stores
+# the enum ordinal.
+SUIT_NAMES = ("Cups", "Swords", "Wands", "Coins")
+
+# The thirteen ranks, in the order `godot/systems/enemies/rank.gd` spells them: the
+# nine pips, then the court. Same contract as the suits - the ordinal is stored.
+PIP_RANK_NAMES = ("Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten")
+COURT_RANK_NAMES = ("Page", "Knight", "Queen", "King")
+RANK_NAMES = PIP_RANK_NAMES + COURT_RANK_NAMES
+
+# `| Two \u2013 Ten | Mooks; the printed number ... |`: the doc writes the nine pip
+# ranks as ONE row, so its Role cell is the cell every pip rank carries.
+PIP_ROW_LABEL = "Two \u2013 Ten"
+
+# The one sprite family every Blank shares: "One base art and animation family carries
+# every suit and rank" (\u00a7Enemies: the Blanks).
+BLANK_SPRITE_FAMILY = "blank"
+
+# `EnemyFamily.Id`, whose ordinals a definition stores.
+FAMILY_BLANK = 0
+FAMILY_BEAST = 1
+FAMILY_FOG_MASK = 2
+
+# `- **Beasts** \u2014 the wildlife of the Maw ...`: one family's whole bullet.
+FAMILY_BULLET_PATTERN = re.compile(r"^-\s+\*\*(Beasts|Fog-masks)\*\*\s+\u2014\s+(.*)$")
+
+# The two families \u00a7Other enemy families names, by the bold label the doc gives
+# them, with the `EnemyFamily.Id` ordinal and the id each becomes.
+OTHER_FAMILIES = {
+    "Beasts": (FAMILY_BEAST, "BEAST"),
+    "Fog-masks": (FAMILY_FOG_MASK, "FOG_MASK"),
+}
+
+# `WS_STRENGTH_UNBOUND` inside a family's bullet: the flag that changes how it fights.
+FAMILY_FLAG_PATTERN = re.compile(r"`(WS_[A-Z_]+)`")
+
+
+class Enemy:
+    """One generated EnemyDefinition."""
+
+    def __init__(
+        self,
+        enemy_id: str,
+        family: int,
+        doc_ref: str,
+        suit: int = -1,
+        rank: int = -1,
+        suit_role_summary: str = "",
+        rank_role_summary: str = "",
+        family_summary: str = "",
+        calming_flag: str = "",
+        reveal_flag: str = "",
+    ) -> None:
+        self.enemy_id = enemy_id
+        self.family = family
+        self.doc_ref = doc_ref
+        self.suit = suit
+        self.rank = rank
+        self.suit_role_summary = suit_role_summary
+        self.rank_role_summary = rank_role_summary
+        self.family_summary = family_summary
+        self.calming_flag = calming_flag
+        self.reveal_flag = reveal_flag
+
+    @property
+    def is_blank(self) -> bool:
+        return self.family == FAMILY_BLANK
+
+    @property
+    def resource_path(self) -> str:
+        directory = ENEMY_BLANK_DATA_DIR if self.is_blank else ENEMY_DATA_DIR
+        return f"{directory}/{self.enemy_id}.tres"
+
+
+def role_table(lines: list[str], first_column: str) -> dict[str, str]:
+    """One of \u00a7Enemies' two tables as `label -> role cell`.
+
+    The section holds the Combat role table (keyed by suit) and then the Role table
+    (keyed by rank); `first_column` says which label to look for so the right one is
+    picked whichever order they appear in.
+    """
+    for rows in tables(lines):
+        labels = {unwrap(row[0]) for row in rows if row}
+        if first_column not in labels:
+            continue
+        found: dict[str, str] = {}
+        for row in rows:
+            if len(row) < 2:
+                continue
+            found[unwrap(row[0])] = unwrap(row[1])
+        return found
+    raise GeneratorError(
+        f"{COMBAT_DOC} \u00a7Enemies has no table whose first column holds '{first_column}'"
+    )
+
+
+def parse_blanks(doc_path: Path) -> list[Enemy]:
+    """Fifty-two Blanks: every suit \u00d7 every rank, carrying the doc's own cells.
+
+    The two tables are the whole of what `combat.md` says about a Blank, and neither
+    of them holds a number - which is why an `EnemyDefinition` holds none either and
+    `EnemyRules` is the one tuning place. What is generated is identity plus the two
+    cells verbatim, so a drift test can prove the game and the doc still agree about
+    what a Wands Blank is FOR.
+    """
+    lines = read_section(doc_path, ENEMIES_HEADING)
+    suit_roles = role_table(lines, SUIT_NAMES[0])
+    rank_roles = role_table(lines, PIP_ROW_LABEL)
+    for suit_name in SUIT_NAMES:
+        if suit_name not in suit_roles:
+            raise GeneratorError(
+                f"{doc_path} \u00a7Enemies has no Combat role row for {suit_name}"
+            )
+    for rank_name in COURT_RANK_NAMES:
+        if rank_name not in rank_roles:
+            raise GeneratorError(f"{doc_path} \u00a7Enemies has no Role row for {rank_name}")
+    pip_role = rank_roles[PIP_ROW_LABEL]
+    blanks: list[Enemy] = []
+    for suit_index, suit_name in enumerate(SUIT_NAMES):
+        for rank_index, rank_name in enumerate(RANK_NAMES):
+            role = pip_role if rank_name in PIP_RANK_NAMES else rank_roles[rank_name]
+            blanks.append(
+                Enemy(
+                    enemy_id=f"BLANK_{suit_name.upper()}_{rank_name.upper()}",
+                    family=FAMILY_BLANK,
+                    doc_ref=ENEMIES_DOC_REF,
+                    suit=suit_index,
+                    rank=rank_index,
+                    suit_role_summary=suit_roles[suit_name],
+                    rank_role_summary=role,
+                )
+            )
+    return blanks
+
+
+def parse_other_families(doc_path: Path) -> list[Enemy]:
+    """The Beasts and the Fog-masks, as stubs carrying their bullet and their flag.
+
+    \u00a7Other enemy families gives each family one bullet, and each bullet names one
+    `WS_*` flag that changes how the family fights world-wide. Both are lifted
+    verbatim: the flag is what `BeastBrain` and `FogMaskBrain` read, and the bullet is
+    what a reviewer reads. Neither family gets a stat block here, because the doc
+    gives them none.
+    """
+    lines = read_section(doc_path, OTHER_FAMILIES_HEADING)
+    bullets = _family_bullets(lines)
+    found: list[Enemy] = []
+    for label, (family, enemy_id) in OTHER_FAMILIES.items():
+        if label not in bullets:
+            raise GeneratorError(
+                f"{doc_path} \u00a7Other enemy families has no bullet for {label}"
+            )
+        # The flags are read off the RAW bullet, before the markdown is stripped: the
+        # doc writes `WS_STRENGTH_UNBOUND` in backticks, and a summary with its
+        # decoration removed no longer looks like a flag reference.
+        raw = bullets[label]
+        flags = FAMILY_FLAG_PATTERN.findall(raw)
+        if len(flags) != 1:
+            raise GeneratorError(
+                f"{doc_path} \u00a7Other enemy families names {len(flags)} world-state "
+                f"flags in the {label} bullet; exactly one is expected"
+            )
+        found.append(
+            Enemy(
+                enemy_id=enemy_id,
+                family=family,
+                doc_ref=OTHER_FAMILIES_DOC_REF,
+                # The label is kept, so the summary is the doc's whole bullet and
+                # reads as the sentence a reviewer would find in `combat.md`.
+                family_summary=unwrap(("%s \u2014 %s" % (label, raw)).replace("*", "")),
+                calming_flag=flags[0] if family == FAMILY_BEAST else "",
+                reveal_flag=flags[0] if family == FAMILY_FOG_MASK else "",
+            )
+        )
+    return found
+
+
+def _family_bullets(lines: list[str]) -> dict[str, str]:
+    """The section's `- **Label** \u2014 ...` bullets, each joined back into one line.
+
+    The doc wraps a bullet across several lines; the definition carries the sentence,
+    so the continuation lines are folded back with single spaces.
+    """
+    bullets: dict[str, str] = {}
+    label = ""
+    parts: list[str] = []
+    for line in lines + [""]:
+        found = FAMILY_BULLET_PATTERN.match(line.strip())
+        if found is not None:
+            if label:
+                bullets[label] = " ".join(parts).strip()
+            label = found.group(1)
+            parts = [found.group(2).strip()]
+            continue
+        if not label:
+            continue
+        stripped = line.strip()
+        if stripped and not stripped.startswith("-") and not stripped.startswith("#"):
+            parts.append(stripped)
+            continue
+        bullets[label] = " ".join(parts).strip()
+        label = ""
+        parts = []
+    if label:
+        bullets[label] = " ".join(parts).strip()
+    return bullets
+
+
+def parse_enemies(doc_path: Path) -> list[Enemy]:
+    """Every enemy `combat.md` defines: the Blanks, then the other two families."""
+    return parse_blanks(doc_path) + parse_other_families(doc_path)
+
+
+def enemy_resource(enemy: Enemy) -> str:
+    """One `data/enemies/**/<ID>.tres`."""
+    script_id = "1_enemy"
+    body = resource_header("EnemyDefinition", [("Script", ENEMY_DEFINITION_SCRIPT, script_id)])
+    body += "\n".join(
+        [
+            "[resource]",
+            'script = ExtResource("%s")' % script_id,
+            'id = &"%s"' % enemy.enemy_id,
+            "family = %d" % enemy.family,
+            "suit = %d" % enemy.suit,
+            "rank = %d" % enemy.rank,
+            'sprite_family = &"%s"' % (BLANK_SPRITE_FAMILY if enemy.is_blank else enemy.enemy_id.lower()),
+            'suit_role_summary = "%s"' % escape(enemy.suit_role_summary),
+            'rank_role_summary = "%s"' % escape(enemy.rank_role_summary),
+            'family_summary = "%s"' % escape(enemy.family_summary),
+            'calming_flag = &"%s"' % enemy.calming_flag,
+            'reveal_flag = &"%s"' % enemy.reveal_flag,
+            'doc_ref = "%s"' % escape(enemy.doc_ref),
+            "",
+        ]
+    )
+    return body
+
+
+def enemy_catalog_resource(enemies: list[Enemy]) -> str:
+    """`data/enemies/catalog.tres`, referencing every enemy in doc order."""
+    definition_id = "1_enemy"
+    catalog_id = "2_catalog"
+    ext_resources = [
+        ("Script", ENEMY_DEFINITION_SCRIPT, definition_id),
+        ("Script", ENEMY_CATALOG_SCRIPT, catalog_id),
+    ]
+    entry_ids: list[str] = []
+    for index, enemy in enumerate(enemies, start=3):
+        entry_id = "%d_%s" % (index, enemy.enemy_id.lower())
+        entry_ids.append(entry_id)
+        ext_resources.append(("Resource", "res://" + enemy.resource_path, entry_id))
+    body = resource_header("EnemyCatalog", ext_resources)
+    entries = ", ".join('ExtResource("%s")' % entry_id for entry_id in entry_ids)
+    body += "\n".join(
+        [
+            "[resource]",
+            'script = ExtResource("%s")' % catalog_id,
+            'entries = Array[ExtResource("%s")]([%s])' % (definition_id, entries),
+            "",
+        ]
+    )
+    return body
+
+
+def enemy_ids_script(enemies: list[Enemy]) -> str:
+    """`enemy_ids.gd`: the one place an enemy id is written in code."""
+    blanks = [enemy for enemy in enemies if enemy.is_blank]
+    others = [enemy for enemy in enemies if not enemy.is_blank]
+    lines = [
+        "class_name EnemyIds",
+        "extends RefCounted",
+        "",
+        "## Every enemy id, as a constant.",
+        "##",
+        "## GENERATED by `godot/tools/gen_definitions.py` from `%s`" % COMBAT_DOC_REF,
+        "## \u00a7Enemies: the Blanks and \u00a7Other enemy families - do not edit by hand; edit",
+        "## the doc and regenerate. A drift test fails when this file and `combat.md`",
+        "## disagree.",
+        "##",
+        "## There are %d Blanks (four suits \u00d7 thirteen ranks) and %d other families." % (
+            len(blanks), len(others)
+        ),
+        "## `combat.md`: \"Regional skins dress Blanks to match the region they're found",
+        "## in... cosmetic only; suit and rank still govern behavior\" - so a regional",
+        "## Blank is one of these with a different sprite family, never a new id.",
+        "##",
+        "## Code never types an enemy id: it names one of these constants, or reads an id",
+        "## off an `EnemyDefinition` (docs/design/technical.md, no magic strings).",
+        "",
+        "## The Blanks, suit by suit and rank by rank.",
+    ]
+    for enemy in blanks:
+        lines.append('const %s := &"%s"' % (enemy.enemy_id, enemy.enemy_id))
+    lines.append("")
+    lines.append("## The two families \u00a7Other enemy families names.")
+    for enemy in others:
+        lines.append('const %s := &"%s"' % (enemy.enemy_id, enemy.enemy_id))
+    lines.append("")
+    lines.append("## Every Blank, in suit then rank order.")
+    lines.append("const BLANKS: Array[StringName] = [")
+    for enemy in blanks:
+        lines.append("\t%s," % enemy.enemy_id)
+    lines.append("]")
+    lines.append("")
+    lines.append("## Every enemy `combat.md` defines.")
+    lines.append("const ALL: Array[StringName] = [")
+    for enemy in enemies:
+        lines.append("\t%s," % enemy.enemy_id)
+    lines.append("]")
+    lines.append("")
+    return "\n".join(lines)
+
+
 # --- The generation itself ---------------------------------------------------
 
 
@@ -1357,6 +1713,7 @@ def generate() -> dict[str, str]:
     regions = parse_regions(GLOSSARY_DOC)
     quests = parse_quests(QUESTS_DIR, regions)
     trumps = parse_trumps(ARCANA_DOC, flags)
+    enemies = parse_enemies(COMBAT_DOC)
 
     files: dict[str, str] = {}
     for flag in flags:
@@ -1375,6 +1732,10 @@ def generate() -> dict[str, str]:
     files[TRUMP_CATALOG_PATH] = trump_catalog_resource(trumps)
     files[TRUMP_IDS_PATH] = trump_ids_script(trumps)
     files[TRUMP_NAMES_CSV_PATH] = trump_names_csv(trumps)
+    for enemy in enemies:
+        files[enemy.resource_path] = enemy_resource(enemy)
+    files[ENEMY_CATALOG_PATH] = enemy_catalog_resource(enemies)
+    files[ENEMY_IDS_PATH] = enemy_ids_script(enemies)
     return files
 
 

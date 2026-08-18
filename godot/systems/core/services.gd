@@ -39,6 +39,13 @@ const SPREAD_RULES_PATH := "res://data/progression/spread_rules.tres"
 ## difficulty modes and the defeat loop run on (`docs/design/combat.md`).
 const COMBAT_RULES_PATH := "res://data/combat/combat_rules.tres"
 
+## The generated enemies `enemies` is built over - one per suit x rank from
+## `docs/design/combat.md` §Enemies, plus the two other-family stubs - and the
+## hand-authored numbers every one of them runs on. The definitions hold no figures
+## because the doc holds none; the rules table is the one tuning place.
+const ENEMY_CATALOG_PATH := "res://data/enemies/catalog.tres"
+const ENEMY_RULES_PATH := "res://data/enemies/enemy_rules.tres"
+
 ## In-game elapsed time. Paused by menus; advanced here and nowhere else.
 var clock: GameClock = null
 
@@ -63,6 +70,11 @@ var rose: WhiteRoseService = null
 ## Built after the three above because it spends into all of them and owns none of
 ## their numbers.
 var combat: CombatService = null
+
+## The enemy roster: the generated catalog, the one tuning table, who is standing
+## right now, and the card that flutters free when one goes down. Built after
+## `combat` because a fight is `CombatService`'s and this is only who is in it.
+var enemies: EnemyService = null
 
 ## Versioned JSON saves in `user://saves/`, with the explicit migration chain.
 ## It captures out of the services above it and applies back into them - which is why
@@ -89,6 +101,7 @@ func _ready() -> void:
 	spread = _build_spread(rules)
 	rose = WhiteRoseService.new(world_state, rules)
 	combat = CombatService.new(_load_combat_rules(), fortune, spread, rose, clock)
+	enemies = _build_enemies(combat.rules())
 	save = SaveService.new(
 		world_state, clock, SaveService.DEFAULT_SAVES_DIR, null, spread, fortune, rose
 	)
@@ -165,6 +178,27 @@ func _load_combat_rules() -> CombatRules:
 		for problem: String in rules.validate():
 			push_error(problem)
 	return rules
+
+
+## Load the generated enemies and the hand-authored numbers, and build the roster.
+##
+## Validated on the way in for the same reason the other catalogs are, and with two
+## cross-references only this call can make: the world-state catalog resolves the two
+## flags `combat.md` §Other enemy families names (a Beast calmed by a flag the matrix
+## does not define would be a Beast nothing ever calms), and the combat rules let the
+## enemy rules check that no telegraph falls under `EnemyRules.MIN_TELEGRAPH_SECONDS`
+## on the tightest difficulty - "an enemy that hits without a tell is a bug".
+func _build_enemies(combat_rules: CombatRules) -> EnemyService:
+	var catalog: EnemyCatalog = load(ENEMY_CATALOG_PATH) as EnemyCatalog
+	var rules: EnemyRules = load(ENEMY_RULES_PATH) as EnemyRules
+	var world_states: WorldStateCatalog = load(WORLD_STATE_CATALOG_PATH) as WorldStateCatalog
+	if catalog != null:
+		for problem: String in catalog.validate(world_states):
+			push_error(problem)
+	if rules != null:
+		for problem: String in rules.validate_against(combat_rules):
+			push_error(problem)
+	return EnemyService.new(catalog, rules)
 
 
 ## Load the generated Trumps and build the Pocket Spread over them.

@@ -220,3 +220,238 @@ The existing south-east cycles are named without a direction
 `walk-<direction>-<n>.png`. When (a) and (b) land, the south-east sets should be
 renamed to match (`walk-southeast-0.png`, …) — a one-line change to the tables in
 `scripts/player.gd` and `scripts/pip_follower.gd`. Director's call whether to rename.
+
+---
+
+## Enemies (round 8 of the systems gauntlet) — the Blanks
+
+Everything below is a **gap found while building `systems/enemies/`** — the Blanks, the
+encounters and the two other enemy families. The systems half is finished and tested;
+each item here is a place where the game is running on a stopgap and says so in code.
+Canon is [`docs/design/combat.md`](../../docs/design/combat.md) §Enemies: the Blanks,
+§Encounter philosophy and §Other enemy families; the gap list these expand is the table
+in [`godot/systems/enemies/README.md`](../systems/enemies/README.md) §Art requests.
+
+The **Global acceptance criteria** above apply, with the anchor rule read against this
+family's own cells rather than the Fool's (see the per-item numbers).
+
+Existing pack, and the one Blank that ships:
+
+- Directions: `game-ready-sprites-v1/atlases/blank-sword-two-directions.png` —
+  **1536×1024**, 4×2 grid of **384×512** cells, order `south, southwest, west,
+  northwest, north, northeast, east, southeast`; sliced to
+  `frames/blank_sword_two/directions/<direction>.png`.
+- Actions: `game-ready-sprites-v1/atlases/blank-sword-two-actions.png` — **1280×1280**,
+  4×4 grid of **320×320** cells, row-major, rows `walk` (4 frames, 7 fps, loop),
+  `attack` (4, 9 fps), `hit` (4, 8 fps), `defeat` (4, 7 fps); sliced to
+  `frames/blank_sword_two/actions/<row>-<n>.png`. **South-east facing only.**
+- `manifest.json` is authoritative for the pack format; add a row/character there for
+  anything new.
+
+`combat.md`: "One base art and animation family carries every suit and rank." So every
+item below is **one body** re-dressed, never a new character — the systems side already
+assumes it (`BlankSprites` is one animation table for all 52 Blank definitions).
+
+Pivots for anything delivered: measure them with
+`python3 godot/tools/measure_sprite_pivots.py --family <name>` and paste the tables it
+prints, exactly as `blank_sprites.gd` did. Do not eyeball an offset.
+
+### (g) Cups, Wands and Coins Blank sheets — a stopgap is shipping today
+
+Reference identity, framing, scale: `game-ready-sprites-v1/frames/blank_sword_two/directions/*.png`
+Reference action style: `game-ready-sprites-v1/frames/blank_sword_two/actions/*.png`
+
+Today all four suits are the Swords sheet **tinted** from `EnemyRules.suit_tints`
+(`data/enemies/enemy_rules.tres`), which is named in that resource's own notes as a
+stopgap. Three suits are missing.
+
+- One direction sheet per suit — **1536×1024**, 4×2 grid of **384×512** cells, same
+  eight-facing order as the Swords sheet
+  → `game-ready-sprites-v1/atlases/blank-<suit>-two-directions.png`, sliced to
+  `frames/blank_<suit>_two/directions/<direction>.png`, suit ∈ `cups`, `wands`, `coins`.
+- One action sheet per suit — **1280×1280**, 4×4 of **320×320**, rows in the same order
+  and at the same fps as the Swords sheet (`walk` 7, `attack` 9, `hit` 8, `defeat` 7)
+  → `game-ready-sprites-v1/atlases/blank-<suit>-two-actions.png`, sliced to
+  `frames/blank_<suit>_two/actions/<row>-<n>.png`.
+- **Same body, same blank oval face, same tabard.** What changes is the implement and
+  one suit mark: Cups a lobbed vessel (the throw is what the attack row shows), Wands a
+  polearm (the reach must read — it out-reaches every other melee suit in the rules),
+  Coins a heavy shield carried high and forward.
+- The Coins attack row must show the **shield dropping** as the swing goes out: the
+  system really lowers it for the attack and its recovery, and that window is the
+  answer the player is offered (`combat.md`: "built to be broken through rather than
+  out-traded").
+- Anchors, per cell: lowest opaque pixel and centroid consistent within ±4 px / ±6 px
+  across a row, as for the Fool. Figure height to match the Swords sheet's (direction
+  cells average 456 px of opaque bbox; action cells 274 px on the walk row) so the
+  measured scales in `blank_sprites.gd` stay comparable.
+- Acceptance: the four suits must be tellable apart in a single frame **with tinting
+  turned off**. That is the test — the tint goes away the day these land.
+
+### (h) The printed number on the tabard
+
+`combat.md`: "the printed number on the Blank's back is a simple visual tell of
+toughness — a Two folds fast, a Ten is a real fight." Nothing draws it. The rules
+already make the number mean something (`rank_health_base` + `rank_health_per_pip`), so
+this is the only place a player can read it.
+
+- Deliver as a **separate overlay sheet**, not baked into the body: one 4×4 grid of
+  **320×320** cells → `game-ready-sprites-v1/atlases/blank-numbers.png`, cells `2`…`10`
+  in order, then `P`, `Kn`, `Q`, `K` for the court, then one empty cell.
+- Painted as cloth on the tabard — inked numeral, slight weave distortion, no flat
+  vector glyph — for the south-east facing first; the same overlay is reused on the
+  other facings as (j) lands.
+- Legibility is the acceptance test: readable at the game's rendered size (a Blank
+  stands ~122 px tall on screen) at 100% zoom, not only at 1:1 on the sheet.
+
+### (i) Page, Knight, Queen and King silhouettes
+
+`combat.md`'s Role table, as four bodies on the one family:
+
+| Rank | Must read as | Systems fact it has to match |
+|---|---|---|
+| Page | A scout: light, unarmoured, already running | It is the fastest thing in the roster and **never attacks** — no attack row is used, so do not draw one |
+| Knight | A duelist: the rank where suit identity is sharpest | It telegraphs fastest of the court |
+| Queen | A commander: still, upright, holding ground | She buffs allies and **summons nothing** — no conjuring pose |
+| King | A set piece: bigger, heavier, deliberately slow | Tougher than any pip rank; its telegraph is the longest |
+
+- One direction sheet per rank, format exactly as (g)
+  → `game-ready-sprites-v1/atlases/blank-court-<rank>-directions.png`, sliced to
+  `frames/blank_court_<rank>/directions/<direction>.png`.
+- Action rows for the Knight, Queen and King as (g); the Page needs `walk`, `hit` and
+  `defeat` only, plus the flee-specific note below.
+- The Page's `walk` row is really a **run** — it is the rank's whole behaviour
+  (`flees to alert others rather than engaging directly`), and it plays at the Page's
+  higher move speed, so the stride has to carry it.
+- The Queen wants an aura tell the ally can see: a held stance plus a ground ring or
+  banner glow is fine as a separate 4-frame looping overlay
+  → `frames/blank_court_queen/actions/aura-<n>.png`, 320×320, 6 fps, loop.
+
+### (j) The seven other action facings
+
+Same gap the Fool has in (a), on the Blank family: action rows exist for **south-east
+only**, so seven facings fall back to a static frame while walking.
+
+- Per facing, one action sheet: **1280×1280**, 4×4 of **320×320**, rows `walk`,
+  `attack`, `hit`, `defeat` in that order
+  → `game-ready-sprites-v1/atlases/blank-<family>-actions-<direction>.png`, sliced to
+  `frames/<family>/actions/<row>-<direction>-<n>.png`.
+- Directions: `south`, `southwest`, `west`, `northwest`, `north`, `northeast`, `east`.
+- Motion amplitude on the walk row: mean absolute pixel delta between consecutive
+  frames ≥ 18, and frames 0 and 2 mirrored-stride poses — the same rule (a) states, for
+  the same reason.
+- Priority order if this is split across sessions: `south`, `southwest`, `east`,
+  `west`, then the three northern facings (the Fool fights downhill toward the camera
+  far more often than away from it).
+
+### (k) A telegraph pose, `Stagger_Loop` and `Stagger_Recover`
+
+`combat.md` §Encounter philosophy: "Readable telegraphs everywhere, mooks and bosses
+alike — an enemy that hits without a tell is a bug, not a difficulty knob." The system
+enforces it (`BlankBrain` cannot reach `ATTACK` except through `TELEGRAPH`, and
+`EnemyRules.MIN_TELEGRAPH_SECONDS` is a floor under every multiplier) — but today the
+attack clip's own first frames stand in for the tell.
+
+- **Telegraph row**, per suit: 4 frames, **320×320**, 8 fps, **not looping**, held on
+  the last frame → `frames/<family>/actions/telegraph-<n>.png` plus a
+  `telegraph` row in `manifest.json`. The pose must be readable as *this suit's*
+  incoming hit at a glance: Coins' wind-up is the slowest and biggest, Swords' the
+  quickest and tightest.
+- **`Stagger_Loop`**: 2–4 frames, 320×320, 6 fps, **looping** — helpless, off balance,
+  no guard. This is the charged heavy's window (`combat.md` §The Bindle: "a brief
+  helpless stagger that opens bonus follow-ups"), and it is the one clip that tells the
+  player the window is open → `frames/<family>/actions/stagger-<n>.png`.
+- **`Stagger_Recover`**: 4 frames, 320×320, 8 fps, not looping — getting the feet back
+  → `frames/<family>/actions/stagger-recover-<n>.png`.
+- Note for whoever wires it: a staggered **Page** recovers into its run, not into a
+  guard — the rank never fights, and `BlankBrain` routes it that way.
+- Owed from round 7: `systems/combat/README.md` listed these as "enemy-side states…
+  belong to round 8 with the Blanks", which is this item.
+
+### (l) The card fluttering free
+
+`combat.md` §Enemies: "A defeated Blank slumps and fades while the card it bore flutters
+free — drifting off to raise a new bearer elsewhere later… a visible,
+storybook-melancholy effect." `EnemyService.card_fluttered(definition, from_position)`
+fires today and **nothing draws it**. MQ00 stages the pay-off:
+[`docs/quests/main/MQ00-the-leap.md`](../../docs/quests/main/MQ00-the-leap.md) — "Past
+the ridge line, each drifting card settles onto a new blank-faced figure rising from the
+grass."
+
+- One card sprite, face **blank** (that is the whole point of the fiction): **160×224**
+  → `game-ready-sprites-v1/frames/effects/blank-card.png`, plus a 4-frame edge-on
+  rotation at the same size → `blank-card-turn-<n>.png`, 8 fps, loop.
+- A drift cycle is not needed as art — the flight is a curve the code owns — but the
+  card must read from both faces and from edge-on, because it turns as it goes.
+- Optional and wanted: a 4-frame **settle** (the card touching a new figure), 320×320,
+  8 fps, not looping → `frames/effects/card-settle-<n>.png`. MQ00 is the scene that
+  needs it.
+- Tone check, and it is the acceptance test: mournful, not triumphant. Nothing here is
+  a kill — no burst, no shatter, no sting.
+
+### (m) The Cups lob
+
+`Projectile` is a `Hitbox` that travels and **has no sprite at all** today; the flight is
+a straight line against the ground plane.
+
+- One thrown vessel: 4-frame tumbling loop, **96×96**, 12 fps, loop
+  → `game-ready-sprites-v1/frames/effects/cups-lob-<n>.png`.
+- One 4-frame impact, **192×192**, 12 fps, not looping
+  → `frames/effects/cups-lob-impact-<n>.png`.
+- The **arc is presentation only**: the hit is decided on the ground-plane line, so draw
+  a lob that reads as arcing (rise, apex, fall) without the art implying a height the
+  hit test does not have. A shadow ellipse that stays on the ground line under the
+  vessel is the cheapest way to sell it → `frames/effects/lob-shadow.png`, 64×32.
+- Size check: the hit uses `cups_projectile_radius` (48 px today, TBD), so the vessel
+  should read at roughly that radius rather than as a thrown pebble.
+
+### (n) Wands' fire — BLOCKED on a design decision, do not draw yet
+
+`combat.md` calls Wands attacks "flame-tagged" and says they "punish standing still",
+but no doc says what the flame *does*. `EnemyRules.wands_fire_tag` is carried as data
+and nothing reads it. Listed here so it is not mistaken for an oversight: the VFX
+request follows the hazard rule, and the hazard rule is a design decision, not an art
+one.
+
+---
+
+## Fool combat animation states (round 7)
+
+The moveset built in round 7 (`systems/combat/`) is complete and runs headlessly;
+**nothing is wired to a clip yet** — `scripts/player.gd`'s animator keeps doing what it
+already does (eight facings, one walk cycle) and `FoolCombat` only tells the body which
+way to face. Wiring one clip per state is a one-function change the day the art lands.
+This list is transcribed from
+[`godot/systems/combat/README.md`](../systems/combat/README.md) §Art requests so it sits
+with the rest of the art hand-over; that README stays the owning doc.
+
+Format for every row below, unless it says otherwise: **1280×1280** action sheet, 4×4
+grid of **320×320** cells, four frames per row, sliced to
+`game-ready-sprites-v1/frames/fool/actions/<clip>-<direction>-<n>.png`, with the anchor
+discipline in the Global acceptance criteria. Existing style anchor:
+`frames/fool/actions/walk-0.png` … `walk-3.png`.
+
+| State | Clip | Facings | Loops | Notes from canon |
+|---|---|---|---|---|
+| `LIGHT_1` | `Bindle_Light_1` | 8 | no | Windup / active / recovery must be readable as three beats — `combat.md` §Philosophy. |
+| `LIGHT_2` | `Bindle_Light_2` | 8 | no | Reads as a continuation, not a repeat. |
+| `LIGHT_3` | `Bindle_Light_3` | 8 | no | The longest recovery in the string: this is where the commitment is felt. |
+| `HEAVY` | `Bindle_Heavy_Sweep` | 8 | no | "the bundle end drags through the strike, hitting everything in an arc". |
+| `CHARGING` | `Bindle_Charge_Hold` | 8 | **yes** | A held ready pose; needs an obvious "full" tell at `charge_seconds`. |
+| `CHARGED_HEAVY` | `Bindle_Launcher` | 8 | no | The stagger launcher — the target is lifted off its feet. |
+| `RUNNING_ATTACK` | `Bindle_Lunge` | 8 | no | A forward lunge that closes distance and interrupts. |
+| `DODGE_ROLL` | `Dodge_Roll` | 8 | no | The travel dodge, and the Focus forward/neutral dodge. |
+| `SIDE_HOP` | `Focus_Side_Hop` | 8 (or L/R × 8 strafe) | no | The Focus left/right strafing hop. |
+| `BACKFLIP` | `Grand_Backflip` | 8 | no | "high, deliberately *majestic*… finished with an emphatic landing". Theater as much as evasion. |
+| `BLOCK_STEP` | `Block_Step` | 8 | no | A hop-guard, not a shield: the Bindle is held two-handed. |
+| `IDLE` in Focus | `Focus_Ready` | 8 | **yes** | The "readable ready-crouch" Focus drops the Fool into. |
+| walking in Focus | `Focus_Strafe` | 8 | **yes** | 8-direction strafing that keeps the Fool facing the lock. |
+| — (hit reaction) | `Hit_React` | 8 | no | Played on `Combatant.damaged`; short, never a stagger. |
+| — (defeat) | `Defeat_Collapse` | 1–8 | no | `combat.md` §Defeat: "stumbles, goes to one knee, and folds down". No ragdoll, no death sting. |
+| — (waking) | `Defeat_Rise` | 1–8 | no | The wake-up rise at the Waystation, also named in §Defeat. |
+| — (healing) | `Rose_Petal_Heal` | 8 | no | One petal, one fast heal, on a dedicated button (`progression.md`). |
+| — (Fool's Chance) | `Fools_Chance_Flourish` | — | no | OPTIONAL: a one-off flourish or VFX on the trigger. The screen-flash/shake toggles for it are the UI round's. |
+
+Priority, if this is split across sessions: `LIGHT_1`–`LIGHT_3` and `DODGE_ROLL` first
+(they are what a player does every fight), then `Hit_React`, then the Focus set, then
+the rest.

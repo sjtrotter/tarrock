@@ -4,10 +4,10 @@ extends Node2D
 ##
 ## Scenes call systems, never the other way round (docs/design/technical.md
 ## §Architecture principles (Godot), 5). This script is the whole of that call for the
-## Cliff: it starts MQ00, listens to the props' `Interactable` nodes and to the
-## LeapPoint, and forwards each one's event to `QuestService.raise()`. It never
-## writes world state, never decides what an event means, and never asks a quest
-## where it is - the quest's own graph
+## Cliff: it starts MQ00, listens to the props' `Interactable` nodes, to the
+## LeapPoint and to the Waystation ambush, and forwards each one's event to
+## `QuestService.raise()`. It never writes world state, never decides what an event
+## means, and never asks a quest where it is - the quest's own graph
 ## (`res://data/quests/graphs/MQ00.tres`) owns the order the beats happen in.
 
 ## The Fool reached the lip. Kept for the Cliff's own integration test, which
@@ -20,6 +20,17 @@ const TRIGGER_ROOT := "World/QuestTriggers"
 
 ## The Bindle sprite, hidden once the Fool has taken it.
 const BINDLE_PROP := "World/Props/Bindle"
+
+## The one authored fight on the plateau: three Twos between the standing stones on
+## the Waystation approach (`docs/quests/main/MQ00-the-leap.md` §The Waystation
+## Approach). It lives under its own `World/Encounters` subtree so it can be moved
+## along the path without touching the quest wiring - the same reason the
+## Interactables have theirs.
+const WAYSTATION_AMBUSH := "World/Encounters/WaystationAmbush"
+
+## The beat the graph answers `MQ00_AMBUSH_CLEARED` from. See `_on_quest_advanced()`
+## for why the scene has to know it.
+const AMBUSH_ANSWERED_FROM := &"DEAD_TREE_SEEN"
 
 ## The Cliff's region token, as `docs/GLOSSARY.md` yields it, and the unbinding flag
 ## that would mean this place is awake - which is none.
@@ -38,13 +49,17 @@ const CLIFF_UNBINDING_FLAG := &""
 ## happens; this table only says what the Querent has to say about it, and the
 ## dialogue graphs decide what that is. A state with nothing to say is simply absent.
 ##
-## Five of MQ00's conversations are deliberately not here, because nothing in the
-## scene reaches them yet: `MQ00_WAKE` plays over a black screen before the region
-## loads (the opening cut scene, owned by the bootstrap flow), `MQ00_CAMPSITES` needs
-## an area trigger on the fire-rings, `MQ00_WAYSTATION_AMBUSH` and
-## `MQ00_WAYSTATION_REST_AGAIN` wait for combat (round 7) and for the Waystation's
-## rest verb (round 10), and `MQ00_LEAP_BEFORE` belongs to the cut scene that plays
-## after Pip jumps and before the Fool steps off.
+## `MQ00_WAYSTATION_AMBUSH` is deliberately not in this table, because it is not a
+## beat: the Querent's "*(mid-fight, easy)*" line plays when the three Blanks rise,
+## not when the quest moves, so it hangs on the encounter's `engaged` instead - and
+## the quest is still at whatever beat it was on while the fight happens.
+##
+## Four of MQ00's conversations are not here either, because nothing in the scene
+## reaches them yet: `MQ00_WAKE` plays over a black screen before the region loads
+## (the opening cut scene, owned by the bootstrap flow), `MQ00_CAMPSITES` needs an
+## area trigger on the fire-rings, `MQ00_WAYSTATION_REST_AGAIN` waits for the
+## Waystation's rest verb (round 10), and `MQ00_LEAP_BEFORE` belongs to the cut scene
+## that plays after Pip jumps and before the Fool steps off.
 const DIALOGUE_FOR_STATE: Dictionary = {
 	&"BINDLE_TAKEN": DialogueIds.MQ00_MEADOW,
 	&"KEEPSAKE_FOUND": DialogueIds.MQ00_KEEPSAKE_GIVEN,
@@ -60,6 +75,10 @@ const DIALOGUE_FOR_STATE: Dictionary = {
 
 var _leap_fired := false
 
+## True once this scene has carried `MQ00_AMBUSH_CLEARED` to the quest runner from a
+## beat the graph could actually answer it from. See `_on_ambush_cleared()`.
+var _ambush_reported := false
+
 ## The one beat whose conversation is waiting for the current one to finish, or
 ## `&""` when nothing is waiting. One slot on purpose - see `_on_quest_advanced()`.
 var _pending_graph_id: StringName = &""
@@ -67,6 +86,10 @@ var _pending_graph_id: StringName = &""
 
 func _ready() -> void:
 	_leap_point.body_entered.connect(_on_leap_point_body_entered)
+	var ambush := _ambush()
+	if ambush != null:
+		ambush.engaged.connect(_on_ambush_engaged)
+		ambush.cleared.connect(_on_ambush_cleared)
 	for node: Node in get_node(TRIGGER_ROOT).get_children():
 		var trigger := node as Interactable
 		if trigger != null:
@@ -106,30 +129,49 @@ func raise_quest_event(event: StringName, source: Node) -> void:
 	quests.raise(event, {"node": source})
 
 
-## MQ00 moved: say whatever the Querent says about the beat it just reached.
+## MQ00 moved: say whatever the Querent says about the beat it just reached, and give
+## a latched ambush the chance to land now the quest can hear about it.
 ##
-## The scene starts a conversation and does not wait for it - there is no dialogue
-## UI until round 13, so a started conversation simply sits there until something
-## advances it, and the beats keep happening around it. `DialogueService.start()`
-## refuses while another conversation is running, which is half of the behaviour we
-## want: a beat that lands mid-sentence must not interrupt the sentence. It must not
-## be *lost* either, though - the Querent's line about the ambush is the only place
-## the script explains where the cleared cards went - so a refused beat is remembered
-## and started the moment the conversation on screen is over.
-##
-## One slot, and the newest wins. Two beats queueing behind one conversation means
-## the player is outrunning the Querent by a wide margin; replaying the older line
-## after the newer one would narrate the wrong moment, so the older is dropped and
-## says so in the log.
+## The scene starts a conversation and does not wait for it - there is no dialogue UI
+## until round 13, so a started conversation simply sits there until something advances
+## it, and the beats keep happening around it. `_say()` owns what happens when two of
+## them want the screen at once.
 func _on_quest_advanced(quest_id: StringName, _from_state: StringName, to_state: StringName) -> void:
 	if quest_id != QuestIds.MQ00:
 		return
+	if to_state == AMBUSH_ANSWERED_FROM:
+		# MQ00's graph is linear canon order, so it only answers `MQ00_AMBUSH_CLEARED`
+		# from the dead tree. A player who reaches the standing stones first - the
+		# encounter is a volume in the world, not a locked door - clears a real fight
+		# whose event no quest is listening for, and `QuestService.raise()` drops an
+		# event nobody wants by design. So the encounter's `cleared` is a LATCH and
+		# this is where it is asked again, the moment the quest is ready to hear it.
+		#
+		# Deferred by one call rather than raised here: this handler is inside the
+		# quest runner's own signal, and the beat that lands would otherwise start its
+		# conversation *before* the dead-tree line this call is about to start.
+		_report_ambush_if_cleared.call_deferred()
 	if not DIALOGUE_FOR_STATE.has(to_state):
 		return
+	_say(DIALOGUE_FOR_STATE[to_state])
+
+
+## Say one thing, now or as soon as whatever is being said finishes.
+##
+## `DialogueService.start()` refuses while another conversation is running, which is
+## half of the behaviour we want: a beat that lands mid-sentence must not interrupt
+## the sentence. It must not be *lost* either, though - the Querent's line about the
+## ambush is the only place the script explains where the cleared cards went - so a
+## refused line is remembered and started the moment the screen is free.
+##
+## One slot, and the newest wins. Two lines queueing behind one conversation means the
+## player is outrunning the Querent by a wide margin; replaying the older one after
+## the newer would narrate the wrong moment, so the older is dropped and says so in
+## the log.
+func _say(graph_id: StringName) -> void:
 	var dialogue := _dialogue()
 	if dialogue == null:
 		return
-	var graph_id: StringName = DIALOGUE_FOR_STATE[to_state]
 	if dialogue.start(graph_id):
 		return
 	if not dialogue.is_active():
@@ -142,6 +184,44 @@ func _on_quest_advanced(quest_id: StringName, _from_state: StringName, to_state:
 			_pending_graph_id, graph_id
 		])
 	_pending_graph_id = graph_id
+
+
+## The three Blanks rose out of the long grass: the Querent has something to say about
+## it while the fight is on. `docs/quests/main/MQ00-the-leap.md` marks the line
+## "*(mid-fight, easy)*", so it starts here rather than on a quest beat - the quest has
+## not moved and will not until they are down.
+func _on_ambush_engaged() -> void:
+	_say(DialogueIds.MQ00_WAYSTATION_AMBUSH)
+
+
+## The three Blanks are down. The scene carries the event; the quest decides what it
+## means, and today it only means something from the dead tree onward.
+func _on_ambush_cleared() -> void:
+	_report_ambush_if_cleared()
+
+
+## Carry `MQ00_AMBUSH_CLEARED` to the quest runner, if there is a cleared fight to
+## report and MQ00 is somewhere it can hear about it.
+##
+## Called twice on purpose - once when the fight is won, once when the quest reaches
+## the beat that answers it - and the guard is which one actually lands. Raising it
+## twice would be harmless (no transition leaves `AMBUSH_CLEARED` on this event), but
+## `_ambush_reported` keeps the scene honest about having reported it once.
+func _report_ambush_if_cleared() -> void:
+	if _ambush_reported:
+		return
+	var ambush := _ambush()
+	if ambush == null or not ambush.is_cleared():
+		return
+	if ambush.quest_event_on_cleared == &"":
+		return
+	var quests := _quests()
+	if quests == null or quests.state_of(QuestIds.MQ00) != AMBUSH_ANSWERED_FROM:
+		return
+	_ambush_reported = true
+	# The event id is the ENCOUNTER's, authored on the node in the scene - the same
+	# shape an `Interactable` uses. The scene carries it; it never decides it.
+	raise_quest_event(ambush.quest_event_on_cleared, ambush)
 
 
 ## A conversation raised a domain event; the scene is what carries it to the quests,
@@ -188,6 +268,11 @@ func _wire_services() -> void:
 	var rose := _rose()
 	if rose != null:
 		rose.set_region(CLIFF_REGION_ID, CLIFF_UNBINDING_FLAG)
+	# The encounter is a scene node, so the scene is what hands it its services -
+	# exactly as it would hand them to the Fool. It never reaches for them itself.
+	var ambush := _ambush()
+	if ambush != null:
+		ambush.attach_services(_combat(), _enemies())
 	_begin_first_quest()
 
 
@@ -221,6 +306,27 @@ func _dialogue() -> DialogueService:
 	if services == null:
 		return null
 	return services.get("dialogue") as DialogueService
+
+
+## The fight, looked up the same way and for the same reason.
+func _combat() -> CombatService:
+	var services := get_node_or_null("/root/Services")
+	if services == null:
+		return null
+	return services.get("combat") as CombatService
+
+
+## The enemy roster, looked up the same way and for the same reason.
+func _enemies() -> EnemyService:
+	var services := get_node_or_null("/root/Services")
+	if services == null:
+		return null
+	return services.get("enemies") as EnemyService
+
+
+## The Waystation ambush node, or `null` in a stripped-down copy of this scene.
+func _ambush() -> Encounter:
+	return get_node_or_null(WAYSTATION_AMBUSH) as Encounter
 
 
 ## The White Rose, looked up the same way and for the same reason.

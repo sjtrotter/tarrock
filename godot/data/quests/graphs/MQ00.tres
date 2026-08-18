@@ -32,7 +32,7 @@ notes = "EXT. THE CLIFF: The Dead Tree — MORNING. Tutorial prompt: approach th
 script = ExtResource("2_state")
 id = &"AMBUSH_CLEARED"
 is_complete = false
-notes = "EXT. THE CLIFF: The Waystation Approach — MORNING. Three Blanks, Twos of Cups, Swords and Wands, fall in turn. Combat is round 7 and no Blanks stand in the Cliff scene yet, so nothing there raises MQ00_AMBUSH_CLEARED; the integration test raises it directly."
+notes = "EXT. THE CLIFF: The Waystation Approach — MORNING. Three Blanks, Twos of Cups, Swords and Wands, fall in turn. Round 8 stands them in the Cliff scene: World/Encounters/WaystationAmbush raises MQ00_AMBUSH_CLEARED through the scene when all three are down. This edge is answered only from DEAD_TREE_SEEN because the graph is linear canon order; a player who clears the ambush first has the event latched by the scene and re-raised on arriving here."
 
 [sub_resource type="Resource" id="State_RESTED"]
 script = ExtResource("2_state")

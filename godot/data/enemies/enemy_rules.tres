@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="EnemyRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/enemies/definitions/enemy_rules.gd" id="1_enemy_rules"]
+
+[resource]
+script = ExtResource("1_enemy_rules")
+id = &"ENEMY_RULES"
+suit_health = PackedInt32Array(26, 24, 30, 44)
+suit_damage = PackedInt32Array(8, 9, 11, 14)
+suit_move_speed = PackedFloat32Array(150, 170, 130, 100)
+suit_telegraph_seconds = PackedFloat32Array(0.6, 0.48, 0.75, 0.9)
+suit_active_seconds = PackedFloat32Array(0.1, 0.08, 0.12, 0.16)
+suit_recovery_seconds = PackedFloat32Array(0.45, 0.3, 0.55, 0.7)
+suit_attack_arc_degrees = PackedFloat32Array(40, 70, 55, 110)
+suit_attack_radius = PackedFloat32Array(420, 90, 140, 110)
+suit_string_length = PackedInt32Array(1, 3, 1, 1)
+suit_tints = PackedColorArray(0.62, 0.78, 1, 1, 1, 1, 1, 1, 1, 0.78, 0.48, 1, 0.96, 0.86, 0.44, 1)
+cups_preferred_range = 260.0
+cups_projectile_speed = 320.0
+cups_projectile_radius = 48.0
+cups_projectile_extra_life_seconds = 0.5
+swords_followup_telegraph_multiplier = 0.75
+wands_fire_tag = &"FIRE"
+wands_fire_lingering_seconds = 2.0
+coins_block_arc_degrees = 150.0
+coins_block_chance = 1.0
+coins_armour_multiplier = 0.75
+rank_health_base = 0.6
+rank_health_per_pip = 0.1
+rank_damage_base = 0.8
+rank_damage_per_pip = 0.04
+court_health_multipliers = PackedFloat32Array(0.7, 2, 1.8, 3.5)
+court_damage_multipliers = PackedFloat32Array(0.7, 1.6, 1.2, 2.2)
+court_telegraph_multipliers = PackedFloat32Array(1, 0.9, 1, 1.1)
+court_speed_multipliers = PackedFloat32Array(1.3, 1.15, 0.95, 1)
+aggro_radius = 320.0
+disengage_radius = 720.0
+aware_seconds = 0.3
+page_alert_radius = 480.0
+page_alert_seconds = 0.8
+queen_aura_radius = 260.0
+queen_aura_damage_multiplier = 1.2
+queen_aura_telegraph_multiplier = 0.9
+card_flutter_seconds = 1.4
+pool_size = 8
+doc_ref = "docs/design/combat.md §Enemies: the Blanks, §Other enemy families, §Encounter philosophy, §Philosophy, §Difficulty modes"
+notes = "CANON in SHAPE, fixed by combat.md §Enemies: the Blanks and not changeable without changing the doc: Cups alone are ranged and keep a stand-off range (\"fluid skirmishers and ranged lobbers - arcing, evasive, harass at range and reposition\"); Swords alone throw a string and have the shortest telegraph (\"fast, precise duelists - tight strings, quick punishes\"); Wands out-reach the other melee suits and tag their hits (\"reach and fire - polearm-length pokes and flame-tagged attacks\"); Coins alone carry a shield and armour, are the slowest and have the longest telegraph (\"heavy shielded bruisers - slow, armored, built to be broken through rather than out-traded\"); the printed number is a toughness curve that must RISE (\"a Two folds fast, a Ten is a real fight\"); the Page is the frailest and fastest and never attacks (\"Scout and alarm-raiser; flees to alert others rather than engaging directly\"); the Knight tells fastest (\"the rank where suit identity is sharpest\"); the Queen buffs allies and summons nothing (\"grants support auras to nearby Blanks (buffs, not summons)\"); the King is tougher than any pip rank (\"Roaming mini-boss; a small set piece in its own right, not just a bigger mook\"); and EVERY telegraph clears EnemyRules.MIN_TELEGRAPH_SECONDS whatever multiplies it, because §Encounter philosophy says \"an enemy that hits without a tell is a bug, not a difficulty knob\" - validate() refuses a table that would need the runtime clamp. EVERY ACTUAL NUMBER HERE IS A TBD PLACEHOLDER owned by the combat-tuning pass, by name: every entry of suit_health, suit_damage, suit_move_speed, suit_telegraph_seconds, suit_active_seconds, suit_recovery_seconds, suit_attack_arc_degrees, suit_attack_radius and suit_string_length; every entry of suit_tints (a stopgap until the other three suits have art - see systems/enemies/README.md); cups_preferred_range; cups_projectile_speed; cups_projectile_radius; cups_projectile_extra_life_seconds; swords_followup_telegraph_multiplier; wands_fire_lingering_seconds; coins_block_arc_degrees; coins_block_chance; coins_armour_multiplier; rank_health_base; rank_health_per_pip; rank_damage_base; rank_damage_per_pip; every entry of court_health_multipliers, court_damage_multipliers, court_telegraph_multipliers and court_speed_multipliers; aggro_radius; disengage_radius; aware_seconds; page_alert_radius; page_alert_seconds; queen_aura_radius; queen_aura_damage_multiplier; queen_aura_telegraph_multiplier; card_flutter_seconds; pool_size. DIFFICULTY IS NOT HERE. Trial's tightened telegraphs use CombatRules.timing_window_multiplier() - the same multiplier that scales the Fool's perfect-dodge window - exactly as systems/combat/README.md asks; a copy on this side would be two sources for one fact. wands_fire_tag AND wands_fire_lingering_seconds ARE UNCONSUMED: combat.md calls Wands attacks \"flame-tagged\" and says they \"punish standing still\", but no doc says what the flame does, so the tag is carried as data and no system reads it. The hazard it implies belongs to whichever round builds hazards, and inventing its rule here would be inventing combat canon. DECISIONS taken here that the doc does not state, recorded so a reviewer can overrule them cheaply: the pip ranks all telegraph at their suit's own pace (rank scales toughness, not stealth - the doc's own reading of the printed number); the aggro and disengage radii are one pair for the whole roster rather than per suit or per rank, so a King does not yet notice the Fool from further away than a Two; the Queen holds her ground while commanding rather than charging with her allies; and the Cups lob flies in a straight line, because the arc in \"arcing\" is presentation and the ground-plane flight is what decides a hit."
