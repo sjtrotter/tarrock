@@ -282,9 +282,42 @@ have no display names (no doc names a Blank — the UI round decides); the card-
 
 **Director asks:** none new.
 
-## Round 9 — Pip (open 2026-08-18)
+## Round 9 — Pip (CLOSED 2026-08-18)
 
-**Goal:** the command wheel (Fetch / Harry / Seek) as input→command logic + views, a `PipService`
-(retreat at zero health and return — never anything called death), Pip as a Combatant on
-the Fool's side, `Seekable`/`Fetchable` nodes, Harry redirecting a Blank's attention, and
-MQ00's keepsake beat going through Seek. _In progress._
+**Shipped (`b245449`; `579d31d` docs):** the command wheel as pure input→command logic
+(`PipWheel` sectors/dead-zone/hold-release-tap + a read-only view for the UI round),
+`PipService` (Fetch / Harry / Seek lifecycles; refusals while out; **zero health → retreat →
+cooldown → return, never removed** — no death word anywhere in the folder, proved by
+reflection over every script and a pinned public surface; a target freed mid-errand
+aborts cleanly), `PipCompanion` on Pip's scene, `Seekable`/`Fetchable` props, Pip as a
+Combatant on the Fool's side who can never be mistaken for the Fool; Harry through a
+minimal, listed hook in the enemy layer (the Blank's brain sees Pip where the Fool would
+be, telegraphs lengthen and never sharpen); the defeat beat (trot over, lick) as a
+presentation hook the service raises itself. **MQ00's keepsake now goes through Seek** —
+Pip walks in behind the Fool, the reach measured from him. Pip animation requests appended
+to `godot/art/ART-REQUESTS.md`; combat.md §Accessibility now names Focus and the Pip wheel
+among hold/toggle inputs.
+
+**Proof:** 799 unit tests (69 new) + `pip_test` (real wheel input, real hits: a Blank's swing
+puts Pip to zero and he retreats, is never removed, and returns whole). Critic: 8/8
+mutations caught (cooldown ignored; hide or free Pip; harry silent; Seek found before
+arrival; wheel tie-break; command accepted while out; the dig site one-shot again; Blank
+still targeting Pip after the pin). **Blocking catches fixed:** payload signals could carry
+a freed target (an engine error the first time a region unloads mid-errand); Seek's
+"points toward a trap / secret / fog-hidden path" half was unbuilt and unmarked (now a
+TBD flag on `Seekable`, README + rules notes).
+
+**Debt / owed:** nothing real to Fetch yet (lobbed weapons/quest objects/ammunition don't
+exist); the wooden dog has nowhere to go (MQ00's Almanack-curio open question); the
+Mirrormarsh fear is MQ18's (untouched); the `Blank` cast in `PipCompanion` is the one
+cross-system reach (a `Distractable` seam when a second enemy family gets a body).
+
+**Director asks:** none new (issues #10, #11 still open).
+
+## Round 10 — Regions and Waystations (open 2026-08-18)
+
+**Goal:** 22 `RegionDefinition`s generated from world.md §Regions (adjacency hand-authored
+from §Layout), the persistent layer (Fool, Pip, camera, UI root above a swapped region
+scene), `RegionService` as the only loader (adjacency, hard gates, fast travel gated on
+`WS_CHARIOT_UNBOUND`, rest at Waystations, defeat → return to the last Waystation),
+new-game and load flows, Cliff → Prestige (greybox stub). _In progress._
