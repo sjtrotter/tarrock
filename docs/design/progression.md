@@ -59,6 +59,12 @@ orientations), not from grinding any one of them.
   configurations — is available at **Waystations** only (see below). Free-form swapping
   covers moment-to-moment adaptation; Waystation loadouts cover deliberate, considered
   builds the player wants to return to.
+- **Revive-class rule (Future slot):** a Future effect that stands the Fool back up from
+  defeat (a *revive-class* Future — [`arcana.md`](arcana.md) names Reveille, Passage, and
+  Bloom) fires **at most once per rest**, whichever card provides it; resting at a
+  Waystation re-arms it. Only one revive can be armed at a time regardless of how the
+  Spread is built (there is only one Future slot), and the count resets on rest, not on
+  region change or save/load.
 
 ### Slot unlock pacing
 
