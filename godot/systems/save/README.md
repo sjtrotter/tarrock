@@ -1,1 +1,81 @@
-Round 3 of `docs/gauntlet-systems/PROMPT.md` builds this system; empty until then.
+# `systems/save/` — one playthrough, on disk
+
+Owns the runtime side of
+[`docs/design/technical.md`](../../../docs/design/technical.md) §Save system (Godot):
+versioned JSON in `user://saves/`, explicit migrations, IDs only. The mutable state of
+a playthrough lives here; the *facts* it refers to (which flags exist, what a Trump
+does) live in definitions and in the docs, and are re-resolved from their ids on load.
+
+| File | What |
+|---|---|
+| `save_model.gd` | `SaveModel` — the shape of one save file: ids, numbers and plain containers, nothing else |
+| `save_schema.gd` | `SaveSchema` — the production migration table, and the checklist a version bump follows |
+| `save_migrations.gd` | `SaveMigrations` — the version chain; a missing step is a hard failure |
+| `migration_result.gd` | `MigrationResult` — what a migration attempt hands back |
+| `save_service.gd` | `SaveService` — capture / apply / write / read, slots, signals |
+| `save_read_result.gd` | `SaveReadResult` — a loadable model, or the reasons there isn't one |
+
+The difficulty mode a playthrough is played at is
+[`systems/core/difficulty_mode.gd`](../core/difficulty_mode.gd): it is save data, but
+combat and a settings screen need it too, so it sits in `core/` with the other shared
+vocabulary.
+
+Five rules this system exists to make structural rather than remembered:
+
+- **Versioned, always.** Every file carries `schema_version`, and this build reads
+  exactly one version — everything older comes up through the chain, and anything
+  newer is refused outright rather than opened and written back with its unknown
+  fields silently dropped.
+- **A missing migration is a hard failure.** Never a best-effort walk as far as the
+  steps happen to reach: half-migrated data is data whose meaning nobody wrote down.
+- **IDs only.** No resource, no object, no node ever enters the file; a test asserts
+  that what lands on disk contains no `res://` and no `Object(`.
+- **A write is atomic, and checked before it counts.** Validate, write `<slot>.tmp`,
+  read the stream's error, count the bytes that actually landed against the bytes the
+  payload holds, and only then rename it over the slot. Any failure removes the temp
+  file — so an interrupted save, a refused save, a full disk and a temp path something
+  else is sitting on all leave the previous save whole, byte for byte. A `.tmp` is
+  never mistaken for a slot.
+- **A listed slot is a slot that opens.** `list_slots()` accepts only the names this
+  service itself writes (`slot_<n>.json`, `n` ≥ 0, no padding), so every id it returns
+  is one `read_slot()` can open. `slot_007.json`, `slot_-1.json` and `slot_.json` parse
+  as integers and are not slots.
+- **A load is not a reset.** `apply()` fills a world nobody has played yet and refuses
+  one in play, which is the same rule `WorldStateService.restore_snapshot()` holds from
+  underneath. Deleting a save file un-fires nothing: permanence is a property of a
+  running world, not of the file cabinet.
+
+Bad input is data. Nothing here pushes an error or asserts on a file a player's disk
+handed it: a missing file, gibberish, a save from a newer build and a save with a field
+gone all come back as diagnostics the caller decides what to do with.
+
+The exceptions are about *this build* being wired wrong, not about a player's disk.
+`SaveService.capture()` with no world state pushes an error and returns null, because a
+service with no world cannot describe a playthrough and a blank model returned quietly
+would be written over a real save. And the engine itself may log when creating the save
+directory genuinely fails: `write_slot()` only asks for the directory when it is not
+already there, so the ordinary save is silent, but a failing
+`make_dir_recursive_absolute()` prints from inside the engine and no caller can mute it.
+
+Fixtures for the checked-in save files live in
+[`godot/tests/fixtures/saves/`](../../tests/fixtures/saves).
+
+## Owed by later rounds
+
+- **Loading from the title screen.** `apply()` deliberately cannot rescue a world that
+  has been played, so a load means building fresh services and swapping the persistent
+  layer over to them. That machinery belongs to the **Regions round (round 10)**, which
+  owns the persistent layer and scene switching.
+- **The fields this round holds by hand.** `current_region_id` and
+  `last_waystation_id` are plain settable fields on `SaveService` until the Regions
+  round owns where the Fool is; the difficulty mode is likewise until combat/settings
+  own it. `capture()` asks them then, and the setters go away.
+- **`pocket_spread` and `inventory`** are written empty in v1, so the round that fills
+  them (Trumps, round 6; progression, round 11) finds the field already there and needs
+  no schema bump.
+- **Playtime is world time.** `playtime_seconds` is the loaded save's counter plus the
+  clock's seconds *since the load* — `apply()` baselines the clock, so time spent on a
+  title screen before pressing Continue is not billed as play. It is still world time,
+  which `Engine.time_scale` scales, so it drifts from wall-clock play during
+  slow-motion. If the Almanack ever shows a play timer, it wants a real stopwatch
+  (`Time.get_ticks_usec()`), not this counter.

@@ -13,7 +13,6 @@ extends Node
 ## (see `res://tests/README.md`).
 ##
 ## Rounds add fields here, in dependency order:
-##   ## Round 3 adds `save_service: SaveService` (versioned JSON, explicit migrations)
 ##   ## Round 4 adds `quests: QuestService`
 ##   ## Round 5 adds `dialogue: DialogueService`
 ## - see docs/gauntlet-systems/PROMPT.md for the full order.
@@ -31,11 +30,17 @@ var clock: GameClock = null
 ## answer, named-NPC memory and quest state. Everything else reads and subscribes.
 var world_state: WorldStateService = null
 
+## Versioned JSON saves in `user://saves/`, with the explicit migration chain.
+## It captures out of the services above it and applies back into them - which is why
+## it is built last and holds them, rather than the other way round.
+var save: SaveService = null
+
 
 func _ready() -> void:
 	# Dependency order: each service is handed the ones above it, never looked up.
 	clock = GameClock.new()
 	world_state = _build_world_state()
+	save = SaveService.new(world_state, clock)
 
 	# The clock ticks on process frames, not physics: one tick per rendered frame,
 	# independent of the physics tick rate. The delta handed over is the engine's,

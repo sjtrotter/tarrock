@@ -1,0 +1,39 @@
+{
+	"schema_version": 99,
+	"world_state": {
+		"fired": {
+			"WS_MAGICIAN_UNBOUND": "MQ01",
+			"WS_TROUPE_TRAVELING": "MQ01",
+			"WS_PRIESTESS_UNBOUND": "MQ02",
+			"WS_EMPRESS_UNBOUND": "MQ03"
+		},
+		"reading_order": [
+			"WS_MAGICIAN_UNBOUND",
+			"WS_PRIESTESS_UNBOUND",
+			"WS_EMPRESS_UNBOUND"
+		],
+		"renown": {
+			"CUPS": 12,
+			"SWORDS": 0,
+			"WANDS": 5,
+			"COINS": 0
+		},
+		"hermit_answer": "HERMIT_ANSWER_DONT_KNOW_YET",
+		"npc_memory": {
+			"FLICK": [
+				"MET_THE_FOOL",
+				"SAW_THE_SHOW_END"
+			]
+		},
+		"quest_states": {
+			"MQ01": "complete",
+			"MQ02": "in_progress"
+		}
+	},
+	"pocket_spread": {},
+	"inventory": {},
+	"current_region_id": "THE_PRESTIGE",
+	"last_waystation_id": "THE_PRESTIGE_WAYSTATION",
+	"playtime_seconds": 4321.5,
+	"difficulty_mode": "TRIAL"
+}
