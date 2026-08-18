@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_20"
+card_number = 20
+name_key = &"TRUMP_20_NAME"
+granted_by_flag = &"WS_JUDGEMENT_UNBOUND"
+past_summary = "The waiting dead speak: ghost NPCs give hints and close their old accounts (world.md)."
+present_summary = "Trumpet blast: knockback + your fallen enemies rise briefly as allies."
+future_summary = "Full self-revive with all petals. (Revive-class rule: only one revive-class Future fires per rest — this, Passage, or Bloom; progression.md owns the rule.)"
+burden_name = "the call compels"
+burden_summary = "raised allies come back stronger — and after ten seconds they answer to no one, including you."
+doc_ref = "docs/design/arcana.md §XX. Judgement"
+effects = null

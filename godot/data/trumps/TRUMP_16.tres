@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_16"
+card_number = 16
+name_key = &"TRUMP_16_NAME"
+granted_by_flag = &"WS_TOWER_UNBOUND"
+past_summary = "Breakable walls and unstable structures shimmer faintly."
+present_summary = "Call a lightning strike at a marked point."
+future_summary = "Taking a heavy hit discharges a stagger-nova (once per fight)."
+burden_name = "catastrophe"
+burden_summary = "the strike becomes a rolling storm — which does not distinguish. Strikes land near you, too."
+doc_ref = "docs/design/arcana.md §XVI. The Tower"
+effects = null

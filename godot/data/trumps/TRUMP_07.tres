@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_07"
+card_number = 7
+name_key = &"TRUMP_07_NAME"
+granted_by_flag = &"WS_CHARIOT_UNBOUND"
+past_summary = "The Chariot answers: summonable mount anywhere outdoors. **The traversal headline.**"
+present_summary = "Battering dash: crash through enemies, barriers, and lines of fire."
+future_summary = "Dodging while sprinting becomes a dash-through with full i-frames."
+burden_name = "momentum"
+burden_summary = "dash and mount speed surge, but stopping is no longer entirely your decision (overshoot; long skids; comedy and cliffs)."
+doc_ref = "docs/design/arcana.md §VII. The Chariot"
+effects = null

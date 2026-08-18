@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_11"
+card_number = 11
+name_key = &"TRUMP_11_NAME"
+granted_by_flag = &"WS_JUSTICE_UNBOUND"
+past_summary = "Arbitrate: NPC dispute events unlock across the Spread (side content; world.md)."
+present_summary = "Mark a foe: your next strike lands as judged true damage."
+future_summary = "A perfectly timed dodge reflects the attack back to its source."
+burden_name = "the harsh sentence"
+burden_summary = "judged damage doubles — and a tithe of every judgment lands on you as well. The scales must balance."
+doc_ref = "docs/design/arcana.md §XI. Justice"
+effects = null

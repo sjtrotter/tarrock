@@ -20,7 +20,7 @@ The difficulty mode a playthrough is played at is
 combat and a settings screen need it too, so it sits in `core/` with the other shared
 vocabulary.
 
-Five rules this system exists to make structural rather than remembered:
+The rules this system exists to make structural rather than remembered:
 
 - **Versioned, always.** Every file carries `schema_version`, and this build reads
   exactly one version — everything older comes up through the chain, and anything
@@ -44,6 +44,18 @@ Five rules this system exists to make structural rather than remembered:
   one in play, which is the same rule `WorldStateService.restore_snapshot()` holds from
   underneath. Deleting a save file un-fires nothing: permanence is a property of a
   running world, not of the file cabinet.
+- **The world lands first, and a rejected section stops the apply.** `apply()` restores
+  the world state before the three progression sections, because the Pocket Spread
+  derives which Trumps are held from the flags — a Spread filled before its world would
+  reject every card in it. That order has a price, and it is the one thing about
+  `apply()` a caller must know: all four services are checked for pristineness *before*
+  anything is applied, so the ordinary "you are already playing" refusal changes
+  nothing at all — but a save whose **contents** a progression section rejects stops at
+  that section, with the world and the earlier sections already loaded and the later
+  ones untouched. A non-empty result therefore means **rebuild the composition root
+  before retrying**, not "try again": these services are partly loaded, they are no
+  longer pristine, and a second `apply()` on them is refused anyway. The rebuild
+  belongs to the same Regions-round machinery a title-screen load needs (below).
 
 Bad input is data. Nothing here pushes an error or asserts on a file a player's disk
 handed it: a missing file, gibberish, a save from a newer build and a save with a field
@@ -70,9 +82,11 @@ Fixtures for the checked-in save files live in
   `last_waystation_id` are plain settable fields on `SaveService` until the Regions
   round owns where the Fool is; the difficulty mode is likewise until combat/settings
   own it. `capture()` asks them then, and the setters go away.
-- **`pocket_spread` and `inventory`** are written empty in v1, so the round that fills
-  them (Trumps, round 6; progression, round 11) finds the field already there and needs
-  no schema bump.
+- **`inventory`** is still written empty in v1, so the round that fills it
+  (progression, round 11) finds the field already there and needs no schema bump.
+  `pocket_spread` was the same until the Trumps round (round 6) filled it with the
+  Spread, the Fortune meter and the White Rose — inside the same v1 shape, exactly as
+  the reserved field was meant to be used.
 - **Playtime is world time.** `playtime_seconds` is the loaded save's counter plus the
   clock's seconds *since the load* — `apply()` baselines the clock, so time spent on a
   title screen before pressing Continue is not billed as play. It is still world time,

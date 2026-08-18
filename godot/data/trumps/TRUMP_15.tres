@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_15"
+card_number = 15
+name_key = &"TRUMP_15_NAME"
+granted_by_flag = &"WS_DEVIL_UNBOUND"
+past_summary = "Fine-print stock at every shop: potent goods with their costs printed honestly."
+present_summary = "Chain-tether: bind an enemy — yank fliers down, drag runners back, anchor bruisers."
+future_summary = "When Fortune empties: instant full refill + one stacking curse (until rest)."
+burden_name = "the house always wins"
+burden_summary = "everything stronger, everything cheaper — and 10% of all coins you earn are simply gone. You will not find where. He will not say."
+doc_ref = "docs/design/arcana.md §XV. The Devil"
+effects = null

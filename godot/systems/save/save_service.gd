@@ -16,6 +16,12 @@ extends RefCounted
 ##     are counted against the payload, and only then is it renamed over the real one.
 ##     A power cut, a full disk or a short write leaves the previous save intact rather
 ##     than a half-written file that reads as a corrupt playthrough.
+##   * **The whole game is captured, not just the world.** The Pocket Spread, the
+##     Fortune meter and the White Rose go into `SaveModel.pocket_spread`, and come
+##     back in that order *after* the world state, because which Trumps are held is
+##     derived from the flags rather than stored beside them. A section this build
+##     cannot read stops the apply where it stands, leaving the services partly
+##     loaded - `apply()` spells out what a caller owes then.
 ##   * **A load is not a reset.** `apply()` refuses any world that has already been
 ##     played: `WorldStateService.restore_snapshot()` only fills a pristine service,
 ##     because a public call that could blank a world in play would be the un-fire the
@@ -67,6 +73,9 @@ const JSON_INDENT := "\t"
 
 var _world_state: WorldStateService = null
 var _clock: GameClock = null
+var _spread: PocketSpreadService = null
+var _fortune: FortuneService = null
+var _rose: WhiteRoseService = null
 var _saves_dir: String = DEFAULT_SAVES_DIR
 var _migrations: SaveMigrations = null
 
@@ -93,16 +102,27 @@ var _playtime_baseline: float = 0.0
 ## The defaults are the shipping configuration, and an explicit null for `migrations`
 ## falls back to them too: a service with no chain at all could not read any save, and
 ## silently reading nothing is worse than ignoring a caller's null.
+##
+## The three progression services are optional in the same spirit: a test that only
+## cares about the world state builds a save service without them, and the
+## `pocket_spread` field then stays the empty Dictionary a v1 file has always
+## carried. The composition root always passes all three.
 func _init(
 	world_state: WorldStateService,
 	clock: GameClock,
 	saves_dir: String = DEFAULT_SAVES_DIR,
-	migrations: SaveMigrations = null
+	migrations: SaveMigrations = null,
+	spread: PocketSpreadService = null,
+	fortune: FortuneService = null,
+	rose: WhiteRoseService = null
 ) -> void:
 	_world_state = world_state
 	_clock = clock
 	_saves_dir = saves_dir
 	_migrations = migrations if migrations != null else SaveMigrations.new(SaveSchema.production_steps())
+	_spread = spread
+	_fortune = fortune
+	_rose = rose
 
 
 ## The directory this service reads and writes.
@@ -139,6 +159,7 @@ func capture() -> SaveModel:
 	var model := SaveModel.new()
 	model.schema_version = SaveModel.CURRENT_SCHEMA_VERSION
 	model.world_state = _world_state.to_snapshot()
+	model.pocket_spread = _capture_progression()
 	model.current_region_id = _current_region_id
 	model.last_waystation_id = _last_waystation_id
 	model.difficulty_mode = _difficulty_mode
@@ -156,6 +177,26 @@ func capture() -> SaveModel:
 ## nothing at all is applied - not the flags, not the difficulty, not the region - so
 ## a rejected save leaves the game exactly as it was.
 ##
+## **The progression sections are NOT all-or-nothing, and cannot be.** The world
+## lands first, because the Spread derives which Trumps are held from the flags and a
+## Spread filled before its world would reject every card in it. By the time a
+## progression section is read, the world is already in these services and no public
+## call can take it out again (a flag never un-fires). So this is the contract, and
+## the reason the four services are not one transaction:
+##
+##   * every service is checked for pristineness BEFORE anything is applied, so the
+##     ordinary "you are already playing" refusal still changes nothing at all;
+##   * but a save whose *contents* a progression section rejects - a malformed
+##     section, a slot naming a Trump the flags do not grant - stops the apply at the
+##     first section that failed. The world is loaded, the earlier sections are
+##     loaded, the later ones are untouched, and the errors say which;
+##   * **a caller that gets a non-empty result must throw these services away and
+##     rebuild the composition root before retrying.** Applying a second model on top
+##     is refused anyway (nothing here is pristine any more), and a partly-loaded set
+##     of services is not a playthrough. The Regions round (round 10), which owns
+##     building a fresh world for a load from the title screen, is where that rebuild
+##     lives; until then a caller has one attempt.
+##
 ## The clock is NOT rewound. In-game time runs forward through a load; the save's
 ## playtime is bookkeeping and lands in `loaded_playtime_seconds`, with the clock's
 ## reading at this moment kept as the baseline the next `capture()` counts from.
@@ -170,9 +211,15 @@ func apply(model: SaveModel) -> PackedStringArray:
 	if not _world_state.is_pristine():
 		errors.append("a save loads into a fresh world; this one has already been played")
 		return errors
+	errors.append_array(_progression_not_pristine())
+	if not errors.is_empty():
+		return errors
 	var problems := _world_state.restore_snapshot(model.world_state)
 	if not problems.is_empty():
 		errors.append_array(problems)
+		return errors
+	errors.append_array(_apply_progression(model.pocket_spread))
+	if not errors.is_empty():
 		return errors
 	_current_region_id = model.current_region_id
 	_last_waystation_id = model.last_waystation_id
@@ -180,6 +227,81 @@ func apply(model: SaveModel) -> PackedStringArray:
 	loaded_playtime_seconds = model.playtime_seconds
 	_playtime_baseline = 0.0 if _clock == null else _clock.elapsed_seconds
 	return errors
+
+
+## The Spread, the Fortune meter and the White Rose, in one JSON-safe Dictionary.
+##
+## A service this build was not given contributes nothing rather than an empty
+## section, so a save written without them is byte-identical to the v1 files that
+## predate this round.
+func _capture_progression() -> Dictionary:
+	var progression: Dictionary = {}
+	if _spread != null:
+		progression[SaveModel.POCKET_SPREAD_SPREAD] = _spread.to_snapshot()
+	if _fortune != null:
+		progression[SaveModel.POCKET_SPREAD_FORTUNE] = _fortune.to_snapshot()
+	if _rose != null:
+		progression[SaveModel.POCKET_SPREAD_ROSE] = _rose.to_snapshot()
+	return progression
+
+
+## Every progression service that has already been played, as problems.
+##
+## Checked BEFORE anything is restored, alongside the world state's own pristine
+## rule: "a load is not a reset" has to hold for all four services or for none, and
+## finding out halfway through would leave a world loaded into a Spread that is not.
+func _progression_not_pristine() -> PackedStringArray:
+	var errors := PackedStringArray()
+	if _spread != null and not _spread.is_pristine():
+		errors.append("a save loads into a fresh Spread; this one has already been played")
+	if _fortune != null and not _fortune.is_pristine():
+		errors.append("a save loads into a fresh Fortune meter; this one is already in play")
+	if _rose != null and not _rose.is_pristine():
+		errors.append("a save loads into a fresh White Rose; this one is already in play")
+	return errors
+
+
+## Restore the three progression sections, stopping at the first one that fails.
+##
+## Order matters: the Spread reads which Trumps are held out of the world state, so
+## `apply()` restores the world first and this runs after it. A save with no
+## `pocket_spread` sections at all - every v1 file written before this round - is a
+## playthrough with no progression yet, not a problem.
+##
+## A section that reports a problem STOPS the apply. Carrying on would fill the
+## remaining services out of a file this build has already judged unreadable, and
+## would bury the one section that actually failed under whatever the next two made
+## of it. The services are left partly loaded on purpose, and `apply()`'s doc says
+## what the caller owes in that case: rebuild, do not retry.
+func _apply_progression(progression: Dictionary) -> PackedStringArray:
+	var errors := PackedStringArray()
+	if _spread != null and progression.has(SaveModel.POCKET_SPREAD_SPREAD):
+		errors.append_array(
+			_spread.restore_snapshot(_section(progression, SaveModel.POCKET_SPREAD_SPREAD, errors))
+		)
+		if not errors.is_empty():
+			return errors
+	if _fortune != null and progression.has(SaveModel.POCKET_SPREAD_FORTUNE):
+		errors.append_array(
+			_fortune.restore_snapshot(_section(progression, SaveModel.POCKET_SPREAD_FORTUNE, errors))
+		)
+		if not errors.is_empty():
+			return errors
+	if _rose != null and progression.has(SaveModel.POCKET_SPREAD_ROSE):
+		errors.append_array(
+			_rose.restore_snapshot(_section(progression, SaveModel.POCKET_SPREAD_ROSE, errors))
+		)
+	return errors
+
+
+## One section of the progression payload; an empty one, with the problem recorded,
+## when the file holds something that is not a Dictionary there.
+func _section(progression: Dictionary, key: String, errors: PackedStringArray) -> Dictionary:
+	var value: Variant = progression.get(key, {})
+	if value is Dictionary:
+		return value
+	errors.append("save field pocket_spread.%s is not a dictionary" % key)
+	return {}
 
 
 # --- The fields the later rounds will take over ------------------------------

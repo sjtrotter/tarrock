@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_05"
+card_number = 5
+name_key = &"TRUMP_05_NAME"
+granted_by_flag = &"WS_HIEROPHANT_UNBOUND"
+past_summary = "Waystation blessings last twice as long; shrines and offerings give more."
+present_summary = "Sanctify a circle: heal-over-time inside, lesser Blanks won't cross the line."
+future_summary = "When your last petal is spent, a litany grants 3s invulnerability + 1 petal (once per rest)."
+burden_name = "dogma"
+burden_summary = "the circle grows cathedral-sized and the ward absolute — but while you stand inside, your other two slots are sealed (doctrine admits no rivals)."
+doc_ref = "docs/design/arcana.md §V. The Hierophant"
+effects = null

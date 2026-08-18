@@ -165,7 +165,7 @@ pause={
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://localization/strings.en.translation", "res://localization/quest_titles.en.translation", "res://localization/dialogue_mq00.en.translation")
+locale/translations=PackedStringArray("res://localization/strings.en.translation", "res://localization/quest_titles.en.translation", "res://localization/dialogue_mq00.en.translation", "res://localization/trumps.en.translation")
 
 [rendering]
 

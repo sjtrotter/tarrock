@@ -21,6 +21,17 @@ const TRIGGER_ROOT := "World/QuestTriggers"
 ## The Bindle sprite, hidden once the Fool has taken it.
 const BINDLE_PROP := "World/Props/Bindle"
 
+## The Cliff's region token, as `docs/GLOSSARY.md` yields it, and the unbinding flag
+## that would mean this place is awake - which is none.
+##
+## The Cliff has no Arcana and no unbinding of its own (`docs/design/world.md` §The
+## Cliff), so it sits outside the Spread entirely and the White Rose never regrows
+## here. That is also what MQ00 wants: the Waystation rest is the first time the
+## player sees petals come back, and a plateau that quietly refilled them beforehand
+## would spend the lesson early. The Regions round (round 10) takes this over.
+const CLIFF_REGION_ID := &"CLIFF"
+const CLIFF_UNBINDING_FLAG := &""
+
 ## Which conversation belongs to which MQ00 beat: `quest state -> dialogue graph id`.
 ##
 ## The quest's own graph (`res://data/quests/graphs/MQ00.tres`) decides when a beat
@@ -76,6 +87,13 @@ func _on_trigger_fired(event: StringName, trigger: Interactable) -> void:
 		var bindle := get_node_or_null(BINDLE_PROP) as Node2D
 		if bindle != null:
 			bindle.visible = false
+	if event == QuestEvents.MQ00_RESTED:
+		# Resting at a Waystation fully regrows the White Rose
+		# (`docs/design/progression.md` §Waystations). The scene calls the system;
+		# the system never reaches back into the scene.
+		var rose := _rose()
+		if rose != null:
+			rose.rest()
 	raise_quest_event(event, trigger)
 
 
@@ -167,6 +185,9 @@ func _wire_services() -> void:
 		dialogue.event_raised.connect(_on_dialogue_event_raised)
 	if dialogue != null and not dialogue.dialogue_ended.is_connected(_on_dialogue_ended):
 		dialogue.dialogue_ended.connect(_on_dialogue_ended)
+	var rose := _rose()
+	if rose != null:
+		rose.set_region(CLIFF_REGION_ID, CLIFF_UNBINDING_FLAG)
 	_begin_first_quest()
 
 
@@ -200,6 +221,14 @@ func _dialogue() -> DialogueService:
 	if services == null:
 		return null
 	return services.get("dialogue") as DialogueService
+
+
+## The White Rose, looked up the same way and for the same reason.
+func _rose() -> WhiteRoseService:
+	var services := get_node_or_null("/root/Services")
+	if services == null:
+		return null
+	return services.get("rose") as WhiteRoseService
 
 
 func _on_leap_point_body_entered(body: Node2D) -> void:

@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="TrumpCatalog" load_steps=23 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_catalog.gd" id="2_catalog"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_01.tres" id="3_trump_01"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_02.tres" id="4_trump_02"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_03.tres" id="5_trump_03"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_04.tres" id="6_trump_04"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_05.tres" id="7_trump_05"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_06.tres" id="8_trump_06"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_07.tres" id="9_trump_07"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_08.tres" id="10_trump_08"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_09.tres" id="11_trump_09"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_10.tres" id="12_trump_10"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_11.tres" id="13_trump_11"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_12.tres" id="14_trump_12"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_13.tres" id="15_trump_13"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_14.tres" id="16_trump_14"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_15.tres" id="17_trump_15"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_16.tres" id="18_trump_16"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_17.tres" id="19_trump_17"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_18.tres" id="20_trump_18"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_19.tres" id="21_trump_19"]
+[ext_resource type="Resource" path="res://data/trumps/TRUMP_20.tres" id="22_trump_20"]
+
+[resource]
+script = ExtResource("2_catalog")
+entries = Array[ExtResource("1_trump")]([ExtResource("3_trump_01"), ExtResource("4_trump_02"), ExtResource("5_trump_03"), ExtResource("6_trump_04"), ExtResource("7_trump_05"), ExtResource("8_trump_06"), ExtResource("9_trump_07"), ExtResource("10_trump_08"), ExtResource("11_trump_09"), ExtResource("12_trump_10"), ExtResource("13_trump_11"), ExtResource("14_trump_12"), ExtResource("15_trump_13"), ExtResource("16_trump_14"), ExtResource("17_trump_15"), ExtResource("18_trump_16"), ExtResource("19_trump_17"), ExtResource("20_trump_18"), ExtResource("21_trump_19"), ExtResource("22_trump_20")])

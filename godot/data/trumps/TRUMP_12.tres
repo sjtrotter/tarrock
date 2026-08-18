@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_12"
+card_number = 12
+name_key = &"TRUMP_12_NAME"
+granted_by_flag = &"WS_HANGEDMAN_UNBOUND"
+past_summary = "Feather-fall, always. Fall damage ceases to exist. In the top-down grammar this reads as: no fall damage anywhere, a float off ledges rather than a drop, and drifting across **marked** gaps that cannot otherwise be crossed (`combat.md` §Overturn in 2D); literal at full strength inside side-view sequences (`world.md` §Side-view sequences). **Traversal headline #2.**"
+present_summary = "Invert gravity in a bubble for 4s: puzzles, ambushes, juggling Coins-rank bruisers. Literal inside side-view sequences; **its top-down reading is TBD** (`combat.md` §Open questions) — not implemented outside side-view spaces until decided."
+future_summary = "Struck while airborne: right yourself instantly with a beat of slow-motion. (2D: \"airborne\" = floating/drifting under the Past slot or inside a side-view sequence.)"
+burden_name = "surrender"
+burden_summary = "the bubble grows and holds 8s — and includes you. Commit."
+doc_ref = "docs/design/arcana.md §XII. The Hanged Man"
+effects = null

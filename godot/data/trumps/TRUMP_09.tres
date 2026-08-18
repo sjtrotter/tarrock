@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_09"
+card_number = 9
+name_key = &"TRUMP_09_NAME"
+granted_by_flag = &"WS_HERMIT_UNBOUND"
+past_summary = "Nearby undiscovered points of interest ping softly on the Almanack."
+present_summary = "Raise the lantern: reveal hidden paths, rout shadow-Blanks, **counts as true light** (Mirrormarsh gate)."
+future_summary = "Dodging leaves a blinding afterimage."
+burden_name = "the moth problem"
+burden_summary = "the light doubles in power and radius, and everything in the dark can see it. Spawns converge on you while raised."
+doc_ref = "docs/design/arcana.md §IX. The Hermit"
+effects = null

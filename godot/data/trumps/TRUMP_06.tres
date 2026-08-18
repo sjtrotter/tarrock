@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_06"
+card_number = 6
+name_key = &"TRUMP_06_NAME"
+granted_by_flag = &"WS_LOVERS_UNBOUND"
+past_summary = "Pip's bond deepens: Harry pins two enemies; Seek range doubled."
+present_summary = "Tether two enemies: shared damage; yank to slam them together."
+future_summary = "Dodging leaves a mirror decoy that taunts nearby enemies."
+burden_name = "possession"
+burden_summary = "tether and decoy last far longer, but the bond runs both ways — a fraction of tethered enemies' pain arrives in your Fortune bar as drain."
+doc_ref = "docs/design/arcana.md §VI. The Lovers"
+effects = null

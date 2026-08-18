@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_03"
+card_number = 3
+name_key = &"TRUMP_03_NAME"
+granted_by_flag = &"WS_EMPRESS_UNBOUND"
+past_summary = "Forage yields double; the White Rose regrows slowly even in bound regions."
+present_summary = "Grow a briar snare (roots enemies) **or** a climbing vine at a marked surface."
+future_summary = "On a killing blow against you: briar cocoon — survive at 1 petal (once per rest)."
+burden_name = "overgrowth"
+burden_summary = "everything grows bigger and lingers, and lingering growth is indiscriminate — snares and cocoon briars hurt you too if touched."
+doc_ref = "docs/design/arcana.md §III. The Empress"
+effects = null

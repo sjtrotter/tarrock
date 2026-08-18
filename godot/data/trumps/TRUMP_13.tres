@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_13"
+card_number = 13
+name_key = &"TRUMP_13_NAME"
+granted_by_flag = &"WS_DEATH_UNBOUND"
+past_summary = "Blanks you defeat stay ended — they no longer reassemble elsewhere."
+present_summary = "Reap: execute any lesser enemy below ⅓ health."
+future_summary = "On death: rise where you fell at 1 petal — *not yet* (once per rest)."
+burden_name = "hunger"
+burden_summary = "the execute threshold rises to ½ health and Reap refunds Fortune — but the scythe must be fed: your maximum petals are reduced by one while slotted reversed."
+doc_ref = "docs/design/arcana.md §XIII. Death"
+effects = null

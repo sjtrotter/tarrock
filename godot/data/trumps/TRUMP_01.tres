@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+[ext_resource type="Resource" path="res://data/trumps/effects/TRUMP_01.tres" id="2_effects"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_01"
+card_number = 1
+name_key = &"TRUMP_01_NAME"
+granted_by_flag = &"WS_MAGICIAN_UNBOUND"
+past_summary = "Nimble hands: instant chest/door interactions; vendors show their hidden stock."
+present_summary = "Conjured hand: grab, carry, and throw objects or man-sized enemies at range."
+future_summary = "When struck, swap places with a conjured double (once per fight)."
+burden_name = "the trick costs the trickster"
+burden_summary = "effects grow (bigger hand, second double) but each trigger nicks 5 Fortune extra, even the Past slot's freebies."
+doc_ref = "docs/design/arcana.md §I. The Magician"
+effects = ExtResource("2_effects")

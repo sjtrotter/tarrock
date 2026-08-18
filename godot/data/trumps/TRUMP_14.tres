@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_14"
+card_number = 14
+name_key = &"TRUMP_14_NAME"
+granted_by_flag = &"WS_TEMPERANCE_UNBOUND"
+past_summary = "Elixir-craft at mixers' benches; carried elixirs +2 (system detail: progression.md)."
+present_summary = "The Middle Way: a wave that neutralizes elemental ground hazards and strips enemy buffs."
+future_summary = "Incoming elemental damage partially converts to Fortune."
+burden_name = "oversteep"
+burden_summary = "the wave also converts — hazards become *your* allies briefly, but the conversion drinks from you: each cast steeps away a sliver of max Fortune until rest."
+doc_ref = "docs/design/arcana.md §XIV. Temperance"
+effects = null

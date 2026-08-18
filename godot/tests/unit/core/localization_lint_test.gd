@@ -78,7 +78,18 @@ const DOC_ONLY_PROPERTIES: Array[String] = [
 	"doc_ref",  # path/anchor of the owning doc section
 	"source_ref",  # the exact line or table row this definition was generated from
 	"description_doc",  # the doc's own description text, kept for drift comparison
+	"past_summary",  # a Trump's Past cell in arcana.md, verbatim, for drift checks
+	"present_summary",  # the same for its Present cell
+	"future_summary",  # the same for its Future cell
+	"burden_name",  # the italicised name of a Trump's reversed burden, from the doc
+	"burden_summary",  # the doc's whole "Reversed burden" paragraph, verbatim
 ]
+# NOTE on the two burden entries: they are doc text for reviewers and for the drift
+# tests, and NOTHING may draw them. The day a screen shows the player which burden a
+# reversed card is carrying, that name is a translation key - a `burden_name_key`
+# resolved through the CSV, exactly as `TrumpDefinition.name_key` already is - and it
+# is a NEW field, not this one taken off the list. Deleting an entry here to make a
+# player-facing string lint clean is the failure mode this note exists to name.
 
 ## A literal needs this many spaces (three words) before it counts as a sentence
 ## somebody meant a player to read.

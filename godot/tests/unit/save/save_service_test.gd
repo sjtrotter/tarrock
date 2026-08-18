@@ -539,3 +539,218 @@ func _json_equal(actual: Variant, expected: Variant) -> bool:
 	if (actual is int or actual is float) and (expected is int or expected is float):
 		return is_equal_approx(float(actual), float(expected))
 	return actual == expected
+
+
+# --- The progression services (round 6) --------------------------------------
+#
+# `SaveModel.pocket_spread` stopped being a reserved empty field: it carries the
+# Pocket Spread, the Fortune meter and the White Rose. The properties worth pinning
+# are that all three make the round trip, that the ORDER holds (which Trumps are
+# held is derived from the world state, so the world has to land first), and that a
+# save service built without them still writes the v1 shape.
+
+
+## The generated Trumps and the authored tuning numbers the three services need.
+const TRUMP_CATALOG_PATH := "res://data/trumps/catalog.tres"
+const SPREAD_RULES_PATH := "res://data/progression/spread_rules.tres"
+
+
+## A save service over a fresh world and a full set of progression services.
+##
+## Returns them all, because a test that applies a save has to look at what landed
+## in each one: `[SaveService, WorldStateService, PocketSpreadService,
+## FortuneService, WhiteRoseService]`.
+func _progression_service(directory: String) -> Array:
+	var world := _fresh_world()
+	var rules := load(SPREAD_RULES_PATH) as SpreadRules
+	var trumps := load(TRUMP_CATALOG_PATH) as TrumpCatalog
+	var fortune := FortuneService.new(rules)
+	var spread := PocketSpreadService.new(world, trumps, rules, fortune)
+	var rose := WhiteRoseService.new(world, rules)
+	var service := SaveService.new(world, GameClock.new(), directory, null, spread, fortune, rose)
+	return [service, world, spread, fortune, rose]
+
+
+func test_capture_gathers_the_spread_the_fortune_and_the_rose() -> void:
+	var built := _progression_service(_saves_dir)
+	var service: SaveService = built[0]
+	var world: WorldStateService = built[1]
+	var spread: PocketSpreadService = built[2]
+	var fortune: FortuneService = built[3]
+	var rose: WhiteRoseService = built[4]
+	world.fire(WorldStateIds.WS_MAGICIAN_UNBOUND, QuestIds.MQ01)
+	spread.assign(SpreadSlot.Id.PRESENT, TrumpIds.TRUMP_01, CardOrientation.Id.REVERSED)
+	fortune.earn(FortuneService.EarnSource.DISCOVERY, 40)
+	rose.use_petal()
+	var model := service.capture()
+	if not assert_not_null(model, "a wired service captures"):
+		return
+	assert_has(model.pocket_spread, SaveModel.POCKET_SPREAD_SPREAD)
+	assert_has(model.pocket_spread, SaveModel.POCKET_SPREAD_FORTUNE)
+	assert_has(model.pocket_spread, SaveModel.POCKET_SPREAD_ROSE)
+	var stored_rose: Dictionary = model.pocket_spread[SaveModel.POCKET_SPREAD_ROSE]
+	assert_eq(stored_rose[WhiteRoseService.SNAPSHOT_PETALS], 2, "the petal spent is remembered")
+
+
+func test_a_service_without_the_progression_services_writes_the_v1_shape() -> void:
+	# `_service` is built the way every test above it builds one: world state and a
+	# clock. A save from it must still be a legal, writable v1 file.
+	_world_state.fire(WorldStateIds.WS_MAGICIAN_UNBOUND, QuestIds.MQ01)
+	var model := _service.capture()
+	if not assert_not_null(model):
+		return
+	assert_eq(model.pocket_spread, {}, "no progression services, no progression section")
+	assert_eq(model.validate(), PackedStringArray(), "and it is still a writable save")
+
+
+func test_the_whole_playthrough_makes_the_round_trip() -> void:
+	var written := _progression_service(_saves_dir)
+	var writer: SaveService = written[0]
+	var world: WorldStateService = written[1]
+	var spread: PocketSpreadService = written[2]
+	var fortune: FortuneService = written[3]
+	var rose: WhiteRoseService = written[4]
+	world.fire(WorldStateIds.WS_MAGICIAN_UNBOUND, QuestIds.MQ01)
+	world.fire(WorldStateIds.WS_PRIESTESS_UNBOUND, QuestIds.MQ02)
+	world.fire(WorldStateIds.WS_EMPRESS_UNBOUND, QuestIds.MQ03)
+	spread.assign(SpreadSlot.Id.PRESENT, TrumpIds.TRUMP_01, CardOrientation.Id.REVERSED)
+	spread.assign(SpreadSlot.Id.PAST, TrumpIds.TRUMP_02, CardOrientation.Id.UPRIGHT)
+	spread.set_at_waystation(true)
+	spread.save_loadout("the honest build")
+	fortune.earn(FortuneService.EarnSource.DISCOVERY, 40)
+	rose.add_grafting()
+	rose.use_petal()
+	assert_eq(writer.write_slot(0, writer.capture()), PackedStringArray())
+
+	var loaded := _progression_service(_saves_dir)
+	var reader: SaveService = loaded[0]
+	var read_spread: PocketSpreadService = loaded[2]
+	var read_fortune: FortuneService = loaded[3]
+	var read_rose: WhiteRoseService = loaded[4]
+	var result := reader.read_slot(0)
+	if not assert_true(result.ok, "the save reads back: %s" % str(result.errors)):
+		return
+	assert_eq(reader.apply(result.model), PackedStringArray(), "and applies")
+	assert_eq(read_spread.slotted(SpreadSlot.Id.PRESENT).trump_id, TrumpIds.TRUMP_01)
+	assert_eq(
+		read_spread.slotted(SpreadSlot.Id.PRESENT).orientation, CardOrientation.Id.REVERSED
+	)
+	assert_eq(read_spread.slotted(SpreadSlot.Id.PAST).trump_id, TrumpIds.TRUMP_02)
+	assert_eq(read_spread.loadout_count(), 1, "the saved build came back too")
+	assert_eq(read_fortune.value(), 40)
+	assert_eq(read_rose.petals(), 3)
+	assert_eq(read_rose.graftings(), 1)
+
+
+func test_the_played_fixture_carries_a_whole_playthrough() -> void:
+	# The checked-in fixture is a file from before this change plus the progression
+	# section, and it has to load into the real services - which is what proves the
+	# key names in it are the ones the services actually write.
+	_install_fixture(FIXTURE_PLAYED, 2)
+	var loaded := _progression_service(_saves_dir)
+	var reader: SaveService = loaded[0]
+	var spread: PocketSpreadService = loaded[2]
+	var fortune: FortuneService = loaded[3]
+	var rose: WhiteRoseService = loaded[4]
+	var result := reader.read_slot(2)
+	if not assert_true(result.ok, "the fixture reads: %s" % str(result.errors)):
+		return
+	var problems := reader.apply(result.model)
+	if not assert_eq(problems, PackedStringArray(), "the fixture applies"):
+		return
+	assert_eq(spread.held_count(), 3, "three Arcana unbound is three Trumps held")
+	assert_eq(spread.slotted(SpreadSlot.Id.PRESENT).trump_id, TrumpIds.TRUMP_01)
+	assert_eq(fortune.value(), 40)
+	assert_eq(rose.petals(), 2)
+
+
+func test_the_world_lands_before_the_spread_that_reads_it() -> void:
+	# The Spread refuses to slot a Trump the Fool does not hold, and holding is read
+	# out of the flags. If `apply()` filled the Spread first, this save would be
+	# unloadable - so this test is the ordering, not a nicety.
+	var written := _progression_service(_saves_dir)
+	var writer: SaveService = written[0]
+	var world: WorldStateService = written[1]
+	var spread: PocketSpreadService = written[2]
+	world.fire(WorldStateIds.WS_MAGICIAN_UNBOUND, QuestIds.MQ01)
+	spread.assign(SpreadSlot.Id.PRESENT, TrumpIds.TRUMP_01, CardOrientation.Id.UPRIGHT)
+	var model := writer.capture()
+	var loaded := _progression_service(_saves_dir)
+	var reader: SaveService = loaded[0]
+	var read_spread: PocketSpreadService = loaded[2]
+	assert_eq(reader.apply(model), PackedStringArray())
+	assert_eq(read_spread.slotted(SpreadSlot.Id.PRESENT).trump_id, TrumpIds.TRUMP_01)
+
+
+func test_a_played_spread_refuses_the_load_before_anything_is_applied() -> void:
+	# "A load is not a reset" has to hold for all four services or for none: a world
+	# loaded into a Spread that refused would be half a playthrough.
+	var written := _progression_service(_saves_dir)
+	var writer: SaveService = written[0]
+	var world: WorldStateService = written[1]
+	var spread: PocketSpreadService = written[2]
+	world.fire(WorldStateIds.WS_MAGICIAN_UNBOUND, QuestIds.MQ01)
+	spread.assign(SpreadSlot.Id.PRESENT, TrumpIds.TRUMP_01, CardOrientation.Id.UPRIGHT)
+	var model := writer.capture()
+
+	var loaded := _progression_service(_saves_dir)
+	var reader: SaveService = loaded[0]
+	var read_world: WorldStateService = loaded[1]
+	var read_spread: PocketSpreadService = loaded[2]
+	read_spread.set_at_waystation(true)
+	read_spread.save_loadout("already playing")
+	var problems := reader.apply(model)
+	assert_true(problems.size() > 0, "the load is refused")
+	assert_true(read_world.is_pristine(), "and the world was never touched")
+
+
+func test_a_failing_section_stops_the_apply_where_it_stands() -> void:
+	# The contract `apply()` documents, pinned. The world lands first (the Spread
+	# derives holding from the flags), so by the time a section fails the world is
+	# already in - and nothing can take it out again. What must NOT happen is the
+	# apply carrying on and filling the two services after the one that failed out of
+	# a file this build has already judged unreadable.
+	var written := _progression_service(_saves_dir)
+	var writer: SaveService = written[0]
+	var world: WorldStateService = written[1]
+	var spread: PocketSpreadService = written[2]
+	var fortune: FortuneService = written[3]
+	var rose: WhiteRoseService = written[4]
+	world.fire(WorldStateIds.WS_MAGICIAN_UNBOUND, QuestIds.MQ01)
+	spread.assign(SpreadSlot.Id.PRESENT, TrumpIds.TRUMP_01, CardOrientation.Id.UPRIGHT)
+	fortune.earn(FortuneService.EarnSource.DISCOVERY, 40)
+	rose.use_petal()
+	var model := writer.capture()
+	if not assert_not_null(model):
+		return
+	# A save whose Spread section a player's disk (or a bad edit) mangled. Fortune and
+	# the Rose beside it are perfectly good, and are exactly what must not be applied.
+	var progression: Dictionary = model.pocket_spread
+	progression[SaveModel.POCKET_SPREAD_SPREAD] = {
+		PocketSpreadService.SNAPSHOT_SLOTS: "the whole hand",
+	}
+	model.pocket_spread = progression
+
+	var loaded := _progression_service(_saves_dir)
+	var reader: SaveService = loaded[0]
+	var read_world: WorldStateService = loaded[1]
+	var read_spread: PocketSpreadService = loaded[2]
+	var read_fortune: FortuneService = loaded[3]
+	var read_rose: WhiteRoseService = loaded[4]
+	var problems := reader.apply(model)
+	assert_true(problems.size() > 0, "the malformed section is reported")
+	assert_true(read_world.is_fired(WorldStateIds.WS_MAGICIAN_UNBOUND), "the world landed first")
+	assert_true(read_spread.slotted(SpreadSlot.Id.PRESENT).is_empty(), "the Spread did not")
+	assert_true(read_fortune.is_pristine(), "and the apply stopped: Fortune is untouched")
+	assert_eq(read_fortune.value(), 0)
+	assert_true(read_rose.is_pristine(), "so is the White Rose")
+	assert_eq(read_rose.petals(), 3, "still the petals it was built with")
+
+
+func test_a_broken_progression_section_is_reported_as_data() -> void:
+	var loaded := _progression_service(_saves_dir)
+	var reader: SaveService = loaded[0]
+	var model := SaveModel.blank()
+	model.pocket_spread = {SaveModel.POCKET_SPREAD_FORTUNE: "quite a lot"}
+	var problems := reader.apply(model)
+	assert_true(problems.size() > 0, "a bad section is a problem, not a crash")

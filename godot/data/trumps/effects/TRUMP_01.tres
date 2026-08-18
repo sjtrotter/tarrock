@@ -1,0 +1,74 @@
+[gd_resource type="Resource" script_class="TrumpEffects" load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_effects.gd" id="1_effects"]
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_effect.gd" id="2_effect"]
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_burden.gd" id="3_burden"]
+
+[sub_resource type="Resource" id="Resource_past_upright"]
+script = ExtResource("2_effect")
+effect_id = &"NIMBLE_HANDS"
+params = {}
+present_cost = 0
+notes = "arcana.md §I. The Magician, Past/Upright. No numbers in canon: interactions are instant and vendors show hidden stock, neither of which is a quantity."
+
+[sub_resource type="Resource" id="Resource_past_reversed"]
+script = ExtResource("2_effect")
+effect_id = &"NIMBLE_HANDS"
+params = {
+"effect_scale": 1.5
+}
+present_cost = 0
+notes = "arcana.md §I. The Magician, Past/Reversed. TBD: the doc's reversed rule is that \"effects grow\", and it names growth only for the hand and the second double - it gives no number, and no axis, for the reversed passive. effect_scale is a placeholder that says this expression is the strengthened one rather than the upright one reused; the combat-tuning pass owns what it scales and by how much. The extra 5 Fortune per trigger is the burden, not a param here."
+
+[sub_resource type="Resource" id="Resource_present_upright"]
+script = ExtResource("2_effect")
+effect_id = &"CONJURED_HAND"
+params = {}
+present_cost = 30
+notes = "arcana.md §I. The Magician, Present/Upright: grab, carry and throw objects or man-sized enemies at range. Cost is a TBD placeholder taken from SpreadRules.default_present_cost_upright - progression.md gives the 20-50 band and arcana.md sets no per-Trump number."
+
+[sub_resource type="Resource" id="Resource_present_reversed"]
+script = ExtResource("2_effect")
+effect_id = &"CONJURED_HAND"
+params = {
+"hand_scale": 1.5
+}
+present_cost = 20
+notes = "arcana.md §I. The Magician, Present/Reversed: \"a bigger hand\". TBD: bigger by how much is not in arcana.md, so hand_scale is a placeholder the combat-tuning pass owns - it is here because the reversed expression must differ from the upright one in what it DOES, not only in what it costs (arcana.md design rule 5, one card six expressions). Cost is the TBD reversed placeholder; progression.md fixes only that reversed casts cost less than upright."
+
+[sub_resource type="Resource" id="Resource_future_upright"]
+script = ExtResource("2_effect")
+effect_id = &"SWAP_WITH_DOUBLE"
+params = {
+"uses_per_fight": 1
+}
+present_cost = 0
+notes = "arcana.md §I. The Magician, Future/Upright: when struck, swap places with a conjured double, once per fight. The one canon number in this card's table."
+
+[sub_resource type="Resource" id="Resource_future_reversed"]
+script = ExtResource("2_effect")
+effect_id = &"SWAP_WITH_DOUBLE"
+params = {
+"doubles": 2,
+"uses_per_fight": 1
+}
+present_cost = 0
+notes = "arcana.md §I. The Magician, Future/Reversed: the burden's second double. Still once per fight - the doc grows the effect, not its frequency."
+
+[sub_resource type="Resource" id="Resource_burden"]
+script = ExtResource("3_burden")
+burden_id = &"THE_TRICK_COSTS_THE_TRICKSTER"
+params = {
+"extra_fortune_per_trigger": 5
+}
+notes = "arcana.md §I. The Magician, reversed burden: each trigger nicks 5 Fortune extra, even the Past slot's freebies. Canon number. Applying it belongs to the combat round."
+
+[resource]
+script = ExtResource("1_effects")
+past_upright = SubResource("Resource_past_upright")
+past_reversed = SubResource("Resource_past_reversed")
+present_upright = SubResource("Resource_present_upright")
+present_reversed = SubResource("Resource_present_reversed")
+future_upright = SubResource("Resource_future_upright")
+future_reversed = SubResource("Resource_future_reversed")
+burden = SubResource("Resource_burden")

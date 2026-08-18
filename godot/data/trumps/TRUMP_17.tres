@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_17"
+card_number = 17
+name_key = &"TRUMP_17_NAME"
+granted_by_flag = &"WS_STAR_UNBOUND"
+past_summary = "Fortune regenerates slowly at all times."
+present_summary = "A guiding light traces the path to the current objective or nearest secret."
+future_summary = "Once per fight, at zero petals: the White Rose fully reblossoms."
+burden_name = "wishful thinking"
+burden_summary = "regeneration doubles and the light finds rarer secrets — but hope untempered spends you: maximum Fortune −20 while slotted."
+doc_ref = "docs/design/arcana.md §XVII. The Star"
+effects = null

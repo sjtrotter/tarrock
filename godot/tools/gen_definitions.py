@@ -22,6 +22,15 @@ What it reads, and what each source produces:
                                                    quest-title translation table
     docs/GLOSSARY.md      §The world            -> the region-name -> region-token
                                                    mapping quest definitions carry
+    docs/design/arcana.md §per-Trump blocks      -> one TrumpDefinition per Trump,
+                                                   plus the Trump catalog, the
+                                                   TrumpIds constants, and the
+                                                   Trump-name translation table
+
+A Trump's *effects* are deliberately NOT generated, for the same reason a quest's
+state graph is not: what a Trump does is prose, hand-authored under
+`godot/data/trumps/effects/TRUMP_NN.tres`, and a generated definition merely links
+to it when that file exists. The generator never writes into `effects/`.
 
 A quest's *state graph* is deliberately NOT generated: it is hand-authored under
 `godot/data/quests/graphs/<ID>.tres`, and a generated definition merely links to it
@@ -62,6 +71,7 @@ DOCS_DIR = REPO_ROOT / "docs"
 
 WORLD_DOC = DOCS_DIR / "design" / "world.md"
 PROGRESSION_DOC = DOCS_DIR / "design" / "progression.md"
+ARCANA_DOC = DOCS_DIR / "design" / "arcana.md"
 GLOSSARY_DOC = DOCS_DIR / "GLOSSARY.md"
 QUESTS_DIR = DOCS_DIR / "quests"
 
@@ -69,8 +79,11 @@ WORLD_STATE_DATA_DIR = "data/world_states"
 PROGRESSION_DATA_DIR = "data/progression"
 QUEST_DATA_DIR = "data/quests"
 QUEST_GRAPH_DIR = f"{QUEST_DATA_DIR}/graphs"
+TRUMP_DATA_DIR = "data/trumps"
+TRUMP_EFFECTS_DIR = f"{TRUMP_DATA_DIR}/effects"
 WORLD_STATE_SYSTEM_DIR = "systems/world_state"
 QUEST_SYSTEM_DIR = "systems/quests"
+TRUMP_SYSTEM_DIR = "systems/trumps"
 LOCALIZATION_DIR = "localization"
 
 DEFINITION_SCRIPT = "res://systems/world_state/definitions/world_state_definition.gd"
@@ -80,6 +93,8 @@ RENOWN_LADDER_SCRIPT = "res://systems/world_state/definitions/renown_ladder.gd"
 QUEST_DEFINITION_SCRIPT = "res://systems/quests/definitions/quest_definition.gd"
 QUEST_CATALOG_SCRIPT = "res://systems/quests/definitions/quest_catalog.gd"
 QUEST_BRANCH_GROUP_SCRIPT = "res://systems/quests/definitions/quest_branch_group.gd"
+TRUMP_DEFINITION_SCRIPT = "res://systems/trumps/definitions/trump_definition.gd"
+TRUMP_CATALOG_SCRIPT = "res://systems/trumps/definitions/trump_catalog.gd"
 
 CATALOG_PATH = f"{WORLD_STATE_DATA_DIR}/catalog.tres"
 ACT_THRESHOLDS_PATH = f"{WORLD_STATE_DATA_DIR}/act_thresholds.tres"
@@ -88,20 +103,41 @@ WORLD_STATE_IDS_PATH = f"{WORLD_STATE_SYSTEM_DIR}/world_state_ids.gd"
 QUEST_CATALOG_PATH = f"{QUEST_DATA_DIR}/catalog.tres"
 QUEST_IDS_PATH = f"{QUEST_SYSTEM_DIR}/quest_ids.gd"
 QUEST_TITLES_CSV_PATH = f"{LOCALIZATION_DIR}/quest_titles.csv"
+TRUMP_CATALOG_PATH = f"{TRUMP_DATA_DIR}/catalog.tres"
+TRUMP_IDS_PATH = f"{TRUMP_SYSTEM_DIR}/trump_ids.gd"
+TRUMP_NAMES_CSV_PATH = f"{LOCALIZATION_DIR}/trumps.csv"
+
+# Hand-authored files that live inside a generated directory. They are NOT swept as
+# stale and are never written by this tool: `spread_rules.tres` is authored from
+# `docs/design/progression.md`'s prose (the numbers it fixes and the ones it leaves
+# TBD), which no table in the docs can produce.
+HAND_AUTHORED_PATHS = {
+    f"{PROGRESSION_DATA_DIR}/spread_rules.tres",
+}
 
 # Every directory this tool writes into, and what it owns there: anything matching
 # the glob that this run would not produce is stale (see `stale_paths`). The data
 # directories are generated whole; the system directory is hand-written code that
 # happens to hold one generated file, so only that file's own name is swept.
 GENERATED_GLOBS = {
-    WORLD_STATE_DATA_DIR: "*.tres",
-    PROGRESSION_DATA_DIR: "*.tres",
+    WORLD_STATE_DATA_DIR: ["*.tres"],
+    # `renown_ladder.tres` is generated here; `spread_rules.tres` is hand-authored
+    # and is spared by `HAND_AUTHORED_PATHS` rather than by a narrower glob, so the
+    # exception is written down once, by name.
+    PROGRESSION_DATA_DIR: ["*.tres"],
     # `data/quests/*.tres` is generated whole; `data/quests/graphs/*.tres` is
     # hand-authored and is NOT swept - the glob is deliberately not recursive.
-    QUEST_DATA_DIR: "*.tres",
-    WORLD_STATE_SYSTEM_DIR: WORLD_STATE_IDS_PATH.rsplit("/", 1)[-1],
-    QUEST_SYSTEM_DIR: QUEST_IDS_PATH.rsplit("/", 1)[-1],
-    LOCALIZATION_DIR: QUEST_TITLES_CSV_PATH.rsplit("/", 1)[-1],
+    QUEST_DATA_DIR: ["*.tres"],
+    # Same shape for Trumps: `data/trumps/*.tres` is generated whole and
+    # `data/trumps/effects/*.tres` is hand-authored, so the glob stays flat.
+    TRUMP_DATA_DIR: ["*.tres"],
+    WORLD_STATE_SYSTEM_DIR: [WORLD_STATE_IDS_PATH.rsplit("/", 1)[-1]],
+    QUEST_SYSTEM_DIR: [QUEST_IDS_PATH.rsplit("/", 1)[-1]],
+    TRUMP_SYSTEM_DIR: [TRUMP_IDS_PATH.rsplit("/", 1)[-1]],
+    LOCALIZATION_DIR: [
+        QUEST_TITLES_CSV_PATH.rsplit("/", 1)[-1],
+        TRUMP_NAMES_CSV_PATH.rsplit("/", 1)[-1],
+    ],
 }
 
 # --- What the docs say -------------------------------------------------------
@@ -113,6 +149,7 @@ RENOWN_HEADING = "## Renown"
 WORLD_MATRIX_DOC_REF = "docs/design/world.md §World-state matrix"
 GLOBAL_STATES_DOC_REF = "docs/design/world.md §Global states (act thresholds)"
 RENOWN_DOC_REF = "docs/design/progression.md §Renown"
+ARCANA_DOC_REF = "docs/design/arcana.md"
 
 ACT_THRESHOLDS_ID = "ACT_THRESHOLDS"
 RENOWN_LADDER_ID = "RENOWN_LADDER"
@@ -1027,6 +1064,288 @@ def quest_titles_csv(quests: list[Quest]) -> str:
     return "\n".join(lines)
 
 
+# --- Trumps (docs/design/arcana.md) ------------------------------------------
+
+
+# `## I. The Magician - *skill turned to shtick*`: the section a Trump block sits in.
+ARCANA_HEADING_PATTERN = re.compile(r"^##\s+([IVXL]+)\.\s+(.+)$")
+
+# `**Trump I \u2014 Manifest.**`: the line that opens a Trump's table.
+TRUMP_LINE_PATTERN = re.compile(r"^\*\*Trump ([IVXL]+) \u2014 (.+)\.\*\*$")
+
+# `| Past | Nimble hands: ... |`: one row of the Slot/Upright table.
+TRUMP_SLOT_PATTERN = re.compile(r"^\|\s*(Past|Present|Future)\s*\|\s*(.*?)\s*\|$")
+
+# `**Reversed burden \u2014 *the trick costs the trickster*:** effects grow ...`
+BURDEN_PATTERN = re.compile(r"^\*\*Reversed burden \u2014 \*(.+?)\*:\*\*\s*(.*)$")
+
+# The tagline after a section heading's em dash: prose, never part of the citation.
+HEADING_TAGLINE_SEPARATOR = " \u2014 "
+
+# The three slots, in the order `progression.md` deals them.
+TRUMP_SLOTS = ("Past", "Present", "Future")
+
+# `arcana.md` XXI: "The World's card is not carried. It is turned." So the twenty-
+# first Arcana yields no Trump and there are exactly twenty.
+LAST_TRUMP = 20
+
+
+class Trump:
+    """One generated TrumpDefinition."""
+
+    def __init__(
+        self,
+        card_number: int,
+        name: str,
+        granted_by_flag: str,
+        slot_summaries: dict[str, str],
+        burden_name: str,
+        burden_summary: str,
+        doc_ref: str,
+    ) -> None:
+        self.card_number = card_number
+        self.name = name
+        self.granted_by_flag = granted_by_flag
+        self.slot_summaries = slot_summaries
+        self.burden_name = burden_name
+        self.burden_summary = burden_summary
+        self.doc_ref = doc_ref
+
+    @property
+    def trump_id(self) -> str:
+        return "TRUMP_%02d" % self.card_number
+
+    @property
+    def name_key(self) -> str:
+        return f"{self.trump_id}_NAME"
+
+    @property
+    def resource_path(self) -> str:
+        return f"{TRUMP_DATA_DIR}/{self.trump_id}.tres"
+
+    @property
+    def effects_path(self) -> str:
+        return f"{TRUMP_EFFECTS_DIR}/{self.trump_id}.tres"
+
+    def has_effects(self) -> bool:
+        """True when somebody has authored this Trump's six expressions."""
+        return (GODOT_DIR / self.effects_path).is_file()
+
+
+def parse_trumps(doc_path: Path, flags: list[Flag]) -> list[Trump]:
+    """Every `**Trump N \u2014 Name.**` block in `arcana.md`, in card order.
+
+    Each block is read whole: the three Upright cells verbatim, the italicised
+    burden name and its paragraph verbatim, and the section heading it sits under
+    as the citation. The prose is documentation - what a Trump *does* in the game is
+    hand-authored under `data/trumps/effects/` and merely linked from here.
+    """
+    lines = doc_path.read_text(encoding="utf-8").splitlines()
+    unbinding_by_card = {
+        flag.arcana_number: flag.state_id for flag in flags if flag.is_unbinding
+    }
+    trumps: list[Trump] = []
+    heading = ""
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        found_heading = ARCANA_HEADING_PATTERN.match(line)
+        if found_heading is not None:
+            heading = line.lstrip("#").strip().split(HEADING_TAGLINE_SEPARATOR, 1)[0].strip()
+            index += 1
+            continue
+        found = TRUMP_LINE_PATTERN.match(line)
+        if found is None:
+            index += 1
+            continue
+        numeral = found.group(1)
+        if numeral not in ROMAN_NUMERALS:
+            raise GeneratorError(f"arcana.md has a Trump numbered {numeral!r}")
+        card_number = ROMAN_NUMERALS[numeral]
+        if not heading.startswith(f"{numeral}."):
+            raise GeneratorError(
+                f"Trump {numeral} sits under the section {heading!r}, which is not its own"
+            )
+        summaries, burden_name, burden_summary, index = read_trump_block(
+            lines, index + 1, numeral
+        )
+        if card_number not in unbinding_by_card:
+            raise GeneratorError(
+                f"Trump {numeral} is card {card_number}, which no unbinding flag carries"
+            )
+        trumps.append(
+            Trump(
+                card_number=card_number,
+                name=found.group(2).strip(),
+                granted_by_flag=unbinding_by_card[card_number],
+                slot_summaries=summaries,
+                burden_name=burden_name,
+                burden_summary=burden_summary,
+                doc_ref=f"{ARCANA_DOC_REF} \u00a7{heading}",
+            )
+        )
+    numbers = [trump.card_number for trump in trumps]
+    if numbers != list(range(1, LAST_TRUMP + 1)):
+        raise GeneratorError(
+            f"arcana.md yields Trumps {numbers}, not I..{LAST_TRUMP} in order"
+        )
+    return trumps
+
+
+def read_trump_block(
+    lines: list[str], start: int, numeral: str
+) -> tuple[dict[str, str], str, str, int]:
+    """One Trump's table and burden paragraph, and the line to carry on from.
+
+    Reads to the next `##` heading, which is where the next Arcana starts: the
+    Unbinding paragraph in between is `world.md`'s business and is skipped.
+    """
+    summaries: dict[str, str] = {}
+    burden_name = ""
+    burden_lines: list[str] = []
+    reading_burden = False
+    index = start
+    while index < len(lines):
+        line = lines[index]
+        if line.startswith("## "):
+            break
+        if reading_burden:
+            if not line.strip():
+                reading_burden = False
+            else:
+                burden_lines.append(line.strip())
+            index += 1
+            continue
+        found_slot = TRUMP_SLOT_PATTERN.match(line.strip())
+        if found_slot is not None:
+            summaries[found_slot.group(1)] = found_slot.group(2).strip()
+            index += 1
+            continue
+        found_burden = BURDEN_PATTERN.match(line.strip())
+        if found_burden is not None:
+            burden_name = found_burden.group(1).strip()
+            burden_lines.append(found_burden.group(2).strip())
+            reading_burden = True
+            index += 1
+            continue
+        index += 1
+    for slot in TRUMP_SLOTS:
+        if not summaries.get(slot):
+            raise GeneratorError(f"Trump {numeral} has no {slot} row")
+    if not burden_name:
+        raise GeneratorError(f"Trump {numeral} names no reversed burden")
+    burden_summary = " ".join(part for part in burden_lines if part)
+    return summaries, burden_name, burden_summary, index
+
+
+def trump_resource(trump: Trump) -> str:
+    """One `data/trumps/TRUMP_NN.tres`."""
+    definition_id = "1_trump"
+    effects_id = "2_effects"
+    ext_resources = [("Script", TRUMP_DEFINITION_SCRIPT, definition_id)]
+    if trump.has_effects():
+        ext_resources.append(("Resource", "res://" + trump.effects_path, effects_id))
+    body = resource_header("TrumpDefinition", ext_resources)
+    body += "\n".join(
+        [
+            "[resource]",
+            'script = ExtResource("%s")' % definition_id,
+            'id = &"%s"' % trump.trump_id,
+            "card_number = %d" % trump.card_number,
+            'name_key = &"%s"' % trump.name_key,
+            'granted_by_flag = &"%s"' % trump.granted_by_flag,
+            'past_summary = "%s"' % escape(trump.slot_summaries["Past"]),
+            'present_summary = "%s"' % escape(trump.slot_summaries["Present"]),
+            'future_summary = "%s"' % escape(trump.slot_summaries["Future"]),
+            'burden_name = "%s"' % escape(trump.burden_name),
+            'burden_summary = "%s"' % escape(trump.burden_summary),
+            'doc_ref = "%s"' % escape(trump.doc_ref),
+            (
+                'effects = ExtResource("%s")' % effects_id
+                if trump.has_effects()
+                else "effects = null"
+            ),
+            "",
+        ]
+    )
+    return body
+
+
+def trump_catalog_resource(trumps: list[Trump]) -> str:
+    """`data/trumps/catalog.tres`, referencing every Trump in card order."""
+    definition_id = "1_trump"
+    catalog_id = "2_catalog"
+    ext_resources = [
+        ("Script", TRUMP_DEFINITION_SCRIPT, definition_id),
+        ("Script", TRUMP_CATALOG_SCRIPT, catalog_id),
+    ]
+    entry_ids: list[str] = []
+    for index, trump in enumerate(trumps, start=3):
+        entry_id = "%d_%s" % (index, trump.trump_id.lower())
+        entry_ids.append(entry_id)
+        ext_resources.append(("Resource", "res://" + trump.resource_path, entry_id))
+    body = resource_header("TrumpCatalog", ext_resources)
+    entries = ", ".join('ExtResource("%s")' % entry_id for entry_id in entry_ids)
+    body += "\n".join(
+        [
+            "[resource]",
+            'script = ExtResource("%s")' % catalog_id,
+            'entries = Array[ExtResource("%s")]([%s])' % (definition_id, entries),
+            "",
+        ]
+    )
+    return body
+
+
+def trump_ids_script(trumps: list[Trump]) -> str:
+    """`trump_ids.gd`: the one place a Trump id is written in code."""
+    lines = [
+        "class_name TrumpIds",
+        "extends RefCounted",
+        "",
+        "## Every Trump id, as a constant.",
+        "##",
+        "## GENERATED by `godot/tools/gen_definitions.py` from every",
+        "## `**Trump N %s Name.**` block in `%s` - do not edit by" % ("\u2014", ARCANA_DOC_REF),
+        "## hand; edit the doc and regenerate. A drift test fails when this file and",
+        "## `arcana.md` disagree.",
+        "##",
+        "## There are exactly %d. `arcana.md` XXI: the World's card \"is not carried. It" % LAST_TRUMP,
+        "## is turned.\" - so the twenty-first Arcana yields no Trump.",
+        "##",
+        "## Code never types a Trump id: it names one of these constants, or reads an id",
+        "## off a `TrumpDefinition` (docs/design/technical.md, no magic strings).",
+        "",
+        "## The Trumps, in card order (I first, XX last).",
+    ]
+    for trump in trumps:
+        lines.append(
+            'const %s := &"%s"  # %s' % (trump.trump_id, trump.trump_id, trump.name)
+        )
+    lines.append("")
+    lines.append("## Every Trump `arcana.md` defines, in card order.")
+    lines.append("const ALL: Array[StringName] = [")
+    for trump in trumps:
+        lines.append("\t%s," % trump.trump_id)
+    lines.append("]")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def trump_names_csv(trumps: list[Trump]) -> str:
+    """`localization/trumps.csv`: every Trump's name, keyed.
+
+    A Trump's name is player-facing text, so it leaves `arcana.md` as a translation
+    key and arrives here as the English column - the only place the English lives
+    (technical.md \u00a7Localization (Godot)).
+    """
+    lines = ["keys,en"]
+    for trump in trumps:
+        lines.append("%s,%s" % (trump.name_key, csv_field(trump.name)))
+    lines.append("")
+    return "\n".join(lines)
+
+
 # --- The generation itself ---------------------------------------------------
 
 
@@ -1037,6 +1356,7 @@ def generate() -> dict[str, str]:
     tier_names = parse_renown_tiers(PROGRESSION_DOC)
     regions = parse_regions(GLOSSARY_DOC)
     quests = parse_quests(QUESTS_DIR, regions)
+    trumps = parse_trumps(ARCANA_DOC, flags)
 
     files: dict[str, str] = {}
     for flag in flags:
@@ -1050,26 +1370,36 @@ def generate() -> dict[str, str]:
     files[QUEST_CATALOG_PATH] = quest_catalog_resource(quests)
     files[QUEST_IDS_PATH] = quest_ids_script(quests)
     files[QUEST_TITLES_CSV_PATH] = quest_titles_csv(quests)
+    for trump in trumps:
+        files[trump.resource_path] = trump_resource(trump)
+    files[TRUMP_CATALOG_PATH] = trump_catalog_resource(trumps)
+    files[TRUMP_IDS_PATH] = trump_ids_script(trumps)
+    files[TRUMP_NAMES_CSV_PATH] = trump_names_csv(trumps)
     return files
 
 
 def stale_paths(files: dict[str, str]) -> list[str]:
     """Generated-directory files this run would no longer produce.
 
-    Every directory this tool writes into is swept, under the glob that names what
+    Every directory this tool writes into is swept, under the globs that name what
     the tool owns there: whole directories of `.tres` under `data/`, but only
     `world_state_ids.gd` in `systems/world_state/`, which is full of hand-written
     code the generator must never call stale. A row deleted from the matrix leaves
     its resource behind otherwise, and a `--check` that did not sweep here would
     call the tree clean while the game still loaded the orphan.
+
+    `HAND_AUTHORED_PATHS` names the files that live inside a swept directory
+    without being generated; they are spared here and never written.
     """
     stale: list[str] = []
-    for directory, pattern in sorted(GENERATED_GLOBS.items()):
-        for existing in sorted((GODOT_DIR / directory).glob(pattern)):
-            relative = str(existing.relative_to(GODOT_DIR))
-            if relative not in files:
+    for directory, patterns in sorted(GENERATED_GLOBS.items()):
+        for pattern in patterns:
+            for existing in sorted((GODOT_DIR / directory).glob(pattern)):
+                relative = str(existing.relative_to(GODOT_DIR))
+                if relative in files or relative in HAND_AUTHORED_PATHS:
+                    continue
                 stale.append(relative)
-    return sorted(stale)
+    return sorted(set(stale))
 
 
 def write(files: dict[str, str]) -> list[str]:

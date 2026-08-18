@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_19"
+card_number = 19
+name_key = &"TRUMP_19_NAME"
+granted_by_flag = &"WS_SUN_UNBOUND"
+past_summary = "Healing is stronger in daylight."
+present_summary = "Solar flare: AoE burst that also cleanses curses (Bargain synergy is deliberate)."
+future_summary = "Enemies that strike you are flash-blinded."
+burden_name = "scorch"
+burden_summary = "the flare doubles and salts the ground with burning light — and burns a petal per cast. Noon, unnailed, still remembers being cruel."
+doc_ref = "docs/design/arcana.md §XIX. The Sun"
+effects = null

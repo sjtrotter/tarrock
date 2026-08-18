@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_10"
+card_number = 10
+name_key = &"TRUMP_10_NAME"
+granted_by_flag = &"WS_FORTUNE_UNBOUND"
+past_summary = "Drops and finds improve everywhere."
+present_summary = "Spin the wheel: one random effect from a fixed, learnable 8-entry table (heal, coin burst, lightning, decoy, big hand, slow-time, smoke, jackpot = all of them). Table contents TBD at combat tuning."
+future_summary = "Any hit has a 10% chance to simply miss you. Fate's coin."
+burden_name = "all in"
+burden_summary = "the Spin table doubles its stakes — jackpot odds up, but two entries become genuinely bad for you. The Future miss-chance becomes 20%, but so does a 5% chance your *own* heavy swings whiff."
+doc_ref = "docs/design/arcana.md §X. Wheel of Fortune"
+effects = null

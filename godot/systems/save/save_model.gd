@@ -56,6 +56,12 @@ const REQUIRED_FIELDS: Array[String] = [
 	FIELD_DIFFICULTY_MODE,
 ]
 
+## The three sections of `pocket_spread`. Spelled once here so the save service, the
+## services that fill them and the fixtures cannot drift apart.
+const POCKET_SPREAD_SPREAD := "spread"
+const POCKET_SPREAD_FORTUNE := "fortune"
+const POCKET_SPREAD_ROSE := "rose"
+
 ## The id an unset region / waystation / answer carries. The same constant the rest of
 ## the codebase means by "nothing was ever set", referenced rather than restated so
 ## there is one empty id in the project and not two that happen to match today.
@@ -67,9 +73,20 @@ var schema_version: int = CURRENT_SCHEMA_VERSION
 ## `WorldStateService.to_snapshot()`, verbatim. Opaque to this class.
 var world_state: Dictionary = {}
 
-## Reserved for the Trumps round (round 6): slot -> {trump_id, orientation}.
-## Empty now, and written empty, so a v1 file already has the field a later build
-## will look for.
+## The progression state of one playthrough, in three sections keyed by
+## `POCKET_SPREAD_SPREAD` / `_FORTUNE` / `_ROSE`: what is slotted and what loadouts
+## are saved (`PocketSpreadService.to_snapshot()`), the Fortune meter
+## (`FortuneService`), and the White Rose's petals and graftings
+## (`WhiteRoseService`).
+##
+## Carried verbatim and opaque, exactly as `world_state` is: each service owns the
+## contract on the way back in, and restating its keys here would give the game two
+## places to disagree with itself. Which Trumps are HELD is deliberately not in
+## here - that is derived from the world-state flags this same file already carries.
+##
+## Still a plain empty Dictionary for a playthrough with no progression yet, and for
+## a build wired without those services, so a v1 file written either way reads back
+## the same.
 var pocket_spread: Dictionary = {}
 
 ## Reserved for the progression round: item_id -> count. Empty now (see above).

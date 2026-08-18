@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_04"
+card_number = 4
+name_key = &"TRUMP_04_NAME"
+granted_by_flag = &"WS_EMPEROR_UNBOUND"
+past_summary = "Fixed fair prices at all shops; guards overlook petty trespass."
+present_summary = "Stomp shockwave; lesser Blanks caught in it halt in place for 3s (a decree)."
+future_summary = "After a block-step, hyperarmor through the next hit."
+burden_name = "tyranny"
+burden_summary = "decrees double in radius and duration, but Minors fear a tyrant — Renown with all suits ticks down slowly while slotted reversed."
+doc_ref = "docs/design/arcana.md §IV. The Emperor"
+effects = null

@@ -30,7 +30,25 @@
 			"MQ02": "in_progress"
 		}
 	},
-	"pocket_spread": {},
+	"pocket_spread": {
+		"spread": {
+			"slots": {
+				"PRESENT": {
+					"trump_id": "TRUMP_01",
+					"orientation": "UPRIGHT"
+				}
+			},
+			"loadouts": []
+		},
+		"fortune": {
+			"value": 40,
+			"free_cast": false
+		},
+		"rose": {
+			"petals": 2,
+			"graftings": 0
+		}
+	},
 	"inventory": {},
 	"current_region_id": "THE_PRESTIGE",
 	"last_waystation_id": "THE_PRESTIGE_WAYSTATION",

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_18"
+card_number = 18
+name_key = &"TRUMP_18_NAME"
+granted_by_flag = &"WS_MOON_UNBOUND"
+past_summary = "See through mimics, false walls, and fog-masks (their true faces show)."
+present_summary = "Become illusion: enemies lose you; your next strike from unseen staggers."
+future_summary = "Dodging swaps you with an illusory copy of yourself."
+burden_name = "the lie deepens"
+burden_summary = "the illusion holds twice as long and the unseen strike hits twice as hard — but while you are a lie, Pip cannot find you. No Pip commands."
+doc_ref = "docs/design/arcana.md §XVIII. The Moon"
+effects = null

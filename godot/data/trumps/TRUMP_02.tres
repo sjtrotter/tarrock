@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TrumpDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/trumps/definitions/trump_definition.gd" id="1_trump"]
+
+[resource]
+script = ExtResource("1_trump")
+id = &"TRUMP_02"
+card_number = 2
+name_key = &"TRUMP_02_NAME"
+granted_by_flag = &"WS_PRIESTESS_UNBOUND"
+past_summary = "Read sealed script anywhere; hear what Blanks whisper (ambient lore + hints)."
+present_summary = "Truesight pulse: reveals hidden doors, mimics, buried caches, and false floors."
+future_summary = "When struck, slip behind the veil: 2s intangible."
+burden_name = "secrets spill"
+burden_summary = "stronger effects (pulse stuns; veil 4s) but every trigger reveals *you* — nearby enemies aggro instantly."
+doc_ref = "docs/design/arcana.md §II. The High Priestess"
+effects = null
