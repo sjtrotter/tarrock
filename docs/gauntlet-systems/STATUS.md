@@ -107,9 +107,41 @@ is the Regions round's job (persistent layer); the two 4.7 facts every later rou
 know — JSON numbers come back as floats, and `Dictionary ==` is type-strict — are in
 `godot/systems/save/README.md`.
 
-## Round 4 — Quests (open 2026-08-18)
+## Round 4 — Quests (CLOSED 2026-08-18)
 
-**Goal:** `QuestDefinition` metadata generated from quest frontmatter (91 quests),
-hand-authored `QuestGraph` state machines, `QuestService` runner (events → transitions;
-fires only at completion; branch groups exactly-one), MQ00 wired into the Cliff scene
-through `Interactable` triggers. _In progress._
+**Shipped (`4080e8b`):** `QuestDefinition`/`Catalog`/`Graph`/`State`/`Transition`/
+`BranchGroup`; **91 quest definitions generated from the quest docs' frontmatter** (+
+catalog, `QuestIds`, `quest_titles.csv`) — region tokens are the side-quest tokens
+(`CLIFF`, `PRESTIGE`, …), arcana carried as the card number; a generated definition
+links its **hand-authored graph** when `data/quests/graphs/<ID>.tres` exists. `QuestService`:
+availability from `WS_*` flags and quest ids; `raise(event)` applies the current state's
+matching transition; branch choices recorded set-once through a reviewed
+`WorldStateService.set_quest_choice`; **fires and chosen branch flags commit only at
+completion**; a quest owing a branch choice refuses to complete without burning its
+choice; catalog-order determinism. **MQ00 is the first quest wired**: `Interactable`
+triggers at the existing Cliff props (Bindle, disturbed earth, dead tree, Waystation,
+edge, leap) forward events to the runner; the Cliff integration test now drives the Fool
+physically through WAKING → … → COMPLETE and asserts nothing fires (MQ00 fires nothing).
+
+**Proof:** 297 unit tests (73 new); `RUN_ALL: 8 suites passed`; `--check: 123 generated
+files match docs/`. Critic mutations all caught: fires on every transition; branch check
+skipped; start twice; transitions ignoring current state; a dropped scene forwarding; a
+typo'd trigger event; a hand-edited generated .tres; a graph naming a nonexistent state.
+**Blocking catch fixed:** the dig trigger was one-shot and spent itself if the player dug
+before taking the Bindle — MQ00 would soft-lock (the order-independence rule); now
+regression-tested.
+
+**Debt / owed:** spend one-shot triggers only when a quest consumed the event (needs
+`raise()` to report consumption); the ambush beat has no in-scene source until combat
+(round 7) — the test raises it; Pip's Seek (round 9) replaces the dig interaction;
+`--check-only` doesn't know autoloads, so scenes reach `Services` by path (documented).
+Not representable as states: the tutorial-prompt-only beats and all dialogue (round 5).
+
+**Director asks:** none.
+
+## Round 5 — Dialogue (open 2026-08-18)
+
+**Goal:** `DialogueGraph` (LINE/CHOICE/BRANCH/EVENT/POOL/END nodes; branch conditions
+are WorldState queries; every line a translation key), `DialogueService` driven
+headlessly, MQ00's Querent lines and both choice tables as data + `dialogue_mq00.csv`,
+style lints (≤ 12-word Fool lines, one earnest option per table). _In progress._
