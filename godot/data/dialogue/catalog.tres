@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="DialogueCatalog" load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://systems/dialogue/definitions/dialogue_catalog.gd" id="1_catalog"]
+[ext_resource type="Script" path="res://systems/dialogue/definitions/dialogue_graph.gd" id="2_graph"]
+[ext_resource type="Resource" path="res://data/dialogue/MQ00_WAKE.tres" id="3_mq00_wake"]
+[ext_resource type="Resource" path="res://data/dialogue/MQ00_MEADOW.tres" id="4_mq00_meadow"]
+[ext_resource type="Resource" path="res://data/dialogue/MQ00_CAMPSITES.tres" id="5_mq00_campsites"]
+[ext_resource type="Resource" path="res://data/dialogue/MQ00_KEEPSAKE_GIVEN.tres" id="6_mq00_keepsake_given"]
+[ext_resource type="Resource" path="res://data/dialogue/MQ00_WOODEN_DOG.tres" id="7_mq00_wooden_dog"]
+[ext_resource type="Resource" path="res://data/dialogue/MQ00_DEAD_TREE.tres" id="8_mq00_dead_tree"]
+[ext_resource type="Resource" path="res://data/dialogue/MQ00_WAYSTATION_AMBUSH.tres" id="9_mq00_waystation_ambush"]
+[ext_resource type="Resource" path="res://data/dialogue/MQ00_WAYSTATION_CLEARED.tres" id="10_mq00_waystation_cleared"]
+[ext_resource type="Resource" path="res://data/dialogue/MQ00_WAYSTATION_REST.tres" id="11_mq00_waystation_rest"]
+[ext_resource type="Resource" path="res://data/dialogue/MQ00_WAYSTATION_REST_AGAIN.tres" id="12_mq00_waystation_rest_again"]
+[ext_resource type="Resource" path="res://data/dialogue/MQ00_EDGE_QUESTIONS.tres" id="13_mq00_edge_questions"]
+[ext_resource type="Resource" path="res://data/dialogue/MQ00_LEAP_BEFORE.tres" id="14_mq00_leap_before"]
+[ext_resource type="Resource" path="res://data/dialogue/MQ00_LANDING.tres" id="15_mq00_landing"]
+
+[resource]
+script = ExtResource("1_catalog")
+entries = Array[ExtResource("2_graph")]([ExtResource("3_mq00_wake"), ExtResource("4_mq00_meadow"), ExtResource("5_mq00_campsites"), ExtResource("6_mq00_keepsake_given"), ExtResource("7_mq00_wooden_dog"), ExtResource("8_mq00_dead_tree"), ExtResource("9_mq00_waystation_ambush"), ExtResource("10_mq00_waystation_cleared"), ExtResource("11_mq00_waystation_rest"), ExtResource("12_mq00_waystation_rest_again"), ExtResource("13_mq00_edge_questions"), ExtResource("14_mq00_leap_before"), ExtResource("15_mq00_landing")])

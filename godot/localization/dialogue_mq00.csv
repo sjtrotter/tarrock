@@ -1,0 +1,47 @@
+keys,en
+DLG_MQ00_WAKE_01,One more card. There's always one more card.
+DLG_MQ00_WAKE_02,"There you are. Good. Wake up, little Excuse — you're wanted."
+DLG_MQ00_MEADOW_01,"Go on, then. Have a look at where you've landed. I'll wait — I've had three hundred years of practice at that particular skill."
+DLG_MQ00_CAMPSITES_01,"Every one of those belonged to somebody who woke up exactly where you did. Some of them stayed a night. Some of them stayed rather longer than that, by the look of it. All of them left the same way, in the end."
+DLG_MQ00_KEEPSAKE_GIVEN_01,"Someone made that. For company, I'd guess, or luck, or because the nights up here are long and a knife needs something to do. Keep it. It's not much. It's yours now, all the same."
+DLG_MQ00_WOODEN_DOG_Q1,Who carved this?
+DLG_MQ00_WOODEN_DOG_Q2,Can dogs really walk with every Fool?
+DLG_MQ00_WOODEN_DOG_Q3,I'll keep it safe.
+DLG_MQ00_WOODEN_DOG_A1,"Somebody with a knife, a dog, and too much night to fill. That's all I know, and it's more than most keepsakes get."
+DLG_MQ00_WOODEN_DOG_A2,"So they say. So Pip says, in his way — which is to say, not a word, and every answer you need."
+DLG_MQ00_WOODEN_DOG_A3,"Good. That's rarer than you'd think, keeping a small thing safe. Most people save that for the large ones."
+DLG_MQ00_DEAD_TREE_01,"That's the only thing up here that dies, you know. Everything else on this plateau just... carries on. Very restful, if you don't think about it too hard."
+DLG_MQ00_DEAD_TREE_02,"This meadow sits outside the proper Reading, little Excuse — off the edge of the Spread, where the cards don't quite reach. Down there, further on than you can see yet, nothing has been allowed to end in three hundred years. Not one thing. That tree's the odd one out. Or perhaps it's the only honest one. I go back and forth."
+DLG_MQ00_DEAD_TREE_03,Anyway. Nothing to be done about a tree. Onward.
+DLG_MQ00_WAYSTATION_AMBUSH_01,"Blanks. Twos — the lowest rung there is, so don't take it personally if this feels easy. Hit them, don't get hit back. It's not a more complicated plan than that for quite some time yet."
+DLG_MQ00_WAYSTATION_CLEARED_01,"There they go. Don't fret over where — they'll turn up again, same as they always do. Nothing much ends around here just yet. You'll get used to the shape of that, one way or another."
+DLG_MQ00_WAYSTATION_REST_01,"That's a Waystation. Rest here and the Rose comes back to you — regrows entirely, no waiting about. There'll be one of these in every region worth the name. Consider it the one promise I intend to keep without complication."
+DLG_MQ00_WAYSTATION_REST_AGAIN_01,Still nothing to slot in that little spread of yours. That changes soon enough.
+DLG_MQ00_WAYSTATION_REST_AGAIN_02,"Rest all you like. The meadow isn't going anywhere. Rather the point of the meadow, really."
+DLG_MQ00_WAYSTATION_REST_AGAIN_03,There. Better?
+DLG_MQ00_EDGE_QUESTIONS_Q1,Who are you?
+DLG_MQ00_EDGE_QUESTIONS_Q2,What am I?
+DLG_MQ00_EDGE_QUESTIONS_Q3,What's wrong with the world?
+DLG_MQ00_EDGE_QUESTIONS_Q4,Why me?
+DLG_MQ00_EDGE_QUESTIONS_A1,Someone who's waited a long while to have someone to talk to. That'll have to do for now.
+DLG_MQ00_EDGE_QUESTIONS_Q1_F1,Will you tell me eventually?
+DLG_MQ00_EDGE_QUESTIONS_A1_F1,"Perhaps. Ask me again somewhere further along, and further along after that. I'm not being coy — well. I am. But there's a reason."
+DLG_MQ00_EDGE_QUESTIONS_A2,"The Excuse, if you want the formal title — the one card that belongs to no position and may go anywhere at all. Handy, that."
+DLG_MQ00_EDGE_QUESTIONS_A2_01,"What am I, exactly?"
+DLG_MQ00_EDGE_QUESTIONS_A2_02,"You're new, is what you are. No past to speak of, none needed — every wonder you're about to have is going to be a genuinely first one. I'd almost envy you, if envy were a thing I had time for."
+DLG_MQ00_EDGE_QUESTIONS_A2_03,"And — between us — you're also the one holding all of this together right now, aren't you. Every step, every choice. Funny how that works. Don't let it go to your head."
+DLG_MQ00_EDGE_QUESTIONS_A2_04,I'll try not to.
+DLG_MQ00_EDGE_QUESTIONS_A3,"The cards are stuck, little Excuse. Every last one of them, in place, since before your grandmother's grandmother. Go and turn them loose."
+DLG_MQ00_EDGE_QUESTIONS_Q3_F1,Stuck how?
+DLG_MQ00_EDGE_QUESTIONS_Q3_F2,Can I fix it?
+DLG_MQ00_EDGE_QUESTIONS_A3_F1,"Stuck like a wheel that won't turn, a sun that won't set, a bell that won't stop ringing the same hour. You'll see it plainly enough once you're down there."
+DLG_MQ00_EDGE_QUESTIONS_A3_F2,"""Fix"" is a strong word for what's coming. ""Finish"" might serve better. Ask me again once you've actually met one of the stuck ones."
+DLG_MQ00_EDGE_QUESTIONS_A4,Because you're the one who got dealt. I don't make the rules of the Reading. I only get to ask the questions.
+DLG_MQ00_EDGE_QUESTIONS_01,"That's rather a lot of honesty for one afternoon. I'll dole the rest out as we go — in fairness, so will the world. Go on. Have your look at the edge properly, this time."
+DLG_MQ00_LEAP_BEFORE_01,"That's rather the whole method, you know. He never looks down first. Neither should you. It's not bravery, particularly. It's just what a Fool does when a Fool is done standing still."
+DLG_MQ00_LANDING_01,"There it is. The Spread, entire — the Axis at its heart, the Spire still coming down after three hundred years of trying, the Noonlands sitting under a sun that never once thought to set. It's beautiful and it's wrong and it has been both those things for longer than anyone still living can properly remember."
+DLG_MQ00_LANDING_02,"Go and put that right, little Excuse. One card at a time."
+DLG_MQ00_LANDING_03,"STEP RIGHT UP, step right up, don't mind the wagon, don't mind the straw, ladies and gentlemen and whatever that was that just fell out of the sky —"
+SPEAKER_QUERENT,The Querent
+SPEAKER_FOOL,The Fool
+SPEAKER_FLICK,Flick

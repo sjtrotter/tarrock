@@ -21,10 +21,37 @@ const TRIGGER_ROOT := "World/QuestTriggers"
 ## The Bindle sprite, hidden once the Fool has taken it.
 const BINDLE_PROP := "World/Props/Bindle"
 
+## Which conversation belongs to which MQ00 beat: `quest state -> dialogue graph id`.
+##
+## The quest's own graph (`res://data/quests/graphs/MQ00.tres`) decides when a beat
+## happens; this table only says what the Querent has to say about it, and the
+## dialogue graphs decide what that is. A state with nothing to say is simply absent.
+##
+## Five of MQ00's conversations are deliberately not here, because nothing in the
+## scene reaches them yet: `MQ00_WAKE` plays over a black screen before the region
+## loads (the opening cut scene, owned by the bootstrap flow), `MQ00_CAMPSITES` needs
+## an area trigger on the fire-rings, `MQ00_WAYSTATION_AMBUSH` and
+## `MQ00_WAYSTATION_REST_AGAIN` wait for combat (round 7) and for the Waystation's
+## rest verb (round 10), and `MQ00_LEAP_BEFORE` belongs to the cut scene that plays
+## after Pip jumps and before the Fool steps off.
+const DIALOGUE_FOR_STATE: Dictionary = {
+	&"BINDLE_TAKEN": DialogueIds.MQ00_MEADOW,
+	&"KEEPSAKE_FOUND": DialogueIds.MQ00_KEEPSAKE_GIVEN,
+	&"DEAD_TREE_SEEN": DialogueIds.MQ00_DEAD_TREE,
+	&"AMBUSH_CLEARED": DialogueIds.MQ00_WAYSTATION_CLEARED,
+	&"RESTED": DialogueIds.MQ00_WAYSTATION_REST,
+	&"EDGE_REACHED": DialogueIds.MQ00_EDGE_QUESTIONS,
+	&"COMPLETE": DialogueIds.MQ00_LANDING,
+}
+
 @onready var _leap_point: Area2D = $LeapPoint
 @onready var _fool: CharacterBody2D = $World/Fool
 
 var _leap_fired := false
+
+## The one beat whose conversation is waiting for the current one to finish, or
+## `&""` when nothing is waiting. One slot on purpose - see `_on_quest_advanced()`.
+var _pending_graph_id: StringName = &""
 
 
 func _ready() -> void:
@@ -37,8 +64,9 @@ func _ready() -> void:
 	# exists (the Regions round owns the persistent layer and who loads what).
 	# Until then the region does it itself, deferred by one call so the `Services`
 	# autoload has certainly finished building when a test instances this scene by
-	# hand before the tree has stepped.
-	_begin_first_quest.call_deferred()
+	# hand before the tree has stepped. The service connections are deferred with it,
+	# for exactly the same reason.
+	_wire_services.call_deferred()
 
 
 ## Raise a prop's event on the quest runner, and do the one thing the scene owes the
@@ -58,6 +86,88 @@ func raise_quest_event(event: StringName, source: Node) -> void:
 	if quests == null:
 		return
 	quests.raise(event, {"node": source})
+
+
+## MQ00 moved: say whatever the Querent says about the beat it just reached.
+##
+## The scene starts a conversation and does not wait for it - there is no dialogue
+## UI until round 13, so a started conversation simply sits there until something
+## advances it, and the beats keep happening around it. `DialogueService.start()`
+## refuses while another conversation is running, which is half of the behaviour we
+## want: a beat that lands mid-sentence must not interrupt the sentence. It must not
+## be *lost* either, though - the Querent's line about the ambush is the only place
+## the script explains where the cleared cards went - so a refused beat is remembered
+## and started the moment the conversation on screen is over.
+##
+## One slot, and the newest wins. Two beats queueing behind one conversation means
+## the player is outrunning the Querent by a wide margin; replaying the older line
+## after the newer one would narrate the wrong moment, so the older is dropped and
+## says so in the log.
+func _on_quest_advanced(quest_id: StringName, _from_state: StringName, to_state: StringName) -> void:
+	if quest_id != QuestIds.MQ00:
+		return
+	if not DIALOGUE_FOR_STATE.has(to_state):
+		return
+	var dialogue := _dialogue()
+	if dialogue == null:
+		return
+	var graph_id: StringName = DIALOGUE_FOR_STATE[to_state]
+	if dialogue.start(graph_id):
+		return
+	if not dialogue.is_active():
+		# Refused for some other reason - an id the catalog does not hold, which
+		# `DialogueService.start()` has already reported. Queueing it would only
+		# report it again later.
+		return
+	if _pending_graph_id != &"":
+		push_warning("the Cliff dropped %s: %s was still waiting" % [
+			_pending_graph_id, graph_id
+		])
+	_pending_graph_id = graph_id
+
+
+## A conversation raised a domain event; the scene is what carries it to the quests,
+## exactly as it carries a prop's event. Dialogue never writes world state, and never
+## holds a `QuestService` to try (docs/design/technical.md §The WorldState service).
+func _on_dialogue_event_raised(event: StringName) -> void:
+	raise_quest_event(event, self)
+
+
+## A conversation finished: the beat that landed while it was running gets its turn.
+##
+## Deferred rather than immediate, because a graph that chains
+## (`DialogueGraph.next_graph_id`) emits `dialogue_ended` *before* it starts its
+## successor - so at this instant nothing is running even though something is about
+## to be. Starting the pending beat here would win that race and swallow the chained
+## half of a scripted beat. By the time the deferred call runs, the chain has begun
+## and `is_active()` says so; the pending beat simply waits for the next ending.
+func _on_dialogue_ended(_graph_id: StringName) -> void:
+	_start_pending_dialogue.call_deferred()
+
+
+func _start_pending_dialogue() -> void:
+	if _pending_graph_id == &"":
+		return
+	var dialogue := _dialogue()
+	if dialogue == null or dialogue.is_active():
+		return
+	var graph_id := _pending_graph_id
+	_pending_graph_id = &""
+	dialogue.start(graph_id)
+
+
+## Subscribe to the services this region listens to, then start the Fool's first
+## quest. Subscribing first matters: the very first beat must not be missed.
+func _wire_services() -> void:
+	var quests := _quests()
+	if quests != null and not quests.quest_advanced.is_connected(_on_quest_advanced):
+		quests.quest_advanced.connect(_on_quest_advanced)
+	var dialogue := _dialogue()
+	if dialogue != null and not dialogue.event_raised.is_connected(_on_dialogue_event_raised):
+		dialogue.event_raised.connect(_on_dialogue_event_raised)
+	if dialogue != null and not dialogue.dialogue_ended.is_connected(_on_dialogue_ended):
+		dialogue.dialogue_ended.connect(_on_dialogue_ended)
+	_begin_first_quest()
 
 
 func _begin_first_quest() -> void:
@@ -82,6 +192,14 @@ func _quests() -> QuestService:
 	if services == null:
 		return null
 	return services.get("quests") as QuestService
+
+
+## The conversation runner, looked up the same way and for the same reason.
+func _dialogue() -> DialogueService:
+	var services := get_node_or_null("/root/Services")
+	if services == null:
+		return null
+	return services.get("dialogue") as DialogueService
 
 
 func _on_leap_point_body_entered(body: Node2D) -> void:

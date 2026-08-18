@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="DialogueGraph" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://systems/dialogue/definitions/dialogue_graph.gd" id="1_graph"]
+[ext_resource type="Script" path="res://systems/dialogue/definitions/dialogue_node.gd" id="2_node"]
+
+[sub_resource type="Resource" id="Node_L01"]
+script = ExtResource("2_node")
+id = &"L01"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_KEEPSAKE_GIVEN_01"
+next = &"END"
+notes = "The line the script puts immediately before the choice table."
+
+[sub_resource type="Resource" id="Node_END"]
+script = ExtResource("2_node")
+id = &"END"
+kind = 5
+notes = "Chains into MQ00_WOODEN_DOG, which is the table that follows."
+
+[resource]
+script = ExtResource("1_graph")
+id = &"MQ00_KEEPSAKE_GIVEN"
+quest_id = &"MQ00"
+source_ref = "docs/quests/main/MQ00-the-leap.md §EXT. THE CLIFF: The Old Campsites - DAWN (Pip brings the wooden dog)"
+start_node = &"L01"
+nodes = Array[ExtResource("2_node")]([SubResource("Node_L01"), SubResource("Node_END")])
+next_graph_id = &"MQ00_WOODEN_DOG"

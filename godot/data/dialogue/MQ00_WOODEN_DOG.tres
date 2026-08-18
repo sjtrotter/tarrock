@@ -1,0 +1,75 @@
+[gd_resource type="Resource" script_class="DialogueGraph" load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://systems/dialogue/definitions/dialogue_graph.gd" id="1_graph"]
+[ext_resource type="Script" path="res://systems/dialogue/definitions/dialogue_node.gd" id="2_node"]
+[ext_resource type="Script" path="res://systems/dialogue/definitions/dialogue_option.gd" id="3_option"]
+
+[sub_resource type="Resource" id="Option_TABLE_Q1"]
+script = ExtResource("3_option")
+text_key = &"DLG_MQ00_WOODEN_DOG_Q1"
+next = &"A1"
+is_earnest = false
+raises_event = &""
+
+[sub_resource type="Resource" id="Option_TABLE_Q2"]
+script = ExtResource("3_option")
+text_key = &"DLG_MQ00_WOODEN_DOG_Q2"
+next = &"A2"
+is_earnest = false
+raises_event = &""
+
+[sub_resource type="Resource" id="Option_TABLE_Q3"]
+script = ExtResource("3_option")
+text_key = &"DLG_MQ00_WOODEN_DOG_Q3"
+next = &"A3"
+is_earnest = true
+raises_event = &""
+
+[sub_resource type="Resource" id="Node_TABLE"]
+script = ExtResource("2_node")
+id = &"TABLE"
+kind = 1
+mode = 0
+options = Array[ExtResource("3_option")]([SubResource("Option_TABLE_Q1"), SubResource("Option_TABLE_Q2"), SubResource("Option_TABLE_Q3")])
+after_all = &"END"
+earnest_exempt = false
+notes = "The script marks 'I'll keep it safe.' *(earnest)*."
+
+[sub_resource type="Resource" id="Node_A1"]
+script = ExtResource("2_node")
+id = &"A1"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_WOODEN_DOG_A1"
+next = &"END"
+
+[sub_resource type="Resource" id="Node_A2"]
+script = ExtResource("2_node")
+id = &"A2"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_WOODEN_DOG_A2"
+next = &"END"
+
+[sub_resource type="Resource" id="Node_A3"]
+script = ExtResource("2_node")
+id = &"A3"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_WOODEN_DOG_A3"
+next = &"END"
+
+[sub_resource type="Resource" id="Node_END"]
+script = ExtResource("2_node")
+id = &"END"
+kind = 5
+notes = "[All versions pick up here:] is narration only - the wooden dog goes into the Bindle and Pip trots on. No further line."
+
+[resource]
+script = ExtResource("1_graph")
+id = &"MQ00_WOODEN_DOG"
+quest_id = &"MQ00"
+source_ref = "docs/quests/main/MQ00-the-leap.md §CHOICE DIALOG - the wooden dog (all questions may be exhausted)"
+start_node = &"TABLE"
+nodes = Array[ExtResource("2_node")]([SubResource("Node_TABLE"), SubResource("Node_A1"), SubResource("Node_A2"), SubResource("Node_A3"), SubResource("Node_END")])
+next_graph_id = &""

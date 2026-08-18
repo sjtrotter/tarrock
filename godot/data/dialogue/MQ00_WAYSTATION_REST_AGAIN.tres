@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="DialogueGraph" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://systems/dialogue/definitions/dialogue_graph.gd" id="1_graph"]
+[ext_resource type="Script" path="res://systems/dialogue/definitions/dialogue_node.gd" id="2_node"]
+
+[sub_resource type="Resource" id="Node_P01"]
+script = ExtResource("2_node")
+id = &"P01"
+kind = 4
+speaker = &"QUERENT"
+text_keys = PackedStringArray("DLG_MQ00_WAYSTATION_REST_AGAIN_01", "DLG_MQ00_WAYSTATION_REST_AGAIN_02", "DLG_MQ00_WAYSTATION_REST_AGAIN_03")
+next = &"END"
+notes = "Random Lines, played if the player rests again."
+
+[sub_resource type="Resource" id="Node_END"]
+script = ExtResource("2_node")
+id = &"END"
+kind = 5
+
+[resource]
+script = ExtResource("1_graph")
+id = &"MQ00_WAYSTATION_REST_AGAIN"
+quest_id = &"MQ00"
+source_ref = "docs/quests/main/MQ00-the-leap.md §EXT. THE CLIFF: The First Waystation - THE QUERENT Random Lines"
+start_node = &"P01"
+nodes = Array[ExtResource("2_node")]([SubResource("Node_P01"), SubResource("Node_END")])
+next_graph_id = &""

@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="DialogueGraph" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://systems/dialogue/definitions/dialogue_graph.gd" id="1_graph"]
+[ext_resource type="Script" path="res://systems/dialogue/definitions/dialogue_node.gd" id="2_node"]
+
+[sub_resource type="Resource" id="Node_L01"]
+script = ExtResource("2_node")
+id = &"L01"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_WAKE_01"
+next = &"L02"
+notes = "The first line of the game, over black."
+
+[sub_resource type="Resource" id="Node_L02"]
+script = ExtResource("2_node")
+id = &"L02"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_WAKE_02"
+next = &"END"
+notes = "After the second card-snap, closer and almost gentle."
+
+[sub_resource type="Resource" id="Node_END"]
+script = ExtResource("2_node")
+id = &"END"
+kind = 5
+notes = "END CUT SCENE. The Cliff has not loaded yet."
+
+[resource]
+script = ExtResource("1_graph")
+id = &"MQ00_WAKE"
+quest_id = &"MQ00"
+source_ref = "docs/quests/main/MQ00-the-leap.md §INT./EXT. VOID: Black Screen - BEFORE DAWN (CUT SCENE)"
+start_node = &"L01"
+nodes = Array[ExtResource("2_node")]([SubResource("Node_L01"), SubResource("Node_L02"), SubResource("Node_END")])
+next_graph_id = &""

@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="DialogueGraph" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://systems/dialogue/definitions/dialogue_graph.gd" id="1_graph"]
+[ext_resource type="Script" path="res://systems/dialogue/definitions/dialogue_node.gd" id="2_node"]
+
+[sub_resource type="Resource" id="Node_L01"]
+script = ExtResource("2_node")
+id = &"L01"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_LANDING_01"
+next = &"L02"
+notes = "Over the Spread laid out below."
+
+[sub_resource type="Resource" id="Node_L02"]
+script = ExtResource("2_node")
+id = &"L02"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_LANDING_02"
+next = &"L03"
+
+[sub_resource type="Resource" id="Node_L03"]
+script = ExtResource("2_node")
+id = &"L03"
+kind = 0
+speaker = &"FLICK"
+text_key = &"DLG_MQ00_LANDING_03"
+next = &"END"
+notes = "Marked *(offscreen, first heard)*. The script italicises 'that'; emphasis is presentation, so the key holds plain text."
+
+[sub_resource type="Resource" id="Node_END"]
+script = ExtResource("2_node")
+id = &"END"
+kind = 5
+notes = "END CUT SCENE. MQ01 picks up at the Prestige's gate."
+
+[resource]
+script = ExtResource("1_graph")
+id = &"MQ00_LANDING"
+quest_id = &"MQ00"
+source_ref = "docs/quests/main/MQ00-the-leap.md §EXT. THE CLIFF: The Edge of the World - DUSK (the skydive and the haywain)"
+start_node = &"L01"
+nodes = Array[ExtResource("2_node")]([SubResource("Node_L01"), SubResource("Node_L02"), SubResource("Node_L03"), SubResource("Node_END")])
+next_graph_id = &""

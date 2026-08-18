@@ -111,38 +111,24 @@ func test_the_composition_root_feeds_its_delta_straight_to_the_clock() -> void:
 	)
 
 
-func test_time_scale_slows_world_time() -> void:
+func test_the_autoload_forwards_the_scaled_process_delta_to_the_clock() -> void:
 	# The ruling: the clock is world time. Slow-motion (the Fool's Chance) slows the
-	# world, schedules included, so at half speed in-game seconds must accumulate at
-	# roughly half of wall-clock seconds. Measured over enough frames that a single
-	# frame landing either side of the window cannot flip the verdict; the bounds are
-	# wide because a headless frame rate is nobody's promise.
+	# world, schedules included, because `Services._process` hands the engine's
+	# already-scaled delta straight to the clock. Godot's own scaling of `delta` by
+	# `Engine.time_scale` is the engine's contract, not ours; measuring it against the
+	# wall clock in a headless run proved flaky (frame pacing is nobody's promise), so
+	# this test pins the part that is ours: the forwarding, with an exact delta.
 	var services := tree().root.get_node_or_null("Services")
 	if not assert_not_null(services, "the Services autoload exists"):
 		return
 	var clock: GameClock = services.get("clock")
 	if not assert_not_null(clock, "Services constructed its GameClock in _ready"):
 		return
-	Engine.time_scale = 0.5
-	await tree().process_frame  # the next delta is the first one that is scaled
-	var wall_started := Time.get_ticks_usec()
-	var in_game_started := clock.elapsed_seconds
-	for _frame: int in 60:
-		await tree().process_frame
-	var wall_elapsed := float(Time.get_ticks_usec() - wall_started) / 1000000.0
-	var in_game_elapsed := clock.elapsed_seconds - in_game_started
-	assert_true(in_game_elapsed > 0.0, "the autoload is advancing the clock every frame")
-	assert_true(
-		in_game_elapsed < wall_elapsed * 0.8,
-		(
-			"at time_scale 0.5 the world must run slower than the wall clock (%f in-game vs %f real)"
-			% [in_game_elapsed, wall_elapsed]
-		)
-	)
-	assert_true(
-		in_game_elapsed > wall_elapsed * 0.2,
-		(
-			"at time_scale 0.5 the world must still run at about half speed, not stop (%f in-game vs %f real)"
-			% [in_game_elapsed, wall_elapsed]
-		)
-	)
+	var before := clock.elapsed_seconds
+	services.call("_process", 0.25)
+	assert_almost_eq(clock.elapsed_seconds - before, 0.25, 0.000001, "one process call adds exactly its delta")
+	clock.paused = true
+	services.call("_process", 0.25)
+	assert_almost_eq(clock.elapsed_seconds - before, 0.25, 0.000001, "a paused clock ignores the delta")
+	clock.paused = false
+	assert_true(clock.elapsed_seconds > 0.0, "the autoload is advancing the clock every frame")

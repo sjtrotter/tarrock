@@ -11,6 +11,18 @@ extends SceneTree
 ## The one beat that cannot be played yet is the ambush: combat is a later round and
 ## no Blanks stand in the scene, so `MQ00_AMBUSH_CLEARED` is raised directly, exactly
 ## as the graph's own note says. Everything else is the Fool walking about.
+##
+## From round 5 the Querent talks over it. Each beat asserts that the conversation
+## the scene's `DIALOGUE_FOR_STATE` table promises really started, then walks it to
+## its end - which is what a dialogue UI will do for the player, and what has to
+## happen here because `DialogueService.start()` refuses while another conversation
+## is running. The quest never waits for any of it: the leap still completes MQ00.
+##
+## One beat is deliberately played the awkward way round (phases 8 and 9): the
+## ambush is cleared while the dead-tree conversation is still on screen, which is
+## what the scene's pending slot is for. The line waits its turn instead of
+## interrupting or vanishing. Phases 13 and 14 push that slot past its one place:
+## two beats behind one conversation, where the newer must win.
 
 const ISLAND: PackedVector2Array = preload("res://scripts/cliff_ground.gd").ISLAND
 
@@ -30,6 +42,10 @@ const EMPTY_MEADOW := Vector2(3820, 2560)
 ## do; five costs nothing and does not flake.
 const SETTLE_FRAMES := 5
 
+## How many lines and questions a single conversation may take before the test calls
+## it a loop. MQ00's longest is the edge questions, at well under twenty.
+const DIALOGUE_STEP_LIMIT := 200
+
 var _all_passed := true
 var _frame := 0
 var _phase := 0
@@ -39,6 +55,7 @@ var _fool: CharacterBody2D
 var _pip: Node2D
 var _leap_received := false
 var _quests: QuestService
+var _dialogue: DialogueService
 
 
 func _initialize() -> void:
@@ -116,6 +133,15 @@ func _physics_process(_delta: float) -> bool:
 			_quests.is_started(QuestIds.MQ00), "the Cliff started MQ00 when it loaded"
 		) and _all_passed
 		_all_passed = _check_state(&"WAKING", "MQ00 begins at WAKING, beside the dead campfire")
+		_dialogue = _dialogue_service()
+		_all_passed = check(_dialogue != null, "the Services autoload built a DialogueService") and _all_passed
+		if _dialogue == null:
+			_finish()
+			return true
+		_all_passed = check(
+			not _dialogue.is_active(),
+			"nothing is being said yet - MQ00_WAKE plays over a black screen the region never sees"
+		) and _all_passed
 		_place(KEEPSAKE_POSITION)
 		_advance_phase()
 		return false
@@ -144,6 +170,8 @@ func _physics_process(_delta: float) -> bool:
 		_all_passed = check(
 			bindle != null and not bindle.visible, "the Bindle is gone from the meadow once taken"
 		) and _all_passed
+		_all_passed = _check_dialogue(DialogueIds.MQ00_MEADOW, "taking the Bindle starts the meadow line")
+		_drain_dialogue()
 		_place(KEEPSAKE_POSITION)
 		_advance_phase()
 		return false
@@ -156,40 +184,88 @@ func _physics_process(_delta: float) -> bool:
 			dug_again != null, "the dig site still fires after an earlier, premature dig"
 		) and _all_passed
 		_all_passed = _check_state(&"KEEPSAKE_FOUND", "digging out the wooden dog advances MQ00")
+		_all_passed = _check_dialogue(
+			DialogueIds.MQ00_KEEPSAKE_GIVEN, "the wooden dog starts the Querent's line about it"
+		)
+		# The script puts the choice table straight after that line; the graph says so
+		# (next_graph_id), so the scene starts one conversation and gets both.
+		_dialogue.advance()
+		_all_passed = _check_dialogue(
+			DialogueIds.MQ00_WOODEN_DOG, "which chains into the wooden-dog choice table"
+		)
+		var table: DialogueView = _dialogue.current()
+		_all_passed = check(
+			table != null and table.is_choice() and table.options.size() == 3,
+			"offering the script's three questions"
+		) and _all_passed
+		_drain_dialogue()
 		_place(DEAD_TREE_POSITION)
 		_advance_phase()
 		return false
 
+	# The ambush is cleared deliberately *while* the dead-tree conversation is still
+	# on screen - the case the scene's pending slot exists for. The beat must not
+	# interrupt what is being said, and must not be lost either: the Querent's line
+	# about where the cleared cards went is the only place the script explains it.
 	if _phase == 8:
 		if _phase_frame < SETTLE_FRAMES:
 			return false
 		_all_passed = _check_state(&"DEAD_TREE_SEEN", "approaching the dead tree needs no key press")
+		_all_passed = _check_dialogue(DialogueIds.MQ00_DEAD_TREE, "and starts the dead-tree beat")
 		# Combat is a later round: no Blanks stand on the Waystation path yet, so the
 		# ambush is raised the way the graph's note says it will be until they do.
 		_scene.raise_quest_event(QuestEvents.MQ00_AMBUSH_CLEARED, _scene)
 		_all_passed = _check_state(&"AMBUSH_CLEARED", "clearing the three Twos advances MQ00")
-		_place(WAYSTATION_POSITION)
+		_all_passed = _check_dialogue(
+			DialogueIds.MQ00_DEAD_TREE, "and does not cut the dead-tree line short"
+		)
+		_drain_dialogue()
 		_advance_phase()
 		return false
 
 	if _phase == 9:
 		if _phase_frame < SETTLE_FRAMES:
 			return false
-		_fool.try_interact()
-		_all_passed = _check_state(&"RESTED", "resting at the first Waystation advances MQ00")
-		_place(CLIFF_EDGE_POSITION)
+		_all_passed = _check_dialogue(
+			DialogueIds.MQ00_WAYSTATION_CLEARED,
+			"the beat that landed mid-conversation plays once that conversation ends"
+		)
+		_drain_dialogue()
+		_place(WAYSTATION_POSITION)
 		_advance_phase()
 		return false
 
 	if _phase == 10:
 		if _phase_frame < SETTLE_FRAMES:
 			return false
-		_all_passed = _check_state(&"EDGE_REACHED", "reaching the cliff's edge advances MQ00")
-		_place(LEAP_POSITION)
+		_fool.try_interact()
+		_all_passed = _check_state(&"RESTED", "resting at the first Waystation advances MQ00")
+		_all_passed = _check_dialogue(
+			DialogueIds.MQ00_WAYSTATION_REST, "and starts the Querent on what a Waystation is"
+		)
+		_drain_dialogue()
+		_place(CLIFF_EDGE_POSITION)
 		_advance_phase()
 		return false
 
 	if _phase == 11:
+		if _phase_frame < SETTLE_FRAMES:
+			return false
+		_all_passed = _check_state(&"EDGE_REACHED", "reaching the cliff's edge advances MQ00")
+		_all_passed = _check_dialogue(
+			DialogueIds.MQ00_EDGE_QUESTIONS, "and opens the questions at the edge"
+		)
+		var questions: DialogueView = _dialogue.current()
+		_all_passed = check(
+			questions != null and questions.is_choice() and questions.options.size() == 4,
+			"offering the script's four questions"
+		) and _all_passed
+		_drain_dialogue()
+		_place(LEAP_POSITION)
+		_advance_phase()
+		return false
+
+	if _phase == 12:
 		if _phase_frame < SETTLE_FRAMES:
 			return false
 		_all_passed = _check_state(&"COMPLETE", "stepping off the Cliff completes MQ00")
@@ -201,6 +277,42 @@ func _physics_process(_delta: float) -> bool:
 		# world by putting the Fool in it, and changes nothing the world remembers.
 		var fired: Dictionary = _world_state_snapshot().get(WorldStateService.SNAPSHOT_FIRED, {})
 		_all_passed = check(fired.is_empty(), "MQ00 fired no world-state flag") and _all_passed
+		_all_passed = _check_dialogue(
+			DialogueIds.MQ00_LANDING, "and the skydive over the Spread plays after it"
+		)
+		_drain_dialogue()
+		_advance_phase()
+		return false
+
+	# --- The pending slot holds ONE beat, and the newest wins ----------------
+	#
+	# MQ00 has run out of real transitions by now, so the last two are staged: the
+	# quest runner's own signal is emitted for two beats that both land while a
+	# conversation is on screen. Replaying the older line after the newer one would
+	# narrate the wrong moment, so the older is dropped - loudly, in the log, which
+	# is why the engine's warnings are muted around the provocation.
+	if _phase == 13:
+		_dialogue.start(DialogueIds.MQ00_MEADOW)
+		_all_passed = _check_dialogue(
+			DialogueIds.MQ00_MEADOW, "a conversation is on screen again"
+		)
+		var was_printing := Engine.print_error_messages
+		Engine.print_error_messages = false
+		_quests.quest_advanced.emit(QuestIds.MQ00, &"", &"DEAD_TREE_SEEN")
+		_quests.quest_advanced.emit(QuestIds.MQ00, &"", &"RESTED")
+		Engine.print_error_messages = was_printing
+		_drain_dialogue()
+		_advance_phase()
+		return false
+
+	if _phase == 14:
+		if _phase_frame < SETTLE_FRAMES:
+			return false
+		_all_passed = _check_dialogue(
+			DialogueIds.MQ00_WAYSTATION_REST,
+			"two beats behind one conversation leaves the newer one, not the older"
+		)
+		_drain_dialogue()
 		_finish()
 		return true
 
@@ -230,6 +342,52 @@ func _quest_service() -> QuestService:
 	if services == null:
 		return null
 	return services.get("quests") as QuestService
+
+
+## The conversation runner, looked up the same way `_quest_service()` is.
+func _dialogue_service() -> DialogueService:
+	var services := root.get_node_or_null("Services")
+	if services == null:
+		return null
+	return services.get("dialogue") as DialogueService
+
+
+## Assert the beat just played started the conversation the scene promises for it.
+func _check_dialogue(expected: StringName, description: String) -> bool:
+	if _dialogue == null:
+		return check(false, "%s (no DialogueService)" % description) and _all_passed
+	var actual := _dialogue.current_graph_id()
+	return check(actual == expected, "%s (running %s)" % [description, actual]) and _all_passed
+
+
+## Play whatever is being said to its end, the way a dialogue UI eventually will.
+##
+## Every question is asked and every line advanced past; a table with nothing left
+## open is left. This has to happen between beats because `DialogueService.start()`
+## refuses while another conversation is running - which is the right behaviour, and
+## the reason a headless scene test has to be the player as well as the Fool.
+func _drain_dialogue() -> void:
+	if _dialogue == null:
+		return
+	var steps := 0
+	while _dialogue.is_active() and steps < DIALOGUE_STEP_LIMIT:
+		steps += 1
+		var view := _dialogue.current()
+		if view == null:
+			break
+		if not view.is_choice():
+			_dialogue.advance()
+			continue
+		var picked := false
+		for index: int in view.options.size():
+			if not view.options[index].is_used:
+				picked = _dialogue.choose(index)
+				break
+		if not picked:
+			_dialogue.leave()
+	_all_passed = check(
+		not _dialogue.is_active(), "the conversation reaches an end (%d steps)" % steps
+	) and _all_passed
 
 
 func _world_state_snapshot() -> Dictionary:

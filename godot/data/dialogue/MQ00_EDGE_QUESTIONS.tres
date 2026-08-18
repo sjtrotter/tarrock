@@ -1,0 +1,198 @@
+[gd_resource type="Resource" script_class="DialogueGraph" load_steps=27 format=3]
+
+[ext_resource type="Script" path="res://systems/dialogue/definitions/dialogue_graph.gd" id="1_graph"]
+[ext_resource type="Script" path="res://systems/dialogue/definitions/dialogue_node.gd" id="2_node"]
+[ext_resource type="Script" path="res://systems/dialogue/definitions/dialogue_option.gd" id="3_option"]
+
+[sub_resource type="Resource" id="Option_TABLE_Q1"]
+script = ExtResource("3_option")
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_Q1"
+next = &"A1"
+is_earnest = false
+raises_event = &""
+
+[sub_resource type="Resource" id="Option_TABLE_Q2"]
+script = ExtResource("3_option")
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_Q2"
+next = &"A2"
+is_earnest = false
+raises_event = &""
+
+[sub_resource type="Resource" id="Option_TABLE_Q3"]
+script = ExtResource("3_option")
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_Q3"
+next = &"A3"
+is_earnest = false
+raises_event = &""
+
+[sub_resource type="Resource" id="Option_TABLE_Q4"]
+script = ExtResource("3_option")
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_Q4"
+next = &"A4"
+is_earnest = true
+raises_event = &""
+
+[sub_resource type="Resource" id="Option_T_WHO_F1"]
+script = ExtResource("3_option")
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_Q1_F1"
+next = &"A1_F1"
+is_earnest = false
+raises_event = &""
+
+[sub_resource type="Resource" id="Option_T_STUCK_F1"]
+script = ExtResource("3_option")
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_Q3_F1"
+next = &"A3_F1"
+is_earnest = false
+raises_event = &""
+
+[sub_resource type="Resource" id="Option_T_STUCK_F2"]
+script = ExtResource("3_option")
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_Q3_F2"
+next = &"A3_F2"
+is_earnest = false
+raises_event = &""
+
+[sub_resource type="Resource" id="Node_TABLE"]
+script = ExtResource("2_node")
+id = &"TABLE"
+kind = 1
+mode = 0
+options = Array[ExtResource("3_option")]([SubResource("Option_TABLE_Q1"), SubResource("Option_TABLE_Q2"), SubResource("Option_TABLE_Q3"), SubResource("Option_TABLE_Q4")])
+after_all = &"PICKUP"
+earnest_exempt = false
+notes = "The script marks 'Why me?' *(earnest)*."
+
+[sub_resource type="Resource" id="Node_A1"]
+script = ExtResource("2_node")
+id = &"A1"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_A1"
+next = &"T_WHO"
+
+[sub_resource type="Resource" id="Node_T_WHO"]
+script = ExtResource("2_node")
+id = &"T_WHO"
+kind = 1
+mode = 0
+options = Array[ExtResource("3_option")]([SubResource("Option_T_WHO_F1")])
+after_all = &"END"
+earnest_exempt = false
+notes = "'If the Fool asked \"Who are you?\"' - a one-row follow-up table, so there is nothing to offer an earnest alternative to."
+
+[sub_resource type="Resource" id="Node_A1_F1"]
+script = ExtResource("2_node")
+id = &"A1_F1"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_A1_F1"
+next = &"END"
+
+[sub_resource type="Resource" id="Node_A2"]
+script = ExtResource("2_node")
+id = &"A2"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_A2"
+next = &"A2_01"
+notes = "The table row's own answer, before the thread the script writes under 'If the Fool asked \"What am I?\"'."
+
+[sub_resource type="Resource" id="Node_A2_01"]
+script = ExtResource("2_node")
+id = &"A2_01"
+kind = 0
+speaker = &"FOOL"
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_A2_01"
+next = &"A2_02"
+notes = "The Fool's line played back, longer than the menu option."
+
+[sub_resource type="Resource" id="Node_A2_02"]
+script = ExtResource("2_node")
+id = &"A2_02"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_A2_02"
+next = &"A2_03"
+
+[sub_resource type="Resource" id="Node_A2_03"]
+script = ExtResource("2_node")
+id = &"A2_03"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_A2_03"
+next = &"A2_04"
+notes = "MQ00's ONE Querent fourth-wall wink (narrative.md one-wink rule)."
+
+[sub_resource type="Resource" id="Node_A2_04"]
+script = ExtResource("2_node")
+id = &"A2_04"
+kind = 0
+speaker = &"FOOL"
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_A2_04"
+next = &"END"
+
+[sub_resource type="Resource" id="Node_A3"]
+script = ExtResource("2_node")
+id = &"A3"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_A3"
+next = &"T_STUCK"
+
+[sub_resource type="Resource" id="Node_T_STUCK"]
+script = ExtResource("2_node")
+id = &"T_STUCK"
+kind = 1
+mode = 0
+options = Array[ExtResource("3_option")]([SubResource("Option_T_STUCK_F1"), SubResource("Option_T_STUCK_F2")])
+after_all = &"END"
+earnest_exempt = true
+notes = "'If the Fool asked \"What's wrong with the world?\"' - the script writes both follow-ups as plain questions and marks neither *(earnest)*; the earnest option of this beat is 'Why me?' on the parent table. Exemption recorded rather than inventing a line."
+
+[sub_resource type="Resource" id="Node_A3_F1"]
+script = ExtResource("2_node")
+id = &"A3_F1"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_A3_F1"
+next = &"END"
+
+[sub_resource type="Resource" id="Node_A3_F2"]
+script = ExtResource("2_node")
+id = &"A3_F2"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_A3_F2"
+next = &"END"
+
+[sub_resource type="Resource" id="Node_A4"]
+script = ExtResource("2_node")
+id = &"A4"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_A4"
+next = &"END"
+
+[sub_resource type="Resource" id="Node_PICKUP"]
+script = ExtResource("2_node")
+id = &"PICKUP"
+kind = 0
+speaker = &"QUERENT"
+text_key = &"DLG_MQ00_EDGE_QUESTIONS_01"
+next = &"END"
+notes = "[All versions pick up here:] - the table's after_all."
+
+[sub_resource type="Resource" id="Node_END"]
+script = ExtResource("2_node")
+id = &"END"
+kind = 5
+
+[resource]
+script = ExtResource("1_graph")
+id = &"MQ00_EDGE_QUESTIONS"
+quest_id = &"MQ00"
+source_ref = "docs/quests/main/MQ00-the-leap.md §CHOICE DIALOG - questions at the edge (all questions may be exhausted)"
+start_node = &"TABLE"
+nodes = Array[ExtResource("2_node")]([SubResource("Node_TABLE"), SubResource("Node_A1"), SubResource("Node_T_WHO"), SubResource("Node_A1_F1"), SubResource("Node_A2"), SubResource("Node_A2_01"), SubResource("Node_A2_02"), SubResource("Node_A2_03"), SubResource("Node_A2_04"), SubResource("Node_A3"), SubResource("Node_T_STUCK"), SubResource("Node_A3_F1"), SubResource("Node_A3_F2"), SubResource("Node_A4"), SubResource("Node_PICKUP"), SubResource("Node_END")])
+next_graph_id = &""
