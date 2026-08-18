@@ -346,9 +346,35 @@ the Cliff excluded) plus the Mirrormarsh gate granularity — confirm or overrul
 load still rebuilds; `regions_test` uses a scratch saves dir; a defeat whose shrine sits in
 an unbuilt region wakes the Fool where they fell (last resort, warned).
 
-## Round 11 — Progression economy (open 2026-08-18)
+## Round 11 — Progression economy (CLOSED 2026-08-18)
 
-**Goal:** Coins, shops whose stock and prices read WorldState + Renown (food halves
-Spread-wide on `WS_EMPRESS_UNBOUND` through data), staff heads (placeholders, doc-TBD
-identity), Rose graftings, and the deed → Renown reaction table generated from
-progression.md; an `inventory` save section. _In progress._
+**Shipped (`919f72e`; docs `33138a2`):** the deed → Renown table generated from
+progression.md (cell-exact, per-suit reactions; magnitudes one TBD rules table);
+`EconomyRules` with the single canon price rule (food halves Spread-wide on
+`WS_EMPRESS_UNBOUND`, applied through data — two shops prove it) and renown-tier /
+region modifiers; items (outfits cosmetic-only by validation; staff heads are twist ids,
+never a number; quest items never bought or stocked; placeholder names flagged TBD, not
+glossary terms); a Prestige shop with Manifest's hidden stock and Bargain's fine-print
+lines gated on the Trumps held; `EconomyService` (purse, inventory, equip, graftings
+set-once and consumed only on success, deeds → per-suit Renown as **the one reviewed second
+writer of Renown**, now written into technical.md); an `inventory` save section.
+**Shops sell, they do not buy** — the builder had added a sell verb the doc never grants;
+ruled out and removed (the director can add buy-back to progression.md if wanted).
+
+**Proof:** 953 unit tests (77 new); `RUN_ALL: 12 suites passed`; `--check: 233 files`.
+Critic: 10/10 mutations caught (food rule on all categories; rule before the flag; wrong
+suit's tier; hidden stock without Manifest; effects on an outfit; grafting consumed on
+failure; NEUTRAL suits moved; apply skipping the inventory; hand-edited deed; sell =
+buy). A real RefCounted cycle (economy → regions → save → economy) leaked the whole
+service graph at exit — held weakly now.
+
+**Director asks:** none new (buy-back is available on request; the settled-regions list
+and "the Prestige's local suit is Wands" are readings flagged in data notes).
+
+## Round 12 — NPC system (open 2026-08-18)
+
+**Goal:** bark layers as data (seven layers, most-specific-first, repeats decay, layer 6
+inert before its unbinding, layer 7 evergreen), Reading-order motifs generated from
+world.md, named-NPC profiles + memory gating, rumor propagation on in-game time along the
+region graph, light anchor schedules; the Cliff's four Querent idle lines as the proof
+pool. _In progress._
