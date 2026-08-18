@@ -52,9 +52,38 @@ completionist playtime figure left TBD in the GDD (director may want to set it).
 stands. Also for the director's eye, not blocking: the GDD's completionist playtime is
 now TBD (was "40+", a 3D-scale figure).
 
-## Round 2 — WorldState service + docs-generated `WS_*` definitions (open 2026-08-17)
+## Round 2 — WorldState service + docs-generated `WS_*` definitions (CLOSED 2026-08-18)
 
-**Goal:** `WorldStateService` (flags, Renown, acts, the Reading, Hermit answer, named-NPC
-memory, quest state) as the only mutation path; `gen_definitions.py` generating one
-`.tres` per world.md matrix row + act thresholds + Renown ladder, with a drift test.
-_In progress._
+**Shipped (`af9772f`):** `WorldStateService` — the only mutation path for flags, Renown,
+acts, the Fool's Reading, the Hermit answer, named-NPC memory, quest state; typed
+signals; fire-once; **no un-fire method** (an exact public-surface test now lists the 21
+public methods — adding one is a reviewed edit); branch flags never enter the Reading nor
+count toward acts; act thresholds and the Renown ladder come from data (a literal-based
+implementation fails the tests); `restore_snapshot` is all-or-nothing and only valid on a
+pristine service (a load is not a reset), and emits nothing. `gen_definitions.py` turns
+`world.md` §World-state matrix into 25 `.tres` (21 unbindings + 4 derived branch flags),
+a catalog, act thresholds, `progression.md`'s Renown ladder, and `WorldStateIds`
+constants; `--check` = the drift test (changed / stale / missing). Quest-frontmatter
+sweep: 25 distinct `WS_*` ids referenced across the quest docs, 0 unknown.
+
+**Proof:** `UNIT TESTS: 139 passed` (96 new), `RUN_ALL: 8 suites passed`,
+`gen_definitions --check: 29 generated files match docs/`. Critic mutations all caught:
+duplicate `fire` returning true; literal 7/15 act thresholds; branch flags leaking into
+the Reading; a one-character edit to a generated `.tres`; a `reset()` method; a
+`forget()` method under an unlisted name (this one PASSED before the fix — the exact
+public-surface test now catches it); a live-service restore (was a silent reset path —
+now refused); a Reading that disagrees with the flags (was accepted — now refused).
+
+**Debt / owed:** Renown tier thresholds `[0,10,25,50,100]` are placeholders — canon names
+five tiers, sets no numbers (director/tuning); branch-group exactly-one is round 4's
+contract (quest runner); `set_quest_state` is open by convention (GDScript has no friend
+access); snapshot versioning is round 3's job (the save gates versions before restore).
+
+**Director asks:** none new. (Renown thresholds will need numbers eventually — not
+blocking anything yet.)
+
+## Round 3 — Save system (open 2026-08-18)
+
+**Goal:** versioned JSON saves under `user://saves/`, `schema_version` + an explicit
+migration chain (a missing step is a hard failure), IDs only, fixture-tested; `SaveService`
+capture/apply over the WorldState snapshot. _In progress._
