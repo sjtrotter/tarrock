@@ -119,6 +119,48 @@ stage. Nothing else about the test is wrong when this happens. Go through the
 composition root instead: `Services.save_game(slot)` / `load_game(slot)` hand back a
 bool and keep the model on their side of the fence.
 
+## The proof slice — `tests/playthrough_test.gd`
+
+Every other suite proves one system against a fixture. `playthrough_test.gd` proves the
+**seams between them**, which is the one thing no per-system suite can: it plays MQ00
+from the black screen to a purchase in the Prestige and back out of a save file, in one
+process, and asserts every beat by name. Boot → the Querent's waking line → the Bindle →
+Pip's Seek at the disturbed earth → the wooden dog's three questions → the dead tree →
+the ambush (three Twos, a perfect dodge into Fool's Chance, a petal spent, three cards
+fluttered) → the rest at the first Waystation → the four questions at the edge → the leap
+→ the Prestige stall → save → rebuild → load → assert the world came back identical.
+
+**It is the regression gate for the slice.** A change that leaves every system's own
+tests green and still breaks the game — a beat that stops raising its event, a trigger a
+region scene forgets to forward, a save section nobody captures, an input action that
+stops reaching a component — fails here and nowhere else. Treat a failure in it as a
+broken game, not a broken test: read the phase name it failed in first.
+
+Three things about it are worth knowing before changing it:
+
+- **It drives the game through the InputMap actions**, not through the controllers.
+  Presses go out as `InputEventAction`s through `Input.parse_input_event()` (flushed by
+  hand), because that reaches both halves of the input surface: the polled one every
+  gameplay script reads, and `_unhandled_input`, where `DialogueFrame` and `UiShell`
+  listen. `Input.action_press()`, which `combat_test.gd` and `enemies_test.gd` use, only
+  reaches the first. Two beats cannot be driven that way and say so in the class doc: a
+  dialogue choice row (a `Button`, and `ui_accept` shares a key with `dodge`), and the
+  Prestige purchase (the Prestige is a greybox with no shop node in it).
+- **The Fool is set down between beats and walks into every one of them.** A teleport is
+  only ever to a stand-off *outside* the next trigger; no teleport lands in a trigger, an
+  encounter volume, a Waystation circle or on the leap point. Crossing the Cliff on the
+  Fool's legs four times would cost most of the suite's time budget and prove nothing the
+  walk-ins do not.
+- **Nothing waits on the wall clock.** Every phase is bounded in physics frames and fails
+  by name when it overruns, so a stuck walk reports "the fight finished inside its
+  1400-frame budget" rather than running into the harness's 120 s timeout, where the
+  diagnosis would be "something hung". The run prints a phase→frames timeline at the end;
+  the whole playthrough is around 1,330 physics frames.
+
+It uses a scratch saves directory **and** a scratch settings path (`UiSettings.
+settings_path_override`), for the reasons `ui_test.gd` and `regions_test.gd` give, and
+deletes both when it is done.
+
 ## The legacy scene-test pattern
 
 `tests/*_test.gd` predate the unit runner. Each `extends SceneTree`, loads a real scene,
@@ -196,3 +238,4 @@ What this means in practice:
 | `tests/lib/tarrock_test.gd` | `TarrockTest` — the base class and its assertions |
 | `tests/unit/<system>/*_test.gd` | unit tests, one folder per system |
 | `tests/*_test.gd` | legacy scene tests (`extends SceneTree`) |
+| `tests/playthrough_test.gd` | the proof slice: MQ00 → the Prestige → a save round trip |
