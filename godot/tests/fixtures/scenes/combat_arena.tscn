@@ -1,0 +1,40 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/fool.tscn" id="1_fool"]
+[ext_resource type="Script" path="res://tests/fixtures/scenes/training_dummy.gd" id="2_dummy"]
+[ext_resource type="Script" path="res://systems/combat/nodes/hurtbox.gd" id="3_hurtbox"]
+[ext_resource type="Script" path="res://systems/combat/nodes/hitbox.gd" id="4_hitbox"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_dummy_hurt"]
+radius = 26.0
+
+[node name="CombatArena" type="Node2D"]
+
+[node name="Ground" type="Node2D" parent="."]
+
+[node name="Fool" parent="." instance=ExtResource("1_fool")]
+position = Vector2(0, 0)
+
+[node name="Dummy" type="Node2D" parent="."]
+position = Vector2(60, 0)
+script = ExtResource("2_dummy")
+faction = 1
+max_health = 200
+telegraph_seconds = 0.5
+active_seconds = 0.1
+recovery_seconds = 0.4
+attack_damage = 20
+attack_radius = 400.0
+attack_arc_degrees = 360.0
+
+[node name="Hurtbox" type="Area2D" parent="Dummy"]
+script = ExtResource("3_hurtbox")
+faction = 1
+
+[node name="HurtShape" type="CollisionShape2D" parent="Dummy/Hurtbox"]
+shape = SubResource("CircleShape2D_dummy_hurt")
+
+[node name="Hitbox" type="Area2D" parent="Dummy"]
+script = ExtResource("4_hitbox")
+faction = 1
+detection_radius = 400.0

@@ -77,6 +77,22 @@ func test_bindings_are_device_agnostic() -> void:
 			)
 
 
+func test_the_focus_stance_has_both_of_its_inputs() -> void:
+	# combat.md §Focus is a HELD stance with more than one enemy in it: holding the
+	# lock and stepping it round the candidates are two inputs, and the second one is
+	# useless if it shares a button with the first.
+	for action: StringName in [InputActions.FOCUS, InputActions.FOCUS_CYCLE]:
+		assert_true(InputMap.has_action(action), "Focus action '%s' missing" % action)
+	var focus_signatures := PackedStringArray()
+	for event: InputEvent in InputMap.action_get_events(InputActions.FOCUS):
+		focus_signatures.append(_event_signature(event))
+	for event: InputEvent in InputMap.action_get_events(InputActions.FOCUS_CYCLE):
+		assert_false(
+			focus_signatures.has(_event_signature(event)),
+			"cycling Focus is bound to the same input as holding it"
+		)
+
+
 func test_movement_resolves_as_a_vector() -> void:
 	# The four movement actions are exactly what `Input.get_vector` needs; if any
 	# of them is missing this call is the thing that breaks in the player.

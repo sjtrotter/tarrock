@@ -1,11 +1,33 @@
+class_name FoolBody
 extends CharacterBody2D
 
+## The Fool's body: movement, facing, the interact reach, and the small API the
+## combat component drives it through.
+##
+## It is presentation plus locomotion and nothing else - it owns no combat rule. The
+## Bindle moveset lives in `systems/combat/` and reaches the body only through
+## `set_movement_multiplier()`, `displace()`, `face_direction()`, `facing_vector()`,
+## `speed_fraction()`, `set_time_compensation()` and `set_sprint_hold_mode()`, which is
+## the whole of the seam.
+
 const SPEED := 200.0
+
+## How much faster the Fool travels while the sprint input is on. Sprinting is what
+## makes an attack come out as the running attack (`docs/design/combat.md` §The
+## Bindle: "A forward lunge strike, closes distance and interrupts"), so the body has
+## to have a run to attack out of. TBD, like every other combat number - it belongs
+## to the same tuning pass as `res://data/combat/combat_rules.tres`.
+const SPRINT_MULTIPLIER := 1.6
 
 ## How far from the Fool an `Interactable` may sit and still answer the interact
 ## key. A reach, not a room: far enough that a prop does not need pixel-perfect
 ## approach, near enough that "the nearest one" is never a surprise.
 const INTERACT_REACH := 96.0
+
+## The smallest `set_time_compensation()` will accept. A compensation of zero would
+## freeze the Fool outright and a negative one would walk them backwards; neither is
+## a thing any caller means.
+const MIN_TIME_COMPENSATION := 0.01
 
 const DIRECTION_TEXTURES := {
 	"south": preload("res://art/game-ready-sprites-v1/frames/fool/directions/south.png"),
@@ -58,6 +80,20 @@ const WALK_FPS := 8.0
 var _facing := "south"
 var _animator: CharacterAnimator = null
 
+## What the combat component scales this frame's movement by: 0 through an attack's
+## windup, small through its recovery, 1 when the Fool is free.
+var _movement_multiplier := 1.0
+
+## Sprint, through the hold/toggle layer `combat.md` §Accessibility asks for.
+var _sprint := HoldOrToggle.new()
+var _sprinting := false
+
+## What this frame's delta is multiplied by before the body moves or the animator
+## advances. 1.0 normally; `1 / Engine.time_scale` while Fool's Chance is running, so
+## the Fool walks and animates at NORMAL speed through a slowed world - see
+## `set_time_compensation()`.
+var _time_compensation := 1.0
+
 ## The Fool's reach, built in code so the character scene stays art-only. Areas
 ## overlapping it are the `Interactable`s the interact key may reach.
 var _sensor: Area2D = null
@@ -71,6 +107,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_sprinting = _sprint.update(Input.is_action_pressed(InputActions.SPRINT))
 	move(
 		Input.get_vector(
 			InputActions.MOVE_LEFT,
@@ -109,21 +146,108 @@ func try_interact() -> Interactable:
 
 func move(input_dir: Vector2, delta: float) -> void:
 	_ensure_animator()
+	# One place, one multiplication: everything downstream of here runs on the Fool's
+	# own seconds rather than the world's (see `set_time_compensation()`).
+	var own_delta := delta * _time_compensation
 	if input_dir.is_zero_approx():
 		velocity = Vector2.ZERO
 		# No idle cycle is wired: a bound world holds still, and only the south-east
 		# idle exists anyway. This resolves to the static facing frame.
 		_animator.set_state(_facing, "idle")
-		_animator.advance(delta)
+		_animator.advance(own_delta)
 		return
 
 	var dir := input_dir.normalized()
-	var direction_index := wrapi(roundi(dir.angle() / (PI / 4.0)), 0, 8)
-	_facing = DIRECTIONS[direction_index]
+	# A committed attack does not turn the Fool: the swing goes where it was aimed.
+	if _movement_multiplier > 0.0:
+		face_direction(dir)
 	_animator.set_state(_facing, "walk")
-	_animator.advance(delta)
-	velocity = dir * SPEED
-	move_and_collide(velocity * delta)
+	_animator.advance(own_delta)
+	velocity = dir * top_speed() * _movement_multiplier
+	move_and_collide(velocity * own_delta)
+
+
+## The fastest the Fool can travel right now, sprint included. `speed_fraction()` is
+## measured against the sprint speed, so walking reads as a fraction and only a real
+## run clears `CombatRules.running_attack_min_speed_fraction`.
+func top_speed() -> float:
+	return SPEED * (SPRINT_MULTIPLIER if _sprinting else 1.0)
+
+
+## How fast the Fool is moving as a fraction of a full sprint. What the moveset reads
+## to decide whether an attack input is the running attack.
+func speed_fraction() -> float:
+	return velocity.length() / (SPEED * SPRINT_MULTIPLIER)
+
+
+## Run the body in the Fool's own time rather than the world's.
+##
+## `docs/design/combat.md` §Defense: during Fool's Chance "the Fool moves at normal
+## speed relative to a slowed world". The engine has already scaled this frame's delta
+## down by `Engine.time_scale`, and `MovesetController` gets that scale divided back
+## out by `FoolCombat` - but the moveset is only the swings and the dodges. WALKING
+## and the walk cycle are the body's, and without this they would still crawl at
+## `Engine.time_scale` while the Fool's dodge covered its full distance: the Fool would
+## roll at normal speed and then wade. `FoolCombat` sets this to `1 / Engine.time_scale`
+## for exactly as long as the service reports the window open, and back to 1.0 after.
+##
+## It is a compensation, not a speed setting: nothing else may write it, and it is
+## never how the Fool is made faster (`SPRINT_MULTIPLIER` and
+## `set_movement_multiplier()` are).
+func set_time_compensation(scale: float) -> void:
+	_time_compensation = maxf(MIN_TIME_COMPENSATION, scale)
+
+
+## What this frame's delta is being multiplied by. 1.0 in normal time.
+func time_compensation() -> float:
+	return _time_compensation
+
+
+## Put sprint on hold or on toggle (`combat.md` §Accessibility lists sprint as one of
+## the held inputs that needs the choice). Sprint is the body's own input rather than
+## the moveset's, so its `HoldOrToggle` lives here and `FoolCombat.set_hold_mode()`
+## forwards to this - one settings call reaches every held input in the game.
+func set_sprint_hold_mode(mode: HoldOrToggle.Mode) -> void:
+	_sprint.set_mode(mode)
+
+
+## Which mode sprint is in.
+func sprint_hold_mode() -> HoldOrToggle.Mode:
+	return _sprint.mode()
+
+
+## Scale this frame's walking. Set by the combat component every frame; 1 means free.
+func set_movement_multiplier(multiplier: float) -> void:
+	_movement_multiplier = clampf(multiplier, 0.0, 1.0)
+
+
+## What walking is currently scaled by.
+func movement_multiplier() -> float:
+	return _movement_multiplier
+
+
+## Move the Fool by a vector this frame, on top of walking. This is how a dodge, a
+## block-step hop and a running attack's lunge actually travel: the moveset decides
+## the distance, the body decides what it collides with on the way.
+func displace(step: Vector2) -> void:
+	if step.is_zero_approx():
+		return
+	move_and_collide(step)
+
+
+## Turn the Fool to face a direction without moving them. Focus strafing is this
+## called every frame with the direction of the lock (`combat.md` §Focus: "the Fool
+## keeps facing the target while circling").
+func face_direction(direction: Vector2) -> void:
+	if direction.is_zero_approx():
+		return
+	var index := wrapi(roundi(direction.angle() / (PI / 4.0)), 0, 8)
+	_facing = DIRECTIONS[index]
+
+
+## The Fool's facing as a unit vector, the form the moveset works in.
+func facing_vector() -> Vector2:
+	return Vector2.RIGHT.rotated(DIRECTIONS.find(_facing) * PI / 4.0)
 
 
 func facing_name() -> String:

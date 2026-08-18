@@ -35,6 +35,10 @@ const DIALOGUE_CATALOG_PATH := "res://data/dialogue/catalog.tres"
 const TRUMP_CATALOG_PATH := "res://data/trumps/catalog.tres"
 const SPREAD_RULES_PATH := "res://data/progression/spread_rules.tres"
 
+## The hand-authored numbers the Bindle moveset, the dodges, Fool's Chance, the
+## difficulty modes and the defeat loop run on (`docs/design/combat.md`).
+const COMBAT_RULES_PATH := "res://data/combat/combat_rules.tres"
+
 ## In-game elapsed time. Paused by menus; advanced here and nowhere else.
 var clock: GameClock = null
 
@@ -53,6 +57,12 @@ var spread: PocketSpreadService = null
 ## The White Rose: healing charges, and the region rule that decides where they come
 ## back. Reads `world_state` to know which regions are awake.
 var rose: WhiteRoseService = null
+
+## The fight: Fool's Chance and the time scale it slows the world by, the Fortune a
+## fight earns, the White Rose's heals, the difficulty modes, and the defeat loop.
+## Built after the three above because it spends into all of them and owns none of
+## their numbers.
+var combat: CombatService = null
 
 ## Versioned JSON saves in `user://saves/`, with the explicit migration chain.
 ## It captures out of the services above it and applies back into them - which is why
@@ -78,9 +88,15 @@ func _ready() -> void:
 	fortune = FortuneService.new(rules)
 	spread = _build_spread(rules)
 	rose = WhiteRoseService.new(world_state, rules)
+	combat = CombatService.new(_load_combat_rules(), fortune, spread, rose, clock)
 	save = SaveService.new(
 		world_state, clock, SaveService.DEFAULT_SAVES_DIR, null, spread, fortune, rose
 	)
+	# The chosen difficulty is save data (`SaveModel.difficulty_mode`), so combat is
+	# told once the save service exists to be asked. A settings screen that changes it
+	# mid-play calls `combat.set_difficulty()` itself - that wiring is the UI round's,
+	# and `SaveService` has no signal to hang it on today.
+	combat.set_difficulty(save.difficulty())
 	quests = _build_quests()
 	dialogue = _build_dialogue()
 
@@ -94,6 +110,11 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if clock != null:
 		clock.advance(delta)
+	# Fool's Chance is measured in REAL seconds while the world it happens in is
+	# slowed, so the service is handed the same already-scaled delta the clock gets
+	# and divides the scale back out itself (see `CombatService.tick`).
+	if combat != null:
+		combat.tick(delta)
 
 
 ## Load the generated world-state definitions and build the service over them.
@@ -125,6 +146,21 @@ func _build_world_state() -> WorldStateService:
 ## loud error at boot rather than a strange playthrough.
 func _load_spread_rules() -> SpreadRules:
 	var rules: SpreadRules = load(SPREAD_RULES_PATH) as SpreadRules
+	if rules != null:
+		for problem: String in rules.validate():
+			push_error(problem)
+	return rules
+
+
+## Load the hand-authored combat numbers.
+##
+## Validated on the way in for the same reason the rest are: a rules table whose
+## i-frames close before they open, or whose perfect window is wider than the i-frames
+## it has to fall inside, is a kit that cannot be played as `docs/design/combat.md`
+## describes it, and that is worth a loud error at boot rather than a dodge that never
+## triggers Fool's Chance.
+func _load_combat_rules() -> CombatRules:
+	var rules: CombatRules = load(COMBAT_RULES_PATH) as CombatRules
 	if rules != null:
 		for problem: String in rules.validate():
 			push_error(problem)

@@ -1,0 +1,66 @@
+[gd_resource type="Resource" script_class="CombatRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/combat/definitions/combat_rules.gd" id="1_combat_rules"]
+
+[resource]
+script = ExtResource("1_combat_rules")
+id = &"COMBAT_RULES"
+light_windup_seconds = PackedFloat32Array(0.12, 0.1, 0.16)
+light_active_seconds = PackedFloat32Array(0.08, 0.08, 0.1)
+light_recovery_seconds = PackedFloat32Array(0.2, 0.22, 0.4)
+light_damage = PackedInt32Array(6, 6, 10)
+light_combo_window_seconds = 0.45
+light_arc_degrees = 80.0
+light_radius = 96.0
+heavy_windup_seconds = 0.34
+heavy_active_seconds = 0.16
+heavy_recovery_seconds = 0.5
+heavy_damage = 14
+heavy_arc_degrees = 200.0
+heavy_radius = 128.0
+charge_seconds = 0.7
+charge_movement_multiplier = 0.4
+charged_heavy_windup_seconds = 0.22
+charged_heavy_active_seconds = 0.18
+charged_heavy_recovery_seconds = 0.6
+charged_heavy_damage = 18
+charged_heavy_arc_degrees = 140.0
+charged_heavy_radius = 120.0
+stagger_seconds = 1.6
+stagger_bonus_multiplier = 1.5
+running_attack_min_speed_fraction = 0.9
+running_attack_lunge_distance = 120.0
+running_attack_windup_seconds = 0.14
+running_attack_active_seconds = 0.12
+running_attack_recovery_seconds = 0.4
+running_attack_damage = 12
+running_attack_box_size = Vector2(64, 140)
+body_width = 48.0
+dodge_roll_seconds = 0.5
+dodge_roll_distance = 160.0
+dodge_iframe_start_seconds = 0.06
+dodge_iframe_end_seconds = 0.34
+side_hop_seconds = 0.38
+side_hop_distance = 120.0
+backflip_seconds = 0.6
+block_step_seconds = 0.45
+block_step_guard_seconds = 0.3
+block_step_reposition_distance = 64.0
+perfect_window_seconds = 0.12
+slowmo_time_scale = 0.3
+slowmo_duration_real_seconds = 1.5
+focus_max_range = 480.0
+focus_cone_weight = 1.0
+fool_max_health = 100
+petal_heal = 40
+defeat_fade_seconds = 1.2
+attack_movement_multiplier = 0.0
+recovery_movement_multiplier = 0.25
+damage_taken_multiplier_story = 0.5
+damage_taken_multiplier_journey = 1.0
+damage_taken_multiplier_trial = 1.0
+timing_window_multiplier_story = 1.5
+timing_window_multiplier_journey = 1.0
+timing_window_multiplier_trial = 0.7
+doc_ref = "docs/design/combat.md §The Bindle, §Focus, §Defense, §Defeat, §Difficulty modes, §Accessibility"
+notes = "CANON, fixed by combat.md and not tunable without changing the doc: the light string is THREE hits (§The Bindle); Fool's Chance runs for \"roughly a 1.5-second\" slow-motion window (§Defense) - slowmo_duration_real_seconds; the grand backflip carries the Fool \"roughly 1.5 body-widths\" (§Focus) - CombatRules.BACKFLIP_BODY_WIDTHS, resolved against body_width; the heavy is a WIDE arc and the charged heavy applies a stagger with bonus follow-ups (§The Bindle); Story takes reduced damage and gets generous windows while Trial gets tightened windows and NO damage reduction (§Difficulty modes) - which fixes damage_taken_multiplier_trial and damage_taken_multiplier_journey at 1.0 and fixes the DIRECTION of the other four. EVERYTHING ELSE HERE IS A TBD PLACEHOLDER owned by the combat-tuning pass, and combat.md says so itself: \"Exact i-frame duration and the width of the 'perfect' timing window are tuning values, not design facts, and are expected to move throughout production and post-launch balance passes.\" The TBD list, by name: every entry of light_windup_seconds, light_active_seconds, light_recovery_seconds and light_damage; light_combo_window_seconds; light_arc_degrees; light_radius; heavy_windup_seconds; heavy_active_seconds; heavy_recovery_seconds; heavy_damage; heavy_arc_degrees; heavy_radius; charge_seconds; charge_movement_multiplier; charged_heavy_windup_seconds; charged_heavy_active_seconds; charged_heavy_recovery_seconds; charged_heavy_damage; charged_heavy_arc_degrees; charged_heavy_radius; stagger_seconds; stagger_bonus_multiplier; running_attack_min_speed_fraction; running_attack_lunge_distance; running_attack_windup_seconds; running_attack_active_seconds; running_attack_recovery_seconds; running_attack_damage; running_attack_box_size; body_width; dodge_roll_seconds; dodge_roll_distance; dodge_iframe_start_seconds; dodge_iframe_end_seconds; side_hop_seconds; side_hop_distance; backflip_seconds; block_step_seconds; block_step_guard_seconds; block_step_reposition_distance; perfect_window_seconds; slowmo_time_scale; focus_max_range; focus_cone_weight; fool_max_health; petal_heal; defeat_fade_seconds; attack_movement_multiplier; recovery_movement_multiplier; damage_taken_multiplier_story; timing_window_multiplier_story; timing_window_multiplier_trial. Fortune's own numbers are NOT here: the meter, the per-source earn amounts and the per-difficulty income multipliers all live in data/progression/spread_rules.tres, and duplicating one of them here would be two sources for one fact. PER GAUNTLET RULING PENDING ISSUE #11: fool_max_health and petal_heal encode the working assumption that the Fool has a health pool and that a White Rose petal is a manual heal that spends one petal for petal_heal health, with defeat at zero health whatever petals remain. combat.md §Defeat is titled \"the Fool at zero petals\", which can also be read as the petals BEING the pool; the director's call is open on issue #11 and only these two fields and CombatService.use_rose() depend on which way it lands. DECISIONS taken here that the doc does not state, recorded so a reviewer can overrule them cheaply: block_step_guard_seconds is shorter than block_step_seconds so the hop's tail is the commitment that pays for having no counter-window; charged_heavy_arc_degrees is TIGHTER than heavy_arc_degrees because the launcher is a single-target opener while the heavy is the answer to groups; and recovery_movement_multiplier is above zero because combat.md asks for recovery the player can FEEL, not recovery that freezes them."

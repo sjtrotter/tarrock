@@ -34,6 +34,9 @@ const BLOCK_STEP := &"block_step"
 ## Target lock + strafe (combat.md, 2D amendment).
 const FOCUS := &"focus"
 
+## Step the Focus lock to the next enemy, without leaving the stance.
+const FOCUS_CYCLE := &"focus_cycle"
+
 ## The White Rose.
 const ROSE := &"rose"
 
@@ -62,6 +65,7 @@ const ALL: Array[StringName] = [
 	DODGE,
 	BLOCK_STEP,
 	FOCUS,
+	FOCUS_CYCLE,
 	ROSE,
 	PIP_WHEEL,
 	SPREAD,

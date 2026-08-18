@@ -48,7 +48,7 @@ enum EarnSource {
 	FOOLS_CHANCE,
 	## A new location or a secret found.
 	DISCOVERY,
-	## A near-miss dodge, a survived high fall.
+	## Boldness outside a fight - a survived high fall, a daring traversal near-miss (progression.md §Fortune). Combat pays nothing for an ordinary dodge: the free cast is the perfect dodge's reward.
 	DARING,
 }
 
