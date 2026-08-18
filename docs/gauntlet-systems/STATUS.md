@@ -139,9 +139,44 @@ Not representable as states: the tutorial-prompt-only beats and all dialogue (ro
 
 **Director asks:** none.
 
-## Round 5 — Dialogue (open 2026-08-18)
+## Round 5 — Dialogue (CLOSED 2026-08-18)
 
-**Goal:** `DialogueGraph` (LINE/CHOICE/BRANCH/EVENT/POOL/END nodes; branch conditions
-are WorldState queries; every line a translation key), `DialogueService` driven
-headlessly, MQ00's Querent lines and both choice tables as data + `dialogue_mq00.csv`,
-style lints (≤ 12-word Fool lines, one earnest option per table). _In progress._
+**Shipped (`fc80826`):** `DialogueGraph` with LINE / CHOICE (exhaust-all with follow-up
+threads that return to the table, or first-pick-commits) / BRANCH (WorldState queries only
+— there is nowhere to put a boolean) / EVENT (raised for the quest runner by signal;
+dialogue never touches systems) / POOL (Random Lines, seeded) / END, `next_graph_id`
+chaining with ring detection; `DialogueService` (return-stack threading for nested
+follow-up tables, walk-step guard, transient, typed signals + read-only views for the UI
+round); `DialogueStyle` lints **pinned to canon** (≤ 12-word Fool options per narrative.md,
+one earnest option per table, every key translates). **MQ00's dialogue as data:** 13
+graphs, 46-row `dialogue_mq00.csv` verbatim from the script; the one Querent fourth-wall
+wink pinned by test; Pip never speaks (tested). Cliff wiring maps quest states to
+conversations; a beat landing mid-conversation is queued, not lost; nothing blocks the
+Fool.
+
+**Proof:** 402 unit tests (105 new); `RUN_ALL: 8 suites passed`. Critic mutations all
+caught: exhaust-all forgetting a used row (7 tests), a branch ignoring its flag, an event
+node going quiet, the word ceiling changed to 20 (a canon-pinned test fails, not just the
+lint's constant), a deleted CSV row, a dropped scene start, a self-chaining graph.
+**Blocking catch fixed:** the data had dropped the Querent's answer to "What am I?" — the
+line that names the Fool *the Excuse*; restored verbatim, and a structural test now
+guarantees every table row is answered before the Fool's line plays back.
+
+**Debt / owed:** the four idle BARKS of the Cliff are the NPC round's (nothing beat-driven
+triggers them); five authored beats have no trigger yet (opening cut scene → bootstrap;
+campsites → a fire-ring trigger; ambush → combat; rest-again → the repeat-rest verb;
+leap-before → the leap cut scene); speaker display-name keys live in the MQ00 CSV until a
+second quest's dialogue lands; quest-state ids appear as literals in the Cliff's
+state→dialogue table (no `QuestStates` const class yet).
+
+**Director asks:** none new (issue #11 — health vs petals — still open, needed by
+round 7).
+
+## Round 6 — Trumps, the Pocket Spread, Fortune, the White Rose (open 2026-08-18)
+
+**Goal:** 20 `TrumpDefinition`s generated from arcana.md's Trump tables (+ hand-authored
+effects, Magician first), `PocketSpreadService` (held derived from flags; slots unlock at
+1/3/7 held; one copy; swap out of combat; loadouts at Waystations), `FortuneService`
+(meter, earn table × difficulty, Fortune's Favor overfill, free cast after Fool's Chance),
+`WhiteRoseService` (3→8 petals, graftings, regrowth only in unbound regions), all in the
+save. _In progress._
