@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="DeedDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/progression/definitions/deed_definition.gd" id="1_deed"]
+
+[resource]
+script = ExtResource("1_deed")
+id = &"DEED_FINISH_A_CRAFT"
+deed_summary = "Finishing a craft or creative work"
+reaction_cups = 1
+reaction_swords = 2
+reaction_wands = 0
+reaction_coins = 1
+reaction_note_cups = ""
+reaction_note_swords = ""
+reaction_note_wands = "craft is the culture"
+reaction_note_coins = "sellable"
+doc_ref = "docs/design/progression.md §Renown"

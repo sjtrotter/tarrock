@@ -91,6 +91,16 @@ const DOC_ONLY_PROPERTIES: Array[String] = [
 	# drift test and for the reviewer. NOTHING draws it: a region's player-facing name
 	# is its `name_key`, resolved through localization/regions.csv, and the day the map
 	# screen wants a blurb that blurb is a key too.
+	"deed_summary",  # a deed's own cell in progression.md §Renown's table, verbatim,
+	# for the drift test and the reviewer. NOTHING draws it: a deed is a rule the world
+	# applies, not a line anybody reads, and the day a screen names one that name is a
+	# key resolved through the CSV.
+	"reaction_note_cups",  # the parenthetical reason Cups' cell of the same table
+	# gives ("hospitality prized"), verbatim and without its brackets. Doc text for the
+	# reviewer and the drift test, never displayed.
+	"reaction_note_swords",  # the same for the Swords cell
+	"reaction_note_wands",  # the same for the Wands cell
+	"reaction_note_coins",  # the same for the Coins cell
 	"family_summary",  # a Beast's or a Fog-mask's whole bullet from combat.md §Other
 	# enemy families, verbatim. Same job, same rule: doc text for reviewers and for the
 	# drift test, never displayed.

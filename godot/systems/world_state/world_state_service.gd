@@ -27,10 +27,16 @@ extends RefCounted
 ##     snapshot with any problem in it commits nothing. So there is no public call
 ##     here that can blank a world in play, deliberately or by mistake.
 ##
-## Writers: only quest state-machine transitions call `fire()`, `adjust_renown()`,
-## `set_quest_state()` and friends. Combat, dialogue, UI and NPCs raise their own
-## domain events; a quest transition responds and calls this service. Polling this
-## service every frame is forbidden - connect to the signals.
+## Writers: only quest state-machine transitions call `fire()`, `set_quest_state()`
+## and friends. Combat, dialogue, UI and NPCs raise their own domain events; a quest
+## transition responds and calls this service. Polling this service every frame is
+## forbidden - connect to the signals.
+##
+## ONE REVIEWED EXCEPTION, for `adjust_renown()` only: `docs/design/progression.md`
+## says Renown "moves in response to deeds and quest choices", and most deeds are not
+## quests, so `systems/progression/economy_service.gd`'s `record_deed()` is Renown's
+## second (and last) writer - see `docs/design/technical.md` §The WorldState service
+## (Godot). It can never touch a flag, the Reading, or quest state.
 
 ## A flag became true. Emitted once, ever, per flag.
 signal world_state_fired(flag_id: StringName)

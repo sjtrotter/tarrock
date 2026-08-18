@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="DeedDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/progression/definitions/deed_definition.gd" id="1_deed"]
+
+[resource]
+script = ExtResource("1_deed")
+id = &"DEED_SHARP_BARGAIN"
+deed_summary = "Striking a sharp bargain"
+reaction_cups = 3
+reaction_swords = 2
+reaction_wands = 2
+reaction_coins = 0
+reaction_note_cups = "feels cold"
+reaction_note_swords = ""
+reaction_note_wands = ""
+reaction_note_coins = "shrewdness prized"
+doc_ref = "docs/design/progression.md §Renown"

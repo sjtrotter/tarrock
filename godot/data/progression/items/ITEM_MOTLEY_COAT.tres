@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/progression/definitions/item_definition.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"ITEM_MOTLEY_COAT"
+category = 4
+name_key = &"ITEM_MOTLEY_COAT_NAME"
+base_price = 40
+cosmetic_only = true
+moveset_twist = &""
+source_ref = "docs/design/progression.md §Philosophy: outfits are cosmetic only"
+notes = "TBD content: no doc names an outfit. It is authored so the doc's scope cut is enforced against a real resource - an OUTFIT that grew a moveset twist would fail ItemDefinition.validate(), not a review."

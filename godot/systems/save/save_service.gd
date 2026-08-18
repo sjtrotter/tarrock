@@ -19,9 +19,11 @@ extends RefCounted
 ##   * **The whole game is captured, not just the world.** The Pocket Spread, the
 ##     Fortune meter and the White Rose go into `SaveModel.pocket_spread`, and come
 ##     back in that order *after* the world state, because which Trumps are held is
-##     derived from the flags rather than stored beside them. A section this build
-##     cannot read stops the apply where it stands, leaving the services partly
-##     loaded - `apply()` spells out what a caller owes then.
+##     derived from the flags rather than stored beside them. The purse, what the
+##     Fool carries, the staff head on the Bindle and the grafting sources already
+##     taken are the file's `inventory` section and land after all of those. A
+##     section this build cannot read stops the apply where it stands, leaving the
+##     services partly loaded - `apply()` spells out what a caller owes then.
 ##   * **A load is not a reset.** `apply()` refuses any world that has already been
 ##     played: `WorldStateService.restore_snapshot()` only fills a pristine service,
 ##     because a public call that could blank a world in play would be the un-fire the
@@ -81,6 +83,7 @@ var _clock: GameClock = null
 var _spread: PocketSpreadService = null
 var _fortune: FortuneService = null
 var _rose: WhiteRoseService = null
+var _economy: EconomyService = null
 var _saves_dir: String = DEFAULT_SAVES_DIR
 var _migrations: SaveMigrations = null
 
@@ -109,10 +112,10 @@ var _playtime_baseline: float = 0.0
 ## falls back to them too: a service with no chain at all could not read any save, and
 ## silently reading nothing is worse than ignoring a caller's null.
 ##
-## The three progression services are optional in the same spirit: a test that only
+## The four progression services are optional in the same spirit: a test that only
 ## cares about the world state builds a save service without them, and the
-## `pocket_spread` field then stays the empty Dictionary a v1 file has always
-## carried. The composition root always passes all three.
+## `pocket_spread` and `inventory` fields then stay the empty Dictionaries a v1 file
+## has always carried. The composition root always passes all four.
 func _init(
 	world_state: WorldStateService,
 	clock: GameClock,
@@ -120,7 +123,8 @@ func _init(
 	migrations: SaveMigrations = null,
 	spread: PocketSpreadService = null,
 	fortune: FortuneService = null,
-	rose: WhiteRoseService = null
+	rose: WhiteRoseService = null,
+	economy: EconomyService = null
 ) -> void:
 	_world_state = world_state
 	_clock = clock
@@ -129,6 +133,7 @@ func _init(
 	_spread = spread
 	_fortune = fortune
 	_rose = rose
+	_economy = economy
 
 
 ## The directory this service reads and writes.
@@ -166,6 +171,7 @@ func capture() -> SaveModel:
 	model.schema_version = SaveModel.CURRENT_SCHEMA_VERSION
 	model.world_state = _world_state.to_snapshot()
 	model.pocket_spread = _capture_progression()
+	model.inventory = {} if _economy == null else _economy.to_snapshot()
 	model.current_region_id = _current_region_id
 	model.last_waystation_id = _last_waystation_id
 	model.visited_waystations = _visited_waystations.duplicate()
@@ -228,6 +234,9 @@ func apply(model: SaveModel) -> PackedStringArray:
 	errors.append_array(_apply_progression(model.pocket_spread))
 	if not errors.is_empty():
 		return errors
+	errors.append_array(_apply_inventory(model.inventory))
+	if not errors.is_empty():
+		return errors
 	_current_region_id = model.current_region_id
 	_last_waystation_id = model.last_waystation_id
 	_visited_waystations = model.visited_waystations.duplicate()
@@ -266,6 +275,28 @@ func _progression_not_pristine() -> PackedStringArray:
 		errors.append("a save loads into a fresh Fortune meter; this one is already in play")
 	if _rose != null and not _rose.is_pristine():
 		errors.append("a save loads into a fresh White Rose; this one is already in play")
+	if _economy != null and not _economy.is_pristine():
+		errors.append("a save loads into a fresh purse; this one has already been spent from")
+	return errors
+
+
+## Restore the `inventory` section: coins, what is carried, what is fitted, and which
+## grafting sources are spent.
+##
+## Its own section rather than a fourth entry in `pocket_spread`, because that is the
+## shape v1 has always had - `SaveModel.FIELD_INVENTORY` was reserved for exactly this
+## round - and it lands AFTER the Spread and the Rose for the same reason they land
+## after the world: the staff head it fits has to be an item this same section says
+## the Fool is carrying, and the grafting sources it restores are the ones the Rose's
+## own section has already been paid in petals for.
+##
+## Stops the apply exactly as a progression section does, and owes the caller the same
+## thing: rebuild, do not retry (see `apply()`).
+func _apply_inventory(inventory: Dictionary) -> PackedStringArray:
+	var errors := PackedStringArray()
+	if _economy == null or inventory.is_empty():
+		return errors
+	errors.append_array(_economy.restore_snapshot(inventory))
 	return errors
 
 

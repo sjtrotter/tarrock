@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/progression/definitions/item_definition.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"ITEM_POPCORN"
+category = 0
+name_key = &"ITEM_POPCORN_NAME"
+base_price = 6
+cosmetic_only = false
+moveset_twist = &""
+source_ref = "docs/design/world.md §Regions, The Prestige (I): a carnival with 'popcorn older than nations'"
+notes = "CANON: the popcorn itself is the Prestige's own detail. TBD: the price is tuning - progression.md §Currency, shops, and gear-lite fixes no figure. This is the FOOD the canon price rule reads: WS_EMPRESS_UNBOUND halves it Spread-wide."

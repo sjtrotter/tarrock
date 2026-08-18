@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemCatalog" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://systems/progression/definitions/item_definition.gd" id="1_item"]
+[ext_resource type="Script" path="res://systems/progression/definitions/item_catalog.gd" id="2_catalog"]
+[ext_resource type="Resource" path="res://data/progression/items/ITEM_POPCORN.tres" id="3_item_popcorn"]
+[ext_resource type="Resource" path="res://data/progression/items/ITEM_SHOWBILL.tres" id="4_item_showbill"]
+[ext_resource type="Resource" path="res://data/progression/items/ITEM_MOTLEY_COAT.tres" id="5_item_motley_coat"]
+[ext_resource type="Resource" path="res://data/progression/items/ROSE_GRAFTING.tres" id="6_rose_grafting"]
+[ext_resource type="Resource" path="res://data/progression/items/STAFF_REACHING.tres" id="7_staff_reaching"]
+[ext_resource type="Resource" path="res://data/progression/items/STAFF_BROADHEAD.tres" id="8_staff_broadhead"]
+[ext_resource type="Resource" path="res://data/progression/items/STAFF_EMBER.tres" id="9_staff_ember"]
+
+[resource]
+script = ExtResource("2_catalog")
+entries = Array[ExtResource("1_item")]([ExtResource("3_item_popcorn"), ExtResource("4_item_showbill"), ExtResource("5_item_motley_coat"), ExtResource("6_rose_grafting"), ExtResource("7_staff_reaching"), ExtResource("8_staff_broadhead"), ExtResource("9_staff_ember")])

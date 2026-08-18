@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="EconomyRules" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://systems/progression/definitions/price_rule.gd" id="1_price_rule"]
+[ext_resource type="Script" path="res://systems/progression/definitions/economy_rules.gd" id="2_economy_rules"]
+
+[sub_resource type="Resource" id="rule_food_empress"]
+script = ExtResource("1_price_rule")
+when_fired = &"WS_EMPRESS_UNBOUND"
+category = 0
+multiplier = 0.5
+region_ids = Array[StringName]([])
+doc_ref = "docs/design/progression.md §Currency, shops, and gear-lite ('food prices halve Spread-wide on WS_EMPRESS_UNBOUND - shop pricing simply reads that state'); docs/design/world.md §World-state matrix, the WS_EMPRESS_UNBOUND row"
+
+[resource]
+script = ExtResource("2_economy_rules")
+id = &"ECONOMY_RULES"
+starting_coins = 0
+renown_price_multipliers = PackedFloat32Array(1, 0.95, 0.9, 0.85, 0.8)
+default_region_price_multiplier = 1.0
+price_rules = Array[ExtResource("1_price_rule")]([SubResource("rule_food_empress")])
+renown_delta_up = 8
+renown_delta_slight_up = 3
+renown_delta_slight_down = -3
+renown_delta_down = -8
+max_staff_heads_hint = 10
+settled_region_ids = Array[StringName]([&"PRESTIGE", &"VEIL", &"BASTION", &"CHANTRY", &"DIVIDE", &"LONGROAD", &"WHEELHOUSE", &"ASSIZE", &"STILLMARSH", &"CONFLUENCE", &"UNDERVAULT", &"NOONLANDS"])
+doc_ref = "docs/design/progression.md §Currency, shops, and gear-lite, §Renown, §Philosophy"
+notes = "CANON: prices vary by region, by the Fool's Renown with the LOCAL suit and by world-states; food halves Spread-wide on WS_EMPRESS_UNBOUND (the one PriceRule here, and it is data because the doc says pricing 'simply reads that state'); roughly 8-10 staff heads exist; the Fool starts hour 1 with nothing (§Player growth over a playthrough), which is why starting_coins is 0. TBD PLACEHOLDERS, set by nothing in docs/ and owned by a balance pass: every renown_price_multiplier, default_region_price_multiplier, and the four renown deltas. Shops do not buy back - selling is not canon (Coins are found, looted, earned through quests, and spent), so there is no sell-price field to place here. §Renown states four REACTIONS and no number anywhere, so renown_delta_up/slight_up/slight_down/down are where a word becomes points, and the shape is all that is defensible: a full reaction outweighs a slight one and the ladder is symmetric. renown_delta_down is unused today - no cell of the deed table reads 'Renown down' - and is here because the ladder has a bottom. SETTLED REGIONS ARE A READING, and TBD: progression.md puts a shop in 'every settled region' and world.md §Regions never uses the word, so this list is the regions whose own bullet names a settlement - the Prestige (a carnival with an audience), the Veil (a cloister with lay staff), the Bastion (a granite city), the Chantry (a cathedral-town), the Divide (two towns), the Longroad (roadside inns and toll-forts), the Wheelhouse (a casino-city), the Assize (court complexes), the Stillmarsh (its people), the Confluence (a delta city), the Undervault (a pit-city) and the Noonlands (harvest festivals). The Cliff is deliberately absent: world.md §The Cliff is a plateau of long-dead campsites, and MQ00 leaves it. The Bower, the Maw, the Dim, the Gallowwood, the Spire, the Mere, the Mirrormarsh, the Hollows and the Axis name no settlement and are left out until a content pass says otherwise; nothing enforces the list except that a shop may not stand outside it."

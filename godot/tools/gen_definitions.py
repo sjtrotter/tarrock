@@ -15,7 +15,10 @@ What it reads, and what each source produces:
                                                    (BRANCH), plus the catalog, plus
                                                    the WorldStateIds constants
     docs/design/world.md  §Global states        -> act_thresholds.tres
-    docs/design/progression.md §Renown          -> renown_ladder.tres
+    docs/design/progression.md §Renown          -> renown_ladder.tres, plus one
+                                                   DeedDefinition per row of the
+                                                   deed/reaction table, the deed
+                                                   catalog and the DeedIds constants
     docs/quests/**/*.md   YAML frontmatter      -> one QuestDefinition per quest,
                                                    plus the quest catalog, the
                                                    QuestIds constants, and the
@@ -141,6 +144,15 @@ ENEMY_CATALOG_SCRIPT = "res://systems/enemies/definitions/enemy_catalog.gd"
 ENEMY_CATALOG_PATH = f"{ENEMY_DATA_DIR}/catalog.tres"
 ENEMY_IDS_PATH = f"{ENEMY_SYSTEM_DIR}/enemy_ids.gd"
 
+PROGRESSION_SYSTEM_DIR = "systems/progression"
+PROGRESSION_DEED_DATA_DIR = f"{PROGRESSION_DATA_DIR}/deeds"
+
+DEED_DEFINITION_SCRIPT = "res://systems/progression/definitions/deed_definition.gd"
+DEED_CATALOG_SCRIPT = "res://systems/progression/definitions/deed_catalog.gd"
+
+DEED_CATALOG_PATH = f"{PROGRESSION_DEED_DATA_DIR}/catalog.tres"
+DEED_IDS_PATH = f"{PROGRESSION_SYSTEM_DIR}/deed_ids.gd"
+
 REGION_DATA_DIR = "data/regions"
 REGION_SYSTEM_DIR = "systems/regions"
 REGION_DEFINITION_SCRIPT = "res://systems/regions/definitions/region_definition.gd"
@@ -163,6 +175,12 @@ HAND_AUTHORED_PATHS = {
     # §Layout's ASCII wheel by a person, because a picture is not a table and a
     # parser reading it would be inventing canon (see `RegionGraph`'s class doc).
     f"{REGION_DATA_DIR}/region_graph.tres",
+    # `economy_rules.tres` is the same shape again: every Coin number, authored from
+    # `progression.md` §Currency, shops, and gear-lite and §Renown, which fix shapes
+    # ("prices vary by region ... and by the Fool's Renown with the local suit") and
+    # state almost no figures. It lives in the generated `data/progression/` directory
+    # beside the ladder, so it is spared here by name.
+    f"{PROGRESSION_DATA_DIR}/economy_rules.tres",
 }
 
 # Every directory this tool writes into, and what it owns there: anything matching
@@ -196,6 +214,11 @@ GENERATED_GLOBS = {
     # `HAND_AUTHORED_PATHS` rather than by a narrower glob, by name, once.
     REGION_DATA_DIR: ["*.tres"],
     REGION_SYSTEM_DIR: [REGION_IDS_PATH.rsplit("/", 1)[-1]],
+    # `data/progression/deeds/*.tres` is the four rows of §Renown's deed table plus
+    # their catalog, generated whole. The sibling `items/` and `shops/` directories
+    # are hand-authored content and this tool does not write, sweep or know them.
+    PROGRESSION_DEED_DATA_DIR: ["*.tres"],
+    PROGRESSION_SYSTEM_DIR: [DEED_IDS_PATH.rsplit("/", 1)[-1]],
     LOCALIZATION_DIR: [
         QUEST_TITLES_CSV_PATH.rsplit("/", 1)[-1],
         TRUMP_NAMES_CSV_PATH.rsplit("/", 1)[-1],
@@ -212,6 +235,39 @@ RENOWN_HEADING = "## Renown"
 WORLD_MATRIX_DOC_REF = "docs/design/world.md §World-state matrix"
 GLOBAL_STATES_DOC_REF = "docs/design/world.md §Global states (act thresholds)"
 RENOWN_DOC_REF = "docs/design/progression.md §Renown"
+
+# The four rows of §Renown's deed table, mapped to their ids BY HAND. The deed text is
+# a sentence ("Helping a stranger at personal cost"), and a slug derived from it by
+# rule would rename itself the day someone rewords the cell - which is a doc edit, not
+# a content change. So the mapping is explicit and a row this table does not name is a
+# hard failure: a new deed is a deliberate act, and its id is chosen by a person.
+DEED_IDS_BY_DEED = {
+    "Helping a stranger at personal cost": "DEED_HELP_A_STRANGER",
+    "Winning a formal duel or contest": "DEED_WIN_A_DUEL",
+    "Striking a sharp bargain": "DEED_SHARP_BARGAIN",
+    "Finishing a craft or creative work": "DEED_FINISH_A_CRAFT",
+}
+
+# The suits of the deed table's four reaction columns, in the doc's own column order.
+# Same order as `Suit.Id` in `godot/systems/world_state/suit.gd`, which is where the
+# generated `reaction_<suit>` field names come from.
+DEED_SUITS = ("cups", "swords", "wands", "coins")
+
+# `Reaction.Id` in `godot/systems/progression/reaction.gd`, by the doc's own wording.
+# The enum ordinal is what lands in the `.tres`, so the two files have to agree; the
+# GDScript side carries the same table (`Reaction.DOC_TEXTS`) and the drift test in
+# `tests/unit/progression/deed_data_test.gd` re-reads the doc through it.
+REACTION_ORDINALS = {
+    "renown up": 0,
+    "slight up": 1,
+    "neutral": 2,
+    "slight down": 3,
+    "renown down": 4,
+}
+
+# How many columns a deed row has: the deed, then one reaction per suit.
+DEED_ROW_CELLS = 1 + len(DEED_SUITS)
+
 ARCANA_DOC_REF = "docs/design/arcana.md"
 
 ACT_THRESHOLDS_ID = "ACT_THRESHOLDS"
@@ -472,6 +528,77 @@ def parse_renown_tiers(doc_path: Path) -> list[str]:
     if sorted(tiers) != expected:
         raise GeneratorError(f"the Renown ladder's tiers are numbered {sorted(tiers)}")
     return [tiers[number] for number in expected]
+
+
+class Deed:
+    """One generated DeedDefinition - one row of §Renown's deed table."""
+
+    def __init__(self, deed_id: str, summary: str, reactions: list[int], notes: list[str]):
+        self.deed_id = deed_id
+        self.summary = summary
+        self.reactions = reactions
+        self.notes = notes
+
+    @property
+    def resource_path(self) -> str:
+        return f"{PROGRESSION_DEED_DATA_DIR}/{self.deed_id}.tres"
+
+
+def parse_reaction(cell: str, deed: str, suit: str) -> tuple[int, str]:
+    """`(Reaction ordinal, the parenthetical reason)` for one reaction cell.
+
+    The doc writes a reaction as a word and, usually, a reason in brackets:
+    "Renown up (hospitality prized)". The word is the mechanic and the bracket is
+    canon prose kept for the reviewer, so they are split here and stored apart. A
+    word the doc does not use is a hard failure rather than a guess - Renown is not a
+    morality meter and there is no scale to interpolate an unknown cell onto.
+    """
+    text = unwrap(cell)
+    note = ""
+    if "(" in text:
+        opened = text.index("(")
+        closed = text.rfind(")")
+        if closed <= opened:
+            raise GeneratorError(f"{deed}'s {suit} cell has an unclosed bracket: {cell!r}")
+        note = text[opened + 1 : closed].strip()
+        text = text[:opened]
+    word = text.strip().lower()
+    if word not in REACTION_ORDINALS:
+        raise GeneratorError(f"{deed}'s {suit} cell reads {cell!r}, which is no reaction")
+    return REACTION_ORDINALS[word], note
+
+
+def parse_deeds(doc_path: Path) -> list[Deed]:
+    """Every row of §Renown's deed table, in the doc's own order.
+
+    The section holds two tables - the deeds and the five-tier ladder - so the rows
+    are told apart by their width, exactly as `parse_renown_tiers()` tells them apart
+    from the other side.
+    """
+    deeds: list[Deed] = []
+    for rows in tables(read_section(doc_path, RENOWN_HEADING)):
+        for cells in rows:
+            if len(cells) != DEED_ROW_CELLS:
+                continue  # the tier ladder, which has two columns
+            summary = unwrap(cells[0])
+            if summary not in DEED_IDS_BY_DEED:
+                raise GeneratorError(
+                    f"{RENOWN_HEADING} has a deed this tool has no id for: {summary!r}"
+                    " - add it to DEED_IDS_BY_DEED"
+                )
+            reactions: list[int] = []
+            notes: list[str] = []
+            for index, suit in enumerate(DEED_SUITS, start=1):
+                reaction, note = parse_reaction(cells[index], summary, suit)
+                reactions.append(reaction)
+                notes.append(note)
+            deeds.append(Deed(DEED_IDS_BY_DEED[summary], summary, reactions, notes))
+    if not deeds:
+        raise GeneratorError(f"{RENOWN_HEADING} has no deed table")
+    seen = {deed.deed_id for deed in deeds}
+    if len(seen) != len(deeds):
+        raise GeneratorError("two rows of the deed table generate the same id")
+    return deeds
 
 
 # --- Quest frontmatter (informational) ---------------------------------------
@@ -2065,6 +2192,86 @@ def region_names_csv(regions: list[Region]) -> str:
     return "\n".join(lines)
 
 
+def deed_resource(deed: Deed) -> str:
+    """One `data/progression/deeds/<DEED_ID>.tres`."""
+    script_id = "1_deed"
+    body = resource_header("DeedDefinition", [("Script", DEED_DEFINITION_SCRIPT, script_id)])
+    lines = [
+        "[resource]",
+        'script = ExtResource("%s")' % script_id,
+        'id = &"%s"' % deed.deed_id,
+        'deed_summary = "%s"' % escape(deed.summary),
+    ]
+    for index, suit in enumerate(DEED_SUITS):
+        lines.append("reaction_%s = %d" % (suit, deed.reactions[index]))
+    for index, suit in enumerate(DEED_SUITS):
+        lines.append('reaction_note_%s = "%s"' % (suit, escape(deed.notes[index])))
+    lines.append('doc_ref = "%s"' % escape(RENOWN_DOC_REF))
+    lines.append("")
+    return body + "\n".join(lines)
+
+
+def deed_catalog_resource(deeds: list[Deed]) -> str:
+    """`data/progression/deeds/catalog.tres`, in the doc's row order."""
+    definition_id = "1_deed"
+    catalog_id = "2_catalog"
+    ext_resources = [
+        ("Script", DEED_DEFINITION_SCRIPT, definition_id),
+        ("Script", DEED_CATALOG_SCRIPT, catalog_id),
+    ]
+    entry_ids: list[str] = []
+    for index, deed in enumerate(deeds, start=3):
+        entry_id = "%d_%s" % (index, deed.deed_id.lower())
+        entry_ids.append(entry_id)
+        ext_resources.append(("Resource", "res://" + deed.resource_path, entry_id))
+    body = resource_header("DeedCatalog", ext_resources)
+    entries = ", ".join('ExtResource("%s")' % entry_id for entry_id in entry_ids)
+    body += "\n".join(
+        [
+            "[resource]",
+            'script = ExtResource("%s")' % catalog_id,
+            'entries = Array[ExtResource("%s")]([%s])' % (definition_id, entries),
+            "",
+        ]
+    )
+    return body
+
+
+def deed_ids_script(deeds: list[Deed]) -> str:
+    """`deed_ids.gd`: the one place a deed id is written in code."""
+    lines = [
+        "class_name DeedIds",
+        "extends RefCounted",
+        "",
+        "## Every deed id, as a constant.",
+        "##",
+        "## GENERATED by `godot/tools/gen_definitions.py` from",
+        "## `%s`'s deed table - do not edit by hand; edit" % RENOWN_DOC_REF,
+        "## the doc and regenerate. A drift test fails when this file and the table",
+        "## disagree.",
+        "##",
+        "## A deed is a KIND of deed, not one occurrence: the doc's rows are examples of",
+        "## the sort of thing each suit-culture notices, and a quest that wants Renown to",
+        "## move names the row it is an instance of. `EconomyService.record_deed()` is the",
+        "## only thing that reads one, and the only place a deed becomes Renown.",
+        "##",
+        "## Code never types a deed id: it names one of these constants, or reads an id",
+        "## off a `DeedDefinition` (docs/design/technical.md, no magic strings).",
+        "",
+        "## The deeds, in the doc's own row order.",
+    ]
+    for deed in deeds:
+        lines.append('const %s := &"%s"  # %s' % (deed.deed_id, deed.deed_id, deed.summary))
+    lines.append("")
+    lines.append("## Every deed the table defines, in row order.")
+    lines.append("const ALL: Array[StringName] = [")
+    for deed in deeds:
+        lines.append("\t%s," % deed.deed_id)
+    lines.append("]")
+    lines.append("")
+    return "\n".join(lines)
+
+
 # --- The generation itself ---------------------------------------------------
 
 
@@ -2078,6 +2285,7 @@ def generate() -> dict[str, str]:
     trumps = parse_trumps(ARCANA_DOC, flags)
     enemies = parse_enemies(COMBAT_DOC)
     world_regions = parse_world_regions(WORLD_DOC, flags, regions)
+    deeds = parse_deeds(PROGRESSION_DOC)
 
     files: dict[str, str] = {}
     for flag in flags:
@@ -2105,6 +2313,10 @@ def generate() -> dict[str, str]:
     files[REGION_CATALOG_PATH] = region_catalog_resource(world_regions)
     files[REGION_IDS_PATH] = region_ids_script(world_regions)
     files[REGION_NAMES_CSV_PATH] = region_names_csv(world_regions)
+    for deed in deeds:
+        files[deed.resource_path] = deed_resource(deed)
+    files[DEED_CATALOG_PATH] = deed_catalog_resource(deeds)
+    files[DEED_IDS_PATH] = deed_ids_script(deeds)
     return files
 
 

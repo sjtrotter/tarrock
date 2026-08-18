@@ -562,12 +562,18 @@ func _json_equal(actual: Variant, expected: Variant) -> bool:
 const TRUMP_CATALOG_PATH := "res://data/trumps/catalog.tres"
 const SPREAD_RULES_PATH := "res://data/progression/spread_rules.tres"
 
+## The authored economy the `inventory` section (round 11) is captured out of.
+const ECONOMY_RULES_PATH := "res://data/progression/economy_rules.tres"
+const ITEM_CATALOG_PATH := "res://data/progression/items/catalog.tres"
+const SHOP_CATALOG_PATH := "res://data/progression/shops/catalog.tres"
+const DEED_CATALOG_PATH := "res://data/progression/deeds/catalog.tres"
+
 
 ## A save service over a fresh world and a full set of progression services.
 ##
 ## Returns them all, because a test that applies a save has to look at what landed
 ## in each one: `[SaveService, WorldStateService, PocketSpreadService,
-## FortuneService, WhiteRoseService]`.
+## FortuneService, WhiteRoseService, EconomyService]`.
 func _progression_service(directory: String) -> Array:
 	var world := _fresh_world()
 	var rules := load(SPREAD_RULES_PATH) as SpreadRules
@@ -575,8 +581,19 @@ func _progression_service(directory: String) -> Array:
 	var fortune := FortuneService.new(rules)
 	var spread := PocketSpreadService.new(world, trumps, rules, fortune)
 	var rose := WhiteRoseService.new(world, rules)
-	var service := SaveService.new(world, GameClock.new(), directory, null, spread, fortune, rose)
-	return [service, world, spread, fortune, rose]
+	var economy := EconomyService.new(
+		load(ECONOMY_RULES_PATH) as EconomyRules,
+		load(ITEM_CATALOG_PATH) as ItemCatalog,
+		load(SHOP_CATALOG_PATH) as ShopCatalog,
+		load(DEED_CATALOG_PATH) as DeedCatalog,
+		world,
+		spread,
+		rose
+	)
+	var service := SaveService.new(
+		world, GameClock.new(), directory, null, spread, fortune, rose, economy
+	)
+	return [service, world, spread, fortune, rose, economy]
 
 
 func test_capture_gathers_the_spread_the_fortune_and_the_rose() -> void:
@@ -608,6 +625,7 @@ func test_a_service_without_the_progression_services_writes_the_v1_shape() -> vo
 	if not assert_not_null(model):
 		return
 	assert_eq(model.pocket_spread, {}, "no progression services, no progression section")
+	assert_eq(model.inventory, {}, "and no economy, no inventory section")
 	assert_eq(model.validate(), PackedStringArray(), "and it is still a writable save")
 
 
@@ -762,3 +780,113 @@ func test_a_broken_progression_section_is_reported_as_data() -> void:
 	model.pocket_spread = {SaveModel.POCKET_SPREAD_FORTUNE: "quite a lot"}
 	var problems := reader.apply(model)
 	assert_true(problems.size() > 0, "a bad section is a problem, not a crash")
+
+
+# --- The `inventory` section (round 11) --------------------------------------
+#
+# `SaveModel.inventory` stopped being a reserved empty field: it carries the purse,
+# what the Fool is carrying, the staff head fitted to the Bindle and the Rose-grafting
+# sources already spent. It lands LAST, after the world and after the Spread and the
+# Rose, because it says which cuttings paid for the Rose's own capacity and which
+# carried item is on the end of the staff.
+
+
+func test_capture_gathers_the_purse_and_what_it_bought() -> void:
+	var built := _progression_service(_saves_dir)
+	var service: SaveService = built[0]
+	var economy: EconomyService = built[5]
+	economy.add_coins(42, QuestIds.MQ01)
+	economy.add_item(ItemIds.ITEM_POPCORN, 2)
+	economy.add_item(ItemIds.STAFF_REACHING, 1)
+	economy.equip_staff_head(ItemIds.STAFF_REACHING)
+	var model := service.capture()
+	if not assert_not_null(model, "a wired service captures"):
+		return
+	assert_eq(model.inventory[EconomyService.SNAPSHOT_COINS], 42)
+	assert_eq(model.inventory[EconomyService.SNAPSHOT_STAFF_HEAD], String(ItemIds.STAFF_REACHING))
+	var carried: Dictionary = model.inventory[EconomyService.SNAPSHOT_ITEMS]
+	assert_eq(carried[String(ItemIds.ITEM_POPCORN)], 2)
+
+
+func test_the_inventory_makes_the_round_trip() -> void:
+	var written := _progression_service(_saves_dir)
+	var writer: SaveService = written[0]
+	var writing_economy: EconomyService = written[5]
+	writing_economy.add_coins(200, QuestIds.MQ01)
+	writing_economy.add_item(ItemIds.ITEM_POPCORN, 3)
+	writing_economy.add_item(ItemIds.STAFF_EMBER, 1)
+	writing_economy.equip_staff_head(ItemIds.STAFF_EMBER)
+	writing_economy.find_grafting(&"GRAFTING_TEST_SOURCE")
+	assert_eq(writer.write_slot(0, writer.capture()), PackedStringArray())
+
+	var loaded := _progression_service(_saves_dir)
+	var reader: SaveService = loaded[0]
+	var read_rose: WhiteRoseService = loaded[4]
+	var read_economy: EconomyService = loaded[5]
+	var result := reader.read_slot(0)
+	if not assert_true(result.ok, "the save reads back: %s" % str(result.errors)):
+		return
+	assert_eq(reader.apply(result.model), PackedStringArray())
+	assert_eq(read_economy.coins(), 200)
+	assert_eq(read_economy.count(ItemIds.ITEM_POPCORN), 3)
+	assert_eq(read_economy.equipped_staff_head(), ItemIds.STAFF_EMBER)
+	assert_true(read_economy.has_grafting(&"GRAFTING_TEST_SOURCE"))
+	assert_eq(read_rose.graftings(), 1, "the Rose carries the COUNT; the economy the source")
+
+
+func test_a_played_purse_refuses_the_load_before_anything_is_applied() -> void:
+	var written := _progression_service(_saves_dir)
+	var writer: SaveService = written[0]
+	assert_eq(writer.write_slot(0, writer.capture()), PackedStringArray())
+
+	var loaded := _progression_service(_saves_dir)
+	var reader: SaveService = loaded[0]
+	var world: WorldStateService = loaded[1]
+	var economy: EconomyService = loaded[5]
+	economy.add_coins(1, QuestIds.MQ01)
+	var result := reader.read_slot(0)
+	if not assert_true(result.ok):
+		return
+	var problems := reader.apply(result.model)
+	assert_eq(problems.size(), 1, "a load is not a reset: %s" % str(problems))
+	assert_true(world.is_pristine(), "and nothing at all was applied")
+
+
+func test_a_bad_inventory_section_stops_the_apply_where_it_stands() -> void:
+	# The same contract the progression sections keep: the world and the earlier
+	# sections are in, the caller owes a rebuild rather than a retry.
+	var written := _progression_service(_saves_dir)
+	var writer: SaveService = written[0]
+	var world: WorldStateService = written[1]
+	world.fire(WorldStateIds.WS_MAGICIAN_UNBOUND, QuestIds.MQ01)
+	var model := writer.capture()
+	if not assert_not_null(model):
+		return
+	model.inventory = {EconomyService.SNAPSHOT_COINS: "a great many"}
+
+	var loaded := _progression_service(_saves_dir)
+	var reader: SaveService = loaded[0]
+	var read_world: WorldStateService = loaded[1]
+	var read_economy: EconomyService = loaded[5]
+	var problems := reader.apply(model)
+	assert_true(problems.size() > 0, "a bad section is a problem, not a crash")
+	assert_true(read_world.is_fired(WorldStateIds.WS_MAGICIAN_UNBOUND), "the world landed")
+	assert_true(read_economy.is_pristine(), "the purse did not")
+	assert_eq(reader.current_region_id(), SaveModel.UNSET, "and the apply stopped there")
+
+
+func test_the_played_fixture_carries_a_purse_too() -> void:
+	_install_fixture(FIXTURE_PLAYED, 3)
+	var loaded := _progression_service(_saves_dir)
+	var reader: SaveService = loaded[0]
+	var economy: EconomyService = loaded[5]
+	var result := reader.read_slot(3)
+	if not assert_true(result.ok, "the fixture reads: %s" % str(result.errors)):
+		return
+	var problems := reader.apply(result.model)
+	if not assert_eq(problems, PackedStringArray(), "the fixture applies: %s" % str(problems)):
+		return
+	assert_eq(economy.coins(), 42)
+	assert_eq(economy.count(ItemIds.ITEM_POPCORN), 2)
+	assert_eq(economy.equipped_staff_head(), ItemIds.STAFF_REACHING)
+	assert_eq(economy.graftings_found().size(), 1)

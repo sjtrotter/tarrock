@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="ShopDefinition" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://systems/progression/definitions/shop_stock_entry.gd" id="1_stock"]
+[ext_resource type="Script" path="res://systems/progression/definitions/shop_definition.gd" id="2_shop"]
+
+[sub_resource type="Resource" id="line_00"]
+script = ExtResource("1_stock")
+item_id = &"ITEM_POPCORN"
+count = 5
+restocks_on_rest = true
+hidden_until_manifest = false
+fine_print = false
+notes = "The food line, and the one the canon world-state rule prices: WS_EMPRESS_UNBOUND halves food Spread-wide (progression.md §Currency, shops, and gear-lite)."
+
+[sub_resource type="Resource" id="line_01"]
+script = ExtResource("1_stock")
+item_id = &"ITEM_SHOWBILL"
+count = 3
+restocks_on_rest = true
+hidden_until_manifest = false
+fine_print = false
+notes = "A curio, priced by region and Renown only - nothing in the matrix touches it, which is what proves the food rule prices food and not the shelf."
+
+[sub_resource type="Resource" id="line_02"]
+script = ExtResource("1_stock")
+item_id = &"STAFF_REACHING"
+count = 1
+restocks_on_rest = false
+hidden_until_manifest = false
+fine_print = false
+notes = "The stall's one staff head. It does NOT restock: roughly 8-10 exist across the whole Spread (progression.md), so a shelf that grew another every rest would be the treadmill the doc cuts."
+
+[sub_resource type="Resource" id="line_03"]
+script = ExtResource("1_stock")
+item_id = &"ITEM_MOTLEY_COAT"
+count = 1
+restocks_on_rest = false
+hidden_until_manifest = true
+fine_print = false
+notes = "Hidden stock: arcana.md Trump I (Manifest), Past - 'vendors show their hidden stock'. Not on the shelf at all until the Fool holds the Magician's card."
+
+[sub_resource type="Resource" id="line_04"]
+script = ExtResource("1_stock")
+item_id = &"STAFF_EMBER"
+count = 1
+restocks_on_rest = false
+hidden_until_manifest = false
+fine_print = true
+notes = "Fine-print stock: arcana.md Trump XV (Bargain), Past - 'Fine-print stock at every shop: potent goods with their costs printed honestly'. The head is there all along; only the Devil's card makes the terms legible."
+
+[resource]
+script = ExtResource("2_shop")
+id = &"SHOP_PRESTIGE"
+region_id = &"PRESTIGE"
+suit = 2
+price_multiplier = 0.0
+stock = Array[ExtResource("1_stock")]([SubResource("line_00"), SubResource("line_01"), SubResource("line_02"), SubResource("line_03"), SubResource("line_04")])
+doc_ref = "docs/design/progression.md §Currency, shops, and gear-lite; docs/design/world.md §Regions (The Prestige, I)"
+notes = "TBD, all of it except that a shop is here at all. NO KEEPER: no doc names a shopkeeper in the Prestige, so this is a generic stall and the person behind it is content design (characters.md owns named NPCs). SUIT = WANDS is a READING: no doc assigns a suit-culture to a region, and the Prestige is a carnival - the deed table credits Wands with 'spectacle' and GLOSSARY.md gives Wands craft and passion. price_multiplier 0 means no override, so the economy's default is used until a balance pass tunes this town."

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DeedCatalog" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://systems/progression/definitions/deed_definition.gd" id="1_deed"]
+[ext_resource type="Script" path="res://systems/progression/definitions/deed_catalog.gd" id="2_catalog"]
+[ext_resource type="Resource" path="res://data/progression/deeds/DEED_HELP_A_STRANGER.tres" id="3_deed_help_a_stranger"]
+[ext_resource type="Resource" path="res://data/progression/deeds/DEED_WIN_A_DUEL.tres" id="4_deed_win_a_duel"]
+[ext_resource type="Resource" path="res://data/progression/deeds/DEED_SHARP_BARGAIN.tres" id="5_deed_sharp_bargain"]
+[ext_resource type="Resource" path="res://data/progression/deeds/DEED_FINISH_A_CRAFT.tres" id="6_deed_finish_a_craft"]
+
+[resource]
+script = ExtResource("2_catalog")
+entries = Array[ExtResource("1_deed")]([ExtResource("3_deed_help_a_stranger"), ExtResource("4_deed_win_a_duel"), ExtResource("5_deed_sharp_bargain"), ExtResource("6_deed_finish_a_craft")])

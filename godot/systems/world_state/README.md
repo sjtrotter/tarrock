@@ -40,7 +40,9 @@ Four rules this system exists to make structural, rather than remembered:
   so no public call can blank a world in play, and no half-read save can leave the
   flags and the Reading disagreeing about what the Fool has done.
 
-Writers are quest state-machine transitions and nobody else (round 4). Everything else
+Writers are quest state-machine transitions and nobody else (round 4), with one reviewed
+exception: `systems/progression/economy_service.gd`'s `record_deed()` is Renown's second
+writer (`docs/design/technical.md` §The WorldState service (Godot)). Everything else
 reads and connects to the signals — polling is forbidden.
 
 ## Branch-group exclusivity (delivered in round 4)

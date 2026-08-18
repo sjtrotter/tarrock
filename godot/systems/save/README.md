@@ -95,11 +95,15 @@ Fixtures for the checked-in save files live in
   only defensible because **v1 has never shipped**: there is no save on any disk but a
   developer's, and the fixtures were rewritten with it. The next shape change after a
   build reaches a player is a v2 and a migration, per `SaveSchema`.
-- **`inventory`** is still written empty in v1, so the round that fills it
-  (progression, round 11) finds the field already there and needs no schema bump.
-  `pocket_spread` was the same until the Trumps round (round 6) filled it with the
-  Spread, the Fortune meter and the White Rose — inside the same v1 shape, exactly as
-  the reserved field was meant to be used.
+- ~~**`inventory`** is still written empty in v1.~~ **Done (round 11).** The
+  progression economy fills it with the purse, what the Fool carries, the staff head
+  on the Bindle and the Rose-grafting sources already taken — inside the same v1
+  shape, needing no schema bump, exactly as the reserved field was meant to be used.
+  `pocket_spread` went the same way in the Trumps round (round 6). Its keys belong to
+  `EconomyService` (`SNAPSHOT_COINS` and friends), as the Rose's belong to the Rose:
+  the section is opaque to `SaveModel`, so there is one place the shape is written
+  down. What a shop has SOLD is not in the file — that is a fact about a shop between
+  two rests, and the first rest after a load restocks it.
 - **Playtime is world time.** `playtime_seconds` is the loaded save's counter plus the
   clock's seconds *since the load* — `apply()` baselines the clock, so time spent on a
   title screen before pressing Continue is not billed as play. It is still world time,

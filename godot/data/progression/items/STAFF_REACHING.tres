@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/progression/definitions/item_definition.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"STAFF_REACHING"
+category = 2
+name_key = &"ITEM_STAFF_REACHING_NAME"
+base_price = 60
+cosmetic_only = false
+moveset_twist = &"REACH_PLUS"
+source_ref = "docs/design/progression.md §Currency, shops, and gear-lite: 'reach, an elemental tag, a different heavy shape'"
+notes = "TBD PLACEHOLDER: the doc says the exact identity and location of each staff head is a content-design pass. The twist id is a hook; the combat effect runner owes what REACH_PLUS does. Never a numeric upgrade."

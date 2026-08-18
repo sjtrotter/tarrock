@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="DeedDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/progression/definitions/deed_definition.gd" id="1_deed"]
+
+[resource]
+script = ExtResource("1_deed")
+id = &"DEED_WIN_A_DUEL"
+deed_summary = "Winning a formal duel or contest"
+reaction_cups = 2
+reaction_swords = 0
+reaction_wands = 1
+reaction_coins = 2
+reaction_note_cups = ""
+reaction_note_swords = "soldierly virtue"
+reaction_note_wands = "spectacle"
+reaction_note_coins = ""
+doc_ref = "docs/design/progression.md §Renown"

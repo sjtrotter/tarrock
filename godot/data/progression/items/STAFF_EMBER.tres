@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/progression/definitions/item_definition.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"STAFF_EMBER"
+category = 2
+name_key = &"ITEM_STAFF_EMBER_NAME"
+base_price = 85
+cosmetic_only = false
+moveset_twist = &"FIRE_TAG"
+source_ref = "docs/design/progression.md §Currency, shops, and gear-lite: 'an elemental tag'"
+notes = "TBD PLACEHOLDER, as STAFF_REACHING. The twist id is a hook for the combat effect runner."

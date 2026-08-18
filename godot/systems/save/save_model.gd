@@ -96,7 +96,19 @@ var world_state: Dictionary = {}
 ## the same.
 var pocket_spread: Dictionary = {}
 
-## Reserved for the progression round: item_id -> count. Empty now (see above).
+## What the Fool has: the purse, what is carried, the staff head on the Bindle and
+## the Rose-grafting sources already taken (`EconomyService.to_snapshot()`, whose
+## `SNAPSHOT_*` constants name the keys).
+##
+## Carried verbatim and opaque, exactly as `world_state` and `pocket_spread` are:
+## `EconomyService` owns the contract on the way back in, and restating its keys here
+## would give the game two places to disagree with itself. What a SHOP has sold is
+## deliberately not in here - that is a fact about a shop between two rests, and the
+## first rest after a load puts it right (`EconomyService.restock_on_rest()`).
+##
+## Still a plain empty Dictionary for a playthrough that has bought nothing, and for
+## a build wired without that service, so a v1 file written either way reads back the
+## same.
 var inventory: Dictionary = {}
 
 ## The region the Fool is standing in, as a `RegionIds` token. Serialised inside the

@@ -82,6 +82,14 @@ const ENEMY_RULES_PATH := "res://data/enemies/enemy_rules.tres"
 ## run on (`docs/design/combat.md` §Pip).
 const PIP_RULES_PATH := "res://data/pip/pip_rules.tres"
 
+## The generated deeds `economy` turns into Renown - one per row of
+## `docs/design/progression.md` §Renown's table - the hand-authored items and shops,
+## and the one tuning table the Coin economy runs on.
+const DEED_CATALOG_PATH := "res://data/progression/deeds/catalog.tres"
+const ITEM_CATALOG_PATH := "res://data/progression/items/catalog.tres"
+const SHOP_CATALOG_PATH := "res://data/progression/shops/catalog.tres"
+const ECONOMY_RULES_PATH := "res://data/progression/economy_rules.tres"
+
 ## The generated regions `regions` is built over - one per `docs/design/world.md`
 ## §Regions bullet - and the HAND-AUTHORED adjacency, which is a reading of that
 ## doc's §Layout diagram rather than a table anything could generate
@@ -121,6 +129,13 @@ var spread: PocketSpreadService = null
 ## The White Rose: healing charges, and the region rule that decides where they come
 ## back. Reads `world_state` to know which regions are awake.
 var rose: WhiteRoseService = null
+
+## Coins, the shops that read the world-state matrix and the Fool's Renown, the staff
+## head on the Bindle, the Rose graftings found, and the one place a deed becomes
+## Renown. Built after `rose` and `spread`, which it reads (a grafting raises the
+## Rose's cap; hidden and fine-print stock ask which Trumps are held), and before
+## `save`, which captures it as the file's `inventory` section.
+var economy: EconomyService = null
 
 ## The fight: Fool's Chance and the time scale it slows the world by, the Fortune a
 ## fight earns, the White Rose's heals, the difficulty modes, and the defeat loop.
@@ -195,10 +210,11 @@ func rebuild() -> void:
 	fortune = FortuneService.new(rules)
 	spread = _build_spread(rules)
 	rose = WhiteRoseService.new(world_state, rules)
+	economy = _build_economy()
 	combat = CombatService.new(_load_combat_rules(), fortune, spread, rose, clock)
 	enemies = _build_enemies(combat.rules())
 	pip = PipService.new(_load_pip_rules(), combat)
-	save = SaveService.new(world_state, clock, _saves_dir, null, spread, fortune, rose)
+	save = SaveService.new(world_state, clock, _saves_dir, null, spread, fortune, rose, economy)
 	# The chosen difficulty is save data (`SaveModel.difficulty_mode`), so combat is
 	# told once the save service exists to be asked. A settings screen that changes it
 	# mid-play calls `combat.set_difficulty()` itself - that wiring is the UI round's,
@@ -207,6 +223,13 @@ func rebuild() -> void:
 	quests = _build_quests()
 	dialogue = _build_dialogue()
 	regions = _build_regions()
+	# A rest at a Waystation is what puts a shop's shelves back
+	# (`docs/design/progression.md` §Waystations), and `RegionService` is built after
+	# the economy because it needs the save, which captures the economy. So the two
+	# are introduced here, at the one point both exist - the subscription itself lives
+	# in `EconomyService.attach_regions()`, because the shape of a restock is that
+	# service's business and this node's job is only the introduction.
+	economy.attach_regions(regions)
 	# The layer registered its swapper before any of this was rebuilt, and it is the
 	# same layer either way: the scene above the services outlives the services.
 	regions.set_swapper(_region_swapper)
@@ -321,6 +344,40 @@ func _build_spread(rules: SpreadRules) -> PocketSpreadService:
 		for problem: String in catalog.validate(world_states):
 			push_error(problem)
 	return PocketSpreadService.new(world_state, catalog, rules, fortune)
+
+
+## Load the deeds, the items, the shops and the tuning table, and build the economy.
+##
+## Validated on the way in for the same reason the other catalogs are, and with the
+## cross-references only this call can make: a price rule waiting on a flag the matrix
+## does not define is a price change that would never happen; a shop standing in a
+## region the catalog does not know is a market nobody can walk to; and a shelf gated
+## on a Trump `arcana.md` does not grant is stock that never appears. Every one of
+## those is a content bug worth a loud error at boot rather than a shop that quietly
+## sells the wrong thing three hours in.
+func _build_economy() -> EconomyService:
+	var rules: EconomyRules = load(ECONOMY_RULES_PATH) as EconomyRules
+	var items: ItemCatalog = load(ITEM_CATALOG_PATH) as ItemCatalog
+	var shops: ShopCatalog = load(SHOP_CATALOG_PATH) as ShopCatalog
+	var deeds: DeedCatalog = load(DEED_CATALOG_PATH) as DeedCatalog
+	var world_states: WorldStateCatalog = load(WORLD_STATE_CATALOG_PATH) as WorldStateCatalog
+	var region_catalog: RegionCatalog = load(REGION_CATALOG_PATH) as RegionCatalog
+	var trump_catalog: TrumpCatalog = load(TRUMP_CATALOG_PATH) as TrumpCatalog
+	if rules != null:
+		for problem: String in rules.validate_against(world_states, region_catalog):
+			push_error(problem)
+	if items != null:
+		for problem: String in items.validate():
+			push_error(problem)
+	if shops != null:
+		for problem: String in shops.validate_against(
+			items, rules, region_catalog, world_states, trump_catalog
+		):
+			push_error(problem)
+	if deeds != null:
+		for problem: String in deeds.validate():
+			push_error(problem)
+	return EconomyService.new(rules, items, shops, deeds, world_state, spread, rose)
 
 
 ## Load the generated quest definitions and build the runner over them.

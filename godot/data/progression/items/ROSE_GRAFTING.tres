@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/progression/definitions/item_definition.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"ROSE_GRAFTING"
+category = 3
+name_key = &"ITEM_ROSE_GRAFTING_NAME"
+base_price = 120
+cosmetic_only = false
+moveset_twist = &""
+source_ref = "docs/design/progression.md §The White Rose: graftings raise the maximum, 3 petals to 8"
+notes = "CANON: graftings exist and raise the Rose's cap. TBD: progression.md says the full list of Rose-grafting sources is a content-design pass, so there is ONE grafting item and the SOURCE it came from is what EconomyService.find_grafting() keys its set-once on."

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/progression/definitions/item_definition.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"ITEM_SHOWBILL"
+category = 1
+name_key = &"ITEM_SHOWBILL_NAME"
+base_price = 10
+cosmetic_only = false
+moveset_twist = &""
+source_ref = "docs/design/world.md §Regions, The Prestige (I): a performance three centuries long"
+notes = "TBD content: progression.md names no curio anywhere. It exists so the Prestige's stall sells something a world-state does NOT price, which is what proves the food rule prices food only."

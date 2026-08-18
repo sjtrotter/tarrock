@@ -46,10 +46,20 @@
 		},
 		"rose": {
 			"petals": 2,
-			"graftings": 0
+			"graftings": 1
 		}
 	},
-	"inventory": {},
+	"inventory": {
+		"coins": 42,
+		"items": {
+			"ITEM_POPCORN": 2,
+			"STAFF_REACHING": 1
+		},
+		"staff_head": "STAFF_REACHING",
+		"graftings": [
+			"GRAFTING_PRESTIGE_BIG_TOP"
+		]
+	},
 	"regions": {
 		"current_region_id": "PRESTIGE",
 		"last_waystation_id": "WAYSTATION_PRESTIGE",
