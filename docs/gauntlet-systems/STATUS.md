@@ -314,10 +314,41 @@ cross-system reach (a `Distractable` seam when a second enemy family gets a body
 
 **Director asks:** none new (issues #10, #11 still open).
 
-## Round 10 — Regions and Waystations (open 2026-08-18)
+## Round 10 — Regions and Waystations (CLOSED 2026-08-18)
 
-**Goal:** 22 `RegionDefinition`s generated from world.md §Regions (adjacency hand-authored
-from §Layout), the persistent layer (Fool, Pip, camera, UI root above a swapped region
-scene), `RegionService` as the only loader (adjacency, hard gates, fast travel gated on
-`WS_CHARIOT_UNBOUND`, rest at Waystations, defeat → return to the last Waystation),
-new-game and load flows, Cliff → Prestige (greybox stub). _In progress._
+**Shipped (`caec346`; docs `876a24a` `5a9cc82`):** 22 `RegionDefinition`s generated from
+world.md §Regions (+ `RegionIds`, `regions.csv`); the adjacency **hand-authored from the
+diagram and now written into world.md §Layout as an explicit table** (39 edges, each
+citing its sentence; gates are data on edges — Hollows on `WS_DEATH_UNBOUND`, Mirrormarsh
+on any true light, the Axis always open, the Cliff's only edge the one-way leap; the whole
+table pinned by tests including the rim wheel); the **persistent layer** (Fool, Pip, camera,
+UI root above a swapped region scene; deferred swaps; arrival markers); `RegionService` as
+the only loader (adjacency/gate/scene refusals; fast travel only after the Chariot, from a
+shrine you stand at to shrines you have rested at, never the Cliff — progression.md
+amended; rest = Rose regrown + ambient respawn with quest-gate encounters staying
+cleared; defeat → return to the last Waystation → revive); `Services.new_game/save_game/
+load_game` with fresh services on load and every node component re-injected; the Cliff
+became a `RegionScene` (Fool/Pip/camera out, markers + Waystation in) and its LeapPoint
+travels to a greybox Prestige once MQ00 is complete; a `regions` save section.
+
+**Proof:** 876 unit tests (101 new) + `regions_test` (identity of every service across a
+swap, Fool + Pip at the arrival marker, the old scene freed, load restores region and
+shrine); every legacy scene test now boots the layer. Critic: all 11 mutations caught
+except one — **the rim adjacency was untested** (a rim road could be deleted or rewired
+across the map with everything green) — now the whole table is pinned; plus doc/code
+alignment (technical.md, progression.md's fast-travel rule) fixed in the same change.
+
+**Director asks:** issue #12 — three readings of the map diagram (Wheelhouse/Veil only via
+the causeway; the Undervault's three descents; fast travel narrowed to visited shrines and
+the Cliff excluded) plus the Mirrormarsh gate granularity — confirm or overrule.
+
+**Debt / owed:** the Prestige is a marked greybox; boots validate catalogs once now but a
+load still rebuilds; `regions_test` uses a scratch saves dir; a defeat whose shrine sits in
+an unbuilt region wakes the Fool where they fell (last resort, warned).
+
+## Round 11 — Progression economy (open 2026-08-18)
+
+**Goal:** Coins, shops whose stock and prices read WorldState + Renown (food halves
+Spread-wide on `WS_EMPRESS_UNBOUND` through data), staff heads (placeholders, doc-TBD
+identity), Rose graftings, and the deed → Renown reaction table generated from
+progression.md; an `inventory` save section. _In progress._
