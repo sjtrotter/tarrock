@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WorldStateDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/world_state/definitions/world_state_definition.gd" id="1_definition"]
+
+[resource]
+script = ExtResource("1_definition")
+id = &"WS_FORTUNE_UNBOUND"
+kind = 0
+fired_by = &"MQ10"
+arcana_number = 10
+branch_group = &""
+effect_summary = "The Wheel turns again: Wheelhouse luck districts begin cycling on a schedule (dynamic region); world-wide drop rates gain small periodic \"fortune weather.\""
+doc_ref = "docs/design/world.md §World-state matrix"

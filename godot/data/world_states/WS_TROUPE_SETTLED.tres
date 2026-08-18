@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WorldStateDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/world_state/definitions/world_state_definition.gd" id="1_definition"]
+
+[resource]
+script = ExtResource("1_definition")
+id = &"WS_TROUPE_SETTLED"
+kind = 1
+fired_by = &"MQ01"
+arcana_number = 0
+branch_group = &"MQ01_TROUPE"
+effect_summary = ""
+doc_ref = "docs/design/world.md §World-state matrix (WS_MAGICIAN_UNBOUND row)"

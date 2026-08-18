@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WorldStateDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/world_state/definitions/world_state_definition.gd" id="1_definition"]
+
+[resource]
+script = ExtResource("1_definition")
+id = &"WS_MAGICIAN_UNBOUND"
+kind = 0
+fired_by = &"MQ01"
+arcana_number = 1
+branch_group = &""
+effect_summary = "Prestige show ends; carnival packs up over in-game days; eastern roads reopen; **troupe branch** per MQ01 choice (`WS_TROUPE_TRAVELING` or `WS_TROUPE_SETTLED`)."
+doc_ref = "docs/design/world.md §World-state matrix"

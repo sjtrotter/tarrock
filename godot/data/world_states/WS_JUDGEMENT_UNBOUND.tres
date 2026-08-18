@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WorldStateDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/world_state/definitions/world_state_definition.gd" id="1_definition"]
+
+[resource]
+script = ExtResource("1_definition")
+id = &"WS_JUDGEMENT_UNBOUND"
+kind = 0
+fired_by = &"MQ20"
+arcana_number = 20
+branch_group = &""
+effect_summary = "Ghost NPCs across the Spread say goodbyes (closes every \"waiting\" sidequest); Hollows bloom; ancestor shrines give final gifts."
+doc_ref = "docs/design/world.md §World-state matrix"

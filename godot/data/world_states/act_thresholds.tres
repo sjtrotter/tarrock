@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ActThresholds" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/world_state/definitions/act_thresholds.gd" id="1_act_thresholds"]
+
+[resource]
+script = ExtResource("1_act_thresholds")
+id = &"ACT_THRESHOLDS"
+act_ii_min = 7
+act_iii_min = 15
+doc_ref = "docs/design/world.md §Global states (act thresholds)"

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WorldStateDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/world_state/definitions/world_state_definition.gd" id="1_definition"]
+
+[resource]
+script = ExtResource("1_definition")
+id = &"WS_LOVERS_UNBOUND"
+kind = 0
+fired_by = &"MQ06"
+arcana_number = 6
+branch_group = &""
+effect_summary = "The Divide is bridged; towns unite per MQ06 choice (`WS_DIVIDE_EASTMARRIED` / `WS_DIVIDE_WESTMARRIED`); ferry replaced by bridge traffic."
+doc_ref = "docs/design/world.md §World-state matrix"

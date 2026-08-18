@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="RenownLadder" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/world_state/definitions/renown_ladder.gd" id="1_renown_ladder"]
+
+[resource]
+script = ExtResource("1_renown_ladder")
+id = &"RENOWN_LADDER"
+tier_names = PackedStringArray("Stranger", "Known", "Welcome", "Honored", "Fabled")
+tier_min_values = PackedInt32Array(0, 10, 25, 50, 100)
+doc_ref = "docs/design/progression.md §Renown"
+notes = "thresholds TBD (tuning; not canon) - progression.md owns the tiers, not the numbers"

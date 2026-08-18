@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WorldStateDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/world_state/definitions/world_state_definition.gd" id="1_definition"]
+
+[resource]
+script = ExtResource("1_definition")
+id = &"WS_SUN_UNBOUND"
+kind = 0
+fired_by = &"MQ19"
+arcana_number = 19
+branch_group = &""
+effect_summary = "**The first sunset in 300 years** (set-piece); global day/night cycle begins; nocturnal content unlocks everywhere; Noonlands cool, drought sidequests resolve."
+doc_ref = "docs/design/world.md §World-state matrix"
