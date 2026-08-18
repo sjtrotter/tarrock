@@ -208,9 +208,14 @@ Unity body, in Godot terms:
   Queries are **plain per-flag booleans**, never an ordered log, so a check like "Sun
   unbound AND Star unbound" is correct regardless of unbind order (`world.md`'s
   order-independence rule).
-- **Writes:** only quest state-machine transitions call the fire/adjust methods. Combat,
-  dialogue, UI, and NPCs never write state; they raise domain events, and a quest
-  transition responds and, if its conditions hold, calls the service.
+- **Writes:** only quest state-machine transitions fire flags, set quest state, or record
+  branch choices. Combat, dialogue, UI, and NPCs never write state; they raise domain
+  events, and a quest transition responds and, if its conditions hold, calls the service.
+  **One reviewed exception, for Renown only:** `progression.md` says Renown "moves in
+  response to deeds and quest choices", and most deeds are not quests — so the
+  progression economy's `record_deed(deed)` is the second (and last) writer of Renown,
+  applying the deed table's per-suit reactions; it can never touch a flag, the Reading, or
+  quest state.
 - **Signals:** every successful mutation emits a typed signal on the service —
   `world_state_fired(id: StringName)`, `renown_changed(suit: Suit.Id, old: int, new: int)`
   (plus `renown_tier_changed` when the ladder tier moves), `act_changed(old: int, new: int)`,
