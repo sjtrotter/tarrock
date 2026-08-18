@@ -382,8 +382,10 @@ Services are plain objects, so unit tests construct them directly; a test that n
 - **Hard performance budget targets** — deferred to the proof slice, as above.
 - **Export/packing strategy** for region content (single PCK vs. per-region packs) — a
   build-size and load-time decision, deferred until region count and art volume are real.
-- **Rebinding UI and the settings save** — the action list is fixed above, but where
-  rebinds are stored (settings file vs. save file) is undecided.
+- ~~Rebinding UI and the settings save~~ — **decided (UI round, 2026-08-18):** rebinds and
+  all settings (difficulty mirror, accessibility, text scale, hold/toggle) live in
+  `user://settings.cfg` via `ConfigFile`, never in the save file; the save keeps only the
+  difficulty mode itself.
 - **Whether `shared/Tarrock.Shared` is ever revived** for a 3D retelling — out of scope
   for the 2D game, which does not consume it.
 
