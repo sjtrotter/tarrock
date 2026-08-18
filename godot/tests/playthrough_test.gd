@@ -46,20 +46,23 @@ extends SceneTree
 ##      granted by the test for the same reason: `systems/progression/README.md` records
 ##      that nothing in the game hands the Fool a Coin yet.
 ##
-## **One coupling this test found, and works around rather than hides.** `player.gd`
-## polls `Input.is_action_just_pressed(interact)` every physics frame, while
-## `DialogueFrame` consumes the same action as an EVENT and calls
-## `set_input_as_handled()`. Handling an event does not stop a poll, so **advancing a
-## line of dialogue also acts on whatever prop is in reach**. It is not theoretical on
-## the Cliff: a new game stands the Fool on the DEFAULT marker 184 px from the
-## `BindleTrigger`, whose own circle is 90 px and whose finder is the Fool's 96 px
-## sensor - 184 < 186, so the trigger is in reach at spawn, and the FIRST press that
-## advances the Querent's waking line picks the Bindle up before the tutorial has
-## asked for it. Phase 1 therefore steps the Fool clear of every prop before it walks
-## the opening conversation out, so the Bindle beat afterwards is a real beat. Reported
-## rather than fixed: whether `interact` should be consumable is a UI/input decision
-## and not this suite's to take. It is also visible at the Waystation, where advancing
-## the rest conversation rests again (harmlessly - a rest is idempotent).
+## **One coupling this test found, and the fix that came of it.** `player.gd` polls
+## `Input.is_action_just_pressed(interact)` every physics frame, while `DialogueFrame`
+## consumes the same action as an EVENT and calls `set_input_as_handled()`. Handling an
+## event does not stop a poll, so **advancing a line of dialogue also acted on whatever
+## prop was in reach**. It was not theoretical on the Cliff: a new game stands the Fool
+## on the DEFAULT marker 184 px from the `BindleTrigger`, whose own circle is 90 px and
+## whose finder is the Fool's 96 px sensor - 184 < 186, so the trigger is in reach at
+## spawn, and the FIRST press that advanced the Querent's waking line picked the Bindle
+## up before the tutorial had asked for it. It was visible at the Waystation too, where
+## advancing the rest conversation rested again (harmlessly - a rest is idempotent).
+##
+## Fixed by SUSPENSION rather than by making the action consumable: while a conversation
+## is on screen or a menu is up, `UiShell` puts the Fool's world interaction down
+## (`FoolBody.set_world_interaction_enabled()`), and `DialogueFrame`'s event handling is
+## exactly as it was. Phase 1 is the proof and no longer works around it - the opening
+## conversation is walked out ON the spawn marker, with the Bindle's trigger in reach
+## the whole time, and the Bindle has to still be lying there when the talking stops.
 
 # --- Where this test's files go -----------------------------------------------------
 
@@ -99,11 +102,11 @@ const BINDLE_POSITION := Vector2(3660, 2470)
 ## meadow with the dead campfire. No teleport is needed for the first beat.
 const MEADOW_SPAWN := Vector2(3820, 2560)
 
-## Where the opening conversation is walked out: far enough into the bowl that no
-## prop is inside the Fool's 96 px interact sensor. See the class doc - at the spawn
-## marker the Bindle's own trigger is already in reach, and `interact` advances a line
-## AND acts on a prop.
-const WAKE_CLEARING := Vector2(3400, 2600)
+## Every quest trigger on the Cliff carries the same 90 px circle
+## (`scenes/the_cliff.tscn`, `CircleShape2D_trigger`). With the Fool's own 96 px sensor
+## that is a 186 px reach, which is what puts the `BindleTrigger` inside the Fool's
+## grasp at the spawn marker 184 px away - the geometry phase 1 stands on.
+const TRIGGER_RADIUS := 90.0
 
 const EARTH_POSITION := Vector2(3090, 2230)
 const EARTH_STANDOFF := Vector2(3330, 2350)
@@ -126,6 +129,12 @@ const ARRIVE_RADIUS := 24.0
 
 ## How close the Fool has to be to act on a prop. `FoolBody.INTERACT_REACH` is 96.
 const INTERACT_RADIUS := 60.0
+
+## Physics frames to let pass after a press before the world is believed to have heard
+## it. `player.gd` POLLS `interact` in its own `_physics_process`, one frame behind an
+## event this script flushed, so a "the prop was not touched" assertion made in the
+## same frame as the press would pass whether the prop was protected or not.
+const POLL_FRAMES := 3
 
 ## A walk that has not closed on its target in this many frames is stuck - a collision
 ## nobody expected - and fails by name with the position it is stuck at.
@@ -231,6 +240,14 @@ var _picked_keys: PackedStringArray = PackedStringArray()
 
 ## How many times Pip's Seek dug the earth out.
 var _digs := 0
+
+## The line on the parchment before an `interact` was pressed at it, so "the press
+## reached the conversation" is an assertion rather than an assumption.
+var _line_before: StringName = &""
+
+## The phase frame that press went out on, so the poll it would have reached can be
+## given its frames before anything is believed about the world (`POLL_FRAMES`).
+var _pressed_on_frame := 0
 
 ## The actions currently held down, so a hold is not re-stamped every frame (which
 ## would make `is_action_just_pressed` true forever).
@@ -368,19 +385,93 @@ func _phase_wake() -> bool:
 				_layer.fool().global_position.distance_to(MEADOW_SPAWN) <= 1.0,
 				"with the Fool on the Cliff's own spawn marker"
 			)
-			# Clear of the props before a word is advanced: see the class doc.
-			_set_down(WAKE_CLEARING)
+			# NOT stepped clear of the props first, which is the point of this phase:
+			# the Bindle's trigger is inside the Fool's reach from the spawn marker,
+			# and the whole conversation is walked out standing in it. See the class
+			# doc for the bug that geometry used to produce.
+			var at_spawn := _bindle_trigger()
+			var reach := FoolBody.INTERACT_REACH + TRIGGER_RADIUS
+			_check(
+				at_spawn != null and _fool_distance_to(at_spawn) < reach,
+				"and the Bindle's own trigger already within reach of him (%.0f px < %.0f)" % [
+					_fool_distance_to(at_spawn), reach
+				]
+			)
+			_line_before = _shell.dialogue_frame().line_key()
 			_step = 1
 		1:
+			# One press of `interact`: the conversation's, and only the conversation's.
+			_press(InputActions.INTERACT)
+			_pressed_on_frame = _phase_frame
+			_step = 2
+		2:
+			# Held until the Fool's own poll has certainly run. `DialogueFrame` sees the
+			# press as an event, the moment it is flushed from this script; `player.gd`
+			# reads the same action in its `_physics_process`, and a press parsed out of
+			# a `SceneTree` callback does not read as `just_pressed` there until the
+			# frame after. Asserting any sooner would assert nothing.
+			if _phase_frame - _pressed_on_frame < POLL_FRAMES:
+				return false
+			_check(
+				_shell.dialogue_frame().line_key() != _line_before,
+				"pressing `interact` advances the Querent's line"
+			)
+			var after_one_press := _bindle_trigger()
+			_check(
+				after_one_press != null and not after_one_press.is_spent(),
+				"and leaves the Bindle's trigger unspent under the Fool's feet"
+			)
+			_check(_quest_state() == &"WAKING", "so MQ00 has not skipped to BINDLE_TAKEN")
+			_check(_bindle_is_in_the_meadow(), "and the Bindle is still lying in the meadow")
+			_step = 3
+		3:
 			# Walked out on the `interact` action, which is what `DialogueFrame`
 			# answers - the same key the Fool picks the Bindle up with.
 			if not _walk_conversation_out():
 				return false
 			_check(not _dialogue().is_active(), "the opening line is walked out on `interact`")
 			_check(not _shell.dialogue_frame().visible, "and the parchment goes away with it")
+			_pressed_on_frame = _phase_frame
+			_step = 4
+		4:
+			# The same wait again, and for the sharper half of the fix: the press that
+			# DISMISSED the last line is still held down when the world is handed back,
+			# and the poll it reaches a frame later must not act on anything either.
+			if _phase_frame - _pressed_on_frame < POLL_FRAMES:
+				return false
 			_check(_quest_state() == &"WAKING", "and saying it moved no quest")
+			var after_the_talk := _bindle_trigger()
+			_check(
+				after_the_talk != null
+				and not after_the_talk.is_spent()
+				and _bindle_is_in_the_meadow(),
+				"nor picked the Bindle up: the press that ends a conversation is the "
+				+ "conversation's"
+			)
 			_advance()
 	return false
+
+
+## The Bindle's quest trigger, the one the Fool stands inside through the waking line.
+func _bindle_trigger() -> Interactable:
+	if _cliff == null:
+		return null
+	return _cliff.get_node_or_null("World/QuestTriggers/BindleTrigger") as Interactable
+
+
+## True while the Bindle is still drawn where it was left.
+func _bindle_is_in_the_meadow() -> bool:
+	var bindle := null if _cliff == null else _cliff.get_node_or_null("World/Props/Bindle")
+	var sprite := bindle as Node2D
+	return sprite != null and sprite.visible
+
+
+## How far the Fool is from a node right now.
+func _fool_distance_to(node: Node2D) -> float:
+	var fool := _layer.fool()
+	if fool == null or node == null:
+		return INF
+	return fool.global_position.distance_to(node.global_position)
 
 
 # --- Phase 2: the Bindle ---------------------------------------------------------------

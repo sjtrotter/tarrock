@@ -136,7 +136,7 @@ region scene forgets to forward, a save section nobody captures, an input action
 stops reaching a component — fails here and nowhere else. Treat a failure in it as a
 broken game, not a broken test: read the phase name it failed in first.
 
-Three things about it are worth knowing before changing it:
+Four things about it are worth knowing before changing it:
 
 - **It drives the game through the InputMap actions**, not through the controllers.
   Presses go out as `InputEventAction`s through `Input.parse_input_event()` (flushed by
@@ -151,6 +151,20 @@ Three things about it are worth knowing before changing it:
   encounter volume, a Waystation circle or on the leap point. Crossing the Cliff on the
   Fool's legs four times would cost most of the suite's time budget and prove nothing the
   walk-ins do not.
+- **The coupling it found is fixed, not worked around.** `interact` is on both halves of
+  that surface at once: `DialogueFrame` consumes it as an event and calls
+  `set_input_as_handled()`, and `player.gd` POLLS it — and handling an event does not
+  stop a poll. So advancing the Querent's waking line also acted on whatever prop was in
+  reach, which on the Cliff meant the Bindle 184 px away (a 90 px trigger circle and the
+  Fool's 96 px sensor) was taken before the tutorial asked for it. The fix is a
+  SUSPENSION: while a conversation is on screen or a menu is open, `UiShell` puts the
+  Fool's world interaction down (`FoolBody.set_world_interaction_enabled()`), and the
+  press that closed the conversation has to come up before the world hears the key again.
+  The dialogue frame's event handling is untouched. Phase 1 is the proof — it walks the
+  whole opening conversation out standing inside the Bindle's own trigger and asserts the
+  Bindle is still lying there — and `tests/unit/ui/shell_test.gd` holds the shell's half.
+  Both assertions wait `POLL_FRAMES` after a press, because the poll runs a frame behind
+  an event this suite flushed and an assertion made any sooner would prove nothing.
 - **Nothing waits on the wall clock.** Every phase is bounded in physics frames and fails
   by name when it overruns, so a stuck walk reports "the fight finished inside its
   1400-frame budget" rather than running into the harness's 120 s timeout, where the

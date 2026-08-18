@@ -106,6 +106,10 @@ its scene; nothing else here changes, and the string lint covers both.)
 - **Dialogue does not pause the world and is not a menu.** `art-audio.md` §UI/UX pillars:
   an easing camera zoom, no separate screen, no hard lock. `UiState` therefore never
   counts the dialogue frame, and `CameraFraming` releases itself when the Fool walks off.
+- **What a conversation does take away is the interact key.** `interact` both advances a
+  line and picks a prop up, so while a conversation is on screen — or a menu is open — the
+  shell suspends the Fool's world interaction (`FoolBody.set_world_interaction_enabled()`):
+  the world is not paused, only out of reach (`res://tests/README.md` §The proof slice).
 - **The Querent's defeat remark is a graph id and nothing else.** Canon gives a rotating,
   low-frequency pool of warm, dry lines and gives none of its words.
   `DefeatOverlay.QUERENT_REMARKS_GRAPH` (`DEFEAT_QUERENT_REMARKS`) is the id the writing

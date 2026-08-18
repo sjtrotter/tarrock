@@ -14,6 +14,15 @@ extends Control
 ## the rest only through queries and signals, never the reverse" - nothing outside
 ## `systems/ui/` refers to a single class in it.
 ##
+## **While the screen is talking, the world is not touched.** `interact` is both the
+## key that advances a line and the key that picks a prop up, and the two halves of the
+## input surface cannot see each other: `DialogueFrame` consumes the action as an event,
+## `FoolBody` polls it. So the shell - the one node that knows both that a conversation
+## is running and that a menu is up - suspends the Fool's world interaction for as long
+## as either is true (`FoolBody.set_world_interaction_enabled()`), and gives it back
+## when the last of them goes away. Still wiring, not behaviour: what a suspension means
+## is the body's, and the dialogue frame's event handling is untouched.
+##
 ## **No new input actions.** `technical.md` §Input actions fixes the list, so the map
 ## is reached by pressing `almanack` again: the Almanack, then the Spread laid out on
 ## the table, then closed - "menu navigation moves like laying out a hand"
@@ -79,6 +88,11 @@ var _bark: BarkBubble = null
 var _transition: CardTransition = null
 var _npc: BarkService = null
 
+## The dialogue service being listened to for "somebody is talking to the Fool", and
+## the answer it last gave. See the class doc.
+var _dialogue: DialogueService = null
+var _in_dialogue := false
+
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -94,6 +108,7 @@ func _ready() -> void:
 	_scale.apply(_settings.text_scale)
 	theme = _scale.theme()
 	_state = UiState.new()
+	_state.menu_changed.connect(_on_menu_changed)
 	_build()
 	var root := services()
 	if root != null and not root.is_connected(&"rebuilt", _on_services_rebuilt):
@@ -372,6 +387,7 @@ func attach_services() -> void:
 
 	_state.attach_clock(clock)
 	_attach_barks(null if root == null else root.get(&"npc") as BarkService)
+	_attach_dialogue(dialogue)
 	if _hud != null:
 		_hud.attach(rose, fortune, combat)
 	if _dialogue_frame != null:
@@ -417,6 +433,67 @@ func barks() -> BarkService:
 	return _npc
 
 
+## Listen to the dialogue service for the conversation starting and ending, and stop
+## listening to the one a rebuild threw away. The frame draws the words; this is only
+## the shell noticing that somebody is talking (see the class doc).
+func _attach_dialogue(dialogue: DialogueService) -> void:
+	if _dialogue != dialogue:
+		if _dialogue != null:
+			if _dialogue.dialogue_started.is_connected(_on_dialogue_started):
+				_dialogue.dialogue_started.disconnect(_on_dialogue_started)
+			if _dialogue.dialogue_ended.is_connected(_on_dialogue_ended):
+				_dialogue.dialogue_ended.disconnect(_on_dialogue_ended)
+		_dialogue = dialogue
+		if _dialogue != null:
+			if not _dialogue.dialogue_started.is_connected(_on_dialogue_started):
+				_dialogue.dialogue_started.connect(_on_dialogue_started)
+			if not _dialogue.dialogue_ended.is_connected(_on_dialogue_ended):
+				_dialogue.dialogue_ended.connect(_on_dialogue_ended)
+	_in_dialogue = _dialogue != null and _dialogue.is_active()
+
+
+## The dialogue service that is being listened to, or null.
+func dialogue_heard() -> DialogueService:
+	return _dialogue
+
+
+func _on_dialogue_started(_graph_id: StringName) -> void:
+	_in_dialogue = true
+	_update_world_interaction()
+
+
+## A graph that chains into another (`DialogueGraph.next_graph_id`) ends before the next
+## one starts, so this asks the service rather than assuming the talking is over.
+func _on_dialogue_ended(_graph_id: StringName) -> void:
+	_in_dialogue = _dialogue != null and _dialogue.is_active()
+	_update_world_interaction()
+
+
+func _on_menu_changed(_screen: StringName, _open: bool, _open_count: int) -> void:
+	_update_world_interaction()
+
+
+## True while the Fool's own hands are free: nobody is talking to him and no menu is up.
+func world_interaction_allowed() -> bool:
+	return not _in_dialogue and not _state.any_menu_open()
+
+
+## The Fool's body on the persistent layer beside this shell, or null when there is no
+## layer to look on - the same walk `speaker_node()` makes.
+func fool_body() -> FoolBody:
+	var found := layer()
+	if found == null:
+		return null
+	return found.fool() as FoolBody
+
+
+## Tell the Fool whether the world is his to touch right now.
+func _update_world_interaction() -> void:
+	var fool := fool_body()
+	if fool != null:
+		fool.set_world_interaction_enabled(world_interaction_allowed())
+
+
 func _on_bark_picked(speaker: StringName, bark_id: StringName, _layer: int) -> void:
 	say_bark_for(speaker, bark_id)
 
@@ -459,6 +536,9 @@ func _attach_layer_nodes(combat: CombatService) -> void:
 		_defeat.attach(combat, _pip_companion())
 	if _hud != null and combat != null:
 		_hud.health_meter().attach(combat.fool())
+	# Last, because it is a state and not a wire: whatever is on screen right now
+	# decides it, and a Fool found for the first time here has heard nothing yet.
+	_update_world_interaction()
 
 
 func _on_services_rebuilt() -> void:

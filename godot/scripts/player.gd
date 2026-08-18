@@ -9,6 +9,10 @@ extends CharacterBody2D
 ## `set_movement_multiplier()`, `displace()`, `face_direction()`, `facing_vector()`,
 ## `speed_fraction()`, `set_time_compensation()` and `set_sprint_hold_mode()`, which is
 ## the whole of the seam.
+##
+## The UI has a seam of its own, one call wide: `set_world_interaction_enabled()`. While
+## somebody is talking to the Fool or a menu is up, `interact` belongs to the screen and
+## not to the world - see that method for why a consumed event is not enough on its own.
 
 const SPEED := 200.0
 
@@ -98,6 +102,15 @@ var _time_compensation := 1.0
 ## overlapping it are the `Interactable`s the interact key may reach.
 var _sensor: Area2D = null
 
+## True while the Fool's hands are his own. `UiShell` puts it down for as long as a
+## conversation is on screen or a menu is up (`set_world_interaction_enabled()`).
+var _world_interaction_enabled := true
+
+## True while the press that ENDED a conversation is still held down. That press is the
+## parchment's, and the key has to come up before the world hears it again - see
+## `set_world_interaction_enabled()`.
+var _interact_held_through_resume := false
+
 @onready var _sprite: Sprite2D = $Sprite
 
 
@@ -117,7 +130,13 @@ func _physics_process(delta: float) -> void:
 		),
 		delta
 	)
-	if Input.is_action_just_pressed(InputActions.INTERACT):
+	if _interact_held_through_resume and not Input.is_action_pressed(InputActions.INTERACT):
+		_interact_held_through_resume = false
+	if (
+		_world_interaction_enabled
+		and not _interact_held_through_resume
+		and Input.is_action_just_pressed(InputActions.INTERACT)
+	):
 		try_interact()
 
 
@@ -127,7 +146,12 @@ func _physics_process(delta: float) -> void:
 ## prop never knows a quest exists - it emits its event and the region scene forwards
 ## it to `QuestService`. Approach-shaped and used-up nodes are skipped, so a spent
 ## trigger cannot shadow a live one standing behind it.
+##
+## Answers nothing at all while world interaction is suspended, so the suspension holds
+## for a caller as well as for the key.
 func try_interact() -> Interactable:
+	if not _world_interaction_enabled:
+		return null
 	_ensure_sensor()
 	var nearest: Interactable = null
 	var nearest_distance := INF
@@ -142,6 +166,38 @@ func try_interact() -> Interactable:
 	if nearest != null:
 		nearest.interact()
 	return nearest
+
+
+## Take the Fool's hands off the world, or give them back.
+##
+## `UiShell` calls this - it is the one node that knows both that a conversation is on
+## screen and that a menu is up - and the default is true, so a Fool with no shell over
+## him (a fixture, a spike scene) still interacts.
+##
+## **Why a consumed event is not enough.** `DialogueFrame` answers `interact` as an
+## EVENT and calls `set_input_as_handled()`, and this body POLLS the same action;
+## handling an event does not stop a poll, so without this the press that advances the
+## Querent's waking line also picks up whatever prop is in reach. On the Cliff that is
+## not theoretical: a new game stands the Fool 184 px from the `BindleTrigger`, whose
+## 90 px circle and the 96 px `INTERACT_REACH` overlap at 186, and the Bindle was taken
+## before the tutorial asked for it (`res://tests/README.md` §The proof slice).
+##
+## Turning interaction back on does not hand over the press that turned it on: the
+## conversation is dismissed by an `interact` that is still down in the same frame this
+## is called, so that press is left to the parchment and the key must come up before
+## the world hears it again.
+func set_world_interaction_enabled(enabled: bool) -> void:
+	if enabled == _world_interaction_enabled:
+		return
+	_world_interaction_enabled = enabled
+	_interact_held_through_resume = (
+		enabled and Input.is_action_pressed(InputActions.INTERACT)
+	)
+
+
+## True while the Fool may act on the world with `interact`.
+func world_interaction_enabled() -> bool:
+	return _world_interaction_enabled
 
 
 func move(input_dir: Vector2, delta: float) -> void:

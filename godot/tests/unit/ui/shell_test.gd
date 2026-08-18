@@ -1,13 +1,20 @@
 extends TarrockTest
 
-## The pieces the shell wires but no page owns: which screens stop the clock, the Pip
-## wheel overlay, the defeat fade, a bark, and the card-flip between regions.
+## The pieces the shell wires but no page owns: which screens stop the clock, whether
+## the Fool may touch the world while the screen is talking, the Pip wheel overlay, the
+## defeat fade, a bark, and the card-flip between regions.
 ##
 ## `GameClock`'s class doc is the canon for the first: "Time does not pass while
 ## `paused` is true - menus, dialogue, and the Pocket Spread all stop the clock". Note
 ## the exception this round makes explicit and tests: DIALOGUE does not, because
 ## `art-audio.md` §UI/UX pillars says a conversation is a camera adjustment over the
 ## running world, with no hard lock.
+##
+## What a conversation DOES take away is the interact key. `interact` advances a line
+## and picks a prop up, and the two halves of the input surface cannot see each other -
+## `DialogueFrame` consumes the action as an event, `FoolBody` polls it - so the shell
+## suspends the Fool's world interaction while anything is on screen. See
+## `res://tests/README.md` §The proof slice for the Bindle it used to lift by itself.
 
 const PIP_WHEEL_SCENE := "res://scenes/ui/pip_wheel_overlay.tscn"
 const DEFEAT_SCENE := "res://scenes/ui/defeat_overlay.tscn"
@@ -25,6 +32,21 @@ const TRUMP_CATALOG_PATH := "res://data/trumps/catalog.tres"
 ## A bark key with a real row, so the slip can be proved to draw words.
 const BARK_KEY := &"BARK_CLIFF_QUERENT_IDLE_01"
 
+## The shell itself, and the two things it needs beside it before it can find the Fool:
+## something for `UiShell.layer()` to walk up to, and the Fool under it.
+const SHELL_SCENE := "res://scenes/ui/ui_shell.tscn"
+const FOOL_SCENE := "res://scenes/fool.tscn"
+
+## Where a shell built here keeps its settings. `UiShell._ready()` loads the settings
+## file, so without the override it would stand on the settings of whoever is at this
+## keyboard - the same reason `tests/ui_test.gd` redirects it. `ui_settings_test.gd`
+## asserts nothing leaks out of a suite, so `after_each()` puts it back.
+const SCRATCH_SETTINGS := "user://test_shell_settings/settings.cfg"
+
+## A graph id for a conversation that never runs: what is being proved here is what the
+## shell does when the dialogue service says a conversation started, not the graph.
+const FAKE_GRAPH := &"A_CONVERSATION"
+
 var _spawned: Array[Node] = []
 
 
@@ -39,6 +61,9 @@ func after_each() -> void:
 			node.get_parent().remove_child(node)
 			node.free()
 	_spawned.clear()
+	UiSettings.settings_path_override = ""
+	_clean_up_settings()
+	_forget_the_layer_swapper()
 
 
 # --- Menus and the clock -----------------------------------------------------------
@@ -195,6 +220,95 @@ func test_a_region_change_turns_a_card_over() -> void:
 	transition.play()
 	assert_true(transition.is_flipping())
 	assert_true(transition.visible)
+
+
+# --- The Fool's hands, while the screen is talking ---------------------------------
+
+
+func test_a_conversation_takes_the_fools_hands_off_the_world() -> void:
+	var shell := _spawn_shell_over_a_fool()
+	var fool := shell.fool_body()
+	if not assert_not_null(fool, "the shell finds the Fool on the layer beside it"):
+		return
+	assert_true(fool.world_interaction_enabled(), "nobody is talking to him yet")
+
+	# The handlers `DialogueService.dialogue_started` / `dialogue_ended` are wired to:
+	# a conversation, faked, so no graph or catalog has to exist for this.
+	shell._on_dialogue_started(FAKE_GRAPH)
+	assert_false(shell.world_interaction_allowed(), "the parchment owns `interact` now")
+	assert_false(fool.world_interaction_enabled(), "which the Fool has been told")
+	assert_null(fool.try_interact(), "so the verb answers nothing, poll or call")
+
+	shell._on_dialogue_ended(FAKE_GRAPH)
+	assert_true(shell.world_interaction_allowed())
+	assert_true(fool.world_interaction_enabled(), "and the world comes back with the quiet")
+
+
+func test_a_menu_that_is_still_up_keeps_the_world_out_of_reach() -> void:
+	var shell := _spawn_shell_over_a_fool()
+	var fool := shell.fool_body()
+	if not assert_not_null(fool):
+		return
+	shell._on_dialogue_started(FAKE_GRAPH)
+	shell.set_screen(UiShell.SCREEN_PAUSE, true)
+	shell._on_dialogue_ended(FAKE_GRAPH)
+	assert_false(
+		fool.world_interaction_enabled(), "the conversation ended behind an open pause menu"
+	)
+	shell.set_screen(UiShell.SCREEN_PAUSE, false)
+	assert_true(fool.world_interaction_enabled(), "and both are down")
+
+
+func test_a_menu_on_its_own_suspends_him_too() -> void:
+	var shell := _spawn_shell_over_a_fool()
+	var fool := shell.fool_body()
+	if not assert_not_null(fool):
+		return
+	shell.toggle_spread()
+	assert_false(fool.world_interaction_enabled(), "the Pocket Spread is up")
+	shell.toggle_spread()
+	assert_true(fool.world_interaction_enabled())
+
+
+## A shell with a Fool under the same layer, which is the arrangement it looks for:
+## `UiShell.layer()` walks up to the `PersistentLayer` and asks it for the Fool.
+## Nothing here plays a game - the layer is told not to boot one.
+func _spawn_shell_over_a_fool() -> UiShell:
+	UiSettings.settings_path_override = SCRATCH_SETTINGS
+	var layer := PersistentLayer.new()
+	layer.name = "PersistentLayer"
+	layer.boot_new_game_on_ready = false
+	var fool := (load(FOOL_SCENE) as PackedScene).instantiate()
+	fool.name = PersistentLayer.FOOL
+	layer.add_child(fool)
+	var ui_root := CanvasLayer.new()
+	ui_root.name = "UIRoot"
+	layer.add_child(ui_root)
+	var shell := (load(SHELL_SCENE) as PackedScene).instantiate() as UiShell
+	ui_root.add_child(shell)
+	tree().root.add_child(layer)
+	# The layer alone: freeing it frees the shell and the Fool with it.
+	_spawned.append(layer)
+	return shell
+
+
+## A `PersistentLayer` hands itself to the composition root as the node that swaps
+## regions, and the composition root here is the runner's own autoload, which outlives
+## this suite. Hand it back nothing, so no later test can find a swapper pointing at a
+## layer this one freed.
+func _forget_the_layer_swapper() -> void:
+	var root := tree().root.get_node_or_null("Services")
+	if root != null:
+		root.call(&"set_region_swapper", null)
+
+
+## And take the scratch settings file away again if a shell wrote one.
+func _clean_up_settings() -> void:
+	if FileAccess.file_exists(SCRATCH_SETTINGS):
+		DirAccess.remove_absolute(SCRATCH_SETTINGS)
+	var directory := SCRATCH_SETTINGS.get_base_dir()
+	if DirAccess.dir_exists_absolute(directory):
+		DirAccess.remove_absolute(directory)
 
 
 func _spawn(scene_path: String) -> Control:
