@@ -402,11 +402,47 @@ guardrail is a writers' rule, noted in the README.
 
 **Director asks:** none new.
 
-## Round 13 — UI shell (open 2026-08-18)
+## Round 13 — UI shell (CLOSED 2026-08-18)
 
-**Goal:** vector-first UI on the U1 concepts: HUD (petals + Fortune, prompt chip), dialogue
-frame with the conversational camera framing, Pocket Spread screen (three-card spread,
-loadouts at Waystations), Almanack (quests, the Reading, Trumps, Bestiary), map-as-spread
-with fast travel, Pip wheel overlay, pause/settings (difficulty, Fool's Chance slider,
-hold/toggle, rebinding to a settings file, text scale), defeat overlay, bark bubbles —
-every string a translation key. _In progress._
+**Shipped (`72c47d8`; docs `2e1358f`):** vector-first chrome from the U1 concepts (dialogue
+frame, name plate, prompt chip, panel, caret; placeholders for card faces, petal, suit
+marks; one theme; text scale that grows the frames); **HUD** (petals as charges + the health
+pool as bloom fullness — TBD pending #11; Fortune band with Favor overfill and the free-cast
+mark; fading prompt chip; Fool's Chance vignette honouring the flash toggle; safe-area
+insets); **DialogueFrame** driven through the service, with the conversational camera
+framing that eases, never hard-locks, and frames the Fool and Pip when the Querent
+speaks; **Pocket Spread screen**, **Almanack**, **map-as-spread** (22 cards, face-up iff
+unbound, fast travel with refusals), Pip wheel overlay, **pause + settings** (difficulty,
+Fool's Chance slider independent of mode, hold/toggle, shake/flash toggles, text scale,
+quest-marker assist default off, rebinding per device class persisted to
+`user://settings.cfg` — never the save; closes technical.md's open question), defeat
+overlay (gentle fade, no invented Querent lines — a test asserts none ship), bark bubbles
+on `bark_picked`, a card-flip region transition. **Every visible string a key**, now
+enforced four ways including a runtime lint that builds every UI page.
+
+**Proof:** 1156 unit tests (121 new) + `ui_test` (real InputMap actions through real
+services). Critic: 9 mutations caught at first pass; **eight blocking findings, all fixed**
+— the flash toggle never reached the vignette; reset orphaned the settings object; a
+keyboard rebind erased the pad binding (and reload set device 0 — a second real bug found
+fixing it); the camera framing was never engaged in play; safe-area untested; code-built
+widgets could ship English past the lint; boot read the developer's real settings file; the
+"fixed structure lives in the scene" claim was untrue (doc corrected).
+
+**Art requests (director's lane, in `godot/art/ui/README.md`):** a font; the U2 restyle
+applied to the five frames (patch margins documented); the 22 card faces (+ reversed and
+bound variants per art-audio.md §Card art) and a deck back; a real White Rose petal and
+bloom; the four suit marks in the deck's own hand.
+
+**Debt / owed:** no shake system behind the `screen_shake` toggle; the eleven MQ00 tutorial
+prompts exist as keys but nothing raises them yet (the Cliff's beats → `PromptChip`);
+Renown deliberately has no screen (no doc gives it one); Trump slot texts are "—" pending
+authored effect words (`TRUMP_NN_*_TEXT` = writing request); the Bestiary forgets on load
+(snapshot kept, save wiring owed); a bodiless Querent bark draws no bubble (VO/subtitle
+question for art-audio.md).
+
+## Round 14 — the proof slice, end to end (open 2026-08-18)
+
+**Goal:** one headless playthrough test of MQ00 → the Prestige through the real input paths
+(wake dialogue, Bindle, Seek, wooden-dog table, dead tree, the real ambush with a perfect
+dodge, rest, edge questions, the leap, the Prestige shop, save → load), a systems map, and
+an owed-items roll-up tool; then the handoff document. _In progress._
