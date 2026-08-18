@@ -440,6 +440,29 @@ authored effect words (`TRUMP_NN_*_TEXT` = writing request); the Bestiary forget
 (snapshot kept, save wiring owed); a bodiless Querent bark draws no bubble (VO/subtitle
 question for art-audio.md).
 
+## Playtest #1 notes (2026-08-18, director at the keyboard)
+
+- **Bug found and fixed (`5243cb2`):** no HUD, dialogue frame squashed top-left — every UI
+  root had a zero-size rect (`set_anchors_preset` keeps the rect; now
+  `set_anchors_and_offsets_preset`), and the safe-area insets were read in global screen
+  coordinates on a two-monitor desk (1146 px offset). Regression tests now assert
+  on-screen rects. Found with a windowed probe (`godot/tools/hud_probe.gd`).
+- **Canon correction from the director (rules #11):** the White Rose's petals ARE the
+  Fool's health — art-audio.md §UI, combat.md §Defeat, and five Trump effects in arcana.md
+  all measure life in petals; progression.md's "one petal = one fast heal on a button" is
+  the stray line. Next round: petals-as-health (hits cost petals at quarter resolution;
+  the `rose` action goes; HUD = petals only), progression.md/GLOSSARY/characters.md amended.
+- **Director rulings:** 2D-specific code in GDScript; **shared rules systems in C#**
+  (`Tarrock.Shared`) — port after the playtest/MQ01 on the same loop; shops SHOULD buy
+  back, with memory (pawn-shop margins by region/suit + Renown; recently-sold items refused
+  or discounted for an in-game window; supply/demand deemed feature creep) — canon to
+  progression.md then the verb; art requests: research the look first, Codex generates
+  (the director's own session watches `godot/art/ART-REQUESTS.md` and writes asset paths
+  back), every generated asset is a placeholder.
+- **Observation, no action yet:** the Cliff's up-left leap approach reads isometric — an
+  art-composition matter (diagonal coastline, plateau slanting toward the leap) for the
+  Cliff's art pass; the primary grammar should read as oblique top-down first.
+
 ## Round 14 — the proof slice, end to end (open 2026-08-18)
 
 **Goal:** one headless playthrough test of MQ00 → the Prestige through the real input paths
