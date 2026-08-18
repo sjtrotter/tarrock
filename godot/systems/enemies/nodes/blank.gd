@@ -88,6 +88,10 @@ var _animator: CharacterAnimator = null
 ## The Fool. Set by whoever spawned this Blank; never searched for.
 var _target: Node2D = null
 
+## Whoever currently has this Blank's attention instead of the Fool, or `null`.
+## Set by `set_distraction()` - Pip, today, and nothing else in the game.
+var _distraction: Node2D = null
+
 ## The other Blanks in this encounter, as an array the ENCOUNTER owns. Held by
 ## reference so counting allies allocates nothing per frame.
 var _allies: Array[Blank] = []
@@ -197,6 +201,37 @@ func set_target(target: Node2D) -> void:
 	_target = target
 
 
+## Take this Blank's attention off the Fool and put it on `by` for `seconds`.
+##
+## THE HARRY HOOK on the body side, and the other half of `BlankBrain.set_distraction()`
+## - read that method's doc for why the pair is split this way. `docs/design/combat.md`
+## §Pip: Harry "pins or distracts one target enemy, holding its attention and briefly
+## reducing its aggression toward the Fool".
+##
+## The distractor is a node, so this is the half that has to live on the body: while it
+## holds, `_fill_perception()` shows the brain the distractor's position where the
+## Fool's would be, and every rule the brain already has - approach, telegraph, swing,
+## disengage - runs against the dog instead. Nothing else in the brain changes, which
+## is what makes this hook one line of behaviour rather than a second AI.
+func set_distraction(by: Node2D, seconds: float, telegraph_multiplier: float) -> void:
+	if _brain == null or by == null or seconds <= 0.0:
+		return
+	_distraction = by
+	_brain.set_distraction(seconds, telegraph_multiplier)
+
+
+## Put this Blank's attention back on the Fool at once.
+func clear_distraction() -> void:
+	_distraction = null
+	if _brain != null:
+		_brain.clear_distraction()
+
+
+## Whoever has this Blank's attention instead of the Fool, or `null`.
+func distraction() -> Node2D:
+	return _distraction
+
+
 ## Hand this Blank the array of its fellows. Held by reference and owned by the
 ## caller, so counting allies costs no allocation per frame.
 func set_allies(allies: Array[Blank]) -> void:
@@ -257,6 +292,7 @@ func sleep() -> void:
 		_hitbox.set_deferred("monitoring", false)
 	for lob: Projectile in _projectiles:
 		lob.sleep()
+	_distraction = null
 	if _brain != null:
 		_brain.reset()
 
@@ -327,8 +363,14 @@ func _fill_perception() -> void:
 	_perception.self_facing = _brain.facing()
 	_perception.staggered = _combatant != null and _combatant.is_staggered()
 	_perception.health_fraction = 0.0 if _combatant == null else _combatant.health_fraction()
-	if _target != null and is_instance_valid(_target):
-		_perception.see_target(_target.global_position)
+	var attention := _target
+	if _brain.is_distracted() and _distraction != null and is_instance_valid(_distraction):
+		# Harried: the dog is what this Blank is looking at (`set_distraction()`).
+		attention = _distraction
+	elif not _brain.is_distracted():
+		_distraction = null
+	if attention != null and is_instance_valid(attention):
+		_perception.see_target(attention.global_position)
 	_fill_allies()
 
 

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="PipRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/pip/definitions/pip_rules.gd" id="1_pip_rules"]
+
+[resource]
+script = ExtResource("1_pip_rules")
+id = &"PIP_RULES"
+max_health = 30
+command_speed = 260.0
+command_reach = 48.0
+wheel_dead_zone = 0.35
+command_radius = 640.0
+harry_seconds = 4.0
+harry_telegraph_multiplier = 1.4
+seek_radius = 420.0
+seek_reveal_seconds = 1.4
+retreat_distance = 520.0
+retreat_cooldown_seconds = 6.0
+doc_ref = "docs/design/combat.md §Pip, §Defeat step 2; docs/design/characters.md §Pip; docs/quests/main/MQ00-the-leap.md §The Old Campsites"
+notes = "CANON in SHAPE, fixed by combat.md §Pip and not changeable without changing the doc: the wheel holds exactly three commands (Fetch, Harry, Seek) and no fourth; Harry holds one target enemy's attention and reduces its aggression toward the Fool, so harry_telegraph_multiplier is above 1.0 by definition and validate() refuses a table where Harry would sharpen an enemy instead; Seek points at something hidden rather than fighting, so it carries its own radius; and PIP CANNOT DIE - at zero he yelps, retreats out of the fight, shakes it off and returns after a short cooldown, which is why retreat_distance and retreat_cooldown_seconds are both required to be real and why nothing in systems/pip/ can express a death. EVERY ACTUAL NUMBER HERE IS A TBD PLACEHOLDER owned by the combat-tuning pass, by name: max_health; command_speed; command_reach; wheel_dead_zone; command_radius; harry_seconds; harry_telegraph_multiplier; seek_radius; seek_reveal_seconds; retreat_distance; retreat_cooldown_seconds. DECISIONS taken here that the doc does not state, recorded so a reviewer can overrule them cheaply: one speed and one reach serve all three commands, because there is one dog and he has one run; Harry's aggression reduction is spent as a telegraph multiplier on the harried enemy rather than as a separate aggression stat, because BlankBrain's telegraph is the only aggression currency the enemy round built and a second one would be two facts for one sentence of the doc; the retreat cooldown is measured from the moment Pip reaches his retreat distance rather than from the moment he was put to zero, so a long run out does not eat the shake-off. SEEK IS HALF-BUILT, AND THESE TWO NUMBERS SAY WHICH HALF: seek_radius and seek_reveal_seconds are both about Pip RUNNING TO a hidden thing and digging it out, which is the reading docs/quests/main/MQ00-the-leap.md stages at the old campsites. combat.md's own sentence also has him POINT at one from where he stands - a trap, a secret, a fog-hidden path - and that half has no number here at all: no point-and-hold duration and no separate pointing range, because there is no trap system and no fog region to point at, and inventing either would be inventing combat canon. Seekable.approach is the flag that decision will land on, and nothing reads it yet (systems/pip/README.md, What this round deliberately did not build)."

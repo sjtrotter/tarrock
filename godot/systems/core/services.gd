@@ -46,6 +46,10 @@ const COMBAT_RULES_PATH := "res://data/combat/combat_rules.tres"
 const ENEMY_CATALOG_PATH := "res://data/enemies/catalog.tres"
 const ENEMY_RULES_PATH := "res://data/enemies/enemy_rules.tres"
 
+## The hand-authored numbers Pip's command wheel, his three commands and his retreat
+## run on (`docs/design/combat.md` §Pip).
+const PIP_RULES_PATH := "res://data/pip/pip_rules.tres"
+
 ## In-game elapsed time. Paused by menus; advanced here and nowhere else.
 var clock: GameClock = null
 
@@ -76,6 +80,12 @@ var combat: CombatService = null
 ## `combat` because a fight is `CombatService`'s and this is only who is in it.
 var enemies: EnemyService = null
 
+## Pip: the command wheel (Fetch / Harry / Seek), and the retreat that is not a death.
+## Built after `combat` because a retreat runs away from whoever is engaged in the
+## fight, and because the defeat beat (`combat.md` §Defeat, 2) hangs on the fight's
+## own `fool_defeated`.
+var pip: PipService = null
+
 ## Versioned JSON saves in `user://saves/`, with the explicit migration chain.
 ## It captures out of the services above it and applies back into them - which is why
 ## it is built last and holds them, rather than the other way round.
@@ -102,6 +112,7 @@ func _ready() -> void:
 	rose = WhiteRoseService.new(world_state, rules)
 	combat = CombatService.new(_load_combat_rules(), fortune, spread, rose, clock)
 	enemies = _build_enemies(combat.rules())
+	pip = PipService.new(_load_pip_rules(), combat)
 	save = SaveService.new(
 		world_state, clock, SaveService.DEFAULT_SAVES_DIR, null, spread, fortune, rose
 	)
@@ -174,6 +185,20 @@ func _load_spread_rules() -> SpreadRules:
 ## triggers Fool's Chance.
 func _load_combat_rules() -> CombatRules:
 	var rules: CombatRules = load(COMBAT_RULES_PATH) as CombatRules
+	if rules != null:
+		for problem: String in rules.validate():
+			push_error(problem)
+	return rules
+
+
+## Load the hand-authored numbers Pip runs on.
+##
+## Validated on the way in for the same reason the rest are: a table that harried an
+## enemy into telegraphing FASTER, or that returned Pip from a retreat instantly, would
+## be a Pip who disagrees with `docs/design/combat.md` §Pip, and that is worth a loud
+## error at boot rather than a command wheel that quietly does the wrong thing.
+func _load_pip_rules() -> PipRules:
+	var rules: PipRules = load(PIP_RULES_PATH) as PipRules
 	if rules != null:
 		for problem: String in rules.validate():
 			push_error(problem)

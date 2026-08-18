@@ -21,7 +21,13 @@ extends RefCounted
 const MQ00_BINDLE_TAKEN := &"MQ00_BINDLE_TAKEN"
 
 ## The whittled wooden dog came out of the disturbed earth (§The Old Campsites).
-## Pip's Seek command is the Pip round; until then the dig site is an interaction.
+##
+## Raised by `scripts/the_cliff.gd` when the `Seekable` at the disturbed earth reports
+## itself found - which is when PIP has dug it out, on the Fool's Seek command
+## (`docs/design/combat.md` §Pip; the quest's own tutorial prompt is "call Pip's Seek
+## command"). MQ00's graph only answers it from `BINDLE_TAKEN`, so the dig site is
+## authored NOT one-shot and an early Seek is a dog digging a hole rather than a
+## soft-lock.
 const MQ00_KEEPSAKE_FOUND := &"MQ00_KEEPSAKE_FOUND"
 
 ## The Fool came close enough to the one dead thing on the plateau (§The Dead Tree).

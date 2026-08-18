@@ -1,4 +1,14 @@
+class_name PipFollower
 extends Node2D
+
+## Pip's legs: the follow, the eight facings, and the one trot cycle.
+##
+## Round 9 (`docs/gauntlet-systems/PROMPT.md`) put a `PipCompanion` beside this script
+## in `scenes/pip.tscn` to run the command wheel. The division is the one the round
+## brief drew: **the mode is the system's and the locomotion is this script's**. So the
+## companion never writes `global_position` itself - it suspends the follow while a
+## command is running and asks for a step toward wherever the command says, which keeps
+## every pixel Pip ever moves, and every frame of animation he ever plays, in one file.
 
 const SPEED := 230.0
 const FOLLOW_DISTANCE := 120.0
@@ -52,6 +62,10 @@ const TROT_FPS := 10.0
 
 var _target: Node2D
 var _moving := false
+
+## True while something else is walking Pip: the command wheel, the retreat, the
+## defeat beat. The follow does nothing at all while it holds.
+var _follow_suspended := false
 var _facing := "south"
 var _animator: CharacterAnimator = null
 
@@ -64,6 +78,8 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if _follow_suspended:
+		return
 	step_follow(delta)
 
 
@@ -89,6 +105,51 @@ func step_follow(delta: float) -> void:
 	global_position += direction * distance_to_travel
 	_update_facing(direction)
 	_animator.set_state(_facing, "trot")
+	_animator.advance(delta)
+
+
+## Stop (or resume) following, for as long as something else is walking Pip.
+func set_follow_suspended(suspended: bool) -> void:
+	_follow_suspended = suspended
+
+
+## True while the follow is switched off.
+func is_follow_suspended() -> bool:
+	return _follow_suspended
+
+
+## Whoever Pip follows - the Fool, resolved once from `target_path`. `null` in a scene
+## that never gave him one.
+func target_node() -> Node2D:
+	if _target == null or not is_instance_valid(_target):
+		_target = get_node_or_null(target_path) as Node2D
+	return _target
+
+
+## Trot toward a point at `speed`, and answer whether Pip is there.
+##
+## The one door a command uses: `PipCompanion` decides WHERE (the item, the enemy, the
+## hole, the Fool) and this decides how Pip gets there and what he looks like doing it.
+## `stop_distance` is how close counts as arrived - `PipRules.command_reach`.
+func step_toward(destination: Vector2, speed: float, stop_distance: float, delta: float) -> bool:
+	_ensure_animator()
+	var to_destination := destination - global_position
+	var distance := to_destination.length()
+	if distance <= maxf(stop_distance, 0.0):
+		hold_still(delta)
+		return true
+	var direction := to_destination / distance
+	global_position += direction * minf(maxf(speed, 0.0) * delta, distance)
+	_update_facing(direction)
+	_animator.set_state(_facing, "trot")
+	_animator.advance(delta)
+	return false
+
+
+## Stand where he is, facing where he was, and keep the animation running.
+func hold_still(delta: float) -> void:
+	_ensure_animator()
+	_animator.set_state(_facing, "idle")
 	_animator.advance(delta)
 
 

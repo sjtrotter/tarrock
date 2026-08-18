@@ -145,6 +145,12 @@ var _aura_telegraph_multiplier: float = 1.0
 ## True while this brain is itself projecting an aura.
 var _commanding: bool = false
 
+## Seconds left of a distraction, or 0. See `set_distraction()`.
+var _distraction_left: float = 0.0
+
+## What a distraction multiplies this Blank's telegraphs by while it holds.
+var _distraction_telegraph_multiplier: float = 1.0
+
 ## True once a Page's alarm has gone up this engagement.
 var _alert_raised: bool = false
 
@@ -310,6 +316,55 @@ func aura_telegraph_multiplier() -> float:
 	return _aura_telegraph_multiplier
 
 
+## Take this Blank's attention off the Fool for `seconds`.
+##
+## THE HARRY HOOK, and the whole of round 9's reach into this system.
+## `docs/design/combat.md` §Pip: Harry "pins or distracts one target enemy, holding
+## its attention and briefly reducing its aggression toward the Fool". The two halves
+## are split exactly the way this system is split:
+##
+##   * **holding its attention** is the body's, because a target is a position and a
+##     position is a scene fact - `Blank.set_distraction()` fills the perception from
+##     the distractor instead of the Fool, and this brain never learns who either of
+##     them is;
+##   * **reducing its aggression** is the brain's, and it is spent in the one currency
+##     the brain has: every telegraph is multiplied by `telegraph_multiplier` while the
+##     distraction holds, so the Fool gets more room in every window this Blank opens.
+##     `PipRules.harry_telegraph_multiplier` is above 1.0 by definition, and
+##     `EnemyRules.MIN_TELEGRAPH_SECONDS` is still the floor underneath.
+##
+## The countdown here is a SAFETY NET, not the authority: Pip is what starts and ends
+## a pin (`PipService.harry_started` / `harry_ended`), and this expiry only means that
+## a dog who was removed, retreated or reloaded mid-pin cannot leave an enemy staring
+## at nothing forever.
+func set_distraction(seconds: float, telegraph_multiplier: float) -> void:
+	if seconds <= 0.0:
+		clear_distraction()
+		return
+	_distraction_left = seconds
+	# A harry can only ever LENGTHEN a tell. `combat.md` §Pip has Harry "briefly
+	# reducing its aggression toward the Fool", so a multiplier under 1.0 would spend
+	# the command backwards and make the harried enemy the sharper one - the floor is
+	# here as well as in `PipRules.validate()`, because a table is not the only way in.
+	_distraction_telegraph_multiplier = maxf(1.0, telegraph_multiplier)
+
+
+## Put this Blank's attention back on the Fool at once.
+func clear_distraction() -> void:
+	_distraction_left = 0.0
+	_distraction_telegraph_multiplier = 1.0
+
+
+## True while something other than the Fool has this Blank's attention.
+func is_distracted() -> bool:
+	return _distraction_left > 0.0
+
+
+## Seconds left of the distraction, or 0.
+func distraction_seconds_left() -> float:
+	return _distraction_left
+
+
 ## Project this commander's aura onto one ally, if it reaches.
 ##
 ## Returns true when the buff was applied. A commander that is not commanding - an
@@ -383,6 +438,7 @@ func reset() -> void:
 	_alert_raised = false
 	_flutter_left = 0.0
 	_fluttered = false
+	clear_distraction()
 
 
 ## Run one frame.
@@ -396,6 +452,7 @@ func update(perception: BlankPerception, delta: float) -> void:
 		return
 	_position = perception.self_position
 	_state_time += maxf(0.0, delta)
+	_tick_distraction(delta)
 	if _state == State.DEFEATED:
 		_tick_flutter(delta)
 		_movement = Vector2.ZERO
@@ -586,6 +643,7 @@ func _telegraph_for(index: int) -> float:
 		seconds *= _stats.followup_telegraph_multiplier
 	seconds *= _aura_telegraph_multiplier
 	seconds *= _difficulty_multiplier
+	seconds *= _distraction_telegraph_multiplier
 	return maxf(seconds, EnemyRules.MIN_TELEGRAPH_SECONDS)
 
 
@@ -687,6 +745,16 @@ func _face_target(perception: BlankPerception) -> void:
 	var direction := perception.direction_to_target()
 	if not direction.is_zero_approx():
 		_facing = direction
+
+
+## Count a distraction down, and put the attention back when it runs out.
+func _tick_distraction(delta: float) -> void:
+	if _distraction_left <= 0.0:
+		return
+	_distraction_left -= maxf(0.0, delta)
+	if _distraction_left > 0.0:
+		return
+	clear_distraction()
 
 
 ## Count the card free, once.

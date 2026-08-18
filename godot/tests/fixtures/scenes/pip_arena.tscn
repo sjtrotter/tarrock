@@ -1,0 +1,49 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/fool.tscn" id="1_fool"]
+[ext_resource type="PackedScene" path="res://scenes/pip.tscn" id="2_pip"]
+[ext_resource type="Script" path="res://systems/pip/nodes/seekable.gd" id="3_seekable"]
+[ext_resource type="Script" path="res://systems/pip/nodes/fetchable.gd" id="4_fetchable"]
+[ext_resource type="Script" path="res://systems/enemies/nodes/encounter.gd" id="5_encounter"]
+[ext_resource type="Script" path="res://systems/enemies/encounter_spawn.gd" id="6_spawn"]
+
+[sub_resource type="Resource" id="Spawn_Swords"]
+script = ExtResource("6_spawn")
+enemy_id = &"BLANK_SWORDS_TWO"
+offset = Vector2(0, 0)
+facing = Vector2(-1, 0)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_marker"]
+radius = 40.0
+
+[node name="PipArena" type="Node2D"]
+
+[node name="Ground" type="Node2D" parent="."]
+
+[node name="Fool" parent="." instance=ExtResource("1_fool")]
+position = Vector2(0, 0)
+
+[node name="Pip" parent="." instance=ExtResource("2_pip")]
+position = Vector2(-80, 0)
+
+[node name="WoodenDog" type="Area2D" parent="."]
+position = Vector2(-200, 200)
+script = ExtResource("4_fetchable")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WoodenDog"]
+shape = SubResource("CircleShape2D_marker")
+
+[node name="DisturbedEarth" type="Area2D" parent="."]
+position = Vector2(-200, -200)
+script = ExtResource("3_seekable")
+one_shot = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DisturbedEarth"]
+shape = SubResource("CircleShape2D_marker")
+
+[node name="Ambush" type="Node2D" parent="."]
+position = Vector2(700, 0)
+script = ExtResource("5_encounter")
+trigger_radius = 220.0
+pool_size = 2
+spawns = Array[ExtResource("6_spawn")]([SubResource("Spawn_Swords")])

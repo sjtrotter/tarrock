@@ -18,6 +18,16 @@ signal leap_point_reached
 ## without touching the quest wiring.
 const TRIGGER_ROOT := "World/QuestTriggers"
 
+## Where the hidden things live - one subtree, for the same reason the Interactables
+## have one. `docs/quests/main/MQ00-the-leap.md` §The Old Campsites puts exactly one on
+## the plateau: the patch of disturbed earth by the largest campsite, with the whittled
+## wooden dog in it. It is Pip's Seek that opens it, not the interact key
+## (`docs/design/combat.md` §Pip).
+const SEEKABLE_ROOT := "World/Seekables"
+
+## Pip's command wheel, in the persistent layer's dog.
+const PIP_COMPANION := "World/Pip/PipCompanion"
+
 ## The Bindle sprite, hidden once the Fool has taken it.
 const BINDLE_PROP := "World/Props/Bindle"
 
@@ -94,6 +104,10 @@ func _ready() -> void:
 		var trigger := node as Interactable
 		if trigger != null:
 			trigger.triggered.connect(_on_trigger_fired.bind(trigger))
+	for node: Node in _seekables():
+		var seekable := node as Seekable
+		if seekable != null:
+			seekable.found.connect(_on_seekable_found.bind(seekable))
 	# The bootstrap / new-game flow owns starting the Fool's first quest once it
 	# exists (the Regions round owns the persistent layer and who loads what).
 	# Until then the region does it itself, deferred by one call so the `Services`
@@ -118,6 +132,73 @@ func _on_trigger_fired(event: StringName, trigger: Interactable) -> void:
 		if rose != null:
 			rose.rest()
 	raise_quest_event(event, trigger)
+
+
+## Pip dug something out. The scene carries the event exactly as it carries a prop's;
+## the quest decides what it means, and MQ00's graph only answers the keepsake once the
+## Bindle has been taken - which is why the disturbed earth is authored NOT one-shot.
+## A Seek before the Bindle is a dog digging a hole, and the hole is still there after.
+func _on_seekable_found(seekable: Seekable) -> void:
+	if seekable.reward_event == &"":
+		return
+	raise_quest_event(seekable.reward_event, seekable)
+
+
+## Pip's wheel wants something to run at, and only the region knows what is out here.
+##
+## `PipCompanion` never searches the scene (`docs/design/technical.md` §Architecture
+## principles (Godot), 5): it asks, with the reach `PipRules` allows, and this answers.
+## The Cliff has hidden things and, after the standing stones, enemies; it has nothing
+## a dog could fetch, so Fetch goes unanswered here and `PipService` refuses it.
+func _on_pip_target_requested(command: PipCommand.Id, from: Vector2, radius: float) -> void:
+	var companion := _pip_companion()
+	if companion == null:
+		return
+	var found: Node2D = null
+	match command:
+		PipCommand.Id.SEEK:
+			found = _nearest_seekable(from, radius)
+		PipCommand.Id.HARRY:
+			found = _nearest_standing_blank(from, radius)
+	if found != null:
+		companion.provide_target(command, found)
+
+
+## The nearest hidden thing still worth digging, within `radius` of `from`.
+func _nearest_seekable(from: Vector2, radius: float) -> Node2D:
+	var nearest: Seekable = null
+	var nearest_distance := radius
+	for node: Node in _seekables():
+		var seekable := node as Seekable
+		if seekable == null or not seekable.is_available():
+			continue
+		var distance := from.distance_to(seekable.global_position)
+		if distance > nearest_distance:
+			continue
+		nearest_distance = distance
+		nearest = seekable
+	return nearest
+
+
+## The nearest Blank still on its feet, within `radius` of `from`. One encounter
+## exists on the plateau, so one roster is the whole search.
+func _nearest_standing_blank(from: Vector2, radius: float) -> Node2D:
+	var ambush := _ambush()
+	if ambush == null:
+		return null
+	var nearest: Blank = null
+	var nearest_distance := radius
+	for member: Blank in ambush.members():
+		if member == null or not is_instance_valid(member):
+			continue
+		if not member.is_awake() or not member.is_alive():
+			continue
+		var distance := from.distance_to(member.global_position)
+		if distance > nearest_distance:
+			continue
+		nearest_distance = distance
+		nearest = member
+	return nearest
 
 
 ## Forward one world event to the quest runner. The only path from this scene into
@@ -273,6 +354,13 @@ func _wire_services() -> void:
 	var ambush := _ambush()
 	if ambush != null:
 		ambush.attach_services(_combat(), _enemies())
+	# Pip is a scene node like any other, so the scene is what hands him his service
+	# and what answers when his wheel asks the region for something to run at.
+	var companion := _pip_companion()
+	if companion != null:
+		companion.attach_service(_pip())
+		if not companion.target_requested.is_connected(_on_pip_target_requested):
+			companion.target_requested.connect(_on_pip_target_requested)
 	_begin_first_quest()
 
 
@@ -322,6 +410,27 @@ func _enemies() -> EnemyService:
 	if services == null:
 		return null
 	return services.get("enemies") as EnemyService
+
+
+## Pip's command wheel, looked up the same way and for the same reason.
+func _pip() -> PipService:
+	var services := get_node_or_null("/root/Services")
+	if services == null:
+		return null
+	return services.get("pip") as PipService
+
+
+## Pip's wheel component, or `null` in a stripped-down copy of this scene.
+func _pip_companion() -> PipCompanion:
+	return get_node_or_null(PIP_COMPANION) as PipCompanion
+
+
+## The hidden things authored on the plateau. Empty in a scene without the subtree.
+func _seekables() -> Array[Node]:
+	var root_node := get_node_or_null(SEEKABLE_ROOT)
+	if root_node == null:
+		return []
+	return root_node.get_children()
 
 
 ## The Waystation ambush node, or `null` in a stripped-down copy of this scene.

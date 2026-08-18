@@ -455,3 +455,149 @@ discipline in the Global acceptance criteria. Existing style anchor:
 Priority, if this is split across sessions: `LIGHT_1`–`LIGHT_3` and `DODGE_ROLL` first
 (they are what a player does every fight), then `Hit_React`, then the Focus set, then
 the rest.
+
+---
+
+## Pip (round 9 of the systems gauntlet) — the dog who cannot die
+
+Everything below is a **gap found while building `systems/pip/`** — the command wheel,
+the three commands and the retreat. The systems half is finished and tested; every beat
+here plays Pip's one authored cycle or a static facing today, and
+[`godot/systems/pip/README.md`](../systems/pip/README.md) §Art requests is the table
+these expand. Canon is [`docs/design/combat.md`](../../docs/design/combat.md) §Pip (the
+radial wheel: Fetch, Harry, Seek; "Pip cannot die… he yelps, retreats out of the fight,
+shakes it off, and returns") and §Defeat step 2 (the lick), plus
+[`docs/design/characters.md`](../../docs/design/characters.md) §Pip — which is the
+constraint on every pose below: he is "alert, game, entirely present", he **never
+speaks**, and he **never performs concern**. No bark subtitle, ever; no worried-dog
+face; nothing here is a pet reacting to danger, it is a working dog with a job.
+
+The **Global acceptance criteria** above apply, with the anchor rule read against Pip's
+own cells (figure height **205–220 px**, per criterion 3).
+
+Existing pack, and everything Pip has today:
+
+- Directions: `game-ready-sprites-v1/frames/pip/directions/<direction>.png` — all eight
+  facings, static.
+- Actions: `game-ready-sprites-v1/frames/pip/actions/` holds four rows of four frames,
+  **south-east only**: `trot` (10 fps, loop), `seek` (6, loop), `dig` (8, loop) and
+  `idle` (4, loop). Only `trot` and the direction stills are wired into
+  `scripts/pip_follower.gd` today.
+- `manifest.json` is authoritative for the pack format; add a row per cycle for
+  anything new.
+
+Item (b) above already asks for trot and idle in `south`, `west`, `north`, `east`. The
+items below are the cycles the command wheel needs on top of that — every one of them
+south-east first, and (n) is partly already in the pack.
+Pivots for anything delivered: measure them with
+`python3 godot/tools/measure_sprite_pivots.py --family pip` and paste the tables it
+prints — `scripts/pip_follower.gd`'s `PIP_OFFSETS` and `TROT_OFFSETS` were measured, not
+eyeballed, and the new ones must be too.
+
+### (n) The dig — the back-out the pack has no frames for
+
+`docs/quests/main/MQ00-the-leap.md` §The Old Campsites is the first Seek in the game:
+Pip "begins to dig with sudden, businesslike enthusiasm, tail a blur", then "backs out
+of the hole holding something small in his teeth". `PipService` plays the first for
+`PipRules.seek_reveal_seconds` and fires `seek_found` at the end of it.
+
+**Half of this already exists and is not wired.** The pack ships south-east `dig`
+(4 frames, 8 fps, loop) and `seek` (4, 6, loop) rows — `manifest.json`, sliced to
+`frames/pip/actions/dig-<n>.png` and `seek-<n>.png` — and
+`scripts/pip_follower.gd`'s animation table names neither. **Wire those before
+commissioning anything here**; what is genuinely missing is the second beat and the
+other facings.
+
+- **`dig-out`** — 4 frames, **320×320**, 8 fps, **not looping**, held on the last frame:
+  backing out of the hole with something small in his teeth
+  → `game-ready-sprites-v1/atlases/pip-dig-out-<direction>.png`, sliced to
+  `frames/pip/actions/dig-out-<direction>-<n>.png`. South-east at minimum, and it must
+  cut cleanly out of the existing `dig` loop's last frame.
+- The dug object is **not** drawn into these frames — the scene owns the thing that was
+  found (`Seekable` carries a `reward_event`, not a sprite), so `dig-out` needs the same
+  mouth anchor (o) asks for.
+- Acceptance: businesslike, not frantic. The comedy is in the enthusiasm, not in the
+  dog being overwhelmed.
+
+### (o) The fetch carry — the trot, with something in his mouth
+
+`combat.md` §Pip: Fetch "retrieves a dropped or thrown item… and brings it back to the
+Fool". `PipCompanion` writes the carried item's world position from Pip's own every
+frame (see `Fetchable`'s note on why this is not a reparent), so the item is drawn at
+Pip's origin today and floats at his feet.
+
+- **`carry`** — one variant of the existing trot cycle: 4 frames, **320×320**, 10 fps,
+  looping, head slightly up, jaw closed on something
+  → `game-ready-sprites-v1/atlases/pip-carry-<direction>.png`, sliced to
+  `frames/pip/actions/carry-<direction>-<n>.png`.
+- **Deliver a mouth anchor with it**: the (x, y) of the jaw point in every cell, as a
+  table in the delivery report, so the carried thing can be drawn where his mouth is
+  instead of where his origin is. Without it this item is not usable.
+- Same stride and the same contact frames as `trot-<n>.png` — it must cut to and from
+  the ordinary trot without a hitch, because that is exactly what the animator does.
+
+### (p) The harry hold — a working dog, planted
+
+`combat.md` §Pip: Harry "pins or distracts one target enemy, holding its attention and
+briefly reducing its aggression toward the Fool". The whole pin is the idle still today.
+
+- **`harry`** — 4 frames, **320×320**, 8 fps, **looping**: braced, front feet planted,
+  weight forward, barking at a thing directly in front of him
+  → `game-ready-sprites-v1/atlases/pip-harry-<direction>.png`, sliced to
+  `frames/pip/actions/harry-<direction>-<n>.png`.
+- The pose must read at a glance as *this is where the enemy is looking*, because that
+  is exactly what it means: the harried Blank's perception is filled from Pip's position
+  for the duration.
+- Acceptance, and it is `characters.md` §Pip: **entirely present, never concerned**.
+  A working terrier holding something's attention, not a heroic dog defending a master.
+
+### (q) The retreat — the yelp, the run out, and the shake-off
+
+`combat.md` §Pip, in full: "If reduced to zero health he yelps, retreats out of the
+fight, shakes it off, and returns after a short cooldown. This is not a difficulty
+concession — it is canon." Three beats, and the third is the one that carries the rule.
+
+- **`yelp`** — 3–4 frames, **320×320**, 10 fps, **not looping**: a flinch, ears back,
+  one beat only → `frames/pip/actions/yelp-<direction>-<n>.png`.
+- The run out is the existing trot and needs no new art.
+- **`shake-off`** — 6 frames, **320×320**, 12 fps, **not looping**: the whole-body shake
+  a dog gives after a scare → `frames/pip/actions/shake-off-<direction>-<n>.png`. It
+  plays at the retreat point for `PipRules.retreat_cooldown_seconds` and then he trots
+  back whole.
+- **This is the acceptance test for the whole item**: the shake must read as
+  *annoyance*, not as injury. It is what makes the beat not a death — a dog shaking
+  water off, not a dog limping. Nothing here may look like a wound; no blood, no limp,
+  no whimper pose held after the shake.
+
+### (r) `LickFace` — the defeat screen
+
+`combat.md` §Defeat, step 2 names the clip: the Fool is on the ground, Pip trots over
+and licks their face, "a dog solving a practical problem, exactly as unbothered as
+ever… It should be allowed to be a little funny every single time."
+`PipCompanion.licked` fires today and nothing draws it.
+
+- **`lick`** — 6 frames, **320×320**, 8 fps, **looping** (it plays under a defeat screen
+  of unknown length) → `frames/pip/actions/lick-<direction>-<n>.png`, south and
+  south-east first: the Fool is collapsed toward the camera in `Defeat_Collapse`.
+- Pip is **standing over** a body at ground level, head down — so this cycle needs its
+  own vertical framing and its anchor measured against the Fool's collapse pose rather
+  than against Pip's own standing facings. Deliver a reference composite of the two
+  together with it.
+- Tone check, and it is the acceptance test: matter-of-fact. He is not mourning and he
+  is not rescuing. `characters.md` §Pip — never performs concern.
+
+### (s) The seven other facings of everything above
+
+The gap the Fool has in (a) and the Blanks have in (j), on Pip: every cycle in this
+section is specified south-east first, and seven facings will fall back to a static
+frame the day they land.
+
+- Per facing, per cycle: same grids, fps, loop flags and anchors as the item that
+  defines it → `game-ready-sprites-v1/atlases/pip-<cycle>-<direction>.png`, sliced to
+  `frames/pip/actions/<cycle>-<direction>-<n>.png`.
+- Directions: `south`, `southwest`, `west`, `northwest`, `north`, `northeast`, `east`.
+- Priority order if this is split across sessions: **`dig`** (MQ00 stages it in the
+  first ten minutes of the game), then `carry`, then `harry`, then `shake-off`, then
+  `yelp` and `lick`.
+- `lick` needs only the facings the Fool can collapse in view of — `south`,
+  `southeast`, `southwest` — and nothing north-facing at all.

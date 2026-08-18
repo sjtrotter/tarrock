@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3]
+[gd_scene load_steps=30 format=3]
 
 [ext_resource type="Script" path="res://scripts/the_cliff.gd" id="1_cliff"]
 [ext_resource type="Script" path="res://scripts/cliff_ground.gd" id="2_ground"]
@@ -22,6 +22,7 @@
 [ext_resource type="Script" path="res://systems/core/interactable.gd" id="20_interactable"]
 [ext_resource type="Script" path="res://systems/enemies/nodes/encounter.gd" id="21_encounter"]
 [ext_resource type="Script" path="res://systems/enemies/encounter_spawn.gd" id="22_spawn"]
+[ext_resource type="Script" path="res://systems/pip/nodes/seekable.gd" id="23_seekable"]
 
 [sub_resource type="Resource" id="Ambush_Cups"]
 script = ExtResource("22_spawn")
@@ -221,6 +222,17 @@ trigger_radius = 200.0
 quest_event_on_cleared = &"MQ00_AMBUSH_CLEARED"
 spawns = Array[ExtResource("22_spawn")]([SubResource("Ambush_Cups"), SubResource("Ambush_Swords"), SubResource("Ambush_Wands")])
 
+[node name="Seekables" type="Node2D" parent="World"]
+
+[node name="DisturbedEarth" type="Area2D" parent="World/Seekables"]
+position = Vector2(3090, 2230)
+script = ExtResource("23_seekable")
+reward_event = &"MQ00_KEEPSAKE_FOUND"
+one_shot = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Seekables/DisturbedEarth"]
+shape = SubResource("CircleShape2D_trigger")
+
 [node name="QuestTriggers" type="Node2D" parent="World"]
 
 [node name="BindleTrigger" type="Area2D" parent="World/QuestTriggers"]
@@ -229,15 +241,6 @@ script = ExtResource("20_interactable")
 event = &"MQ00_BINDLE_TAKEN"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/QuestTriggers/BindleTrigger"]
-shape = SubResource("CircleShape2D_trigger")
-
-[node name="KeepsakeTrigger" type="Area2D" parent="World/QuestTriggers"]
-position = Vector2(3090, 2230)
-script = ExtResource("20_interactable")
-event = &"MQ00_KEEPSAKE_FOUND"
-one_shot = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="World/QuestTriggers/KeepsakeTrigger"]
 shape = SubResource("CircleShape2D_trigger")
 
 [node name="DeadTreeApproach" type="Area2D" parent="World/QuestTriggers"]

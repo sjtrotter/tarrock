@@ -3,8 +3,11 @@ extends SceneTree
 ## The Cliff scene, end to end - and, from phase 4 on, MQ00 played through it.
 ##
 ## The quest half drives the same path a player does: the Fool is put beside a prop,
-## physics is allowed to notice, and either `player.gd`'s interact verb is called or
-## the walk-in is the whole gesture. Nothing here talks to `WorldStateService`, and
+## physics is allowed to notice, and the beat's own verb is used - `player.gd`'s
+## interact for a thing to pick up, the walk-in where approaching IS the gesture, and
+## from round 9 **Pip's Seek** for the wooden dog, because
+## `docs/quests/main/MQ00-the-leap.md` §The Old Campsites writes that tutorial prompt
+## as "call Pip's Seek command". Nothing here talks to `WorldStateService`, and
 ## nothing here tells the quest what state to be in - the scene raises events and
 ## `res://data/quests/graphs/MQ00.tres` decides what they mean.
 ##
@@ -55,6 +58,24 @@ const SETTLE_FRAMES := 5
 ## it a loop. MQ00's longest is the edge questions, at well under twenty.
 const DIALOGUE_STEP_LIMIT := 200
 
+## Where Pip is stood before a Seek: beside the disturbed earth, inside
+## `PipRules.seek_radius` of it, so the scene has something to answer his wheel with.
+const PIP_STANDOFF := Vector2(90, 90)
+
+## The most frames one Seek beat may take before the test calls it stuck: the run out,
+## the dig and the trot home, with room to spare.
+const SEEK_FRAME_LIMIT := 900
+
+## The most frames Pip may take to WALK to the Fool before a follow-in Seek gives up.
+## Phase 3 leaves him beside the leap point and the campsite is most of the island
+## away - roughly 2,500 px at `PipFollower.SPEED`, which is under 700 frames.
+const FOLLOW_FRAME_LIMIT := 1200
+
+## How far Pip must have walked, in pixels, before a follow-in Seek counts as followed
+## in. The real distance is around 2,100; anything of this order cannot be a body that
+## was quietly put where it needed to be.
+const MIN_FOLLOW_WALK := 1000.0
+
 var _all_passed := true
 var _frame := 0
 var _phase := 0
@@ -66,6 +87,24 @@ var _leap_received := false
 var _quests: QuestService
 var _dialogue: DialogueService
 
+## How many times Pip has dug the disturbed earth out. The `Seekable`'s own count, so
+## "he dug and the quest did not move" and "he dug and it did" are separate facts.
+var _digs := 0
+
+## Which step of a two-part Seek beat the current phase is on.
+var _seek_step := 0
+
+## How many digs the Seek being run is waiting for.
+var _digs_wanted := 0
+
+## The frame the dig must have landed by, set when the Seek is actually called - so a
+## beat that walks Pip in first is not judged against the walk it just took.
+var _seek_deadline := 0
+
+## Where Pip stood when a follow-in Seek began, so the distance he covered under his
+## own legs is a measured number rather than an assumption.
+var _pip_walk_start := Vector2.ZERO
+
 
 func _initialize() -> void:
 	var packed_scene: PackedScene = load("res://scenes/the_cliff.tscn")
@@ -74,6 +113,9 @@ func _initialize() -> void:
 	_fool = _scene.get_node_or_null("World/Fool") as CharacterBody2D
 	_pip = _scene.get_node_or_null("World/Pip") as Node2D
 	_scene.leap_point_reached.connect(_on_leap_point_reached)
+	var earth := _disturbed_earth()
+	if earth != null:
+		earth.found.connect(_on_keepsake_dug)
 
 
 func _physics_process(_delta: float) -> bool:
@@ -155,16 +197,24 @@ func _physics_process(_delta: float) -> bool:
 		_advance_phase()
 		return false
 
-	# Regression for the KeepsakeTrigger soft-lock: digging before the Bindle is taken
-	# is an event MQ00's graph only answers from BINDLE_TAKEN, so WAKING must not move -
-	# and the dig site must not have spent itself, or the *real* dig (phase 7) could
-	# never fire and MQ00 would be stuck in BINDLE_TAKEN forever.
+	# Regression for the dig-site soft-lock: digging before the Bindle is taken is an
+	# event MQ00's graph only answers from BINDLE_TAKEN, so WAKING must not move - and
+	# the dig site must not have spent itself, or the *real* dig (phase 7) could never
+	# fire and MQ00 would be stuck in BINDLE_TAKEN forever.
+	#
+	# From round 9 the dig is PIP's: `docs/quests/main/MQ00-the-leap.md` §The Old
+	# Campsites writes the tutorial prompt as "call Pip's Seek command", so the beat
+	# goes through the command wheel and not through the interact key.
 	if _phase == 5:
-		if _phase_frame < SETTLE_FRAMES:
+		if not _run_a_seek(true):
 			return false
-		var dug_early: Interactable = _fool.try_interact()
-		_all_passed = check(dug_early != null, "the interact verb finds the dig site early") and _all_passed
+		_all_passed = check(_digs == 1, "calling Pip's Seek early digs the earth out anyway") and _all_passed
 		_all_passed = _check_state(&"WAKING", "digging before the Bindle is taken leaves MQ00 at WAKING")
+		var earth := _disturbed_earth()
+		_all_passed = check(
+			earth != null and earth.is_available(),
+			"and the dig site is still there to be dug when the quest can hear about it"
+		) and _all_passed
 		_place(BINDLE_POSITION)
 		_advance_phase()
 		return false
@@ -186,11 +236,10 @@ func _physics_process(_delta: float) -> bool:
 		return false
 
 	if _phase == 7:
-		if _phase_frame < SETTLE_FRAMES:
+		if not _run_a_seek():
 			return false
-		var dug_again: Interactable = _fool.try_interact()
 		_all_passed = check(
-			dug_again != null, "the dig site still fires after an earlier, premature dig"
+			_digs == 2, "the dig site still answers Seek after an earlier, premature dig"
 		) and _all_passed
 		_all_passed = _check_state(&"KEEPSAKE_FOUND", "digging out the wooden dog advances MQ00")
 		_all_passed = _check_dialogue(
@@ -384,6 +433,120 @@ func _place(position: Vector2) -> void:
 		_fool.global_position = position
 
 
+## Run one whole Seek beat, and answer whether it has finished.
+##
+## The Fool calls Seek through the same door the command wheel knocks on, and the beat
+## is over when the earth reports itself dug. Every wait is bounded, so a Seek that
+## never lands fails instead of hanging.
+##
+## `follow_in` is how Pip got to the campsite. False puts him beside the disturbed
+## earth, which is the cheap way to set a later beat up. TRUE is the honest one and the
+## one the first dig uses: nothing touches his position at all, he walks the length of
+## the island on `PipFollower`'s own legs behind a Fool who was teleported, and the
+## reach Seek is judged on is measured **from Pip** - which is the thing a teleport
+## quietly stops proving.
+func _run_a_seek(follow_in: bool = false) -> bool:
+	if _phase_frame < SETTLE_FRAMES:
+		return false
+	if _seek_step == 0:
+		var companion := _pip_companion()
+		if not check(companion != null, "Pip carries his command wheel"):
+			_all_passed = false
+			_finish()
+			return false
+		if follow_in:
+			if _pip != null:
+				_pip_walk_start = _pip.global_position
+			_seek_step = 1
+			return false
+		if _pip != null:
+			_pip.global_position = KEEPSAKE_POSITION + PIP_STANDOFF
+		_call_the_seek(companion)
+		return false
+	if _seek_step == 1:
+		return _walk_pip_to_the_earth()
+	if _digs >= _digs_wanted:
+		return true
+	if _phase_frame > _seek_deadline:
+		_all_passed = check(false, "Pip finished the dig within %d frames" % SEEK_FRAME_LIMIT)
+		_finish()
+	return false
+
+
+## Wait for Pip's own legs to bring him within Seek's reach of the disturbed earth,
+## then call the Seek. Answers false throughout: the beat is not finished yet.
+func _walk_pip_to_the_earth() -> bool:
+	var earth := _disturbed_earth()
+	var reach := _seek_reach()
+	if _pip == null or _fool == null or earth == null or reach <= 0.0:
+		# The scene is still standing up (the companion looks the autoload service up
+		# over its first frames). Nothing to measure yet.
+		return false
+	var distance := _pip.global_position.distance_to(earth.global_position)
+	if distance > reach:
+		if _phase_frame > FOLLOW_FRAME_LIMIT:
+			_all_passed = check(
+				false, "Pip walked to the disturbed earth within %d frames" % FOLLOW_FRAME_LIMIT
+			)
+			_finish()
+		return false
+	var walked := _pip_walk_start.distance_to(_pip.global_position)
+	_all_passed = check(
+		walked >= MIN_FOLLOW_WALK,
+		(
+			"Pip walks %d px across the island on his own legs - nothing places him - "
+			+ "and the earth is %d px from HIM, inside Seek's %d px reach"
+		) % [int(walked), int(distance), int(reach)]
+	) and _all_passed
+	_call_the_seek(_pip_companion())
+	return false
+
+
+## Send Pip, and start the clock the dig has to land inside.
+func _call_the_seek(companion: PipCompanion) -> void:
+	if companion == null:
+		return
+	_digs_wanted = _digs + 1
+	_seek_deadline = _phase_frame + SEEK_FRAME_LIMIT
+	_all_passed = check(
+		companion.issue(PipCommand.Id.SEEK), "the Fool calls Pip's Seek at the disturbed earth"
+	) and _all_passed
+	_all_passed = check(
+		_digs < _digs_wanted, "and nothing is found the instant he is sent"
+	) and _all_passed
+	_seek_step = 2
+
+
+## How far from Pip a hidden thing may be, from the rules table by way of the service
+## the scene is running on. 0 while the companion is still looking that service up.
+func _seek_reach() -> float:
+	var companion := _pip_companion()
+	if companion == null:
+		return 0.0
+	var service := companion.service()
+	if service == null:
+		return 0.0
+	return service.command_radius(PipCommand.Id.SEEK)
+
+
+## Pip's command wheel, or `null` if the scene lost him.
+func _pip_companion() -> PipCompanion:
+	if _scene == null:
+		return null
+	return _scene.get_node_or_null("World/Pip/PipCompanion") as PipCompanion
+
+
+## The disturbed earth Pip digs the wooden dog out of, or `null`.
+func _disturbed_earth() -> Seekable:
+	if _scene == null:
+		return null
+	return _scene.get_node_or_null("World/Seekables/DisturbedEarth") as Seekable
+
+
+func _on_keepsake_dug() -> void:
+	_digs += 1
+
+
 ## The Waystation ambush node, or `null` if the scene lost it.
 func _ambush() -> Encounter:
 	if _scene == null:
@@ -553,6 +716,7 @@ func _texture_is_loaded(sprite: Sprite2D) -> bool:
 
 
 func _advance_phase() -> void:
+	_seek_step = 0
 	_phase += 1
 	_phase_frame = 0
 

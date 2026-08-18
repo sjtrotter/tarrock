@@ -1,7 +1,13 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/pip_follower.gd" id="1_pip"]
 [ext_resource type="Texture2D" path="res://art/game-ready-sprites-v1/frames/pip/directions/south.png" id="2_south"]
+[ext_resource type="Script" path="res://systems/combat/nodes/combatant.gd" id="3_combatant"]
+[ext_resource type="Script" path="res://systems/combat/nodes/hurtbox.gd" id="4_hurtbox"]
+[ext_resource type="Script" path="res://systems/pip/nodes/pip_companion.gd" id="5_companion"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_pip_hurt"]
+radius = 20.0
 
 [node name="Pip" type="Node2D"]
 script = ExtResource("1_pip")
@@ -10,3 +16,18 @@ script = ExtResource("1_pip")
 texture = ExtResource("2_south")
 offset = Vector2(-24.5, -219)
 scale = Vector2(0.15, 0.15)
+
+[node name="Combatant" type="Node2D" parent="."]
+script = ExtResource("3_combatant")
+faction = 0
+max_health = 30
+
+[node name="Hurtbox" type="Area2D" parent="Combatant"]
+script = ExtResource("4_hurtbox")
+faction = 0
+
+[node name="HurtShape" type="CollisionShape2D" parent="Combatant/Hurtbox"]
+shape = SubResource("CircleShape2D_pip_hurt")
+
+[node name="PipCompanion" type="Node" parent="."]
+script = ExtResource("5_companion")
