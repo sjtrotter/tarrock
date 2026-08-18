@@ -82,8 +82,34 @@ access); snapshot versioning is round 3's job (the save gates versions before re
 **Director asks:** none new. (Renown thresholds will need numbers eventually — not
 blocking anything yet.)
 
-## Round 3 — Save system (open 2026-08-18)
+## Round 3 — Save system (CLOSED 2026-08-18)
 
-**Goal:** versioned JSON saves under `user://saves/`, `schema_version` + an explicit
-migration chain (a missing step is a hard failure), IDs only, fixture-tested; `SaveService`
-capture/apply over the WorldState snapshot. _In progress._
+**Shipped (`958b7bd`):** `SaveModel` (schema v1, IDs and plain values only),
+`SaveSchema` (the production migration table — empty at v1 and structurally tested: bump
+the version without a step and a test fails), `SaveMigrations` (explicit chain; a missing
+intermediate step is a hard failure; a save newer than the build is refused),
+`SaveService` (capture/apply over the WorldState snapshot — apply only into a pristine
+world, all-or-nothing; atomic write via temp+rename **with a byte-length check** so a
+short write never replaces the last good save; garbage never crashes a read; slots
+listed only if the service could have written them), `DifficultyMode` in core; fixtures
+with an honest placeholder README.
+
+**Proof:** 82 save tests; `RUN_ALL` green at hand-off. Critic mutations caught: missing
+migration step made best-effort (4 tests), newer-than-build refusal dropped, schema bump
+without a step, crash-prone parse path (caught by the runner's engine-error grep + a
+signal assertion). Not caught before the fix and now caught: **removing temp+rename
+entirely** (the previous save is now proven to survive a blocked write byte-for-byte),
+`slot_007`/`slot_-1` decoys in `list_slots`. Also fixed: playtime now baselines the clock
+on load (title-screen time no longer saved), whole-number version check exact.
+
+**Debt / owed:** how the game constructs fresh services for a load from the title screen
+is the Regions round's job (persistent layer); the two 4.7 facts every later round must
+know — JSON numbers come back as floats, and `Dictionary ==` is type-strict — are in
+`godot/systems/save/README.md`.
+
+## Round 4 — Quests (open 2026-08-18)
+
+**Goal:** `QuestDefinition` metadata generated from quest frontmatter (91 quests),
+hand-authored `QuestGraph` state machines, `QuestService` runner (events → transitions;
+fires only at completion; branch groups exactly-one), MQ00 wired into the Cliff scene
+through `Interactable` triggers. _In progress._
