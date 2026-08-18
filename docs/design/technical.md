@@ -188,7 +188,7 @@ source, and a canon edit cannot silently fail to reach the game:
 |---|---|
 | [`world.md`](world.md) §World-state matrix | one `WorldStateDefinition` per row |
 | [`world.md`](world.md) §Global states (act thresholds) | the act-threshold table |
-| [`world.md`](world.md) §Regions, §Layout (adjacency) | `RegionDefinition` set |
+| [`world.md`](world.md) §Regions (the list) | `RegionDefinition` set (adjacency is a diagram, so `RegionGraph` is hand-authored data citing §Layout's adjacency table) |
 | `../quests/` YAML frontmatter | `QuestDefinition` metadata (see **Quests at runtime**) |
 | [`progression.md`](progression.md) §Renown | the Renown ladder thresholds |
 
