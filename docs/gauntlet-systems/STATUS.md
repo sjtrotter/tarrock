@@ -371,10 +371,42 @@ service graph at exit — held weakly now.
 **Director asks:** none new (buy-back is available on request; the settled-regions list
 and "the Prestige's local suit is Wands" are readings flagged in data notes).
 
-## Round 12 — NPC system (open 2026-08-18)
+## Round 12 — NPC system (CLOSED 2026-08-18)
 
-**Goal:** bark layers as data (seven layers, most-specific-first, repeats decay, layer 6
-inert before its unbinding, layer 7 evergreen), Reading-order motifs generated from
-world.md, named-NPC profiles + memory gating, rumor propagation on in-game time along the
-region graph, light anchor schedules; the Cliff's four Querent idle lines as the proof
-pool. _In progress._
+**Shipped (`abd3ba7`):** the seven bark layers of npc-system.md as data with per-layer
+field rules (layer 7 suit-only and evergreen — validated per suit; layer 6 inert before its
+unbinding; no Pip speaker can exist); **five Reading-order motifs generated from world.md**
+with runtime rules (Sun-before-Star selects only in that order, Death in the first 7 /
+last of 20, Magician not first); nine named-NPC profiles from characters.md (Flick canon,
+the rest TBD-flagged) with memory-flag vocabulary and schedule variants; `BarkService`
+(most-specific-first, uniform condition filter, repeats decay, seeded determinism, named
+NPCs fall back to their suit's baseline, allocation-free requests); `RumorService` (news
+travels on in-game time: home, adjacent regions, then world-wide, phrased per suit; seeds
+in an `npc` save section); `ScheduleService` (bound tableau, no time bands before the Sun,
+variants when flags fire). Proof content: the Cliff's four Querent idle lines, verbatim;
+**no other line ships** (the doc owns none). Round note: the Opus builder was killed five
+times by API overload mid-build; a Sonnet builder finished from the files on disk and
+fixed two inherited 4.7 quirks; the Opus critic reviewed the result.
+
+**Proof:** 1035 unit tests (82 new); `RUN_ALL: 12 suites passed`; `--check: 240 files`.
+Critic: 8/10 mutations caught at first pass — the two misses were real: the `npc` save
+section had zero coverage (now round-tripped and refused-when-seeded), and the evergreen
+floor wasn't guaranteed for named NPCs (now they draw their suit's baseline; a layer-7 line
+with a rank or a named speaker fails validation). Also fixed: `request()` allocated despite
+its own doc; layer-6 whole-layer skip pinned; NPC name keys shipped.
+
+**Debt / owed:** six of nine named NPCs have no canon suit yet (they get an empty pick and
+a `bark_missing` signal — audible, not silent); no region BARKS content beyond the Cliff
+(quest docs' bark sections are the source when a region is built); the §Reactivity
+guardrail is a writers' rule, noted in the README.
+
+**Director asks:** none new.
+
+## Round 13 — UI shell (open 2026-08-18)
+
+**Goal:** vector-first UI on the U1 concepts: HUD (petals + Fortune, prompt chip), dialogue
+frame with the conversational camera framing, Pocket Spread screen (three-card spread,
+loadouts at Waystations), Almanack (quests, the Reading, Trumps, Bestiary), map-as-spread
+with fast travel, Pip wheel overlay, pause/settings (difficulty, Fool's Chance slider,
+hold/toggle, rebinding to a settings file, text scale), defeat overlay, bark bubbles —
+every string a translation key. _In progress._
