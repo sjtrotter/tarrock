@@ -248,11 +248,43 @@ Waystation belong to rounds 9/10/13.
 
 **Director asks:** issue #11 still open (built to option 1).
 
-## Round 8 — Enemies (open 2026-08-18)
+## Round 8 — Enemies (CLOSED 2026-08-18)
 
-**Goal:** the Blanks as data (suit × rank, generated from combat.md's tables; stats from
-one tuning resource), a pure `BlankBrain` (aware → approach → telegraph → attack →
-recover; Page flees to alert, Queen auras, Cups lobs, Coins shields), pooled Blank scenes
-with the card-flutter defeat, `Encounter` gates, Beasts/Fog-masks stubs on their flags, and
-**the MQ00 ambush placed for real in the Cliff** (three Twos: Cups, Swords, Wands).
-_In progress._
+**Shipped (`2d4576a`):** **52 Blank definitions generated from combat.md's suit and rank
+tables** (cells verbatim; no numbers — canon has none; `EnemyRules` is the one tuning place,
+every number TBD by name, with a 12-frame telegraph floor both clamped and refused by
+validation against the tightest difficulty stack); `BlankBrain` (pure, headless) where suit
+shapes behaviour (Cups keeps range and lobs, Swords strings, Wands reach, Coins shield) and
+rank shapes role (printed number = toughness, Page flees to alert and never attacks, Knight
+elite, Queen buffs allies, King mini-boss); pooled Blank scenes with measured sprite pivots,
+`CoinsShield` as a `CombatDefense` subclass (combat contracts untouched), a pooled Cups lob,
+`Encounter` as a real gate, defeat = slump + the card flutters free (never a death); Beast/
+Fog-mask stubs keyed to `WS_STRENGTH_UNBOUND` / `WS_MOON_UNBOUND`. **The MQ00 ambush is
+real:** three Twos (Cups, Swords, Wands) rise between the standing stones; the Querent's
+mid-fight line on engage, the cleared line after; reaching it before the dead tree is
+latched. Art requests appended to `godot/art/ART-REQUESTS.md` (plus the round-7 Fool
+animation states) for the director's Codex lane.
+
+**Proof:** 730 unit tests (69 new) + `enemies_test` (42 checks — the three Twos fall to real
+Bindle hits through real hit/hurt boxes; a Blank's telegraphed swing lands on a passive
+Fool; a timed dodge against it is DODGED_PERFECT). Critic: 10/10 mutations caught (zero
+telegraph refused+clamped; clear-on-enter; instancing per acquire; shield never blocking;
+Page never fleeing; inverted rank curve even when validation stays happy; hand-edited
+generated data; the Cliff latch removed; card flutter silenced; brain ignoring difficulty).
+**Blocking catch fixed:** a *staggered* Page recovered into approach and then attacked —
+now the stagger exit routes by role and approach itself refuses a Page.
+
+**Debt / owed:** Wands' "flame-tagged attacks that punish standing still" is carried as
+data and read by nothing (no hazard system; deciding it in code would be inventing combat
+canon — a doc pass owns it); soft target-assist outside Focus still not built; enemies
+have no display names (no doc names a Blank — the UI round decides); the card-flutter
+"new bearer rises past the ridge" effect is a signal awaiting art.
+
+**Director asks:** none new.
+
+## Round 9 — Pip (open 2026-08-18)
+
+**Goal:** the command wheel (Fetch / Harry / Seek) as input→command logic + views, a `PipService`
+(retreat at zero health and return — never anything called death), Pip as a Combatant on
+the Fool's side, `Seekable`/`Fetchable` nodes, Harry redirecting a Blank's attention, and
+MQ00's keepsake beat going through Seek. _In progress._
