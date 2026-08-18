@@ -1,0 +1,116 @@
+keys,en
+UI_CLOSE,Close
+UI_BACK,Back
+UI_EMPTY,—
+UI_DIALOGUE_LEAVE,…
+UI_SPREAD_TITLE,The Pocket Spread
+UI_SLOT_PAST,Past
+UI_SLOT_PRESENT,Present
+UI_SLOT_FUTURE,Future
+UI_SLOT_EMPTY,Empty
+UI_SLOT_UNLOCK_PRESENT,Turns face-up with the first Trump you carry.
+UI_SLOT_UNLOCK_PAST,Turns face-up once three Trumps are yours.
+UI_SLOT_UNLOCK_FUTURE,Turns face-up once seven Trumps are yours.
+UI_ORIENTATION_UPRIGHT,Upright
+UI_ORIENTATION_REVERSED,Reversed
+UI_TRUMP_TEXT_PENDING,—
+UI_SPREAD_HAND,Trumps held
+UI_SPREAD_LOADOUTS,Loadouts
+UI_SPREAD_SAVE_LOADOUT,Keep this Spread
+UI_SPREAD_APPLY_LOADOUT,Lay it out
+UI_SPREAD_DELETE_LOADOUT,Discard
+UI_SPREAD_FLIP,Turn the card
+UI_SPREAD_CLEAR,Take it back
+UI_REFUSED_UNKNOWN,That cannot be done just now.
+UI_REFUSED_UNKNOWN_TRUMP,No such card.
+UI_REFUSED_NOT_HELD,That card is not yours yet.
+UI_REFUSED_SLOT_LOCKED,That place in the Spread is still face-down.
+UI_REFUSED_ALREADY_SLOTTED,That card is already laid out.
+UI_REFUSED_IN_COMBAT,Not in the middle of a fight.
+UI_REFUSED_NOT_AT_WAYSTATION,Only at a Waystation.
+UI_REFUSED_NO_SUCH_LOADOUT,No Spread kept under that name.
+UI_REFUSED_EMPTY_SLOT,Nothing is laid there.
+UI_REFUSED_NO_EFFECTS,That card has nothing to give yet.
+UI_REFUSED_NOT_IMPLEMENTED,That card has nothing to give yet.
+UI_REFUSED_NO_FORTUNE,No Fortune to spend.
+UI_REFUSED_CANNOT_AFFORD,Not Fortune enough.
+UI_REFUSED_NO_SUCH_REGION,Nowhere by that name.
+UI_REFUSED_NO_SCENE,That place is not yet laid out.
+UI_REFUSED_NOT_ADJACENT,No road runs there from here.
+UI_REFUSED_GATE_CLOSED,The way is shut.
+UI_REFUSED_ALREADY_THERE,You are already there.
+UI_REFUSED_NO_SWAPPER,The world cannot be moved just now.
+UI_REFUSED_NO_SUCH_WAYSTATION,No shrine by that name.
+UI_REFUSED_NO_FAST_TRAVEL,The Longroad does not carry you yet.
+UI_REFUSED_NOT_VISITED,You have never rested there.
+UI_REFUSED_NOT_HERE,Stand at a Waystation first.
+UI_REFUSED_OUTSIDE_NETWORK,No road leads back to that one.
+UI_REFUSED_NO_SUCH_SHOP,No stall by that name.
+UI_REFUSED_NO_SUCH_ITEM,No such thing.
+UI_REFUSED_NOT_STOCKED,They do not keep that.
+UI_REFUSED_OUT_OF_STOCK,The last one is gone.
+UI_REFUSED_NOT_FOR_SALE,Not for sale.
+UI_ALMANACK_TITLE,The Almanack
+UI_ALMANACK_TAB_QUESTS,Quests
+UI_ALMANACK_TAB_READING,The Reading
+UI_ALMANACK_TAB_TRUMPS,Trumps
+UI_ALMANACK_TAB_BESTIARY,Bestiary
+UI_ALMANACK_TAB_LORE,Lore
+UI_ALMANACK_QUESTS_ACTIVE,In hand
+UI_ALMANACK_QUESTS_DONE,Finished
+UI_ALMANACK_EMPTY,Nothing written here yet.
+UI_SUIT_CUPS,Cups
+UI_SUIT_SWORDS,Swords
+UI_SUIT_WANDS,Wands
+UI_SUIT_COINS,Coins
+UI_RANK_PAGE,Page
+UI_RANK_KNIGHT,Knight
+UI_RANK_QUEEN,Queen
+UI_RANK_KING,King
+UI_MAP_TITLE,The Spread
+UI_MAP_HERE,You are here
+UI_MAP_FAST_TRAVEL,Travel
+UI_PIP_WHEEL_TITLE,Pip
+UI_PAUSE_SAVE,Save
+UI_PAUSE_LOAD,Load
+UI_PAUSE_SETTINGS,Settings
+UI_PAUSE_QUIT,Leave the Reading
+UI_SLOT_N,Slot {n}
+UI_SAVE_SLOT_EMPTY,empty
+UI_GLYPH_UNBOUND,—
+UI_FORTUNE,Fortune
+UI_ROSE,The White Rose
+UI_HEALTH,Wounds
+SETTINGS_TITLE,Settings
+SETTINGS_DIFFICULTY,Difficulty
+SETTINGS_DIFFICULTY_STORY,Story
+SETTINGS_DIFFICULTY_JOURNEY,Journey
+SETTINGS_DIFFICULTY_TRIAL,Trial
+SETTINGS_FOOLS_CHANCE_WINDOW,Fool's Chance window
+SETTINGS_HOLD_TOGGLE,Held inputs
+SETTINGS_HOLD,Hold
+SETTINGS_TOGGLE,Toggle
+SETTINGS_SCREEN_SHAKE,Screen shake
+SETTINGS_SCREEN_FLASH,Screen flash
+SETTINGS_TEXT_SCALE,Text size
+SETTINGS_QUEST_MARKERS,Quest markers
+SETTINGS_REBIND,Controls
+SETTINGS_REBIND_PRESS,Press a key.
+SETTINGS_RESET_DEFAULTS,Back to defaults
+ACTION_MOVE_LEFT,Walk left
+ACTION_MOVE_RIGHT,Walk right
+ACTION_MOVE_UP,Walk up
+ACTION_MOVE_DOWN,Walk down
+ACTION_SPRINT,Run
+ACTION_INTERACT,Use
+ACTION_ATTACK_LIGHT,Light strike
+ACTION_ATTACK_HEAVY,Heavy strike
+ACTION_DODGE,Dodge
+ACTION_BLOCK_STEP,Block-step
+ACTION_FOCUS,Focus
+ACTION_FOCUS_CYCLE,Next target
+ACTION_ROSE,White Rose
+ACTION_PIP_WHEEL,Pip's wheel
+ACTION_SPREAD,Pocket Spread
+ACTION_ALMANACK,Almanack
+ACTION_PAUSE,Pause

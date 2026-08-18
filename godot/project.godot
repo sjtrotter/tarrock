@@ -171,7 +171,7 @@ pause={
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://localization/strings.en.translation", "res://localization/quest_titles.en.translation", "res://localization/dialogue_mq00.en.translation", "res://localization/trumps.en.translation", "res://localization/regions.en.translation", "res://localization/items.en.translation", "res://localization/barks_cliff.en.translation", "res://localization/npc_names.en.translation")
+locale/translations=PackedStringArray("res://localization/strings.en.translation", "res://localization/quest_titles.en.translation", "res://localization/dialogue_mq00.en.translation", "res://localization/trumps.en.translation", "res://localization/regions.en.translation", "res://localization/items.en.translation", "res://localization/barks_cliff.en.translation", "res://localization/npc_names.en.translation", "res://localization/ui.en.translation")
 
 [rendering]
 

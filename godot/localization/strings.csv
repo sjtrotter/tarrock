@@ -9,3 +9,14 @@ RENOWN_TIER_FABLED,Fabled
 PIP_COMMAND_FETCH,Fetch
 PIP_COMMAND_HARRY,Harry
 PIP_COMMAND_SEEK,Seek
+TUTORIAL_MQ00_BINDLE,Pick up the Bindle.
+TUTORIAL_MQ00_MOVE,Move.
+TUTORIAL_MQ00_CAMPSITE,Interact with a fire-ring to inspect it.
+TUTORIAL_MQ00_SEEK,Call Pip's Seek command.
+TUTORIAL_MQ00_DEAD_TREE,Approach the dead tree.
+TUTORIAL_MQ00_LIGHT_STRING,Light string — three quick strikes of the Bindle.
+TUTORIAL_MQ00_DODGE,Dodge roll — a short burst of invincibility. Time it against an incoming strike for Fool's Chance.
+TUTORIAL_MQ00_REST,Rest at the Waystation.
+TUTORIAL_MQ00_EDGE,Approach the cliff's edge.
+TUTORIAL_MQ00_EDGE_AGAIN,Approach the very edge. Pip will not wait long.
+TUTORIAL_MQ00_LEAP,Step off the Cliff.

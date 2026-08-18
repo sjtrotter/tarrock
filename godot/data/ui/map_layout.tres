@@ -1,0 +1,120 @@
+[gd_resource type="Resource" script_class="MapLayout" load_steps=25 format=3]
+
+[ext_resource type="Script" path="res://systems/ui/definitions/map_layout.gd" id="1_layout"]
+[ext_resource type="Script" path="res://systems/ui/definitions/map_placement.gd" id="2_place"]
+
+[sub_resource type="Resource" id="Resource_cliff"]
+script = ExtResource("2_place")
+region_id = &"CLIFF"
+position = Vector2(0.96, 0.92)
+
+[sub_resource type="Resource" id="Resource_prestige"]
+script = ExtResource("2_place")
+region_id = &"PRESTIGE"
+position = Vector2(0.9, 0.38)
+
+[sub_resource type="Resource" id="Resource_veil"]
+script = ExtResource("2_place")
+region_id = &"VEIL"
+position = Vector2(0.32, 0.64)
+
+[sub_resource type="Resource" id="Resource_bower"]
+script = ExtResource("2_place")
+region_id = &"BOWER"
+position = Vector2(0.88, 0.5)
+
+[sub_resource type="Resource" id="Resource_bastion"]
+script = ExtResource("2_place")
+region_id = &"BASTION"
+position = Vector2(0.5, 0.08)
+
+[sub_resource type="Resource" id="Resource_chantry"]
+script = ExtResource("2_place")
+region_id = &"CHANTRY"
+position = Vector2(0.72, 0.74)
+
+[sub_resource type="Resource" id="Resource_divide"]
+script = ExtResource("2_place")
+region_id = &"DIVIDE"
+position = Vector2(0.82, 0.62)
+
+[sub_resource type="Resource" id="Resource_longroad"]
+script = ExtResource("2_place")
+region_id = &"LONGROAD"
+position = Vector2(0.5, 0.32)
+
+[sub_resource type="Resource" id="Resource_maw"]
+script = ExtResource("2_place")
+region_id = &"MAW"
+position = Vector2(0.6, 0.84)
+
+[sub_resource type="Resource" id="Resource_dim"]
+script = ExtResource("2_place")
+region_id = &"DIM"
+position = Vector2(0.14, 0.28)
+
+[sub_resource type="Resource" id="Resource_wheelhouse"]
+script = ExtResource("2_place")
+region_id = &"WHEELHOUSE"
+position = Vector2(0.68, 0.36)
+
+[sub_resource type="Resource" id="Resource_assize"]
+script = ExtResource("2_place")
+region_id = &"ASSIZE"
+position = Vector2(0.68, 0.12)
+
+[sub_resource type="Resource" id="Resource_gallowwood"]
+script = ExtResource("2_place")
+region_id = &"GALLOWWOOD"
+position = Vector2(0.1, 0.44)
+
+[sub_resource type="Resource" id="Resource_stillmarsh"]
+script = ExtResource("2_place")
+region_id = &"STILLMARSH"
+position = Vector2(0.32, 0.84)
+
+[sub_resource type="Resource" id="Resource_confluence"]
+script = ExtResource("2_place")
+region_id = &"CONFLUENCE"
+position = Vector2(0.46, 0.88)
+
+[sub_resource type="Resource" id="Resource_undervault"]
+script = ExtResource("2_place")
+region_id = &"UNDERVAULT"
+position = Vector2(0.24, 0.46)
+
+[sub_resource type="Resource" id="Resource_spire"]
+script = ExtResource("2_place")
+region_id = &"SPIRE"
+position = Vector2(0.3, 0.12)
+
+[sub_resource type="Resource" id="Resource_mere"]
+script = ExtResource("2_place")
+region_id = &"MERE"
+position = Vector2(0.2, 0.74)
+
+[sub_resource type="Resource" id="Resource_mirrormarsh"]
+script = ExtResource("2_place")
+region_id = &"MIRRORMARSH"
+position = Vector2(0.12, 0.56)
+
+[sub_resource type="Resource" id="Resource_noonlands"]
+script = ExtResource("2_place")
+region_id = &"NOONLANDS"
+position = Vector2(0.84, 0.24)
+
+[sub_resource type="Resource" id="Resource_hollows"]
+script = ExtResource("2_place")
+region_id = &"HOLLOWS"
+position = Vector2(0.5, 0.41)
+
+[sub_resource type="Resource" id="Resource_axis"]
+script = ExtResource("2_place")
+region_id = &"AXIS"
+position = Vector2(0.5, 0.5)
+
+[resource]
+script = ExtResource("1_layout")
+id = &"MAP_LAYOUT"
+placements = Array[ExtResource("2_place")]([SubResource("Resource_cliff"), SubResource("Resource_prestige"), SubResource("Resource_veil"), SubResource("Resource_bower"), SubResource("Resource_bastion"), SubResource("Resource_chantry"), SubResource("Resource_divide"), SubResource("Resource_longroad"), SubResource("Resource_maw"), SubResource("Resource_dim"), SubResource("Resource_wheelhouse"), SubResource("Resource_assize"), SubResource("Resource_gallowwood"), SubResource("Resource_stillmarsh"), SubResource("Resource_confluence"), SubResource("Resource_undervault"), SubResource("Resource_spire"), SubResource("Resource_mere"), SubResource("Resource_mirrormarsh"), SubResource("Resource_noonlands"), SubResource("Resource_hollows"), SubResource("Resource_axis")])
+doc_ref = "docs/design/world.md#layout-adjacency"

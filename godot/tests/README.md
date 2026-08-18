@@ -160,6 +160,18 @@ it must fail on a scene nobody can instantiate yet — and it walks three places
 `res://scripts` is legacy presentation; it joins `SCRIPT_ROOTS` a folder at a time as
 rounds migrate it under `res://systems` (PROMPT.md, standing decision 10).
 
+**The lint above reads files, so it cannot see a string a view assigns at run time**, and
+every page under `systems/ui/nodes/` builds its Controls in code: `button.text = "Resume"`
+has no `.tscn` line to read and no two spaces to trip the sentence heuristic.
+`tests/unit/ui/ui_strings_test.gd` closes that hole from the other side — it instantiates
+every `res://scenes/ui/*.tscn` with no services at all, lets it build, walks the Control
+tree, and fails on any `text` / `tooltip_text` / `placeholder_text` / tab title that is not
+empty and not a `SHOUTING_SNAKE_CASE` key with a row in a shipped CSV. The two kinds of
+drawn text that cannot be one key — a row formatted out of a key and a number, and a device
+label the hardware spells — declare themselves on the control (`UiKeys.COMPOSED_TEXT_META`)
+and say which kind they are; the suite performs its own mutation (lettering the pause
+menu's Resume row in English) to prove it still fails when it should.
+
 ## The typing rule
 
 `project.godot` sets `debug/gdscript/warnings/untyped_declaration=2` — warning treated as

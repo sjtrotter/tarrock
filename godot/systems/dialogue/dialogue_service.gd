@@ -198,6 +198,20 @@ func choose(index: int) -> bool:
 	return true
 
 
+## True when the table on screen has a way out that is not a row.
+##
+## Added for the UI round (13): the dialogue frame draws a "…" row only where leaving
+## is allowed, and it cannot ask the graph itself (a `DialogueView` carries the rows,
+## not the table's mode). It is the exact question `leave()` answers with its own
+## return value, asked before the press instead of after it - so the two can never
+## disagree, and a frame never offers a row that would do nothing.
+func can_leave() -> bool:
+	if _graph == null or _view == null or not _view.is_choice():
+		return false
+	var node := _graph.find_node(_view.node_id)
+	return node != null and node.mode == DialogueNode.ChoiceMode.EXHAUST_ALL
+
+
 ## Leave the choice table on screen without taking (another) row - the script's
 ## `[All versions pick up here:]` edge, reached early.
 ##

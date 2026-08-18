@@ -46,6 +46,17 @@ var _rules: EnemyRules = null
 ## replaced, so the array itself is stable for anything holding it.
 var _live: Array[Blank] = []
 
+## Every enemy definition the Fool has actually MET, by id - what the Almanack's
+## Bestiary lists (`docs/design/art-audio.md` §Map, the Almanack, and UI: the Almanack
+## collects "the Bestiary of Blanks and beasts encountered"). Append-only: a card seen
+## once is known, and nothing here un-knows it.
+##
+## **It is not in the save file yet.** Persisting it is a `bestiary` section, which is
+## `SaveService`'s shape to change and not the UI round's; `to_snapshot()` /
+## `restore_snapshot()` below are the pair that round wires up, and until it does the
+## Bestiary remembers a session. Listed as owed in `res://systems/ui/README.md`.
+var _seen: Dictionary = {}
+
 
 ## Build the service over the generated catalog and the hand-authored tuning table.
 func _init(catalog: EnemyCatalog, rules: EnemyRules) -> void:
@@ -105,10 +116,16 @@ func fog_mask_brain(world_state: WorldStateService) -> FogMaskBrain:
 
 
 ## An enemy is standing in the world. Idempotent.
+##
+## Standing in front of the Fool is what counts as met, so this is also where the
+## Bestiary learns a card.
 func register(enemy: Blank) -> void:
 	if enemy == null or not is_instance_valid(enemy) or _live.has(enemy):
 		return
 	_live.append(enemy)
+	var found := enemy.definition()
+	if found != null:
+		mark_seen(found.id)
 
 
 ## It is not any more - defeated, despawned, or the scene it stood in went away.
@@ -161,3 +178,61 @@ func report_card_fluttered(found: EnemyDefinition, from_position: Vector2) -> vo
 	if found == null:
 		return
 	card_fluttered.emit(found.suit, found.rank, from_position)
+
+
+# --- What the Fool has met --------------------------------------------------------
+
+
+## Remember that this definition has been met. True the first time only.
+func mark_seen(enemy_id: StringName) -> bool:
+	if enemy_id == &"" or _seen.has(enemy_id):
+		return false
+	if _catalog != null and not _catalog.has(enemy_id):
+		return false
+	_seen[enemy_id] = true
+	return true
+
+
+## True when the Fool has met this one.
+func has_seen(enemy_id: StringName) -> bool:
+	return _seen.has(enemy_id)
+
+
+## Every definition met, in catalog order so the Bestiary reads as a deck rather than
+## as an encounter log.
+func seen_definitions() -> Array[EnemyDefinition]:
+	var found: Array[EnemyDefinition] = []
+	if _catalog == null:
+		return found
+	for entry: EnemyDefinition in _catalog.entries:
+		if entry != null and _seen.has(entry.id):
+			found.append(entry)
+	return found
+
+
+## How many definitions have been met.
+func seen_count() -> int:
+	return _seen.size()
+
+
+## The Bestiary, for a save file: the ids met, sorted so the file is stable.
+func to_snapshot() -> Array[StringName]:
+	var ids: Array[StringName] = []
+	for enemy_id: StringName in _seen:
+		ids.append(enemy_id)
+	ids.sort()
+	return ids
+
+
+## Put a saved Bestiary back. Every problem is returned; ids the catalog does not
+## know are reported and skipped rather than trusted.
+func restore_snapshot(ids: Array) -> PackedStringArray:
+	var errors := PackedStringArray()
+	_seen.clear()
+	for entry: Variant in ids:
+		var enemy_id := StringName(entry)
+		if _catalog != null and not _catalog.has(enemy_id):
+			errors.append("the bestiary names %s, which is no enemy" % enemy_id)
+			continue
+		_seen[enemy_id] = true
+	return errors
