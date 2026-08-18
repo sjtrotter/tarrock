@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="QuestDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/quests/definitions/quest_definition.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+id = &"SQ-GALLOWWOOD-02"
+title_key = &"QUEST_SQ_GALLOWWOOD_02_TITLE"
+type = 1
+arcana_number = 0
+region_id = &"GALLOWWOOD"
+required_states = Array[StringName]([&"WS_HANGEDMAN_UNBOUND"])
+fired_states = Array[StringName]([])
+branch_groups = Array[Resource]([])
+graph = null
+doc_path = "docs/quests/side/SQ-GALLOWWOOD-02-the-house-that-faced-the-wrong-way.md"

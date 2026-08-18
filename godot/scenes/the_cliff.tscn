@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://scripts/the_cliff.gd" id="1_cliff"]
 [ext_resource type="Script" path="res://scripts/cliff_ground.gd" id="2_ground"]
@@ -19,9 +19,19 @@
 [ext_resource type="Texture2D" path="res://art/game-ready-sprites-v1/frames/environment/props/waystation.png" id="16_waystation"]
 [ext_resource type="Texture2D" path="res://art/game-ready-sprites-v1/frames/environment/props/offering-bowl.png" id="17_bowl"]
 [ext_resource type="Texture2D" path="res://art/game-ready-sprites-v1/frames/environment/props/cliff-lip.png" id="18_cliff_lip"]
+[ext_resource type="Script" path="res://systems/core/interactable.gd" id="20_interactable"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_leap"]
 radius = 150.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_trigger"]
+radius = 90.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_tree"]
+radius = 220.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_edge"]
+radius = 110.0
 
 [node name="TheCliff" type="Node2D"]
 script = ExtResource("1_cliff")
@@ -181,3 +191,51 @@ monitoring = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="LeapPoint"]
 shape = SubResource("CircleShape2D_leap")
+
+[node name="QuestTriggers" type="Node2D" parent="World"]
+
+[node name="BindleTrigger" type="Area2D" parent="World/QuestTriggers"]
+position = Vector2(3660, 2470)
+script = ExtResource("20_interactable")
+event = &"MQ00_BINDLE_TAKEN"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/QuestTriggers/BindleTrigger"]
+shape = SubResource("CircleShape2D_trigger")
+
+[node name="KeepsakeTrigger" type="Area2D" parent="World/QuestTriggers"]
+position = Vector2(3090, 2230)
+script = ExtResource("20_interactable")
+event = &"MQ00_KEEPSAKE_FOUND"
+one_shot = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/QuestTriggers/KeepsakeTrigger"]
+shape = SubResource("CircleShape2D_trigger")
+
+[node name="DeadTreeApproach" type="Area2D" parent="World/QuestTriggers"]
+position = Vector2(2250, 1250)
+script = ExtResource("20_interactable")
+event = &"MQ00_DEAD_TREE_SEEN"
+one_shot = false
+on_approach = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/QuestTriggers/DeadTreeApproach"]
+shape = SubResource("CircleShape2D_tree")
+
+[node name="WaystationTrigger" type="Area2D" parent="World/QuestTriggers"]
+position = Vector2(1430, 1000)
+script = ExtResource("20_interactable")
+event = &"MQ00_RESTED"
+one_shot = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/QuestTriggers/WaystationTrigger"]
+shape = SubResource("CircleShape2D_trigger")
+
+[node name="CliffEdgeApproach" type="Area2D" parent="World/QuestTriggers"]
+position = Vector2(1280, 800)
+script = ExtResource("20_interactable")
+event = &"MQ00_EDGE_REACHED"
+one_shot = false
+on_approach = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/QuestTriggers/CliffEdgeApproach"]
+shape = SubResource("CircleShape2D_edge")

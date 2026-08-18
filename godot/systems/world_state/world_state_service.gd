@@ -56,6 +56,11 @@ signal npc_memory_flag_set(npc_id: StringName, flag: StringName)
 ## A quest moved to a new state.
 signal quest_state_changed(quest_id: StringName, old_state: StringName, new_state: StringName)
 
+## A quest recorded which branch of one of its choices the player took. Emitted
+## once, ever, per (quest, group): the choice is set-once. The flag itself does not
+## fire here - it fires when the quest completes.
+signal quest_choice_made(quest_id: StringName, group_id: StringName, flag_id: StringName)
+
 ## The three acts of `docs/design/world.md` §Global states, by unbound count.
 enum Act {
 	ACT_I,
@@ -71,6 +76,7 @@ const SNAPSHOT_RENOWN := "renown"
 const SNAPSHOT_HERMIT := "hermit_answer"
 const SNAPSHOT_NPC_MEMORY := "npc_memory"
 const SNAPSHOT_QUEST_STATES := "quest_states"
+const SNAPSHOT_QUEST_CHOICES := "quest_choices"
 
 ## The lowest Renown a suit can hold. Deeds may cost standing, but no suit's regard
 ## goes negative; there is no upper bound (progression.md §Renown sets none).
@@ -110,6 +116,10 @@ var _npc_memory: Dictionary = {}
 
 ## `quest id -> state id`.
 var _quest_states: Dictionary = {}
+
+## `quest id -> Dictionary of branch group id -> the flag chosen for it`. Set-once
+## per (quest, group), and not a fire: see `set_quest_choice()`.
+var _quest_choices: Dictionary = {}
 
 
 ## Build the service over the generated definitions.
@@ -351,6 +361,48 @@ func set_quest_state(quest_id: StringName, state: StringName) -> void:
 	quest_state_changed.emit(quest_id, old_state, state)
 
 
+## Record which branch of one of a quest's choices the player took. Returns true
+## only the first time.
+##
+## `docs/quests/README.md`'s `branches` are mutually exclusive `WS_*` sets, and
+## `docs/design/world.md` §World-state matrix names their members. Exactly one member
+## of a group is ever fired, and a choice, once made, is made: a second call on the
+## same (quest, group) is refused and changes nothing, exactly as `HERMIT_ANSWER` is.
+##
+## **A choice is not a fire.** Nothing becomes true in the world here - the chosen
+## flag is fired by `QuestService` when the quest reaches a complete state, so a
+## quest abandoned after its choice has changed nothing. `flag_id` must be a BRANCH
+## flag the matrix defines; anything else is an error and records nothing.
+##
+## **Round 4's quest runner is the only intended caller**, for the same reason
+## `set_quest_state()` is: the choice belongs to the quest state machine, and lives
+## here because it is save data.
+func set_quest_choice(quest_id: StringName, group_id: StringName, flag_id: StringName) -> bool:
+	if quest_id == UNSET or group_id == UNSET:
+		push_error("a quest choice needs both a quest id and a branch group id")
+		return false
+	var definition := _definition(flag_id)
+	if definition == null:
+		return false
+	if definition.is_unbinding():
+		push_error("%s is an unbinding, not a branch a quest may choose" % flag_id)
+		return false
+	if quest_choice(quest_id, group_id) != UNSET:
+		return false
+	var groups: Dictionary = _quest_choices.get(quest_id, {})
+	_pristine = false
+	groups[group_id] = flag_id
+	_quest_choices[quest_id] = groups
+	quest_choice_made.emit(quest_id, group_id, flag_id)
+	return true
+
+
+## The flag this quest chose for this branch group, or `&""` when it has not chosen.
+func quest_choice(quest_id: StringName, group_id: StringName) -> StringName:
+	var groups: Dictionary = _quest_choices.get(quest_id, {})
+	return groups.get(group_id, UNSET)
+
+
 # --- Save --------------------------------------------------------------------
 
 
@@ -378,6 +430,12 @@ func to_snapshot() -> Dictionary:
 	var quests: Dictionary = {}
 	for quest_id: StringName in _quest_states:
 		quests[String(quest_id)] = String(_quest_states[quest_id])
+	var choices: Dictionary = {}
+	for quest_id: StringName in _quest_choices:
+		var groups: Dictionary = {}
+		for group_id: StringName in _quest_choices[quest_id]:
+			groups[String(group_id)] = String(_quest_choices[quest_id][group_id])
+		choices[String(quest_id)] = groups
 	return {
 		SNAPSHOT_FIRED: fired,
 		SNAPSHOT_READING: reading,
@@ -385,6 +443,7 @@ func to_snapshot() -> Dictionary:
 		SNAPSHOT_HERMIT: String(_hermit_answer),
 		SNAPSHOT_NPC_MEMORY: memory,
 		SNAPSHOT_QUEST_STATES: quests,
+		SNAPSHOT_QUEST_CHOICES: choices,
 	}
 
 
@@ -428,6 +487,7 @@ func restore_snapshot(data: Dictionary) -> PackedStringArray:
 	renown_by_suit.fill(RENOWN_FLOOR)
 	var memory: Dictionary = {}
 	var quests: Dictionary = {}
+	var choices: Dictionary = {}
 	var unbound := 0
 
 	var stored_fired: Dictionary = _dictionary_field(data, SNAPSHOT_FIRED, errors)
@@ -493,6 +553,22 @@ func restore_snapshot(data: Dictionary) -> PackedStringArray:
 	for key: Variant in stored_quests:
 		quests[_as_id(key)] = _as_id(stored_quests[key])
 
+	var stored_choices: Dictionary = _dictionary_field(data, SNAPSHOT_QUEST_CHOICES, errors)
+	for key: Variant in stored_choices:
+		var stored_groups: Variant = stored_choices[key]
+		if not (stored_groups is Dictionary):
+			errors.append("snapshot choices for %s are not a dictionary" % key)
+			continue
+		var groups: Dictionary = {}
+		for group_key: Variant in stored_groups as Dictionary:
+			var flag_id := _as_id((stored_groups as Dictionary)[group_key])
+			var definition: WorldStateDefinition = _definitions.get(flag_id)
+			if definition == null or definition.is_unbinding():
+				errors.append("snapshot chose %s, which is no branch flag this build has" % flag_id)
+				continue
+			groups[_as_id(group_key)] = flag_id
+		choices[_as_id(key)] = groups
+
 	if not errors.is_empty():
 		return errors
 
@@ -503,6 +579,7 @@ func restore_snapshot(data: Dictionary) -> PackedStringArray:
 	_hermit_answer = hermit
 	_npc_memory = memory
 	_quest_states = quests
+	_quest_choices = choices
 	_pristine = false
 	return errors
 
@@ -532,6 +609,7 @@ func _load_blank_state() -> void:
 	_hermit_answer = UNSET
 	_npc_memory = {}
 	_quest_states = {}
+	_quest_choices = {}
 	_renown = PackedInt32Array()
 	_renown.resize(Suit.ALL.size())
 	_renown.fill(RENOWN_FLOOR)

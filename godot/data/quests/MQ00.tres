@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="QuestDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://systems/quests/definitions/quest_definition.gd" id="1_quest"]
+[ext_resource type="Resource" path="res://data/quests/graphs/MQ00.tres" id="3_graph"]
+
+[resource]
+script = ExtResource("1_quest")
+id = &"MQ00"
+title_key = &"QUEST_MQ00_TITLE"
+type = 0
+arcana_number = 0
+region_id = &"CLIFF"
+required_states = Array[StringName]([])
+fired_states = Array[StringName]([])
+branch_groups = Array[Resource]([])
+graph = ExtResource("3_graph")
+doc_path = "docs/quests/main/MQ00-the-leap.md"

@@ -13,7 +13,6 @@ extends Node
 ## (see `res://tests/README.md`).
 ##
 ## Rounds add fields here, in dependency order:
-##   ## Round 4 adds `quests: QuestService`
 ##   ## Round 5 adds `dialogue: DialogueService`
 ## - see docs/gauntlet-systems/PROMPT.md for the full order.
 
@@ -22,6 +21,10 @@ extends Node
 const WORLD_STATE_CATALOG_PATH := "res://data/world_states/catalog.tres"
 const ACT_THRESHOLDS_PATH := "res://data/world_states/act_thresholds.tres"
 const RENOWN_LADDER_PATH := "res://data/progression/renown_ladder.tres"
+
+## The generated quest definitions `quests` is built over. Generated from every
+## `docs/quests/**/*.md` frontmatter block by the same tool.
+const QUEST_CATALOG_PATH := "res://data/quests/catalog.tres"
 
 ## In-game elapsed time. Paused by menus; advanced here and nowhere else.
 var clock: GameClock = null
@@ -35,12 +38,17 @@ var world_state: WorldStateService = null
 ## it is built last and holds them, rather than the other way round.
 var save: SaveService = null
 
+## The quest state machines - and the ONLY writer of world state. Scenes, combat and
+## dialogue raise events here; this is what turns one into a permanent change.
+var quests: QuestService = null
+
 
 func _ready() -> void:
 	# Dependency order: each service is handed the ones above it, never looked up.
 	clock = GameClock.new()
 	world_state = _build_world_state()
 	save = SaveService.new(world_state, clock)
+	quests = _build_quests()
 
 	# The clock ticks on process frames, not physics: one tick per rendered frame,
 	# independent of the physics tick rate. The delta handed over is the engine's,
@@ -73,3 +81,19 @@ func _build_world_state() -> WorldStateService:
 		for problem: String in ladder.validate():
 			push_error(problem)
 	return WorldStateService.new(catalog, thresholds, ladder)
+
+
+## Load the generated quest definitions and build the runner over them.
+##
+## Validated on the way in for the same reason the world-state catalog is: a quest
+## that names a flag the matrix does not define, or a graph that can never finish,
+## is a content bug worth a loud error at boot rather than a quest that silently
+## never completes. The world-state catalog is passed so the cross-references can be
+## checked at all.
+func _build_quests() -> QuestService:
+	var catalog: QuestCatalog = load(QUEST_CATALOG_PATH) as QuestCatalog
+	var world_states: WorldStateCatalog = load(WORLD_STATE_CATALOG_PATH) as WorldStateCatalog
+	if catalog != null:
+		for problem: String in catalog.validate(world_states):
+			push_error(problem)
+	return QuestService.new(world_state, catalog)

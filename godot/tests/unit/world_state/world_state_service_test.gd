@@ -45,6 +45,7 @@ const PUBLIC_METHODS: Array[String] = [
 	"npc_memory",
 	"npc_remember",
 	"npc_remembers",
+	"quest_choice",
 	"quest_state",
 	"reading_order",
 	"renown",
@@ -52,6 +53,7 @@ const PUBLIC_METHODS: Array[String] = [
 	"renown_tier_name_key",
 	"restore_snapshot",
 	"set_hermit_answer",
+	"set_quest_choice",
 	"set_quest_state",
 	"to_snapshot",
 	"unbound_count",
@@ -701,3 +703,108 @@ func _fingerprint(definition: WorldStateDefinition) -> String:
 		definition.branch_group,
 		definition.effect_summary,
 	]
+
+
+# --- Quest branch choices ----------------------------------------------------
+
+
+func test_a_quest_has_chosen_nothing_to_begin_with() -> void:
+	assert_eq(_service.quest_choice(&"MQ01", &"MQ01_TROUPE"), &"")
+
+
+func test_a_choice_is_recorded_once_and_then_refused() -> void:
+	watch_signal(_service, &"quest_choice_made")
+	assert_true(
+		_service.set_quest_choice(&"MQ01", &"MQ01_TROUPE", WorldStateIds.WS_TROUPE_TRAVELING),
+		"the first choice is the quest's to make"
+	)
+	assert_eq(_service.quest_choice(&"MQ01", &"MQ01_TROUPE"), WorldStateIds.WS_TROUPE_TRAVELING)
+	assert_false(
+		_service.set_quest_choice(&"MQ01", &"MQ01_TROUPE", WorldStateIds.WS_TROUPE_SETTLED),
+		"the other half of a made choice is refused"
+	)
+	assert_eq(
+		_service.quest_choice(&"MQ01", &"MQ01_TROUPE"),
+		WorldStateIds.WS_TROUPE_TRAVELING,
+		"and the refusal changed nothing"
+	)
+	assert_signal_emitted(_service, &"quest_choice_made", 1)
+
+
+func test_a_choice_is_not_a_fire() -> void:
+	watch_signal(_service, &"world_state_fired")
+	_service.set_quest_choice(&"MQ01", &"MQ01_TROUPE", WorldStateIds.WS_TROUPE_SETTLED)
+	assert_false(
+		_service.is_fired(WorldStateIds.WS_TROUPE_SETTLED),
+		"choosing a branch does not make it true; completing the quest does"
+	)
+	assert_signal_emitted(_service, &"world_state_fired", 0)
+	assert_eq(_service.unbound_count(), 0)
+
+
+func test_two_quests_choose_independently() -> void:
+	_service.set_quest_choice(&"MQ01", &"MQ01_TROUPE", WorldStateIds.WS_TROUPE_TRAVELING)
+	_service.set_quest_choice(&"MQ06", &"MQ06_DIVIDE", WorldStateIds.WS_DIVIDE_EASTMARRIED)
+	assert_eq(_service.quest_choice(&"MQ01", &"MQ01_TROUPE"), WorldStateIds.WS_TROUPE_TRAVELING)
+	assert_eq(_service.quest_choice(&"MQ06", &"MQ06_DIVIDE"), WorldStateIds.WS_DIVIDE_EASTMARRIED)
+
+
+func test_only_a_branch_flag_can_be_chosen() -> void:
+	var unknown: bool = _quietly(
+		func() -> bool: return _service.set_quest_choice(&"MQ01", &"MQ01_TROUPE", UNKNOWN_FLAG)
+	)
+	assert_false(unknown, "a flag the matrix does not define is not a choice")
+	var unbinding: bool = _quietly(
+		func() -> bool:
+			return _service.set_quest_choice(
+				&"MQ01", &"MQ01_TROUPE", WorldStateIds.WS_MAGICIAN_UNBOUND
+			)
+	)
+	assert_false(unbinding, "an unbinding is not a branch a quest may pick")
+	assert_true(_service.is_pristine(), "and neither refusal counted as play")
+
+
+func test_a_choice_needs_a_quest_and_a_group() -> void:
+	var no_quest: bool = _quietly(
+		func() -> bool:
+			return _service.set_quest_choice(&"", &"MQ01_TROUPE", WorldStateIds.WS_TROUPE_SETTLED)
+	)
+	assert_false(no_quest)
+	var no_group: bool = _quietly(
+		func() -> bool:
+			return _service.set_quest_choice(&"MQ01", &"", WorldStateIds.WS_TROUPE_SETTLED)
+	)
+	assert_false(no_group)
+
+
+func test_choices_round_trip_through_a_snapshot() -> void:
+	_service.set_quest_choice(&"MQ01", &"MQ01_TROUPE", WorldStateIds.WS_TROUPE_SETTLED)
+	var snapshot := _service.to_snapshot()
+	var round_tripped: Variant = JSON.parse_string(JSON.stringify(snapshot))
+	assert_true(round_tripped is Dictionary, "a choice survives a trip through JSON")
+	var loaded := WorldStateService.new(_catalog, _thresholds, _ladder)
+	assert_eq(loaded.restore_snapshot(snapshot), PackedStringArray(), "a clean save has no problems")
+	assert_eq(
+		loaded.quest_choice(&"MQ01", &"MQ01_TROUPE"),
+		WorldStateIds.WS_TROUPE_SETTLED,
+		"the loaded world remembers what the quest chose"
+	)
+	assert_eq(loaded.to_snapshot(), snapshot, "what came out goes back in unchanged")
+
+
+func test_restoring_a_choice_emits_nothing() -> void:
+	_service.set_quest_choice(&"MQ01", &"MQ01_TROUPE", WorldStateIds.WS_TROUPE_SETTLED)
+	var loaded := WorldStateService.new(_catalog, _thresholds, _ladder)
+	watch_signal(loaded, &"quest_choice_made")
+	loaded.restore_snapshot(_service.to_snapshot())
+	assert_signal_emitted(loaded, &"quest_choice_made", 0)
+
+
+func test_a_snapshot_choosing_something_impossible_is_reported_and_commits_nothing() -> void:
+	var snapshot := _service.to_snapshot()
+	snapshot[WorldStateService.SNAPSHOT_QUEST_CHOICES]["MQ01"] = {
+		"MQ01_TROUPE": String(WorldStateIds.WS_MAGICIAN_UNBOUND),
+	}
+	var problems := _service.restore_snapshot(snapshot)
+	assert_eq(problems.size(), 1, "the impossible choice is reported: %s" % str(problems))
+	assert_eq(_service.quest_choice(&"MQ01", &"MQ01_TROUPE"), &"", "and nothing was committed")

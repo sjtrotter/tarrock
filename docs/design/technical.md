@@ -273,9 +273,9 @@ restated here; the mapping is:
 | Frontmatter key | `QuestDefinition` field | Notes |
 |---|---|---|
 | `id` | `id` | `MQ##` / `SQ-<REGION>-##`, per `GLOSSARY.md`. |
-| `title` | `title_key` | Translation key, never a literal. |
-| `arcana` | `arcana` | Resolved to an `ArcanaDefinition` by ID at generation time. |
-| `region` | `region` | Resolved to a `RegionDefinition` by ID. |
+| `title` | `title_key` | Translation key (`QUEST_<ID>_TITLE`, generated into `localization/quest_titles.csv`), never a literal. |
+| `arcana` | `arcana_number` | The card number (0 = none, 1–21), parsed from the roman numeral at generation time — the same key `WorldStateDefinition` uses; an `ArcanaDefinition` lookup by number arrives with the Trumps round. |
+| `region` | `region_id` | The region token (`CLIFF`, `PRESTIGE`, … — the same token side-quest ids use; GLOSSARY names with "The" dropped, uppercase); resolved to a `RegionDefinition` once the Regions round ships them. |
 | `requires` | `required_states` | `WS_*` and/or quest IDs; all must hold before the opening state is reachable. |
 | `fires` | `fired_states` | Committed through `WorldStateService` at completion only. |
 | `branches` | `branch_groups` | Mutually exclusive `WS_*` sets; the runtime enforces exactly one per group at completion. |
@@ -283,8 +283,14 @@ restated here; the mapping is:
 | `status` | — | Doc-workflow field, not imported; validation may warn when it disagrees with what shipped. |
 
 A quest doc's beats inform the authored transition graph but are not part of this
-mapping — the frontmatter is metadata for cross-referencing and validation (a tool checks
-that every `requires` ID exists as a `WorldStateDefinition`).
+mapping — the frontmatter is metadata for cross-referencing and validation (the
+generator's drift check and the catalog's boot validation check that every `requires` ID
+exists as a `WorldStateDefinition` or a quest). The graph itself is a hand-authored
+`QuestGraph` resource (`data/quests/graphs/<ID>.tres`) that the generated definition links
+to when it exists; scenes, combat, and dialogue **raise events** (`QuestEvents`) on the
+`QuestService`, whose transitions are the only writers of world state, and a quest's
+`fires` (plus exactly one chosen flag per branch group) commit only on reaching a
+complete state.
 
 ### Localization (Godot)
 

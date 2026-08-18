@@ -1,0 +1,123 @@
+[gd_resource type="Resource" script_class="QuestGraph" load_steps=19 format=3]
+
+[ext_resource type="Script" path="res://systems/quests/definitions/quest_graph.gd" id="1_graph"]
+[ext_resource type="Script" path="res://systems/quests/definitions/quest_state.gd" id="2_state"]
+[ext_resource type="Script" path="res://systems/quests/definitions/quest_transition.gd" id="3_transition"]
+
+[sub_resource type="Resource" id="State_WAKING"]
+script = ExtResource("2_state")
+id = &"WAKING"
+is_complete = false
+notes = "EXT. THE CLIFF: The High Meadow — DAWN. The Fool wakes beside the dead campfire; the Bindle leans on a stone, still unclaimed."
+
+[sub_resource type="Resource" id="State_BINDLE_TAKEN"]
+script = ExtResource("2_state")
+id = &"BINDLE_TAKEN"
+is_complete = false
+notes = "EXT. THE CLIFF: The High Meadow — DAWN. Tutorial prompt: pick up the Bindle. The Fool now owns everything the Fool owns."
+
+[sub_resource type="Resource" id="State_KEEPSAKE_FOUND"]
+script = ExtResource("2_state")
+id = &"KEEPSAKE_FOUND"
+is_complete = false
+notes = "EXT. THE CLIFF: The Old Campsites — DAWN. Pip digs the whittled wooden dog out of the disturbed earth. Pip's Seek command is the Pip round (9); until then the dig site is an interaction."
+
+[sub_resource type="Resource" id="State_DEAD_TREE_SEEN"]
+script = ExtResource("2_state")
+id = &"DEAD_TREE_SEEN"
+is_complete = false
+notes = "EXT. THE CLIFF: The Dead Tree — MORNING. Tutorial prompt: approach the dead tree. A beat, held, then the Querent on the one thing up here that dies."
+
+[sub_resource type="Resource" id="State_AMBUSH_CLEARED"]
+script = ExtResource("2_state")
+id = &"AMBUSH_CLEARED"
+is_complete = false
+notes = "EXT. THE CLIFF: The Waystation Approach — MORNING. Three Blanks, Twos of Cups, Swords and Wands, fall in turn. Combat is round 7 and no Blanks stand in the Cliff scene yet, so nothing there raises MQ00_AMBUSH_CLEARED; the integration test raises it directly."
+
+[sub_resource type="Resource" id="State_RESTED"]
+script = ExtResource("2_state")
+id = &"RESTED"
+is_complete = false
+notes = "EXT. THE CLIFF: The First Waystation — MIDDAY. Tutorial prompt: rest at the Waystation. The Rose regrows entire; the Pocket Spread opens, and is empty."
+
+[sub_resource type="Resource" id="State_EDGE_REACHED"]
+script = ExtResource("2_state")
+id = &"EDGE_REACHED"
+is_complete = false
+notes = "EXT. THE CLIFF: The Cliff's Edge — AFTERNOON. Tutorial prompt: approach the cliff's edge. The Querent's questions are dialogue, which is round 5."
+
+[sub_resource type="Resource" id="State_COMPLETE"]
+script = ExtResource("2_state")
+id = &"COMPLETE"
+is_complete = true
+notes = "EXT. THE CLIFF: The Edge of the World — DUSK. Pip jumps first; the Fool steps off on purpose. MQ00 fires nothing: completing it opens the world by putting the Fool in it."
+
+[sub_resource type="Resource" id="Transition_0_MQ00_BINDLE_TAKEN"]
+script = ExtResource("3_transition")
+from_state = &"WAKING"
+to_state = &"BINDLE_TAKEN"
+on_event = &"MQ00_BINDLE_TAKEN"
+requires_fired = Array[StringName]([])
+requires_not_fired = Array[StringName]([])
+chooses_branch = &""
+
+[sub_resource type="Resource" id="Transition_1_MQ00_KEEPSAKE_FOUND"]
+script = ExtResource("3_transition")
+from_state = &"BINDLE_TAKEN"
+to_state = &"KEEPSAKE_FOUND"
+on_event = &"MQ00_KEEPSAKE_FOUND"
+requires_fired = Array[StringName]([])
+requires_not_fired = Array[StringName]([])
+chooses_branch = &""
+
+[sub_resource type="Resource" id="Transition_2_MQ00_DEAD_TREE_SEEN"]
+script = ExtResource("3_transition")
+from_state = &"KEEPSAKE_FOUND"
+to_state = &"DEAD_TREE_SEEN"
+on_event = &"MQ00_DEAD_TREE_SEEN"
+requires_fired = Array[StringName]([])
+requires_not_fired = Array[StringName]([])
+chooses_branch = &""
+
+[sub_resource type="Resource" id="Transition_3_MQ00_AMBUSH_CLEARED"]
+script = ExtResource("3_transition")
+from_state = &"DEAD_TREE_SEEN"
+to_state = &"AMBUSH_CLEARED"
+on_event = &"MQ00_AMBUSH_CLEARED"
+requires_fired = Array[StringName]([])
+requires_not_fired = Array[StringName]([])
+chooses_branch = &""
+
+[sub_resource type="Resource" id="Transition_4_MQ00_RESTED"]
+script = ExtResource("3_transition")
+from_state = &"AMBUSH_CLEARED"
+to_state = &"RESTED"
+on_event = &"MQ00_RESTED"
+requires_fired = Array[StringName]([])
+requires_not_fired = Array[StringName]([])
+chooses_branch = &""
+
+[sub_resource type="Resource" id="Transition_5_MQ00_EDGE_REACHED"]
+script = ExtResource("3_transition")
+from_state = &"RESTED"
+to_state = &"EDGE_REACHED"
+on_event = &"MQ00_EDGE_REACHED"
+requires_fired = Array[StringName]([])
+requires_not_fired = Array[StringName]([])
+chooses_branch = &""
+
+[sub_resource type="Resource" id="Transition_6_MQ00_LEAP"]
+script = ExtResource("3_transition")
+from_state = &"EDGE_REACHED"
+to_state = &"COMPLETE"
+on_event = &"MQ00_LEAP"
+requires_fired = Array[StringName]([])
+requires_not_fired = Array[StringName]([])
+chooses_branch = &""
+
+[resource]
+script = ExtResource("1_graph")
+quest_id = &"MQ00"
+initial_state = &"WAKING"
+states = Array[ExtResource("2_state")]([SubResource("State_WAKING"), SubResource("State_BINDLE_TAKEN"), SubResource("State_KEEPSAKE_FOUND"), SubResource("State_DEAD_TREE_SEEN"), SubResource("State_AMBUSH_CLEARED"), SubResource("State_RESTED"), SubResource("State_EDGE_REACHED"), SubResource("State_COMPLETE")])
+transitions = Array[ExtResource("3_transition")]([SubResource("Transition_0_MQ00_BINDLE_TAKEN"), SubResource("Transition_1_MQ00_KEEPSAKE_FOUND"), SubResource("Transition_2_MQ00_DEAD_TREE_SEEN"), SubResource("Transition_3_MQ00_AMBUSH_CLEARED"), SubResource("Transition_4_MQ00_RESTED"), SubResource("Transition_5_MQ00_EDGE_REACHED"), SubResource("Transition_6_MQ00_LEAP")])

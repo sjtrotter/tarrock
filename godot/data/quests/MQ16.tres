@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="QuestDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/quests/definitions/quest_definition.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+id = &"MQ16"
+title_key = &"QUEST_MQ16_TITLE"
+type = 0
+arcana_number = 16
+region_id = &"SPIRE"
+required_states = Array[StringName]([])
+fired_states = Array[StringName]([&"WS_TOWER_UNBOUND"])
+branch_groups = Array[Resource]([])
+graph = null
+doc_path = "docs/quests/main/MQ16-already-falling.md"

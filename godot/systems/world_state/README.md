@@ -7,7 +7,7 @@ the source of truth; nothing here re-decides them.
 
 | File | What |
 |---|---|
-| `world_state_service.gd` | `WorldStateService` — the **only** mutation path for `WS_*` flags, Renown, the Reading, the Hermit's answer, named-NPC memory and quest state |
+| `world_state_service.gd` | `WorldStateService` — the **only** mutation path for `WS_*` flags, Renown, the Reading, the Hermit's answer, named-NPC memory, quest state and quest branch choices |
 | `world_state_ids.gd` | `WorldStateIds` — **generated** constants, the one place a `WS_*` string is written in code |
 | `suit.gd` | `Suit` — the four Minor suits and the one place their names are spelled |
 | `definitions/world_state_definition.gd` | one matrix row (or one branch flag) as data |
@@ -43,16 +43,25 @@ Four rules this system exists to make structural, rather than remembered:
 Writers are quest state-machine transitions and nobody else (round 4). Everything else
 reads and connects to the signals — polling is forbidden.
 
-## Owed by later rounds
+## Branch-group exclusivity (delivered in round 4)
 
-- **Branch-group exclusivity.** The matrix's branch flags come in mutually exclusive
-  pairs (the troupe's fate, which side of the Divide marries in), and exactly one
-  member of a group is ever fired. Nothing enforces that yet: `fire()` would accept
-  both halves of a choice. It belongs to the **quest runner in round 4** — the choice
-  is the quest's, so the quest state machine is the only place that knows which branch
-  was taken and is the only writer allowed to fire either. The data it needs is
-  already here: `WorldStateCatalog.branch_group_members(group)` returns a group's
-  members, and every branch definition carries its `branch_group`.
+The matrix's branch flags come in mutually exclusive pairs (the troupe's fate, which
+side of the Divide marries in), and exactly one member of a group is ever fired. The
+enforcement is split, deliberately, between this service and the quest runner:
+
+- `set_quest_choice(quest, group, flag)` records **which** branch was taken, set-once
+  per `(quest, group)`: a second call is refused, so the other half can never be
+  chosen afterwards. It is **not a fire** — nothing about the world becomes true here.
+  `quest_choice(quest, group)` reads it back, and it rides in the snapshot under
+  `SNAPSHOT_QUEST_CHOICES`.
+- [`systems/quests/`](../quests) fires the chosen flag, and only at completion, and
+  refuses to complete a quest that still owes a group its choice
+  (`QuestService.REFUSED_BRANCH_UNCHOSEN`). The choice is the quest's, so the quest
+  state machine is the only thing allowed to make it or to cash it in.
+
+`fire()` itself is deliberately unchanged: it still knows nothing about groups. The
+group is data (`WorldStateCatalog.branch_group_members(group)`, and every branch
+definition's `branch_group`), and the runner is what enforces it.
 
 **Known TBD:** the Renown tier *thresholds* (`[0, 10, 25, 50, 100]`) are placeholders.
 `progression.md` §Renown owns the five tiers by name; the numbers are tuning and no doc

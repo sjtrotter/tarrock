@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="QuestDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/quests/definitions/quest_definition.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+id = &"SQ-LONGROAD-03"
+title_key = &"QUEST_SQ_LONGROAD_03_TITLE"
+type = 1
+arcana_number = 0
+region_id = &"LONGROAD"
+required_states = Array[StringName]([])
+fired_states = Array[StringName]([])
+branch_groups = Array[Resource]([])
+graph = null
+doc_path = "docs/quests/side/SQ-LONGROAD-03-the-marching-bands-last-tune.md"

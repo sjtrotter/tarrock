@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="QuestDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://systems/quests/definitions/quest_definition.gd" id="1_quest"]
+[ext_resource type="Script" path="res://systems/quests/definitions/quest_branch_group.gd" id="2_branch_group"]
+
+[sub_resource type="Resource" id="Resource_MQ06_DIVIDE"]
+script = ExtResource("2_branch_group")
+group_id = &"MQ06_DIVIDE"
+flags = Array[StringName]([&"WS_DIVIDE_EASTMARRIED", &"WS_DIVIDE_WESTMARRIED"])
+
+[resource]
+script = ExtResource("1_quest")
+id = &"MQ06"
+title_key = &"QUEST_MQ06_TITLE"
+type = 0
+arcana_number = 6
+region_id = &"DIVIDE"
+required_states = Array[StringName]([])
+fired_states = Array[StringName]([&"WS_LOVERS_UNBOUND"])
+branch_groups = Array[ExtResource("2_branch_group")]([SubResource("Resource_MQ06_DIVIDE")])
+graph = null
+doc_path = "docs/quests/main/MQ06-the-longest-engagement.md"

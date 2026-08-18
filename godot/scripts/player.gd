@@ -2,6 +2,11 @@ extends CharacterBody2D
 
 const SPEED := 200.0
 
+## How far from the Fool an `Interactable` may sit and still answer the interact
+## key. A reach, not a room: far enough that a prop does not need pixel-perfect
+## approach, near enough that "the nearest one" is never a surprise.
+const INTERACT_REACH := 96.0
+
 const DIRECTION_TEXTURES := {
 	"south": preload("res://art/game-ready-sprites-v1/frames/fool/directions/south.png"),
 	"southwest": preload("res://art/game-ready-sprites-v1/frames/fool/directions/southwest.png"),
@@ -53,11 +58,16 @@ const WALK_FPS := 8.0
 var _facing := "south"
 var _animator: CharacterAnimator = null
 
+## The Fool's reach, built in code so the character scene stays art-only. Areas
+## overlapping it are the `Interactable`s the interact key may reach.
+var _sensor: Area2D = null
+
 @onready var _sprite: Sprite2D = $Sprite
 
 
 func _ready() -> void:
 	_ensure_animator()
+	_ensure_sensor()
 
 
 func _physics_process(delta: float) -> void:
@@ -70,6 +80,31 @@ func _physics_process(delta: float) -> void:
 		),
 		delta
 	)
+	if Input.is_action_just_pressed(InputActions.INTERACT):
+		try_interact()
+
+
+## Act on the nearest `Interactable` within reach; returns the one that answered.
+##
+## This is the whole interact verb: the Fool never knows what a prop means, and the
+## prop never knows a quest exists - it emits its event and the region scene forwards
+## it to `QuestService`. Approach-shaped and used-up nodes are skipped, so a spent
+## trigger cannot shadow a live one standing behind it.
+func try_interact() -> Interactable:
+	_ensure_sensor()
+	var nearest: Interactable = null
+	var nearest_distance := INF
+	for area: Area2D in _sensor.get_overlapping_areas():
+		var candidate := area as Interactable
+		if candidate == null or not candidate.is_interactable():
+			continue
+		var distance := global_position.distance_squared_to(candidate.global_position)
+		if distance < nearest_distance:
+			nearest_distance = distance
+			nearest = candidate
+	if nearest != null:
+		nearest.interact()
+	return nearest
 
 
 func move(input_dir: Vector2, delta: float) -> void:
@@ -98,6 +133,22 @@ func facing_name() -> String:
 func animator() -> CharacterAnimator:
 	_ensure_animator()
 	return _animator
+
+
+func _ensure_sensor() -> void:
+	if _sensor != null:
+		return
+	var shape := CircleShape2D.new()
+	shape.radius = INTERACT_REACH
+	var collision := CollisionShape2D.new()
+	collision.shape = shape
+	_sensor = Area2D.new()
+	_sensor.name = "InteractionSensor"
+	# It looks for areas, and nothing looks for it: a reach is not a hitbox.
+	_sensor.monitoring = true
+	_sensor.monitorable = false
+	_sensor.add_child(collision)
+	add_child(_sensor)
 
 
 func _ensure_animator() -> void:

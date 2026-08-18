@@ -16,6 +16,18 @@ What it reads, and what each source produces:
                                                    the WorldStateIds constants
     docs/design/world.md  §Global states        -> act_thresholds.tres
     docs/design/progression.md §Renown          -> renown_ladder.tres
+    docs/quests/**/*.md   YAML frontmatter      -> one QuestDefinition per quest,
+                                                   plus the quest catalog, the
+                                                   QuestIds constants, and the
+                                                   quest-title translation table
+    docs/GLOSSARY.md      §The world            -> the region-name -> region-token
+                                                   mapping quest definitions carry
+
+A quest's *state graph* is deliberately NOT generated: it is hand-authored under
+`godot/data/quests/graphs/<ID>.tres`, and a generated definition merely links to it
+when that file exists. So authoring a quest is writing its graph, and regenerating
+metadata after a frontmatter edit can never clobber authored work. The generator
+never writes into `graphs/` and never calls anything there stale.
 
 It also reads every quest's YAML frontmatter and prints, informationally, any
 `WS_*` id a quest names that the matrix does not define. That list is a report to
@@ -50,21 +62,32 @@ DOCS_DIR = REPO_ROOT / "docs"
 
 WORLD_DOC = DOCS_DIR / "design" / "world.md"
 PROGRESSION_DOC = DOCS_DIR / "design" / "progression.md"
+GLOSSARY_DOC = DOCS_DIR / "GLOSSARY.md"
 QUESTS_DIR = DOCS_DIR / "quests"
 
 WORLD_STATE_DATA_DIR = "data/world_states"
 PROGRESSION_DATA_DIR = "data/progression"
+QUEST_DATA_DIR = "data/quests"
+QUEST_GRAPH_DIR = f"{QUEST_DATA_DIR}/graphs"
 WORLD_STATE_SYSTEM_DIR = "systems/world_state"
+QUEST_SYSTEM_DIR = "systems/quests"
+LOCALIZATION_DIR = "localization"
 
 DEFINITION_SCRIPT = "res://systems/world_state/definitions/world_state_definition.gd"
 CATALOG_SCRIPT = "res://systems/world_state/definitions/world_state_catalog.gd"
 ACT_THRESHOLDS_SCRIPT = "res://systems/world_state/definitions/act_thresholds.gd"
 RENOWN_LADDER_SCRIPT = "res://systems/world_state/definitions/renown_ladder.gd"
+QUEST_DEFINITION_SCRIPT = "res://systems/quests/definitions/quest_definition.gd"
+QUEST_CATALOG_SCRIPT = "res://systems/quests/definitions/quest_catalog.gd"
+QUEST_BRANCH_GROUP_SCRIPT = "res://systems/quests/definitions/quest_branch_group.gd"
 
 CATALOG_PATH = f"{WORLD_STATE_DATA_DIR}/catalog.tres"
 ACT_THRESHOLDS_PATH = f"{WORLD_STATE_DATA_DIR}/act_thresholds.tres"
 RENOWN_LADDER_PATH = f"{PROGRESSION_DATA_DIR}/renown_ladder.tres"
 WORLD_STATE_IDS_PATH = f"{WORLD_STATE_SYSTEM_DIR}/world_state_ids.gd"
+QUEST_CATALOG_PATH = f"{QUEST_DATA_DIR}/catalog.tres"
+QUEST_IDS_PATH = f"{QUEST_SYSTEM_DIR}/quest_ids.gd"
+QUEST_TITLES_CSV_PATH = f"{LOCALIZATION_DIR}/quest_titles.csv"
 
 # Every directory this tool writes into, and what it owns there: anything matching
 # the glob that this run would not produce is stale (see `stale_paths`). The data
@@ -73,7 +96,12 @@ WORLD_STATE_IDS_PATH = f"{WORLD_STATE_SYSTEM_DIR}/world_state_ids.gd"
 GENERATED_GLOBS = {
     WORLD_STATE_DATA_DIR: "*.tres",
     PROGRESSION_DATA_DIR: "*.tres",
+    # `data/quests/*.tres` is generated whole; `data/quests/graphs/*.tres` is
+    # hand-authored and is NOT swept - the glob is deliberately not recursive.
+    QUEST_DATA_DIR: "*.tres",
     WORLD_STATE_SYSTEM_DIR: WORLD_STATE_IDS_PATH.rsplit("/", 1)[-1],
+    QUEST_SYSTEM_DIR: QUEST_IDS_PATH.rsplit("/", 1)[-1],
+    LOCALIZATION_DIR: QUEST_TITLES_CSV_PATH.rsplit("/", 1)[-1],
 }
 
 # --- What the docs say -------------------------------------------------------
@@ -400,6 +428,262 @@ def flag_values(block: list[str]) -> str:
     return "\n".join(collected)
 
 
+# --- Regions (docs/GLOSSARY.md §The world) -----------------------------------
+
+
+# The heading of the glossary's region table. Matched by prefix because the heading
+# carries a parenthetical pointer at `design/world.md` that is not an id.
+GLOSSARY_WORLD_HEADING_PREFIX = "## The world"
+
+# The world-spanning pseudo-region `SQ-SPREAD-*` quests are homed to. The glossary
+# defines "The Spread" as the world itself rather than as a row of the region table,
+# so it is named here and nowhere else.
+SPREAD_REGION_NAME = "The Spread"
+
+# A gloss a quest's `region:` may carry after the name, e.g.
+# "The Spread (world-spanning - all 21 regions plus the Cliff)". Prose for a reader;
+# never part of the region's identity.
+REGION_GLOSS_PATTERN = re.compile(r"\s*\(.*\)\s*$")
+
+# Articles a region token drops: `The Cliff` -> `CLIFF`, per the `SQ-<REGION>-<nn>`
+# scheme `docs/quests/README.md` owns ("uppercase, no 'the'").
+REGION_ARTICLE = "The "
+
+
+def region_token(name: str) -> str:
+    """`The Mirrormarsh` -> `MIRRORMARSH`, the token side-quest ids already use."""
+    bare = name[len(REGION_ARTICLE) :] if name.startswith(REGION_ARTICLE) else name
+    return re.sub(r"[^A-Za-z0-9]", "", bare).upper()
+
+
+def find_heading(doc_path: Path, prefix: str) -> str:
+    """The one heading line in `doc_path` starting with `prefix`."""
+    found = [
+        line
+        for line in doc_path.read_text(encoding="utf-8").splitlines()
+        if line.startswith(prefix)
+    ]
+    if len(found) != 1:
+        raise GeneratorError(f"{doc_path} has {len(found)} headings starting '{prefix}'")
+    return found[0]
+
+
+def parse_regions(doc_path: Path) -> dict[str, str]:
+    """`region name -> region token` from the glossary's region table, plus the Spread.
+
+    The glossary is the SSOT for every proper noun (CLAUDE.md), so the region names a
+    quest's `region:` may use are exactly this table's first column. A quest naming
+    anything else fails the generator rather than inventing a token.
+    """
+    heading = find_heading(doc_path, GLOSSARY_WORLD_HEADING_PREFIX)
+    names = [unwrap(cells[0]) for cells in table_rows(read_section(doc_path, heading)) if cells]
+    if not names:
+        raise GeneratorError(f"{heading} has no region table")
+    names.append(SPREAD_REGION_NAME)
+    regions: dict[str, str] = {}
+    for name in names:
+        token = region_token(name)
+        if not token:
+            raise GeneratorError(f"the region {name!r} yields no token")
+        if token in regions.values():
+            raise GeneratorError(f"two regions share the token {token}")
+        regions[name] = token
+    return regions
+
+
+# --- Quest frontmatter (docs/quests/**/*.md) ---------------------------------
+
+
+# `arcana:` values, e.g. "XVIII. The Moon". The roman numeral is the card number and
+# is the only part read; "none" means the quest belongs to no card.
+ARCANA_NONE = "none"
+ROMAN_NUMERALS = {
+    "I": 1, "II": 2, "III": 3, "IV": 4, "V": 5, "VI": 6, "VII": 7,
+    "VIII": 8, "IX": 9, "X": 10, "XI": 11, "XII": 12, "XIII": 13, "XIV": 14,
+    "XV": 15, "XVI": 16, "XVII": 17, "XVIII": 18, "XIX": 19, "XX": 20, "XXI": 21,
+}
+
+# `type:` values, mapped onto QuestDefinition.Type.
+QUEST_TYPES = {"main": 0, "side": 1}
+
+# The two id shapes `docs/quests/README.md` allows.
+QUEST_ID_SHAPE = re.compile(r"^(MQ\d{2}|SQ-[A-Z]+-\d{2})$")
+
+# The frontmatter keys a QuestDefinition is built from. `status` is deliberately
+# absent: it is doc workflow, not game data (technical.md's mapping table).
+REQUIRED_FRONTMATTER_KEYS = ("id", "title", "type", "arcana", "region")
+
+# One `- [A, B]` line of a `branches:` block.
+BRANCH_ROW_PATTERN = re.compile(r"^\s*-\s*\[(.*)\]\s*$")
+
+
+class Quest:
+    """One generated QuestDefinition."""
+
+    def __init__(
+        self,
+        quest_id: str,
+        title: str,
+        quest_type: int,
+        arcana_number: int,
+        region_id: str,
+        required_states: list[str],
+        fired_states: list[str],
+        branch_groups: list[tuple[str, list[str]]],
+        doc_path: str,
+    ) -> None:
+        self.quest_id = quest_id
+        self.title = title
+        self.quest_type = quest_type
+        self.arcana_number = arcana_number
+        self.region_id = region_id
+        self.required_states = required_states
+        self.fired_states = fired_states
+        self.branch_groups = branch_groups
+        self.doc_path = doc_path
+
+    @property
+    def is_main(self) -> bool:
+        return self.quest_type == QUEST_TYPES["main"]
+
+    @property
+    def constant_name(self) -> str:
+        """`SQ-PRESTIGE-01` -> `SQ_PRESTIGE_01`, a legal GDScript constant name."""
+        return self.quest_id.replace("-", "_")
+
+    @property
+    def title_key(self) -> str:
+        return f"QUEST_{self.constant_name}_TITLE"
+
+    @property
+    def resource_path(self) -> str:
+        return f"{QUEST_DATA_DIR}/{self.quest_id}.tres"
+
+    @property
+    def graph_path(self) -> str:
+        return f"{QUEST_GRAPH_DIR}/{self.quest_id}.tres"
+
+    def has_graph(self) -> bool:
+        """True when somebody has authored this quest's state machine."""
+        return (GODOT_DIR / self.graph_path).is_file()
+
+
+def frontmatter(path: Path) -> dict[str, str]:
+    """A quest doc's frontmatter as `key -> value`, comments and indentation kept.
+
+    A key's value is its own line's remainder plus every indented line under it, so
+    `branches:`' YAML list of lists survives. Trailing `#` comments are dropped:
+    several quests explain a gate in one (MQ18's hard-gate note) and none of it is
+    data.
+    """
+    values: dict[str, str] = {}
+    key = ""
+    for line in frontmatter_lines(path):
+        without_comment = line.split("#", 1)[0]
+        if not without_comment.strip():
+            continue
+        indented = without_comment[0].isspace() or without_comment.lstrip().startswith("-")
+        if indented:
+            if key:
+                values[key] += "\n" + without_comment
+            continue
+        name, _, value = without_comment.partition(":")
+        key = name.strip()
+        values[key] = value
+    return values
+
+
+def parse_list(value: str) -> list[str]:
+    """`[WS_A, WS_B]` -> `["WS_A", "WS_B"]`; `[]` and blank -> `[]`."""
+    text = value.strip()
+    if not text:
+        return []
+    if not (text.startswith("[") and text.endswith("]")):
+        raise GeneratorError(f"{text!r} is not an inline YAML list")
+    return [entry.strip() for entry in text[1:-1].split(",") if entry.strip()]
+
+
+def parse_branches(quest_id: str, value: str) -> list[tuple[str, list[str]]]:
+    """A `branches:` block as `[(group id, [flag, ...]), ...]`, in doc order.
+
+    The group id is derived exactly as the world-state matrix derives it
+    (`branch_group_id`), so a quest's groups and the matrix's `branch_group` field
+    are the same ids by construction rather than by coincidence.
+    """
+    groups: list[tuple[str, list[str]]] = []
+    for line in value.splitlines():
+        if not line.strip():
+            continue
+        found = BRANCH_ROW_PATTERN.match(line)
+        if found is None:
+            raise GeneratorError(f"{quest_id}'s branches has a row this tool cannot read: {line!r}")
+        members = [entry.strip() for entry in found.group(1).split(",") if entry.strip()]
+        if len(members) < 2:
+            raise GeneratorError(f"{quest_id} has a branch group with {len(members)} members")
+        groups.append((branch_group_id(quest_id, members), members))
+    return groups
+
+
+def parse_arcana(quest_id: str, value: str) -> int:
+    """`XVIII. The Moon` -> 18; `none` -> 0."""
+    text = unwrap(value)
+    if text.lower() == ARCANA_NONE:
+        return 0
+    numeral = text.split(".", 1)[0].strip().upper()
+    if numeral not in ROMAN_NUMERALS:
+        raise GeneratorError(f"{quest_id} names the card {text!r}, whose numeral is unreadable")
+    return ROMAN_NUMERALS[numeral]
+
+
+def parse_quests(quests_dir: Path, regions: dict[str, str]) -> list[Quest]:
+    """Every quest doc's frontmatter, as definitions, in doc order.
+
+    Doc order is `main/` before `side/` and alphabetical within each, which is card
+    order for the main quests and id order for the rest - so the catalog reads the way
+    `docs/quests/` does.
+    """
+    quests: list[Quest] = []
+    for path in sorted(quests_dir.rglob("*.md")):
+        values = frontmatter(path)
+        if "id" not in values:
+            continue  # README.md, TEMPLATE.md, SLATE.md: docs about quests, not quests
+        quest_id = unwrap(values["id"])
+        for key in REQUIRED_FRONTMATTER_KEYS:
+            if key not in values:
+                raise GeneratorError(f"{path.name}'s frontmatter has no '{key}'")
+        if QUEST_ID_SHAPE.match(quest_id) is None:
+            raise GeneratorError(f"{path.name} has an id no quest scheme allows: {quest_id!r}")
+        quest_type = unwrap(values["type"]).lower()
+        if quest_type not in QUEST_TYPES:
+            raise GeneratorError(f"{quest_id} is of type {quest_type!r}, which is neither main nor side")
+        region_name = REGION_GLOSS_PATTERN.sub("", unwrap(values["region"])).strip()
+        if region_name not in regions:
+            raise GeneratorError(
+                f"{quest_id} is homed to {region_name!r}, which docs/GLOSSARY.md does not name"
+            )
+        quests.append(
+            Quest(
+                quest_id=quest_id,
+                title=unwrap(values["title"]),
+                quest_type=QUEST_TYPES[quest_type],
+                arcana_number=parse_arcana(quest_id, values["arcana"]),
+                region_id=regions[region_name],
+                required_states=parse_list(values.get("requires", "")),
+                fired_states=parse_list(values.get("fires", "")),
+                branch_groups=parse_branches(quest_id, values.get("branches", "")),
+                doc_path=str(path.relative_to(REPO_ROOT)),
+            )
+        )
+    seen: dict[str, str] = {}
+    for quest in quests:
+        if quest.quest_id in seen:
+            raise GeneratorError(f"{quest.quest_id} is claimed by two docs")
+        seen[quest.quest_id] = quest.doc_path
+    if not quests:
+        raise GeneratorError(f"{quests_dir} holds no quest frontmatter")
+    return quests
+
+
 # --- Writing Godot text resources --------------------------------------------
 
 
@@ -573,6 +857,176 @@ def world_state_ids_script(flags: list[Flag]) -> str:
     return "\n".join(lines)
 
 
+def string_name_array(ids: list[str]) -> str:
+    """`["A", "B"]` as a Godot `Array[StringName]` literal."""
+    members = ", ".join('&"%s"' % escape(entry) for entry in ids)
+    return "Array[StringName]([%s])" % members
+
+
+def quest_resource(quest: Quest) -> str:
+    """One `data/quests/<ID>.tres`.
+
+    The branch groups are sub-resources rather than files of their own: a group has
+    no life outside the quest whose choice it is, and inlining keeps a regenerate to
+    exactly one file per quest.
+    """
+    definition_id = "1_quest"
+    branch_script_id = "2_branch_group"
+    graph_id = "3_graph"
+    ext_resources = [("Script", QUEST_DEFINITION_SCRIPT, definition_id)]
+    if quest.branch_groups:
+        ext_resources.append(("Script", QUEST_BRANCH_GROUP_SCRIPT, branch_script_id))
+    if quest.has_graph():
+        ext_resources.append(("Resource", "res://" + quest.graph_path, graph_id))
+
+    sub_resources: list[str] = []
+    group_references: list[str] = []
+    for group_id, members in quest.branch_groups:
+        sub_id = "Resource_%s" % group_id
+        group_references.append('SubResource("%s")' % sub_id)
+        sub_resources.append(
+            "\n".join(
+                [
+                    '[sub_resource type="Resource" id="%s"]' % sub_id,
+                    'script = ExtResource("%s")' % branch_script_id,
+                    'group_id = &"%s"' % escape(group_id),
+                    "flags = %s" % string_name_array(members),
+                    "",
+                ]
+            )
+        )
+
+    lines = [
+        '[gd_resource type="Resource" script_class="QuestDefinition" load_steps=%d format=3]'
+        % (len(ext_resources) + len(sub_resources) + 1),
+        "",
+    ]
+    for resource_type, path, resource_id in ext_resources:
+        lines.append('[ext_resource type="%s" path="%s" id="%s"]' % (resource_type, path, resource_id))
+    lines.append("")
+    body = "\n".join(lines) + "\n"
+    for sub_resource in sub_resources:
+        body += sub_resource + "\n"
+    groups_literal = "Array[ExtResource(\"%s\")]([%s])" % (
+        branch_script_id, ", ".join(group_references)
+    ) if quest.branch_groups else "Array[Resource]([])"
+    body += "\n".join(
+        [
+            "[resource]",
+            'script = ExtResource("%s")' % definition_id,
+            'id = &"%s"' % escape(quest.quest_id),
+            'title_key = &"%s"' % escape(quest.title_key),
+            "type = %d" % quest.quest_type,
+            "arcana_number = %d" % quest.arcana_number,
+            'region_id = &"%s"' % escape(quest.region_id),
+            "required_states = %s" % string_name_array(quest.required_states),
+            "fired_states = %s" % string_name_array(quest.fired_states),
+            "branch_groups = %s" % groups_literal,
+            'graph = ExtResource("%s")' % graph_id if quest.has_graph() else "graph = null",
+            'doc_path = "%s"' % escape(quest.doc_path),
+            "",
+        ]
+    )
+    return body
+
+
+def quest_catalog_resource(quests: list[Quest]) -> str:
+    """`data/quests/catalog.tres`, referencing every quest resource in doc order."""
+    definition_id = "1_quest"
+    catalog_id = "2_catalog"
+    ext_resources = [
+        ("Script", QUEST_DEFINITION_SCRIPT, definition_id),
+        ("Script", QUEST_CATALOG_SCRIPT, catalog_id),
+    ]
+    entry_ids: list[str] = []
+    for index, quest in enumerate(quests, start=3):
+        entry_id = "%d_%s" % (index, quest.constant_name.lower())
+        entry_ids.append(entry_id)
+        ext_resources.append(("Resource", "res://" + quest.resource_path, entry_id))
+    body = resource_header("QuestCatalog", ext_resources)
+    entries = ", ".join('ExtResource("%s")' % entry_id for entry_id in entry_ids)
+    body += "\n".join(
+        [
+            "[resource]",
+            'script = ExtResource("%s")' % catalog_id,
+            'entries = Array[ExtResource("%s")]([%s])' % (definition_id, entries),
+            "",
+        ]
+    )
+    return body
+
+
+def quest_ids_script(quests: list[Quest]) -> str:
+    """`quest_ids.gd`: the one place a quest id is written in code."""
+    main = [quest for quest in quests if quest.is_main]
+    side = [quest for quest in quests if not quest.is_main]
+    lines = [
+        "class_name QuestIds",
+        "extends RefCounted",
+        "",
+        "## Every quest id, as a constant.",
+        "##",
+        "## GENERATED by `godot/tools/gen_definitions.py` from the YAML frontmatter of",
+        "## every `docs/quests/**/*.md` - do not edit by hand; add the quest doc and",
+        "## regenerate. A drift test fails when this file and `docs/quests/` disagree.",
+        "##",
+        "## Code never types a quest id: it names one of these constants, or reads an id",
+        "## off a `QuestDefinition` (docs/design/technical.md, no magic strings). The",
+        "## `.tres` data under `res://data/quests/` is generated from the same",
+        "## frontmatter, so the two cannot drift apart.",
+        "",
+        "## The main quests, in card order. MQ00 is the prologue; the number IS the card",
+        "## (`docs/quests/README.md` §ID scheme), and there are exactly 22, forever.",
+    ]
+    for quest in main:
+        lines.append('const %s := &"%s"' % (quest.constant_name, quest.quest_id))
+    lines.append("")
+    lines.append("## The side quests, by id.")
+    for quest in side:
+        lines.append('const %s := &"%s"' % (quest.constant_name, quest.quest_id))
+    lines.append("")
+    lines.append("## Every main quest, in card order.")
+    lines.append("const MAIN: Array[StringName] = [")
+    for quest in main:
+        lines.append("\t%s," % quest.constant_name)
+    lines.append("]")
+    lines.append("")
+    lines.append("## Every side quest, by id.")
+    lines.append("const SIDE: Array[StringName] = [")
+    for quest in side:
+        lines.append("\t%s," % quest.constant_name)
+    lines.append("]")
+    lines.append("")
+    lines.append("## Every quest `docs/quests/` defines.")
+    lines.append("const ALL: Array[StringName] = [")
+    for quest in quests:
+        lines.append("\t%s," % quest.constant_name)
+    lines.append("]")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def csv_field(value: str) -> str:
+    """A CSV field, quoted only when it has to be (one quest title has a comma)."""
+    if any(character in value for character in (",", '"', "\n")):
+        return '"%s"' % value.replace('"', '""')
+    return value
+
+
+def quest_titles_csv(quests: list[Quest]) -> str:
+    """`localization/quest_titles.csv`: every quest title, keyed.
+
+    Quest titles are the one player-facing string the frontmatter carries, so they
+    leave `docs/` as translation keys and arrive here as the English column - the
+    only place the English lives (technical.md §Localization (Godot)).
+    """
+    lines = ["keys,en"]
+    for quest in quests:
+        lines.append("%s,%s" % (quest.title_key, csv_field(quest.title)))
+    lines.append("")
+    return "\n".join(lines)
+
+
 # --- The generation itself ---------------------------------------------------
 
 
@@ -581,6 +1035,8 @@ def generate() -> dict[str, str]:
     flags = parse_matrix(WORLD_DOC)
     act_ii_min, act_iii_min = parse_act_thresholds(WORLD_DOC)
     tier_names = parse_renown_tiers(PROGRESSION_DOC)
+    regions = parse_regions(GLOSSARY_DOC)
+    quests = parse_quests(QUESTS_DIR, regions)
 
     files: dict[str, str] = {}
     for flag in flags:
@@ -589,6 +1045,11 @@ def generate() -> dict[str, str]:
     files[ACT_THRESHOLDS_PATH] = act_thresholds_resource(act_ii_min, act_iii_min)
     files[RENOWN_LADDER_PATH] = renown_ladder_resource(tier_names)
     files[WORLD_STATE_IDS_PATH] = world_state_ids_script(flags)
+    for quest in quests:
+        files[quest.resource_path] = quest_resource(quest)
+    files[QUEST_CATALOG_PATH] = quest_catalog_resource(quests)
+    files[QUEST_IDS_PATH] = quest_ids_script(quests)
+    files[QUEST_TITLES_CSV_PATH] = quest_titles_csv(quests)
     return files
 
 
@@ -678,6 +1139,18 @@ def report_quest_references(files: dict[str, str], flags: set[str]) -> None:
         print("  %s <- %s" % (state_id, ", ".join(sources)))
 
 
+def report_regions() -> None:
+    """Print the region tokens quest ids and definitions are built from.
+
+    Informational: the tokens come from `docs/GLOSSARY.md` §The world, and a quest
+    naming a region the glossary does not have already fails `generate()`.
+    """
+    regions = parse_regions(GLOSSARY_DOC)
+    print("regions: %d tokens from %s" % (len(regions), GLOSSARY_DOC.name))
+    for name, token in sorted(regions.items(), key=lambda entry: entry[1]):
+        print("  %-12s <- %s" % (token, name))
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     mode = parser.add_mutually_exclusive_group(required=True)
@@ -693,6 +1166,7 @@ def main(argv: list[str]) -> int:
 
     known = {Path(path).stem for path in files if path.endswith(".tres")}
     report_quest_references(files, known)
+    report_regions()
 
     if arguments.check:
         problems = check(files)
