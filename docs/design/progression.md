@@ -22,7 +22,9 @@ are **cosmetic only** — they change how the Fool looks, never how the Fool pla
 a deliberate, explicit scope cut: it keeps the build space small enough to balance by
 hand (21 Trumps × 3 slots × 2 orientations is already the intended ceiling of
 build complexity) and it keeps every visible outfit a pure expression of player taste
-rather than a stat trap.
+rather than a stat trap. The Bindle's **unfoldings** ([`combat.md`](combat.md)
+§Unfoldings) are not a fourth vector: a lantern or a rod is a verb the Fool learns, and
+none of them changes a number, a move, or a fight.
 
 ## The Pocket Spread
 
@@ -132,7 +134,8 @@ health bar and no heal button; healing *is* the Rose regrowing.
 Wayside shrines, one per region and along the Longroad, are the game's rest points (see
 [`world.md`](world.md) §Regions for their placement). At a Waystation the Fool can:
 
-- **Rest** — fully regrow the White Rose and respawn ambient (non-boss) enemies.
+- **Rest** — fully regrow the White Rose, respawn ambient (non-boss) enemies, and sleep
+  to the next morning ([`world.md`](world.md) §Time).
 - **Respec the Pocket Spread** — save, name, and switch between full loadouts.
 - **Fast travel** — Waystations become fast-travel points world-wide once
   `WS_CHARIOT_UNBOUND` fires (see [`world.md`](world.md) §World-state matrix); before
@@ -145,7 +148,8 @@ Wayside shrines, one per region and along the Longroad, are the game's rest poin
 
 **Coins** are the Fool's money — fittingly, since the suit of Coins is literally the
 Spread's culture of trade and earth (see [`GLOSSARY.md`](../GLOSSARY.md)). Coins are
-found, looted, and earned through quests, and spent at **shops in every settled region**.
+found, looted, earned through quests and **as wages** at a Calling
+([`callings.md`](callings.md)), and spent at **shops in every settled region**.
 
 - **Prices vary by region**, and are further affected by the Fool's **Renown** with the
   local suit and by relevant **world-states** — a shop's stock and prices are a live
@@ -181,6 +185,9 @@ and [`world.md`](world.md):
 | Winning a formal duel or contest | Neutral | Renown up (soldierly virtue) | Slight up (spectacle) | Neutral |
 | Striking a sharp bargain | Slight down (feels cold) | Neutral | Neutral | Renown up (shrewdness prized) |
 | Finishing a craft or creative work | Slight up | Neutral | Renown up (craft is the culture) | Slight up (sellable) |
+
+Renown also trickles in from honest work at a Calling — paid per shift and capped, by
+[`callings.md`](callings.md) §Shifts, wages, and the day.
 
 Each suit uses the same **five-tier ladder**:
 

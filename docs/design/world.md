@@ -238,6 +238,37 @@ else may mutate them. (Technical representation: see
   `WS_SUN_UNBOUND` at runtime — writers must handle both orders. **Order-independence
   is the rule for all pairs** except the two hard story gates (Death→Judgement,
   everything→World's scaling).
+- Time itself is §Time, below: the clock runs from the first step; `WS_SUN_UNBOUND` is
+  the one row that changes what the *sun* does.
+
+## Time: the clock and the sun
+
+The Spread keeps time even while it holds still. Two separate facts, and the design
+depends on keeping them separate:
+
+- **The clock runs from the Fool's first step.** A day is twenty-four in-game hours and
+  lasts **twenty-four real minutes** of play — one game minute per real second, one game
+  hour per real minute (what stops or stretches it is [`technical.md`](technical.md)
+  §Time). Resting at a Waystation sleeps to the next morning
+  ([`progression.md`](progression.md) §Waystations). The day count is what the
+  Almanack's Days Lived page, a Calling's wages, and every "per day" rule in the design
+  count against ([`callings.md`](callings.md)). A quest that waits "a day" waits a day
+  of this clock — under half an hour of play, or one rest — and should be written
+  meaning that.
+- **The sun is stalled, region by region.** Before `WS_SUN_UNBOUND` no region's light
+  moves: each holds the hour the Stall caught it at — the Noonlands' noon, the Dim's
+  dusk, the Mere's night, the Veil's moonlit mist — whatever the clock says, and
+  shadows lie where that hour left them ([`art-audio.md`](art-audio.md) §The world-state
+  is the art direction). The held hour is part of each region's sketch above; where a
+  sketch does not name one it is **TBD**, settled at that region's greybox. Wake at a
+  Waystation on the Dim and it is still dusk. The held hour is a fact about *light*;
+  what a bound region's NPCs know of the hour is [`npc-system.md`](npc-system.md)'s —
+  they hold their tableau, and the time-of-day bark pool does not exist yet.
+- **`WS_SUN_UNBOUND` hands the sun to the clock.** From the first sunset on, every
+  region's light, shadows, and time-of-day content follow the one global clock (the
+  matrix row above); NPC schedules and the time/weather bark pool become evaluable
+  ([`npc-system.md`](npc-system.md)). The clock does not reset or jump at the unbinding
+  — the day the Fool was living continues, and the sun joins it.
 
 ## Global states (act thresholds)
 

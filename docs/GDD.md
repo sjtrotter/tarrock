@@ -41,6 +41,9 @@ this document links to them rather than restating them.
    and to the *order* you did it in: the sequence of your unbindings is recorded as
    **the Fool's Reading**, and in the true ending it is read back to you as the tarot
    spread you dealt without realizing it.
+5. **A life you could stay for** — every region offers a **Calling**, a real mundane job
+   (farmhand, under-librarian, lamplighter) the Fool can simply do, for an hour or
+   forty, paid like work. The temptation to stay, made playable.
 
 ### Target Platforms
 
@@ -194,6 +197,14 @@ Summaries only — each links to its SSOT.
    villager reactivity to your deeds and to the world-state.
    → [`design/progression.md`](design/progression.md),
    [`design/characters.md`](design/characters.md)
+6. **Callings** — the repeatable, mundane roles every region offers: opt-in, endless,
+   paid in Coins and a trickle of Renown, never gear; the world starts calling you by
+   the job. → [`design/callings.md`](design/callings.md)
+7. **Unfoldings and the day** — the Bindle unfolds into the Fool's own few tools (a
+   lantern, a rod), usable anywhere once learned; a twenty-four-minute in-game day runs
+   from the first step, and the sun joins it only when XIX is unbound.
+   → [`design/combat.md`](design/combat.md) §Unfoldings,
+   [`design/world.md`](design/world.md) §Time
 
 ## Story and Gameplay
 

@@ -139,6 +139,16 @@ from day one, keyed off its Arcanum's world-state flag (`world.md`'s world-state
   on exposed ground than in shelter. Reading it as ambient sway puts wind back into a
   region that canon says has none; prose like MQ00's "wind-combed grass" describes the
   *shape* the last wind left, not motion. (Director ruling, 2026-07-31.)
+- **Light and shadow are world-state too.** Every region has a sun vector fixed by its
+  held hour (`world.md` §Time): long dusk shadows on the Dim, a tight puddle under the
+  Fool at Noonlands noon, the Bastion's shadows "aligned to a clock that never
+  advances." Characters and props cast shadows from that vector — a flattened, skewed
+  copy of the sprite itself, never a second drawn sprite set — so one set of art lights
+  correctly in every region and, after `WS_SUN_UNBOUND`, sweeps with the day: the first
+  thing that moves after the first sunset is every shadow in the Spread. Carried and
+  placed lights (the lantern unfolding, the wish-lights, the Dim's one lantern, a
+  forge) are real 2D point lights over the same sprites. Per-lighting sprite variants
+  are not made; normal-mapped sprites are an optional later polish, never a dependency.
 - **Unbound regions gain motion.** Wind returns to cloth and foliage, weather rotation
   activates, water animates properly, ambience beds gain layered one-shots (birds,
   distant voices, weather) so the loop point disappears. NPC posing loosens from
@@ -187,9 +197,10 @@ progress-at-a-glance UI and should need no HUD counter duplicating it.
 
 The player's journal is called **the Almanack** — a new canon term introduced by this
 document; it has been added to `GLOSSARY.md`. The Almanack collects quest logs, the
-Bestiary of Blanks and beasts encountered, the Pocket Spread's collected Trumps, and any
-lore pages found in the world, styled as a hand-annotated manuscript rather than a
-database screen.
+Bestiary of Blanks and beasts encountered, the Pocket Spread's collected Trumps, any
+lore pages found in the world, and the **Days Lived** page that stamps the Fool's
+Callings (`callings.md`), styled as a hand-annotated manuscript rather than a database
+screen.
 
 **UI/UX pillars:**
 

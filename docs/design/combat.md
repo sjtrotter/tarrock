@@ -29,7 +29,8 @@ a skilled player fight and understand what happened. Nothing is hidden in number
 ## The Bindle: player moveset
 
 The Fool's only weapon is **the Bindle** — a traveler's bundle lashed to a quarterstaff,
-unfolded into a fighting staff. One weapon for the whole game keeps the moveset legible
+unfolded into a fighting staff (and, once the Fool knows the knot, into its
+**unfoldings** — see below). One weapon for the whole game keeps the moveset legible
 and lets every new Trump and staff head read as a variation on a form the player already
 knows, rather than a new weapon to relearn.
 
@@ -49,6 +50,50 @@ a helpless window and a follow-up — on the ground plane, where it stays readab
 retune this moveset (reach, a different heavy shape, an elemental tag) rather than
 replacing it — full detail, list, and acquisition is owned by
 [`progression.md`](progression.md).
+
+### Unfoldings
+
+The Bindle unfolds into more than a staff. A traveler's bundle is everything its owner
+needs, and the Fool's turns out to hold exactly that: pull the right knot and the sack
+cinches into a lantern; pull another and it shrinks to a bobber while the cord pays out
+from the staff's tip as a line. These are the Fool's **unfoldings** — their own few tools,
+as distinct from a Calling's, which belong to the workplace and stay there
+([`callings.md`](callings.md)). The card carries it: the Fool's bundle is the provision
+they already carry without knowing it.
+
+| Unfolding | The knot | What answers it |
+|---|---|---|
+| **Lantern** | Pull the knot's tail; the sack cinches into a lamp and the staff is its pole — the Fool, for a moment, a small Hermit. The light is the bag itself. | Anything that wants a flame: the dark (the Undervault, every night once `WS_SUN_UNBOUND` has fired, the ground at the Fool's feet on the Dim), unlit wicks and braziers, and whatever a region declares burnable — a dry thicket, a cobweb, a seal of wax. The burnable list is each region's to author and is **TBD** per greybox. |
+| **Rod** | The sack shrinks to a bobber; the cord string-ifies off the staff's tip; the Fool fly-casts with the staff itself. | Any water's edge. Bound water does not bite — nothing in it has moved for three hundred years — so a region's fish arrive with its unbinding. |
+| Further unfoldings | **TBD.** A pipe is the leading candidate (busking in squares; Renown to Wands by the craft deed, `progression.md` §Renown); one region-specific find is wanted. | |
+
+Rules:
+
+- **Once learned, usable anywhere, always.** An unfolding is never gated by place or
+  state; the *world* decides what answers it. A lantern lit at noon in the Noonlands is
+  simply a lantern lit at noon. Whatever it touches that can take a flame, takes it.
+- **Unfoldings are verbs, not growth.** None does combat damage, retunes the moveset, or
+  changes a number; [`progression.md`](progression.md)'s three growth vectors stay three.
+  A lantern lights and burns what the world says is burnable; it is not a torch attack.
+- **A light, never a true light.** The lantern unfolding is a traveler's lamp: it does
+  not count for the Mirrormarsh's gate ([`world.md`](world.md) §Hard and soft gates),
+  reveals nothing Trump IX reveals ([`arcana.md`](arcana.md) §IX), and on the Dim it
+  lights the ground at the Fool's feet and nothing of the way — the Hermit's light stays
+  on the next ridge.
+- **The staff is always one pull away.** Any attack input, Focus, or a hit taken snaps
+  the Bindle back to its fighting form in one motion. Nothing is dropped, and the
+  unfolding is one press away again afterwards.
+- **Staff heads stay on the stick; unfoldings happen to the sack and the knot.** The
+  lantern form still wears its head above the cinched bag.
+- **No Arcana hands one over.** An unfolding is knot-craft, not a Trump: the Bindle has
+  always been able to do this; the Fool just had not found the knot. How each knot is
+  learned is **TBD** — the lean is found in the world or shown by a Minor, never by a
+  Major, and never as a Calling's reward ([`callings.md`](callings.md) rule 3).
+- **There is no spade unfolding.** Finding what is hidden is Pip's (§Pip, Seek) and
+  stays his; a Calling's spade is the workplace's.
+- The Hermit rhyme — a figure with a lamp on a staff — is deliberate, and licensed for
+  one bark on the Dim ([`npc-system.md`](npc-system.md)), not an accident to design
+  around.
 
 ## Focus (stance and targeting)
 

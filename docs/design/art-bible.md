@@ -214,6 +214,37 @@ The 2D sprite and animation standards that replace the procedures are being work
 `godot/art/ART-REQUESTS.md` and `godot/art/fool-walk-production-v1/ANIMATION-BIBLE.md`,
 and get promoted into this section by the art lane as they settle.
 
+### Pose families and held things (2D)
+
+**Bodies plus tools, never bodies times tools.** The Fool's working and carrying
+animation is a small set of **pose families** that hold nothing — a hand kept at a
+measured **socket** — and every held thing (a Calling's scythe, a lantern, a tray of
+books) is drawn once per facing and pinned to that socket. Adding a tool costs three
+stills, not a cycle. The families, by what the hand is doing:
+
+| Family | Sockets | Carries |
+|---|---|---|
+| Carry, one hand low | 1 | lantern, bucket, watering can, tea pot |
+| Carry, two hands front | 2 | book stack, prop crate, sheaf, tray, ledger |
+| Carry, shoulder | 1 + steadying hand | sack, rope coil, crook, any long tool at rest |
+| Long tool, sweep | 2 (upper and lower grip) | scythe, broom, rake |
+| Long tool, chop / reach | 2 | hoe, spade, axe; reversed, the lamplighter's pole |
+| Long tool, push / pull | 2 | ferry pole, oar |
+| Short tool, strike | 1 + off-hand holding the work | hammer, stamp, trowel, wick-trimmer |
+| Pull / haul | 2, stacked | bell rope, stage rope, net |
+| Pour / scatter / toss | 1 | pitcher, seed bag, sheaf-toss, dealt cards |
+| Station, upper body | 2, above a counter line | ledger and scales, card table, loom, bellows — feet planted, the fixture hides the legs |
+| Inspect / read | 1 raised, or none | a label, a knot, a strike log |
+
+- **Sockets are measured, not eyeballed:** each frame carries its foot anchor and its
+  socket positions, rotations, and a front/behind flag, taken from a marker pass by the
+  same pivot tooling that measures feet; the marker images never ship.
+- **The Bindle's unfoldings are the exception that proves the rule** (`combat.md`
+  §Unfoldings): they are morphs of the one prop the Fool already holds, animated once
+  per facing as a hero moment, not overlays on a family.
+- Frame counts, facing sets, socket files, and the request briefs are production detail
+  owned by the art lane's working docs under `godot/art/`, promoted here as they settle.
+
 ### Characters
 
 - **Silhouette benchmark (the gate for "modeling done"):** render the asset as a

@@ -34,7 +34,8 @@ code identifiers use these exact spellings. Add new terms here **before** using 
 | **Pocket Spread** | The Fool's personal three-card spread: **Past** (passive), **Present** (active power), **Future** (triggered/fate effect). Each Trump has a distinct expression per slot, upright or reversed. |
 | **Fortune** | The resource spent by Present-slot powers. Earned through combat, discovery, and daring. |
 | **The White Rose** | The Fool's vitality, worn at the belt: its petals **are** the Fool's health (3 to start, 8 at most). A hit costs petals; at zero the Fool falls; the rose regrows at Waystations and slowly in unbound regions. See `design/progression.md`. |
-| **The Bindle** | The Fool's weapon and inventory: a traveler's bundle on a quarterstaff. |
+| **The Bindle** | The Fool's weapon and inventory: a traveler's bundle on a quarterstaff. Unfolds into the fighting staff and, once each knot is learned, into its **unfoldings**. See `design/combat.md` §The Bindle. |
+| **Unfoldings** | The other things the Bindle can become — the lantern, the rod, and the few more the Fool learns. The Fool's own tools, as distinct from a Calling's, which belong to the workplace; usable anywhere once learned; verbs, never weapons or growth. See `design/combat.md` §Unfoldings. |
 | **Fool's Chance** | Perfectly-timed dodge: brief slow-motion window and a free Trump cast. |
 | **Stagger launcher** | The Bindle's charged heavy in the 2D grammar: lifts the target into a brief helpless stagger that opens bonus follow-ups — the opener a launcher gives, with no aerial moveset. See `design/combat.md` §The Bindle. |
 | **Side-view sequence** | One of the canon-designated set-pieces where the oblique top-down view turns to profile for the drama's sake (the leap, the under-stage, the colossus, the carriage roofs, the Gallowwood, the Spire). The list lives in `design/world.md` §Side-view sequences. |
@@ -43,6 +44,10 @@ code identifiers use these exact spellings. Add new terms here **before** using 
 | **The Almanack** | The Fool's journal: quest log, Bestiary, collected Trumps, and found lore, styled as a hand-annotated manuscript. See `design/art-audio.md`. |
 | **The Fool's Reading** | The recorded order in which the player unbinds the 21 Arcana — the tarot spread the player deals across the whole playthrough. The world comments on it, and it styles the True Shuffle ending. See `design/narrative.md` §The Fool's Reading. |
 | **Callings** | The repeatable, mundane roles the world offers the Fool (librarian, farmhand, ferryman's mate…) — the temptation to stay, made playable. One per region. See `design/callings.md`. |
+| **Shift** | A Calling's unit of work: one in-game hour at the post (one real minute). Each loop pays Coins; each shift pays Renown; the Almanack stamps shifts. See `design/callings.md` §Shifts, wages, and the day. |
+| **Days Lived** | The Almanack page that records the Fool's Callings — shifts worked per role, as hand-drawn stamps. A diary, never a checklist. See `design/callings.md`. |
+| **The day** | Twenty-four in-game hours in twenty-four real minutes — one game minute per real second. The clock runs from the Fool's first step; the sun does not move until `WS_SUN_UNBOUND`. See `design/world.md` §Time. |
+| **Held hour** | The time of day a bound region's sun is stuck at — the Noonlands' noon, the Dim's dusk — which its light and shadows show until `WS_SUN_UNBOUND`. A fact about light, not about what its NPCs know. See `design/world.md` §Time. |
 | **The Scattered Deck** | The 56 Minor Arcana cards scattered across the Spread in the Stall — the game's hidden-collectible hunt (Korok-scale). Found cards return to the Cartomancer. See `quests/side/`. |
 
 ## The world (see `design/world.md` for detail)

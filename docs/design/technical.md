@@ -126,6 +126,7 @@ godot/
     pip/                           # combat.md §Pip command wheel
     regions/                       # world.md regions, scene switching, Waystations
     progression/                   # progression.md economy, Renown, White Rose, Fortune
+    callings/                      # callings.md roles, shifts, wages, Days Lived
     npc/                           # npc-system.md barks, schedules, rumor, memory
     ui/                            # art-audio.md UI, HUD, Almanack, map-as-spread
     <feature>/definitions/         # EVERY feature: its Resource subclasses,
@@ -164,7 +165,8 @@ reads — WorldState). All mutable state lives in the save model (below).
 | `ArcanaDefinition` | [`arcana.md`](arcana.md) index + per-Arcana sections | ID, region reference, quest reference, encounter type/tier, gate condition, the `TrumpDefinition` it yields. |
 | `QuestDefinition` | `../quests/` scripts | ID (`MQ##` / `SQ-<REGION>-##`), title key, arcana and region references, required/fired world states, branch groups, its state machine. |
 | `WorldStateDefinition` | [`world.md`](world.md) §World-state matrix, one asset per row | The `WS_*` ID (character-identical to the matrix), firing quest reference, human-readable effect summary (doc text, not logic — logic lives in whoever subscribes). |
-| `RegionDefinition` | [`world.md`](world.md) §Regions, §Layout | ID, display-name key, scene path, difficulty band, adjacency list, Waystation references. |
+| `RegionDefinition` | [`world.md`](world.md) §Regions, §Layout, §Time | ID, display-name key, scene path, difficulty band, adjacency list, Waystation references, held hour (the sun's stalled time-of-day before `WS_SUN_UNBOUND`; TBD where the sketch names none). |
+| `CallingDefinition` | [`callings.md`](callings.md) §The Callings, §Loop archetypes | ID, region reference, loop archetypes (a primary and an optional secondary), wage per loop, Renown suit, outfit item reference, shifts-to-outfit and shifts-to-recognition thresholds, bound/unbound forms (successor Calling and the flag that swaps them). |
 | `DialogueGraph` | [`narrative.md`](narrative.md) style, per-quest dialogue | Node graph resource; branch conditions are WorldState queries, never hardcoded booleans; every line is a translation key. |
 | `EnemyDefinition` | [`combat.md`](combat.md) §Enemies | Suit × rank composition, stat block, telegraph timings, shared sprite/animation family reference — one asset per suit/rank combination. |
 | `BarkDefinition` | [`npc-system.md`](npc-system.md) bark layers | A line key plus its conditions: layer, required `WS_*` combination, act/`CONFESSED` state, Renown tier, `READING_ORDER` motif query, region, suit. |
@@ -195,7 +197,9 @@ source, and a canon edit cannot silently fail to reach the game:
 Everything whose canon is prose is **hand-authored**, and each asset records the doc
 section it was authored from (`source_ref`, e.g. `arcana.md §XII. The Hanged Man`) so a
 reviewer can check it against canon without guessing: Trump effects and burdens,
-`ArcanaDefinition` encounter data, dialogue graphs, barks, enemy behavior, NPC profiles.
+`ArcanaDefinition` encounter data, dialogue graphs, barks, enemy behavior, NPC profiles,
+and Calling definitions (the §The Callings table is prose until it gains archetype and
+threshold columns, at which point it joins the generated set).
 
 ### The WorldState service (Godot)
 
@@ -234,6 +238,31 @@ Unity body, in Godot terms:
 
 This is the docs' own "nothing else may mutate the matrix" rule, compiled.
 
+### Time (Godot)
+
+`GameClock` (`systems/core/`) is world time — in-game seconds advanced by the composition
+root from the engine's already-scaled delta, paused by menus, dialogue, and the Spread,
+and the only clock gameplay reads. It is the data behind [`world.md`](world.md) §Time:
+
+- **Day length is one constant, and the clock's second stays the play-second.**
+  `GameClock` keeps counting seconds of play exactly as it does today; day and hour are
+  a derived view over it — 60 clock seconds = 1 game hour, 1,440 = 1 day = 24 real
+  minutes — exposed as day, hour, and time-of-day queries on the clock. A doc number
+  written as "an hour at the post" therefore means one real minute.
+- **The sun is not the clock.** Light and shadow direction read a *sun* query, which
+  answers the region's held hour (`RegionDefinition`) until `WS_SUN_UNBOUND` has fired
+  and the clock afterwards. `TimeBand` and NPC schedules keep their existing contract —
+  `NONE` / the tableau anchor before the flag, the clock after — because a bound region's
+  NPCs do not know the hour ([`npc-system.md`](npc-system.md) §Bark layers, §Daily
+  life); the held hour is a fact about light. Nothing reads the clock for time-of-day
+  directly, so the stalled sun is one query and not a scattering of `if`s.
+- **Rest sleeps to morning:** a Waystation rest advances the clock. During play it never
+  rewinds — time only goes forward, the same rule as a `WS_*` flag; a load restores the
+  saved day and hour, the one place the clock is set rather than advanced.
+- **Known unfoldings** ([`combat.md`](combat.md) §Unfoldings) are an append-only ID set
+  in the save, like fired flags; which form the Bindle is in right now is frame state
+  and is never saved.
+
 ### Regions and the persistent layer
 
 - **Persistent layer:** the `Services` autoload plus the Fool, Pip, the `Camera2D`, and
@@ -259,8 +288,10 @@ This is the docs' own "nothing else may mutate the matrix" rule, compiled.
   migration is tested against a checked-in fixture save.
 - **IDs only:** the save never serializes a definition resource. It stores stable string
   IDs (`WS_SUN_UNBOUND`, `MQ13`, Trump IDs) and the mutable data attached to them (quest
-  state, Pocket Spread slot assignments and orientations, Renown, inventory counts);
-  definitions are re-resolved from ID at load.
+  state, Pocket Spread slot assignments and orientations, Renown, inventory counts, the
+  clock's day and hour, shifts worked per Calling, known unfoldings); definitions are
+  re-resolved from ID at load. The Calling currently held and the Bindle's current form
+  are frame state and are not saved.
 - **Append-only containers:** the fired-flag set exposes `add(id)` and nothing else; the
   `READING_ORDER` list exposes `append(id)` and nothing else. Per-named-NPC memory is
   stored keyed by NPC ID.
@@ -388,6 +419,9 @@ Services are plain objects, so unit tests construct them directly; a test that n
   difficulty mode itself.
 - **Whether `shared/Tarrock.Shared` is ever revived** for a 3D retelling — out of scope
   for the 2D game, which does not consume it.
+- **The Callings work verb** — whether the light-attack input doubles as the work verb
+  while a role is held, or a new action is added; [`callings.md`](callings.md) §Open
+  questions carries the proposal, the Callings round decides.
 
 ## Unity / 3D telling (historical)
 

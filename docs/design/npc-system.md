@@ -39,7 +39,7 @@ will draw from.
 | 2 | **Sequence barks** | `READING_ORDER` (the Fool's Reading) for notable motifs | Region/quest docs, seeded with `world.md` §The Fool's Reading's starter motifs |
 | 3 | **World-state barks** | `WS_*` flag combinations local to the region | Each region's quest/side-quest docs, keyed to `world.md`'s world-state matrix rows |
 | 4 | **Act-state pools** | `ACT_I` / `ACT_II` / `ACT_III`, `CONFESSED` | Region docs, per `narrative.md` §Act structure |
-| 5 | **Renown / suit-culture greetings** | Renown tier for the Fool's standing suit, suit-culture speech habits | `progression.md` §Renown tiers, `characters.md` suit-culture table |
+| 5 | **Standing: role and Renown greetings** | A Calling the Fool has practiced or is dressed for (role-recognition), then Renown tier for the Fool's standing suit, suit-culture speech habits | `callings.md` rules 4–5, `progression.md` §Renown tiers, `characters.md` suit-culture table |
 | 6 | **Time/weather ambient** | Day/night, storms | Region docs — pool only exists where `WS_SUN_UNBOUND` (day/night) or `WS_TOWER_UNBOUND` (storm rotation) has fired |
 | 7 (fallback) | **Generic suit-culture baseline** | Suit only | Authored once per suit, always available |
 
@@ -49,10 +49,17 @@ Notes on the ordering:
   is specifically true right now"; layers 5–7 are forms of "who is this NPC, in
   general." The pillar is enforced by putting world-awareness *above* identity in
   priority — a world-state bark should interrupt a generic greeting, never the reverse.
+- **Within layer 5, role-recognition is asked before the Renown-tier greeting**: "morning,
+  librarian" outranks "welcome, stranger" — but never a world-state or act line. That is
+  the placement `callings.md` asks for (above Renown greetings, below world-state barks)
+  without a layer of its own: a role is a kind of standing. Role lines are gated on
+  shifts worked at that Calling or on wearing its outfit off-duty; the thresholds are
+  `callings.md`'s.
 - Layer 6 is **not evaluable at all** until its prerequisite unbinding fires — before
-  `WS_SUN_UNBOUND`, there is no day/night, so there is nothing for a time-of-day pool to
-  query; before `WS_TOWER_UNBOUND`, no storm rotation exists. Region docs omit layer 6
-  entirely until then rather than authoring dead pools.
+  `WS_SUN_UNBOUND` a region's sun is held at one hour (`world.md` §Time: the clock runs,
+  the light does not), so there is nothing for a time-of-day pool to query; before
+  `WS_TOWER_UNBOUND`, no storm rotation exists. Region docs omit layer 6 entirely until
+  then rather than authoring dead pools.
 - **Repeats decay.** Each pool tracks recently-spent lines per NPC (or per ambient
   context, for Minors sharing a pool — see below) and excludes them from the next few
   picks. An NPC should not say the same "aware" line twice in a row; a deep-enough pool
@@ -73,7 +80,9 @@ Notes on the ordering:
 
 A named NPC's memory flags feed layer 1–2 barks the same way quest state does: "you're
 the one who [did the thing]" is a layer-1-adjacent line gated on the NPC's own flag set,
-not on global world-state. This is the one place the bark system reads state narrower
+not on global world-state. A workplace's named NPCs remember the Fool's shifts the same
+way (`callings.md` rule 4): workplace-memory lines are ordinary per-NPC memory flags, not
+a second memory. This is the one place the bark system reads state narrower
 than the world-state matrix — scoped deliberately, since it's per-NPC save data, not a
 `WS_*` flag (see `technical.md` §Save system).
 
@@ -104,8 +113,10 @@ what the pillar actually needs:
 
 - Every scheduled NPC has a small set of anchor points — **home**, **work**, **a
   gathering place** (market, tavern, chapel, whatever fits the region) — and moves
-  between them on a simple time-of-day loop once `WS_SUN_UNBOUND` gives the world a
-  day/night cycle to schedule against.
+  between them on a simple time-of-day loop once `WS_SUN_UNBOUND` hands the sun to the
+  clock and gives the world a day/night cycle to schedule against (`world.md` §Time).
+  Schedules read the *sun*, not the clock: before that flag a bound region's held hour
+  is the only hour its NPCs know.
 - **Bound regions are deliberately static.** Per `art-audio.md`'s bound/unbound rule
   (posed mid-flutter, audibly-looping ambience), bound-region NPCs hold tableau-still
   routines — the same few anchor visits on a short, unvarying loop. Stasis **is** the
@@ -134,7 +145,7 @@ real once a region is greyboxed and its NPC density is known.
 | 2. Sequence (READING_ORDER) | 3–6 motif lines per region | Most regions won't hit every motif; a handful covers the likely ones |
 | 3. World-state deltas | 4–8 lines per relevant `WS_*` flag | Scales with how many flags plausibly touch that region |
 | 4. Act-state | 6–10 lines per act (×4 for `ACT_I/II/III` + `CONFESSED`) | The steady backbone of variety — largest deliberate investment |
-| 5. Renown/suit greeting | 3–5 lines per Renown tier (×5 tiers) | Per suit present in the region |
+| 5. Standing (role + Renown/suit greeting) | 3–5 lines per Renown tier (×5 tiers), plus 3–5 role lines per Calling present | Per suit present in the region; role lines only for the region's own Calling(s) |
 | 6. Time/weather | 4–6 lines per time band / weather state | Only once its prerequisite unbinding fires |
 | 7. Generic suit baseline | 10+ lines, authored once per suit, reused everywhere | The evergreen floor; never region-specific |
 
